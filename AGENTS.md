@@ -470,7 +470,7 @@ This repository uses an **orphan overlay** strategy to keep application code and
 | Branch | Contents | Description |
 | --- | --- | --- |
 | `main` | Application code only — `.gitignore`, `scripts/`, plugin entry file, `app/`, `assets/`, `src/`, `templates/`, `languages/`, `tests/`, `docs/`, `composer.json`, `package.json`, etc. | Clean app history. No dot-prefixed directories or agent metadata. |
-| `config-assets` | (Orphan) All dot-prefixed directories and metadata files: `.agents/`, `.codex/`, `.gemini/`, `.github/`, `.history/`, `.kilo/`, `.letta/`, `.opencode/`, `.playwright/`, `.meta/`, `.graphifyignore`, `graphify-out/`, `AGENTS.md`, `GEMINI.md`, `.antigravitycli` | Shared project configuration and tool documentation. No application code. |
+| `config-assets` | (Orphan) All dot-prefixed directories and metadata files: `.agents/`, `.codex/`, `.gemini/`, `.github/`, `.githooks/`, `.history/`, `.kilo/`, `.letta/`, `.opencode/`, `.playwright/`, `.meta/`, `.graphifyignore`, `graphify-out/`, `AGENTS.md`, `GEMINI.md`, `.antigravitycli` | Shared project configuration and tool documentation. No application code. |
 
 `config-assets` is an **orphan branch** — it shares no commit history with `main`. This prevents metadata noise from polluting the application commit log.
 
@@ -562,6 +562,7 @@ This overlays the latest metadata from `config-assets` into the working tree wit
 `scripts/sync-dots.sh`:
 - Checks out the latest files from `config-assets`.
 - Resets the Git index to keep them untracked on the current branch.
+- Auto-installs a `post-checkout` git hook (from `.githooks/post-checkout`) so overlay syncs automatically on every branch switch.
 - Auto-stashes and restores any uncommitted work.
 - Safe to run at any time.
 

@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# post-checkout — Auto-sync config-assets overlay after branch switch
+# Installed by scripts/sync-dots.sh --install
+
+HOOK_SRC="$(git rev-parse --show-toplevel 2>/dev/null)/scripts/sync-dots.sh"
+
+if [[ -x "$HOOK_SRC" ]]; then
+	exec "$HOOK_SRC"
+fi
