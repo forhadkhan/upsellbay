@@ -1,0 +1,687 @@
+# CartBay Complete Feature Guide
+
+## 1. Core Product Purpose
+
+CartBay is a WooCommerce-native abandoned cart recovery plugin designed to:
+
+* Capture checkout sessions
+* Detect cart abandonment
+* Trigger automated recovery email sequences
+* Restore abandoned carts securely
+* Apply recovery incentives
+* Track recovery performance
+* Support optional AI-agent automation
+
+Primary objective:
+
+**Recover abandoned checkout revenue with minimal manual intervention.**
+
+---
+
+# 2. Checkout Capture System
+
+## Consent-Based Checkout Capture
+
+Captures customer email during checkout only after consent.
+
+### Supported Checkout Types
+
+* WooCommerce Classic Checkout
+* WooCommerce Block Checkout
+
+### Features
+
+* Configurable consent checkbox
+* Custom consent text
+* Default checked/unchecked control
+* Consent withdrawal support
+* Session deletion on withdrawal
+
+### Captured Data
+
+* Customer email
+* Cart snapshot
+* Cart totals
+* Currency
+* Cart fingerprint
+* Source type
+* Consent metadata
+* Activity timestamps
+
+---
+
+## Session Tracking
+
+Each capture creates a WooCommerce-backed session.
+
+Lifecycle states:
+
+* Captured
+* Abandoned
+* Recovered
+* Expired
+* Suppressed
+
+Features:
+
+* Activity updates
+* Duplicate detection
+* Session refresh
+* Cart fingerprint matching
+* Recovery attribution
+
+---
+
+# 3. Abandonment Detection Engine
+
+## Configurable Timeout Detection
+
+Automatically marks sessions abandoned after inactivity.
+
+### Features
+
+* Adjustable timeout window
+* Exact session boundary checks
+* Background scanner fallback
+* Scheduled detection
+
+Powered by:
+
+* Action Scheduler
+* Session activity timestamps
+
+---
+
+## Automated Background Processing
+
+Scheduled recurring jobs:
+
+### Detection Jobs
+
+* Abandonment scanning
+
+### Analytics Jobs
+
+* Metrics refresh
+
+### Cleanup Jobs
+
+* Session pruning
+
+### License Jobs
+
+* Validation refresh
+
+---
+
+# 4. Recovery Sequence Engine
+
+## Three-Step Recovery Workflow
+
+Configurable automated email sequence.
+
+---
+
+## Email 1 — Reminder
+
+Purpose:
+
+Soft recovery reminder.
+
+Features:
+
+* Delay configuration
+* Editable template
+* Optional coupon
+* Restore link
+
+---
+
+## Email 2 — Follow-up
+
+Purpose:
+
+Higher urgency recovery prompt.
+
+Features:
+
+* Independent timing
+* Custom content
+* Optional offer escalation
+
+---
+
+## Email 3 — Final Recovery Push
+
+Purpose:
+
+Last conversion attempt.
+
+Features:
+
+* Final reminder messaging
+* Optional strongest incentive
+* Expiration urgency
+
+---
+
+## Sequence Controls
+
+Store owners can configure:
+
+* Enable/disable each step
+* Delay timing per step
+* Coupon attachment per step
+* Sequence progression
+
+---
+
+# 5. Recovery Email System
+
+## WooCommerce Native Email Integration
+
+Recovery emails use WooCommerce email infrastructure.
+
+Benefits:
+
+* Native email settings
+* Existing SMTP integrations
+* WooCommerce styling
+* Preview compatibility
+* Familiar admin experience
+
+---
+
+## Template Customization
+
+Each email supports:
+
+### Subject Editing
+
+Custom subject lines
+
+### Heading Editing
+
+Email header control
+
+### Body Editing
+
+Editable recovery copy
+
+### Additional Content
+
+Footer / extra messaging
+
+---
+
+## Dynamic Placeholders
+
+Available variables:
+
+* Site title
+* Store name
+* Customer email
+* Restore URL
+* Coupon code
+* Coupon expiry
+* Unsubscribe URL
+
+---
+
+## Delivery Tracking
+
+Tracks:
+
+* Queued
+* Attempted
+* Sent
+* Failed
+* Retry queued
+* Delivered
+* Canceled
+
+---
+
+# 6. Secure Cart Restoration
+
+## Restore Link Generation
+
+Every email includes secure restore links.
+
+Features:
+
+* Unique token generation
+* Hashed token storage
+* Expiration support
+* One-click restoration
+
+---
+
+## Cart Restoration Flow
+
+When clicked:
+
+1. Token validation
+2. Cart reconstruction
+3. Product restoration
+4. Checkout redirect
+5. Recovery attribution tracking
+
+---
+
+## Partial Restore Handling
+
+Supports:
+
+* Missing products
+* Inventory changes
+* Partial cart restoration
+* Restore failure logging
+
+---
+
+# 7. Recovery Offers & Coupon System
+
+## Automated Coupon Generation
+
+Generate session-linked recovery coupons.
+
+Features:
+
+* Per-step coupon control
+* Session association
+* Expiration
+* Validation safeguards
+
+---
+
+## Coupon Protection
+
+Coupons validate against:
+
+* Matching recovery session
+* Customer identity
+* Recovery flow eligibility
+
+---
+
+## Restrictions
+
+Protects against:
+
+* Misuse outside flow
+* Invalid redemption
+* Unauthorized sharing
+
+---
+
+# 8. Analytics & Reporting Dashboard
+
+## Overview Metrics
+
+Tracks:
+
+* Captured sessions
+* Abandoned carts
+* Recovered carts
+* Revenue recovered
+* Restore clicks
+* Failed restores
+
+---
+
+## Funnel Visibility
+
+Performance visibility across:
+
+Capture → Abandonment → Email Delivery → Restore Click → Recovery
+
+---
+
+## Time-Based Reporting
+
+Supports:
+
+* 7-day
+* 30-day
+* 90-day analytics windows
+
+---
+
+## Cached Analytics
+
+Optimized for performance through scheduled refresh.
+
+---
+
+# 9. Notification Monitoring System
+
+Tracks every recovery email lifecycle event.
+
+Includes:
+
+* Notification status
+* Retry history
+* Delivery attempts
+* Failure diagnostics
+* Timestamps
+
+Useful for:
+
+* Email debugging
+* SMTP diagnosis
+* Campaign reliability checks
+
+---
+
+# 10. Suppression & Unsubscribe System
+
+## Secure Unsubscribe Links
+
+Customers can opt out from future recovery emails.
+
+---
+
+## Suppression Features
+
+Stores:
+
+* Hashed email suppression records
+* Opt-out state
+* Cancellation of future recovery emails
+
+---
+
+# 11. Testing & Validation Tools
+
+## Test Mode
+
+Safe testing environment.
+
+---
+
+## Test Session Triggering
+
+Create simulated abandoned carts.
+
+---
+
+## Test Email Sending
+
+Send:
+
+* Basic test emails
+* Recovery previews
+
+---
+
+## Verification Flow
+
+Validate:
+
+* Capture
+* Scheduling
+* Email delivery
+* Restoration
+* Attribution
+
+---
+
+# 12. Admin Configuration Areas
+
+## Overview
+
+High-level performance dashboard
+
+---
+
+## Capture
+
+Configure:
+
+* Consent checkbox
+* Consent text
+* Capture behavior
+* Timeout
+
+---
+
+## Recovery Sequence
+
+Configure:
+
+* Sequence timing
+* Enable/disable steps
+* Flow progression
+
+---
+
+## Templates
+
+Edit:
+
+* Subjects
+* Headings
+* Body content
+* Additional content
+
+---
+
+## Offers
+
+Manage:
+
+* Coupon behavior
+* Incentive timing
+* Discount rules
+
+---
+
+## Notifications
+
+Monitor email lifecycle
+
+---
+
+## Settings
+
+Configure:
+
+* Data retention
+* Logging
+* Test mode
+* Agent access
+* Cleanup behavior
+
+---
+
+# 13. AI Agent Access Layer
+
+Advanced automation system.
+
+Disabled by default.
+
+---
+
+## Agent REST API
+
+Protected endpoints for:
+
+* Session reading
+* Analytics
+* Settings
+* Campaign control
+* Token management
+
+---
+
+## Agent Permission Scopes
+
+Granular access levels:
+
+* Read
+* Write
+* Contact
+* Sensitive
+* Destructive
+* Token management
+* Access management
+
+---
+
+## Audit Logging
+
+Tracks:
+
+* Reads
+* Writes
+* Contact actions
+* Destructive actions
+
+---
+
+## Safe Automation Gates
+
+Separate controls for:
+
+* REST access
+* Abilities access
+* Public MCP exposure
+* Sensitive access
+* Destructive access
+
+---
+
+# 14. WordPress Abilities / MCP Integration
+
+Supports automation ecosystem integration.
+
+Capabilities include:
+
+* Session inspection
+* Analytics reading
+* Campaign updates
+* Session actions
+
+Useful for:
+
+* AI operational agents
+* Monitoring workflows
+* Controlled automations
+
+---
+
+# 15. Data Retention & Cleanup
+
+Automatic cleanup system.
+
+Features:
+
+* Configurable retention days
+* Session pruning
+* Expiration workflow
+
+---
+
+# 16. Security Features
+
+## Token Security
+
+* Hashed token storage
+* Secure restore URLs
+
+---
+
+## Rate Limiting
+
+Protects public capture endpoint.
+
+---
+
+## Capability Enforcement
+
+Admin-only protected operations.
+
+---
+
+## PII Protection
+
+Sensitive data masking by default.
+
+---
+
+# 17. Developer & Extension Features
+
+## REST API
+
+Available for:
+
+* Capture
+* Analytics
+* Licensing
+* Testing
+* Agent workflows
+
+---
+
+## Hook System
+
+Extensible through:
+
+* WordPress hooks
+* WooCommerce hooks
+* Filters
+* Action Scheduler jobs
+
+---
+
+## HPOS Compatibility
+
+Native WooCommerce High-Performance Order Storage support.
+
+---
+
+# 18. Operational Benefits
+
+CartBay provides:
+
+### Revenue Recovery
+
+Recover lost checkout revenue
+
+### Native WooCommerce Experience
+
+No external SaaS dependency
+
+### Operational Visibility
+
+Full lifecycle analytics
+
+### Controlled Automation
+
+Optional secure AI operations
+
+### Extensibility
+
+Developer-ready architecture
+
+---
+
+# Feature Summary
+
+CartBay combines:
+
+* Checkout capture
+* Abandonment intelligence
+* Automated recovery sequencing
+* Secure cart restoration
+* Coupon incentives
+* Delivery monitoring
+* Revenue analytics
+* AI automation
+* Security controls
+* WooCommerce-native extensibility
+
+It is effectively a **full abandoned-cart recovery platform built natively inside WooCommerce**. ([WP Anchor Bay][1])
+
+[1]: https://docs.wpanchorbay.com/cartbay/llms-full.txt "docs.wpanchorbay.com"

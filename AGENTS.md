@@ -1,0 +1,558 @@
+# AGENTS.md - UpsellBay
+
+Read this file completely before changing code, docs, tests, assets, metadata, or release files.
+
+UpsellBay is a premium WooCommerce-native AOV offer engine. It adds relevant product, cart, checkout, and thank-you offers to the merchant's existing WooCommerce buying journey. It must not replace checkout, become a funnel builder, become a recovery email product, or depend on CartBay.
+
+The definitive product specification is `.meta/PRDs/UpsellBay-PRD-v4.md`.
+
+---
+
+## Project Context
+
+### Product Purpose
+
+UpsellBay helps WooCommerce merchants increase average order value by rendering native, measurable offers at these moments:
+
+- Product page: product add-ons or frequently-bought-together offers.
+- Cart: cross-sells and threshold/helper offers.
+- Checkout: order bumps on classic checkout and Block Checkout.
+- Thank-you page: safe follow-on checkout offers after the primary order is complete.
+
+### Core Objectives
+
+- Preserve the merchant's existing WooCommerce checkout.
+- Support modern WooCommerce architecture: HPOS, Block Checkout, WooCommerce 10.8.x, and WordPress 7.0-ready admin styling.
+- Provide offer-level analytics: views, accepts, dismissals, attributed revenue, discounts, and AOV impact estimates.
+- Keep analytics aggregate and non-PII.
+- Make setup fast through a Woo-native first-run wizard and test mode.
+- Give agencies stable hooks, schemas, import/export, and compatibility docs.
+
+### Product Constraints
+
+- UpsellBay is independently installable and operable without CartBay.
+- No CartBay options, meta keys, tables, sessions, REST routes, scheduled jobs, recovery emails, or recovery state may be reused.
+- No abandoned cart recovery, recovery sequences, recovery email templates, unsubscribe flows, restore links, SMS, WhatsApp, popup lead capture, CRM automation, or funnel builder scope in v1.
+- No tokenized one-click post-purchase charge flow in v1. Thank-you offers start a separate follow-on checkout.
+- No checkout replacement and no unsupported private WooCommerce APIs.
+- No external SaaS dependency or external telemetry unless the PRD is revised and the behavior is documented.
+
+### Marketplace Requirements
+
+- Follow WordPress Coding Standards and WooCommerce extension best practices.
+- Use WooCommerce CRUD APIs for orders, order items, products, and coupons.
+- Declare HPOS compatibility only through the documented WooCommerce compatibility API.
+- Declare Cart/Checkout Blocks compatibility only after Block Checkout E2E tests pass.
+- Pass QIT managed tests before submission.
+- Use native WordPress/WooCommerce admin patterns.
+- Include uninstall/data-retention docs and preserve data by default.
+- Avoid unsupported claims in product, docs, or marketplace copy.
+
+---
+
+## Source Of Truth
+
+Use this priority order:
+
+1. `.meta/PRDs/UpsellBay-PRD-v4.md`
+2. `.meta/tasks/`
+3. `.meta/architecture/`
+4. Existing implementation
+5. `.meta/notes/folder-structure-plan.md`
+6. `.meta/notes/plugin-development-blueprint.md`
+
+If implementation needs to deviate from PRD v4, document the reason in `.meta/architecture/` before continuing and call it out in your handoff.
+
+## Task Execution Model
+
+Development follows the phase-based task list in `.meta/tasks/index.md`. Each phase file (`00`–`09`) contains granular sub-tasks (`UB-P*-*`). Work should be done **sequentially by phase** — complete all tasks in Phase 0 before moving to Phase 1, and so on. Within a phase, sub-tasks follow the numbered order unless explicit dependencies allow parallel execution.
+
+Each task file has a `<!-- STATUS: PENDING -->` comment at the top. Change this to `<!-- STATUS: IN_PROGRESS -->` when starting work on that phase, and `<!-- STATUS: COMPLETED -->` when all sub-tasks in the file meet their acceptance criteria. Update individual checkboxes in `.meta/tasks/index.md` as sub-tasks are completed.
+
+---
+
+## Architecture Constants
+
+Never guess these. Define runtime values once in `app/Core/Constants.php` and reuse them.
+
+| Identifier | Required value |
+| --- | --- |
+| PHP namespace root | `WPAnchorBay\UpsellBay\` |
+| PSR-4 source directory | `app/` |
+| Text domain | `upsellbay` |
+| Plugin slug | `upsellbay` |
+| Plugin entry file | `upsellbay.php` |
+| REST namespace | `upsellbay/v1` |
+| Option prefix | `upsellbay_` |
+| Offer/order attribution meta prefix | `_ub_` |
+| Hook prefix | `upsellbay_` |
+| Nonce prefix | `upsellbay_` |
+| CPT | `upsellbay_offer` |
+| Stats table suffix | `upsellbay_offer_stats_daily` |
+| Action Scheduler group | `upsellbay` |
+| Asset handle prefix | `upsellbay-` |
+| License product slug | `upsellbay` |
+
+Runtime code must not use `cartbay_`, `_cartbay_`, `cartbay-`, `WPAnchorBay\CartBay`, CartBay sessions, CartBay notification records, or CartBay recovery settings. Docs and coexistence notices may mention CartBay only to explain product separation.
+
+---
+
+## Planned Repository Layout
+
+```text
+upsellbay.php
+uninstall.php
+app/
+  Admin/
+    Offers/
+    Settings/
+    Tools/
+    Wizard/
+    Analytics/
+  Api/
+    Routes/
+  Core/
+    Constants.php
+    Container.php
+    Installer.php
+    Plugin.php
+    Settings.php
+    Updater.php
+  Data/
+    OfferRepository.php
+    StatsRepository.php
+    CartSession.php
+  Domain/
+    Analytics/
+    Attribution/
+    Cart/
+    Discounts/
+    Offers/
+    Rules/
+    Storefront/
+  Integrations/
+    WooCommerce/
+    Licensing/
+  Utils/
+assets/
+  admin/
+  frontend/
+src/
+  admin/
+  classic-checkout/
+  block-checkout/
+  storefront/
+templates/
+  storefront/
+  admin/
+languages/
+tests/
+docs/
+```
+
+Follow the final implemented layout once code exists. Do not create empty directories unless they are needed by the current task.
+
+---
+
+## Architecture Rules
+
+- Build PRD-first. Every feature must map to PRD v4 or a documented architecture decision.
+- Keep the entry file thin: environment checks, constants/autoload loading, lifecycle hook registration, and bootstrap startup only.
+- `Core\Plugin` owns initialization order and hook registration, not business logic.
+- Use a small service container. Do not introduce Laravel, Symfony, React admin app shells, or broad frameworks.
+- Keep hook callbacks thin and delegate to services.
+- Put storage access behind repositories.
+- Put HTTP validation in route classes and business behavior in services.
+- Put admin rendering in admin classes/templates and save/validation in services.
+- Put storefront markup in renderers/templates and eligibility in domain services.
+- Keep public hooks stable and documented once released.
+- Prefer native WordPress/WooCommerce APIs over custom infrastructure.
+- Add comments only where platform constraints or non-obvious tradeoffs need explanation.
+
+---
+
+## Data Rules
+
+- Offer configuration lives in private CPT `upsellbay_offer`.
+- Offer config meta uses `_ub_` keys from the PRD schema.
+- Plugin settings live in one option: `upsellbay_settings`.
+- Analytics live in `{$wpdb->prefix}upsellbay_offer_stats_daily`.
+- Analytics table must not store customer PII.
+- Order attribution must use WooCommerce order and order-item CRUD APIs only.
+- Do not query or write order postmeta, HPOS tables, or order item meta tables directly.
+- Do not create public coupon codes for checkout bumps.
+- Persistent Woo coupons are allowed only for the P1 next-order coupon feature and must use `WC_Coupon`.
+- Preserve data by default on uninstall. Delete only when the merchant explicitly enabled cleanup.
+
+---
+
+## PHP Standards
+
+### Always
+
+- Namespace every class under `WPAnchorBay\UpsellBay`.
+- Use PSR-4 autoloading from `app/`.
+- Use WordPress Coding Standards.
+- Use tabs for PHP indentation.
+- Use `PascalCase` for classes and `snake_case` for methods, variables, and array keys.
+- Add useful PHPDoc to classes, public methods, non-obvious protected/private methods, and non-obvious properties.
+- Include `@since 1.0.0` in PHPDoc for new runtime APIs.
+- Sanitize input immediately:
+  - Text: `sanitize_text_field()`
+  - Keys: `sanitize_key()`
+  - Integers: `absint()`
+  - Decimals: `wc_format_decimal()`
+  - Multiline: `sanitize_textarea_field()`
+  - HTML: `wp_kses_post()` with a deliberate allowlist
+  - Email: `sanitize_email()`
+- Escape output late:
+  - Text: `esc_html()`
+  - Attributes: `esc_attr()`
+  - URLs: `esc_url()`
+  - Allowed HTML: `wp_kses_post()` or a specific allowlist
+- Wrap user-facing PHP strings with the `upsellbay` text domain.
+- Prefer early returns over deeply nested conditionals.
+- Check `current_user_can( 'manage_woocommerce' )` for all admin actions.
+- Verify nonces for admin forms and admin REST/AJAX actions.
+- Return `WP_Error` for expected recoverable failures at service boundaries.
+
+### Never
+
+- Never echo unsanitized data.
+- Never trust client-sent price, discount, totals, or product state.
+- Never expose license keys to frontend HTML, JavaScript, REST responses, logs, analytics, or support exports.
+- Never log raw emails, tokens, full license keys, payment identifiers, or recovery state.
+- Never use `eval`, obfuscated code, or remote code loading.
+- Never put large workflows inside anonymous hook callbacks.
+- Never remove or rewrite stable functionality outside the task scope.
+
+---
+
+## WooCommerce Rules
+
+- Use WooCommerce CRUD for orders and order items: `wc_get_order()`, `$order->update_meta_data()`, `$item->add_meta_data()`, `$order->save()`.
+- Use `wc_get_product()` and WooCommerce product APIs for product checks.
+- Use Action Scheduler for background jobs, not WP-Cron.
+- Group all scheduled actions under `upsellbay`.
+- Make scheduled callbacks idempotent.
+- Declare HPOS compatibility before WooCommerce initialization through the documented API.
+- Classic checkout bump primary hook: `woocommerce_review_order_before_submit`.
+- Classic checkout support hooks may include `woocommerce_cart_calculate_fees`, `woocommerce_checkout_create_order_line_item`, and `woocommerce_checkout_order_processed`.
+- Block Checkout support must use documented Additional Checkout Fields, Blocks extension points, Slot/Fill, or Store API-compatible paths.
+- If Block Checkout cannot pass E2E tests through supported APIs, do not claim Block Checkout support.
+
+---
+
+## REST API Rules
+
+- REST namespace is `upsellbay/v1`.
+- Put routes under `app/Api/Routes/`.
+- One route class should own one clear route surface.
+- Every route must define `permission_callback`.
+- Admin routes require `manage_woocommerce` and nonce validation.
+- Public routes require strict input validation, session/nonce validation where applicable, and rate limiting before expensive work.
+- Public routes must never trust client-sent pricing or discount data.
+- Return structured errors with safe messages.
+- Rate-limit public write endpoints with transient or object-cache counters.
+
+Expected routes:
+
+- `GET /offer-preview`
+- `POST /bump-toggle`
+- `POST /cart-offer-add`
+- `POST /dismiss`
+- `GET /analytics/summary`
+- `POST /import`
+
+---
+
+## Admin UI Rules
+
+- Admin entry is WooCommerce -> UpsellBay.
+- No top-level WordPress admin menu.
+- Use `manage_woocommerce` for all management actions.
+- Use native WordPress/WooCommerce components:
+  - `WP_List_Table`
+  - `widefat`
+  - `wp-list-table`
+  - WooCommerce settings tables
+  - native notices
+  - `wc_help_tip()`
+  - Select2 product search
+  - WP color picker
+  - standard tab/subtab patterns
+- Keep the UI quiet, operational, and Woo-native.
+- Do not build a custom React admin shell.
+- Do not place cards inside cards or invent custom-heavy admin chrome.
+- Settings saves must use nonce checks and normalized option writes.
+- Admin copy must not describe CartBay recovery sessions, abandoned carts, recovery sequences, restore links, or recovery email templates as UpsellBay features.
+
+Admin surfaces for v1:
+
+- Offers
+- Add/Edit Offer
+- Analytics
+- Settings
+- Tools/Diagnostics
+- Help
+- First-run wizard
+
+Recovery sequences, recovery notifications, recovery email templates, and unsubscribe/restore flows are prohibited UpsellBay admin modules.
+
+---
+
+## Storefront UX Rules
+
+- Offers must look native to WooCommerce, not like injected ads.
+- Checkout bump must not obscure payment methods or the Place order button.
+- Offer price, discount, and added item must be clear.
+- Toggle/checkbox controls must work by keyboard and screen reader.
+- Mobile layouts must avoid horizontal scroll and layout shift.
+- Dismiss actions must be available but visually secondary.
+- Out-of-stock or invalid offers must not render.
+- Failed add/remove actions must show Woo notices and preserve cart/checkout state.
+- Frontend assets must load only on relevant placement pages.
+
+---
+
+## JavaScript, CSS, and Assets
+
+- Author JavaScript under `src/`.
+- Commit built runtime assets under `assets/`.
+- Use WordPress dependency extraction for WP/Woo packages.
+- Use `@wordpress/i18n` for JS strings with text domain `upsellbay`.
+- Scope admin assets to UpsellBay screens.
+- Scope storefront assets to the relevant placement context.
+- Do not ship sitewide frontend scripts or styles.
+- Keep CSS aligned with WooCommerce/WordPress admin and theme-friendly storefront defaults.
+
+---
+
+## Internationalization
+
+- Text domain: `upsellbay`.
+- Wrap every user-facing PHP string.
+- Use `@wordpress/i18n` in JavaScript.
+- Do not concatenate translatable strings.
+- Add translator comments for placeholders.
+- Regenerate the POT file after string changes.
+
+Run when strings change:
+
+```bash
+bun run i18n:make-pot
+```
+
+---
+
+## Security Requirements
+
+- Capabilities authorize actions; nonces confirm intent.
+- Sanitize all input and validate allowed values.
+- Escape all output by context.
+- Rate-limit public REST write endpoints.
+- Mask secrets and PII in logs, diagnostics, support exports, and screenshots.
+- Keep analytics aggregate and non-PII.
+- Store tokens only as hashes when tokens are needed.
+- Use WordPress HTTP API for external calls.
+- Fail open for live offers if license validation is temporarily unreachable.
+- Fail closed for discounts if pricing cannot be validated server-side.
+- Do not copy CartBay recovery tokens, session IDs, notification IDs, or customer recovery state into UpsellBay.
+
+---
+
+## Performance Requirements
+
+- Checkout overhead target: less than 150ms p95 added server time with 50 active offers and object cache disabled.
+- Rule evaluation target: less than 10ms p95 for 50 active offers using loaded cart context.
+- Analytics dashboard target: less than 500ms p95 on generated data representing 100,000 orders and 500 offers.
+- Use aggregate stats for dashboard reads. Do not scan live orders during normal dashboard load.
+- Avoid global cache-busting scripts.
+- Keep report queries bounded and indexed.
+
+---
+
+## AI Agent Workflow
+
+For every task:
+
+1. Read the relevant PRD v4 sections.
+2. Read the matching `.meta/tasks/` file.
+3. Read relevant `.meta/architecture/` notes.
+4. Inspect existing implementation before editing.
+5. Identify the smallest scoped change that satisfies the task.
+6. Preserve existing functionality and unrelated user changes.
+7. Implement only the scoped change.
+8. Add or update tests that match risk and blast radius.
+9. Update docs, architecture notes, and task status when behavior or structure changes.
+10. Run relevant validation commands.
+11. Re-read changed files from disk before claiming completion.
+12. Report what changed, what was validated, and any deviations or blockers.
+
+If you find a mismatch between task files and PRD v4, PRD v4 wins. Update the task/architecture docs or report the conflict before implementation continues.
+
+---
+
+## Prohibited Actions
+
+- Do not deviate from PRD v4 without documenting the reason.
+- Do not introduce unnecessary frameworks or custom app shells.
+- Do not rewrite stable architecture without a scoped task and justification.
+- Do not create dead code, unused directories, unused abstractions, or unused services.
+- Do not break backward compatibility without a documented migration.
+- Do not make undocumented structural changes.
+- Do not remove unrelated functionality while refactoring.
+- Do not share CartBay state, persistence, routes, jobs, or recovery behavior.
+- Do not create recovery sequences, recovery notifications, recovery templates, unsubscribe pages, restore links, or abandoned-cart automation.
+- Do not claim Block Checkout support before E2E tests pass.
+- Do not make direct browser-to-license-server calls.
+- Do not store full license keys anywhere except the intended protected option.
+
+---
+
+## Documentation Responsibilities
+
+Keep these synchronized:
+
+- `.meta/tasks/` for work planning and status.
+- `.meta/architecture/` for actual architecture and decisions.
+- `docs/` for merchant, developer, compatibility, and reviewer documentation.
+- Inline PHPDoc for public and non-obvious runtime APIs.
+- Changelog/release notes for user-facing changes.
+- Migration notes for schema, settings, option, table, and public hook changes.
+
+Update architecture docs when adding or changing:
+
+- Subsystems.
+- Services.
+- Storage entities.
+- REST routes.
+- Scheduler jobs.
+- Hooks/filters/actions.
+- Admin screens.
+- Storefront placement behavior.
+- Data retention or uninstall behavior.
+- Public schemas.
+
+---
+
+## Validation Before Submitting Work
+
+Run the relevant subset for your change:
+
+```bash
+composer phpcs
+composer phpstan
+composer test
+bun run build
+bun run i18n:make-pot
+composer plugin-check
+```
+
+For checkout, cart, product, thank-you, analytics, license, or compatibility work, also run the relevant E2E/manual tests from `.meta/tasks/07-quality-assurance.md`.
+
+Before saying work is complete:
+
+- Re-read changed files from disk.
+- Confirm expected content is present.
+- Check `git diff` for accidental unrelated edits.
+- Confirm no runtime CartBay coupling was introduced.
+- State which validations passed and which could not be run.
+
+---
+
+## Git Branch Strategy: Orphan Overlay
+
+This repository uses an **orphan overlay** strategy to keep application code and project metadata (config, docs, agent guides) in separate Git histories.
+
+### Branch Structure
+
+| Branch | Contents | Description |
+| --- | --- | --- |
+| `main` | Application code only — `.gitignore`, `bin/`, plugin entry file, `app/`, `assets/`, `src/`, `templates/`, `languages/`, `tests/`, `docs/`, `composer.json`, `package.json`, etc. | Clean app history. No dot-prefixed directories or agent metadata. |
+| `config-assets` | (Orphan) All dot-prefixed directories and metadata files: `.agents/`, `.codex/`, `.gemini/`, `.github/`, `.history/`, `.kilo/`, `.letta/`, `.opencode/`, `.playwright/`, `.meta/`, `.graphifyignore`, `graphify-out/`, `AGENTS.md`, `GEMINI.md`, `.antigravitycli` | Shared project configuration and tool documentation. No application code. |
+
+`config-assets` is an **orphan branch** — it shares no commit history with `main`. This prevents metadata noise from polluting the application commit log.
+
+### How It Works
+
+1. `main`'s `.gitignore` **ignores every dot-prefixed directory** and metadata file (`AGENTS.md`, `GEMINI.md`, `graphify-out/`, etc.).
+2. The `config-assets` branch **tracks** those ignored files.
+3. When `main` is checked out, the `config-assets` files remain on disk (because Git ignores them for `main`) as untracked files, usable by IDEs, editors, and AI tools.
+4. The `bin/sync-dots.sh` script restores the latest overlay files from `config-assets` into the working tree.
+
+### Workflow
+
+#### Updating metadata (config-assets changes)
+
+```bash
+git checkout config-assets
+# make changes to .meta/, AGENTS.md, .agents/, etc.
+git add .meta/ AGENTS.md     # add specific changed files
+git commit -m "docs: update PRD references"
+git checkout main
+./bin/sync-dots.sh           # sync changes to working tree
+```
+
+#### Normal development (main changes)
+
+```bash
+git checkout main
+# make changes to plugin code
+git add app/ assets/ src/
+git commit -m "feat: add product page offer render"
+```
+
+Never stage metadata files from `main` — the `.gitignore` prevents accidental inclusion.
+
+### Creating the Branches
+
+This setup is initialized once:
+
+```bash
+# main already exists; create config-assets as orphan
+git checkout --orphan config-assets
+git add -f .agents/ .meta/ AGENTS.md GEMINI.md graphify-out/ # and all other dot-dirs
+git commit -m "Initial config-assets: project metadata and agent guides"
+git checkout main
+git restore --source config-assets --worktree -- .agents/ .meta/ AGENTS.md GEMINI.md graphify-out/
+git reset HEAD -- .agents/ .meta/ AGENTS.md GEMINI.md graphify-out/
+```
+
+The `bin/sync-dots.sh` script automates the restore-reset cycle.
+
+### Feature Branches
+
+Feature branches (`feature/*`) branch off `main` and contain only application code. To bring metadata into a feature branch:
+
+```bash
+git checkout -b feature/my-feature main
+./bin/sync-dots.sh
+```
+
+This overlays the latest metadata from `config-assets` into the working tree without tracking it in the feature branch.
+
+### Important Rules
+
+- **Never** `git add` dot-prefixed directories or `AGENTS.md` / `GEMINI.md` while on `main` or a `feature/*` branch. The `.gitignore` prevents this, but `git add -f` would bypass it.
+- **Always** use `bin/sync-dots.sh` after switching branches to restore overlay files.
+- **Always** switch to `config-assets` to commit metadata changes.
+- If a collaborator pushes metadata changes to `config-assets`, run `./bin/sync-dots.sh` to pick them up.
+
+### Why Orphan Overlay
+
+- **Clean `main` history** — no commits like "update agent guides" mixed with "fix cart calculation bug."
+- **Independent versioning** — metadata can evolve on its own cadence.
+- **Accidental-inclusion protection** — `.gitignore` provides a safety net.
+- **Works everywhere** — GitHub, GitLab, local development, CI/CD runners. The overlay is purely local.
+
+### Automation
+
+`bin/sync-dots.sh`:
+- Checks out the latest files from `config-assets`.
+- Resets the Git index to keep them untracked on the current branch.
+- Auto-stashes and restores any uncommitted work.
+- Safe to run at any time.
+
+## Final Notes
+* You can update this AGENTS.md file if needed.
