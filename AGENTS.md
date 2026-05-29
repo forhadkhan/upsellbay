@@ -539,6 +539,17 @@ This overlays the latest metadata from `config-assets` into the working tree wit
 - **Always** switch to `config-assets` to commit metadata changes.
 - If a collaborator pushes metadata changes to `config-assets`, run `./scripts/sync-dots.sh` to pick them up.
 
+### Workflow Rules
+
+- **Commit all changes before switching branches** — staged or unstaged work can conflict with the overlay. Use `git status` to confirm clean before `git checkout`.
+- **Use conventional commit messages with lowercase** — prefix commits with one of: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`, `style:`, `perf:`. Write the message in lowercase after the colon (e.g. `feat: add product page offer render`, not `feat: Add product page`).
+- **Push periodically** — push both branches after meaningful work:
+  ```bash
+  git push origin main && git push origin config-assets
+  ```
+  This keeps the remote in sync and the overlay available to collaborators.
+- **Maintain branch separation** — never mix app code and metadata in one commit. App changes go on `main` (feature branches); config, docs, agent guides go on `config-assets`. If a change touches both (e.g. a new feature needs new metadata), commit the app change on `main` and the metadata change on `config-assets` in two separate commits.
+
 ### Why Orphan Overlay
 
 - **Clean `main` history** — no commits like "update agent guides" mixed with "fix cart calculation bug."
