@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # sync-dots.sh — Orphan overlay sync utility
 #
-# Checks out the latest files from config-assets into the working tree
-# without tracking them in the current branch index. Also installs a
-# git post-checkout hook so this runs automatically on branch switch.
+# Checks out every file tracked by config-assets into the working tree without
+# tracking them in the current branch index. Also installs a git post-checkout
+# hook so this runs automatically on branch switch.
 #
 # Usage: ./scripts/sync-dots.sh
 
@@ -20,6 +20,13 @@ err()  { echo -e "${RED}[sync-dots] ERROR:${NC} $*"; }
 
 CONFIG_BRANCH="config-assets"
 ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo ".")
+
+# Git restore can invoke post-checkout internally; avoid recursive hook runs.
+if [[ "${UPSELLBAY_SYNC_DOTS_RUNNING:-}" = "1" ]]; then
+	exit 0
+fi
+
+export UPSELLBAY_SYNC_DOTS_RUNNING=1
 
 # ── Install post-checkout hook ──────────────────────────────────────
 install_hook() {
@@ -56,34 +63,46 @@ if ! git show-ref --verify --quiet "refs/heads/${CONFIG_BRANCH}"; then
 	exit 1
 fi
 
-STASH_NEEDED=false
-if ! git diff --quiet --ignore-submodules HEAD 2>/dev/null; then
-	log "Uncommitted changes detected — stashing..."
-	git stash push --include-untracked --message "sync-dots auto-stash $(date +%Y%m%d%H%M%S)"
-	STASH_NEEDED=true
+PATHSPEC_FILE="$(mktemp)"
+TRACKED_FILE="$(mktemp)"
+COLLISION_FILE="$(mktemp)"
+cleanup() {
+	rm -f "$PATHSPEC_FILE"
+	rm -f "$TRACKED_FILE"
+	rm -f "$COLLISION_FILE"
+}
+trap cleanup EXIT
+
+git ls-tree -r --name-only "${CONFIG_BRANCH}" > "$PATHSPEC_FILE"
+
+if [[ ! -s "$PATHSPEC_FILE" ]]; then
+	err "Branch '${CONFIG_BRANCH}' does not track any files."
+	exit 1
 fi
 
-OVERLAY_PATHS=(
-	.githooks .agents .codex .gemini .github .history .kilo .letta
-	.playwright .meta .graphifyignore graphify-out
-	AGENTS.md GEMINI.md .antigravitycli
-)
+git ls-files > "$TRACKED_FILE"
+comm -12 <(sort "$PATHSPEC_FILE") <(sort "$TRACKED_FILE") > "$COLLISION_FILE"
 
-log "Restoring overlay files from ${CONFIG_BRANCH}..."
-git restore --source "${CONFIG_BRANCH}" --worktree -- "${OVERLAY_PATHS[@]}" 2>/dev/null || true
+if [[ -s "$COLLISION_FILE" ]]; then
+	err "Overlay paths are tracked on '${CURRENT_BRANCH}', refusing to overwrite:"
+	sed 's/^/  - /' "$COLLISION_FILE" >&2
+	exit 1
+fi
 
-git reset HEAD -- "${OVERLAY_PATHS[@]}" 2>/dev/null || true
+log "Restoring all files tracked by ${CONFIG_BRANCH}..."
+git restore \
+	--source "${CONFIG_BRANCH}" \
+	--worktree \
+	--pathspec-from-file="$PATHSPEC_FILE"
+
+git restore \
+	--staged \
+	--pathspec-from-file="$PATHSPEC_FILE" \
+	2>/dev/null || true
 
 ok "Overlay files restored and untracked in the current branch."
 
 # Install the hook now that .githooks/ is available
 install_hook
-
-if [[ "$STASH_NEEDED" = true ]]; then
-	if git stash list | grep -q "sync-dots auto-stash"; then
-		log "Restoring stashed changes..."
-		git stash pop 2>/dev/null || true
-	fi
-fi
 
 ok "Done."
