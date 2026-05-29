@@ -21,17 +21,17 @@ If you need to change a GitHub Action or update documentation in `.meta/`:
 1.  Switch to the asset branch: `git checkout config-assets`
 2.  Make changes, stage, and commit: `git add .github/ && git commit -m "update workflow"`
 3.  Switch back: `git checkout main`
-4.  Sync your local disk: `./bin/sync-dots.sh`
+4.  Sync your local disk: `./scripts/sync-dots.sh`
 
 ### Synchronizing a New Branch
 When creating a new feature branch or pulling updates:
 ```bash
-./bin/sync-dots.sh
+./scripts/sync-dots.sh
 ```
 
 ## Automation
 
-The `bin/sync-dots.sh` utility automates the overlay process:
+The `scripts/sync-dots.sh` utility automates the overlay process:
 -   Checks out the latest files from `config-assets`.
 -   Resets the Git index to keep them untracked in the current branch.
 -   Restores the local `.gitignore` to maintain environment-specific ignores.

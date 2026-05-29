@@ -469,7 +469,7 @@ This repository uses an **orphan overlay** strategy to keep application code and
 
 | Branch | Contents | Description |
 | --- | --- | --- |
-| `main` | Application code only — `.gitignore`, `bin/`, plugin entry file, `app/`, `assets/`, `src/`, `templates/`, `languages/`, `tests/`, `docs/`, `composer.json`, `package.json`, etc. | Clean app history. No dot-prefixed directories or agent metadata. |
+| `main` | Application code only — `.gitignore`, `scripts/`, plugin entry file, `app/`, `assets/`, `src/`, `templates/`, `languages/`, `tests/`, `docs/`, `composer.json`, `package.json`, etc. | Clean app history. No dot-prefixed directories or agent metadata. |
 | `config-assets` | (Orphan) All dot-prefixed directories and metadata files: `.agents/`, `.codex/`, `.gemini/`, `.github/`, `.history/`, `.kilo/`, `.letta/`, `.opencode/`, `.playwright/`, `.meta/`, `.graphifyignore`, `graphify-out/`, `AGENTS.md`, `GEMINI.md`, `.antigravitycli` | Shared project configuration and tool documentation. No application code. |
 
 `config-assets` is an **orphan branch** — it shares no commit history with `main`. This prevents metadata noise from polluting the application commit log.
@@ -479,7 +479,7 @@ This repository uses an **orphan overlay** strategy to keep application code and
 1. `main`'s `.gitignore` **ignores every dot-prefixed directory** and metadata file (`AGENTS.md`, `GEMINI.md`, `graphify-out/`, etc.).
 2. The `config-assets` branch **tracks** those ignored files.
 3. When `main` is checked out, the `config-assets` files remain on disk (because Git ignores them for `main`) as untracked files, usable by IDEs, editors, and AI tools.
-4. The `bin/sync-dots.sh` script restores the latest overlay files from `config-assets` into the working tree.
+4. The `scripts/sync-dots.sh` script restores the latest overlay files from `config-assets` into the working tree.
 
 ### Workflow
 
@@ -491,7 +491,7 @@ git checkout config-assets
 git add .meta/ AGENTS.md     # add specific changed files
 git commit -m "docs: update PRD references"
 git checkout main
-./bin/sync-dots.sh           # sync changes to working tree
+./scripts/sync-dots.sh           # sync changes to working tree
 ```
 
 #### Normal development (main changes)
@@ -519,7 +519,7 @@ git restore --source config-assets --worktree -- .agents/ .meta/ AGENTS.md GEMIN
 git reset HEAD -- .agents/ .meta/ AGENTS.md GEMINI.md graphify-out/
 ```
 
-The `bin/sync-dots.sh` script automates the restore-reset cycle.
+The `scripts/sync-dots.sh` script automates the restore-reset cycle.
 
 ### Feature Branches
 
@@ -527,7 +527,7 @@ Feature branches (`feature/*`) branch off `main` and contain only application co
 
 ```bash
 git checkout -b feature/my-feature main
-./bin/sync-dots.sh
+./scripts/sync-dots.sh
 ```
 
 This overlays the latest metadata from `config-assets` into the working tree without tracking it in the feature branch.
@@ -535,9 +535,9 @@ This overlays the latest metadata from `config-assets` into the working tree wit
 ### Important Rules
 
 - **Never** `git add` dot-prefixed directories or `AGENTS.md` / `GEMINI.md` while on `main` or a `feature/*` branch. The `.gitignore` prevents this, but `git add -f` would bypass it.
-- **Always** use `bin/sync-dots.sh` after switching branches to restore overlay files.
+- **Always** use `scripts/sync-dots.sh` after switching branches to restore overlay files.
 - **Always** switch to `config-assets` to commit metadata changes.
-- If a collaborator pushes metadata changes to `config-assets`, run `./bin/sync-dots.sh` to pick them up.
+- If a collaborator pushes metadata changes to `config-assets`, run `./scripts/sync-dots.sh` to pick them up.
 
 ### Why Orphan Overlay
 
@@ -548,7 +548,7 @@ This overlays the latest metadata from `config-assets` into the working tree wit
 
 ### Automation
 
-`bin/sync-dots.sh`:
+`scripts/sync-dots.sh`:
 - Checks out the latest files from `config-assets`.
 - Resets the Git index to keep them untracked on the current branch.
 - Auto-stashes and restores any uncommitted work.
