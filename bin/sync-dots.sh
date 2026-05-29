@@ -42,37 +42,16 @@ if ! git diff --quiet --ignore-submodules HEAD 2>/dev/null; then
 fi
 
 log "Restoring overlay files from ${CONFIG_BRANCH}..."
-git restore --source "${CONFIG_BRANCH}" --worktree -- \
-	.agents/ \
-	.codex/ \
-	.gemini/ \
-	.github/ \
-	.history/ \
-	.kilo/ \
-	.letta/ \
-	.playwright/ \
-	.meta/ \
-	.graphifyignore \
-	graphify-out/ \
-	AGENTS.md \
-	GEMINI.md \
-	.antigravitycli 2>/dev/null || true
+OVERLAY_PATHS=(
+	.agents .codex .gemini .github .history .kilo .letta
+	.playwright .meta .graphifyignore graphify-out
+	AGENTS.md GEMINI.md .antigravitycli
+)
 
-git reset HEAD -- \
-	.agents/ \
-	.codex/ \
-	.gemini/ \
-	.github/ \
-	.history/ \
-	.kilo/ \
-	.letta/ \
-	.playwright/ \
-	.meta/ \
-	.graphifyignore \
-	graphify-out/ \
-	AGENTS.md \
-	GEMINI.md \
-	.antigravitycli 2>/dev/null || true
+log "Restoring overlay files from ${CONFIG_BRANCH}..."
+git restore --source "${CONFIG_BRANCH}" --worktree -- "${OVERLAY_PATHS[@]}" 2>/dev/null || true
+
+git reset HEAD -- "${OVERLAY_PATHS[@]}" 2>/dev/null || true
 
 ok "Overlay files restored and untracked in the current branch."
 
