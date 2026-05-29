@@ -7,7 +7,7 @@ Full task details in each phase file. Update status by changing the `<!-- STATUS
 
 ---
 
-## Phase 0 — Project Foundation
+## [Phase 0 — Project Foundation](00-project-foundation.md)
 Goal: prove the product, architecture, and technical constraints from PRD v4 before implementation starts.
 
 - [x] UB-P0-001 — Repository and PRD Baseline Audit
@@ -20,7 +20,7 @@ Goal: prove the product, architecture, and technical constraints from PRD v4 bef
 - [x] UB-P0-008 — Competitor and Conflict Plugin Matrix
 - [x] UB-P0-009 — Documentation and Decision Logging Standards
 
-## Phase 1 — Core Plugin Bootstrap
+## [Phase 1 — Core Plugin Bootstrap](01-plugin-bootstrap.md)
 Goal: build the minimal, stable plugin foundation that every later subsystem can depend on.
 
 - [ ] UB-P1-001 — Main Plugin Entrypoint
@@ -38,7 +38,7 @@ Goal: build the minimal, stable plugin foundation that every later subsystem can
 - [ ] UB-P1-013 — Asset Build Foundation
 - [ ] UB-P1-014 — Base Utilities
 
-## Phase 2 — Data Architecture
+## [Phase 2 — Data Architecture](02-data-architecture.md)
 Goal: implement durable, HPOS-safe, non-PII storage for offers, attribution, settings, analytics, sessions, import/export, and cleanup.
 
 - [ ] UB-P2-001 — Offer CPT Registration
@@ -54,7 +54,7 @@ Goal: implement durable, HPOS-safe, non-PII storage for offers, attribution, set
 - [ ] UB-P2-011 — Analytics Reconciliation Data Flow
 - [ ] UB-P2-012 — Data Architecture Tests
 
-## Phase 3 — Admin Architecture
+## [Phase 3 — Admin Architecture](03-admin-architecture.md)
 Goal: build a WooCommerce-native admin experience under WooCommerce -> UpsellBay without a custom app shell or CartBay recovery features.
 
 - [ ] UB-P3-001 — Admin Menu and Page Routing
@@ -71,7 +71,7 @@ Goal: build a WooCommerce-native admin experience under WooCommerce -> UpsellBay
 - [ ] UB-P3-012 — Admin Asset Scoping
 - [ ] UB-P3-013 — Recovery Module Exclusion Guard
 
-## Phase 4 — Core Business Logic
+## [Phase 4 — Core Business Logic](04-core-business-logic.md)
 Goal: implement the offer engine that evaluates rules, renders eligible placements, mutates carts safely, applies discounts, writes attribution, records analytics, and keeps checkout stable.
 
 - [ ] UB-P4-001 — Offer Service
@@ -93,7 +93,7 @@ Goal: implement the offer engine that evaluates rules, renders eligible placemen
 - [ ] UB-P4-017 — Conflict Scanner
 - [ ] UB-P4-018 — Core Business Logic Tests
 
-## Phase 5 — Merchant Experience
+## [Phase 5 — Merchant Experience](05-merchant-experience.md)
 Goal: help merchants create, preview, trust, and improve offers without needing custom checkout knowledge.
 
 - [ ] UB-P5-001 — First-Run Wizard Controller
@@ -106,7 +106,7 @@ Goal: help merchants create, preview, trust, and improve offers without needing 
 - [ ] UB-P5-008 — Accessibility and Mobile UX Pass
 - [ ] UB-P5-009 — Merchant Copy Boundary Review
 
-## Phase 6 — Developer Extensibility
+## [Phase 6 — Developer Extensibility](06-developer-extensibility.md)
 Goal: expose stable, documented customization points without turning internal implementation details into accidental public contracts.
 
 - [ ] UB-P6-001 — Public Hook Contract
@@ -118,7 +118,7 @@ Goal: expose stable, documented customization points without turning internal im
 - [ ] UB-P6-007 — WP-CLI Utility Plan
 - [ ] UB-P6-008 — Developer Extensibility Tests
 
-## Phase 7 — Quality Assurance
+## [Phase 7 — Quality Assurance](07-quality-assurance.md)
 Goal: prove UpsellBay is secure, stable, performant, Woo-native, HPOS-safe, Block Checkout-safe, and marketplace-ready before release.
 
 - [ ] UB-P7-001 — PHPUnit and Test Harness
@@ -135,7 +135,7 @@ Goal: prove UpsellBay is secure, stable, performant, Woo-native, HPOS-safe, Bloc
 - [ ] UB-P7-012 — Product Isolation Scan
 - [ ] UB-P7-013 — Marketplace Compliance Review
 
-## Phase 8 — Documentation
+## [Phase 8 — Documentation](08-documentation.md)
 Goal: ship complete merchant, developer, architecture, QA, migration, and marketplace documentation that matches the implemented product.
 
 - [ ] UB-P8-001 — Merchant Setup Guide
@@ -151,7 +151,7 @@ Goal: ship complete merchant, developer, architecture, QA, migration, and market
 - [ ] UB-P8-011 — Upgrade and Migration Notes
 - [ ] UB-P8-012 — Changelog and Release Notes Draft
 
-## Phase 9 — Release Preparation
+## [Phase 9 — Release Preparation](09-release-preparation.md)
 Goal: package, audit, submit, and launch UpsellBay v1 with evidence for every PRD launch gate.
 
 - [ ] UB-P9-001 — Versioning and Release Branch
