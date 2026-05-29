@@ -2,9 +2,10 @@
 # sync-dots.sh — Orphan overlay sync utility
 #
 # Checks out the latest files from config-assets into the working tree
-# without tracking them in the current branch index.
+# without tracking them in the current branch index. Also installs a
+# git post-checkout hook so this runs automatically on branch switch.
 #
-# Usage: ./bin/sync-dots.sh
+# Usage: ./scripts/sync-dots.sh
 
 set -euo pipefail
 
@@ -18,6 +19,27 @@ ok()   { echo -e "${GREEN}[sync-dots]${NC} $*"; }
 err()  { echo -e "${RED}[sync-dots] ERROR:${NC} $*"; }
 
 CONFIG_BRANCH="config-assets"
+ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo ".")
+
+# ── Install post-checkout hook ──────────────────────────────────────
+install_hook() {
+	local hook_dst="${ROOT}/.git/hooks/post-checkout"
+	local hook_src="${ROOT}/.githooks/post-checkout"
+
+	if [[ -f "$hook_dst" ]]; then
+		return 0  # already installed
+	fi
+
+	if [[ ! -f "$hook_src" ]]; then
+		return 0  # source not available yet (first run before overlay)
+	fi
+
+	mkdir -p "${ROOT}/.git/hooks"
+	cp "$hook_src" "$hook_dst"
+	chmod +x "$hook_dst"
+	ok "Installed post-checkout hook → auto-syncs overlay on branch switch."
+}
+
 CURRENT_BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null || true)
 
 if [[ -z "$CURRENT_BRANCH" ]]; then
@@ -41,9 +63,8 @@ if ! git diff --quiet --ignore-submodules HEAD 2>/dev/null; then
 	STASH_NEEDED=true
 fi
 
-log "Restoring overlay files from ${CONFIG_BRANCH}..."
 OVERLAY_PATHS=(
-	.agents .codex .gemini .github .history .kilo .letta
+	.githooks .agents .codex .gemini .github .history .kilo .letta
 	.playwright .meta .graphifyignore graphify-out
 	AGENTS.md GEMINI.md .antigravitycli
 )
@@ -54,6 +75,9 @@ git restore --source "${CONFIG_BRANCH}" --worktree -- "${OVERLAY_PATHS[@]}" 2>/d
 git reset HEAD -- "${OVERLAY_PATHS[@]}" 2>/dev/null || true
 
 ok "Overlay files restored and untracked in the current branch."
+
+# Install the hook now that .githooks/ is available
+install_hook
 
 if [[ "$STASH_NEEDED" = true ]]; then
 	if git stash list | grep -q "sync-dots auto-stash"; then
