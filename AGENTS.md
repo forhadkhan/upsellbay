@@ -416,6 +416,7 @@ Keep these synchronized:
 
 - `.meta/tasks/` for work planning and status.
 - `.meta/architecture/` for actual architecture and decisions.
+- `.meta/architecture/documentation-standards.md` for documentation and decision logging rules.
 - `docs/` for merchant, developer, compatibility, and reviewer documentation.
 - Inline PHPDoc for public and non-obvious runtime APIs.
 - Changelog/release notes for user-facing changes.

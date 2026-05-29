@@ -1,4 +1,4 @@
-<!-- STATUS: PENDING -->
+<!-- STATUS: COMPLETED -->
 
 # Phase 0 - Project Foundation
 
@@ -102,4 +102,3 @@ Goal: prove the product, architecture, and technical constraints from PRD v4 bef
 - Validation and testing requirements: Re-read `AGENTS.md` after creation to ensure it enforces these standards.
 - Estimated complexity: Low.
 - Suggested execution order: 9.
-

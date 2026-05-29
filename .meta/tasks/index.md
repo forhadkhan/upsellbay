@@ -1,4 +1,4 @@
-<!-- STATUS: PENDING -->
+<!-- STATUS: IN_PROGRESS -->
 
 # UpsellBay Tasks Index
 
@@ -10,15 +10,15 @@ Full task details in each phase file. Update status by changing the `<!-- STATUS
 ## Phase 0 — Project Foundation
 Goal: prove the product, architecture, and technical constraints from PRD v4 before implementation starts.
 
-- [ ] UB-P0-001 — Repository and PRD Baseline Audit
-- [ ] UB-P0-002 — Identifier Contract and Product Isolation ADR
-- [ ] UB-P0-003 — Block Checkout Proof Plan
-- [ ] UB-P0-004 — HPOS and CRUD Compliance Proof Plan
-- [ ] UB-P0-005 — Dependency and Tooling Plan
-- [ ] UB-P0-006 — Folder Structure Acceptance Plan
-- [ ] UB-P0-007 — Launch Gate and Risk Register
-- [ ] UB-P0-008 — Competitor and Conflict Plugin Matrix
-- [ ] UB-P0-009 — Documentation and Decision Logging Standards
+- [x] UB-P0-001 — Repository and PRD Baseline Audit
+- [x] UB-P0-002 — Identifier Contract and Product Isolation ADR
+- [x] UB-P0-003 — Block Checkout Proof Plan
+- [x] UB-P0-004 — HPOS and CRUD Compliance Proof Plan
+- [x] UB-P0-005 — Dependency and Tooling Plan
+- [x] UB-P0-006 — Folder Structure Acceptance Plan
+- [x] UB-P0-007 — Launch Gate and Risk Register
+- [x] UB-P0-008 — Competitor and Conflict Plugin Matrix
+- [x] UB-P0-009 — Documentation and Decision Logging Standards
 
 ## Phase 1 — Core Plugin Bootstrap
 Goal: build the minimal, stable plugin foundation that every later subsystem can depend on.
@@ -169,7 +169,7 @@ Goal: package, audit, submit, and launch UpsellBay v1 with evidence for every PR
 
 | Phase | Tasks | Status |
 |-------|-------|--------|
-| 0 — Project Foundation | 9 | PENDING |
+| 0 — Project Foundation | 9 | COMPLETED |
 | 1 — Core Plugin Bootstrap | 14 | PENDING |
 | 2 — Data Architecture | 12 | PENDING |
 | 3 — Admin Architecture | 13 | PENDING |
