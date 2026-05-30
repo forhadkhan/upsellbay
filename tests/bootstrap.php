@@ -109,7 +109,6 @@ foreach (
 		'app/Admin/Settings/StyleSection.php',
 		'app/Admin/Settings/DataSection.php',
 		'app/Admin/Settings/SettingsPage.php',
-		'app/Admin/Analytics/AnalyticsPage.php',
 		'app/Admin/Tools/ToolsPage.php',
 		'app/Admin/Help/HelpPage.php',
 		'app/Domain/Offers/OfferDefaults.php',

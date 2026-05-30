@@ -64,7 +64,7 @@ final class AdminAssets {
 			);
 		}
 
-		if ( 'analytics' === $tab ) {
+		if ( '' === $tab || 'dashboard' === $tab ) {
 			$assets['upsellbay-analytics'] = array(
 				'type' => 'script',
 				'js'   => 'assets/admin/js/upsellbay-analytics.js',

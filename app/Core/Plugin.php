@@ -13,7 +13,6 @@ use WPAnchorBay\UpsellBay\Admin\AdminAssets;
 use WPAnchorBay\UpsellBay\Admin\AdminBar;
 use WPAnchorBay\UpsellBay\Admin\AdminPage;
 use WPAnchorBay\UpsellBay\Admin\AdminPageRegistrar;
-use WPAnchorBay\UpsellBay\Admin\Analytics\AnalyticsPage;
 use WPAnchorBay\UpsellBay\Admin\CompatibilityNotice;
 use WPAnchorBay\UpsellBay\Admin\Coexistence;
 use WPAnchorBay\UpsellBay\Admin\Dashboard\DashboardPage;
@@ -229,18 +228,16 @@ final class Plugin {
 		$this->container->set( PreviewLinks::class, static fn (): PreviewLinks => new PreviewLinks() );
 		$this->container->set( ProductRecommendationAssistant::class, static fn (): ProductRecommendationAssistant => new ProductRecommendationAssistant() );
 		$this->container->set( SettingsPage::class, static fn ( Container $container ): SettingsPage => new SettingsPage( $container->get( Settings::class ) ) );
-		$this->container->set( AnalyticsPage::class, static fn ( Container $container ): AnalyticsPage => new AnalyticsPage( $container->get( StatsRepository::class ) ) );
 		$this->container->set( ToolsPage::class, static fn ( Container $container ): ToolsPage => new ToolsPage( $container->get( ImportExporter::class ), $container->get( Settings::class ) ) );
 		$this->container->set( HelpPage::class, static fn (): HelpPage => new HelpPage() );
 		$this->container->set( OverviewSummary::class, static fn ( Container $container ): OverviewSummary => new OverviewSummary( $container->get( OfferRepository::class ), $container->get( StatsRepository::class ), $container->get( Settings::class ) ) );
-		$this->container->set( DashboardPage::class, static fn ( Container $container ): DashboardPage => new DashboardPage( $container->get( OverviewSummary::class ) ) );
+		$this->container->set( DashboardPage::class, static fn ( Container $container ): DashboardPage => new DashboardPage( $container->get( OverviewSummary::class ), $container->get( StatsRepository::class ) ) );
 		$this->container->set(
 			TabFactory::class,
 			static fn ( Container $container ): TabFactory => new TabFactory(
 				$container->get( DashboardPage::class ),
 				$container->get( OffersPage::class ),
 				$container->get( OfferEditPage::class ),
-				$container->get( AnalyticsPage::class ),
 				$container->get( SettingsPage::class ),
 				$container->get( ToolsPage::class ),
 				$container->get( WizardController::class ),

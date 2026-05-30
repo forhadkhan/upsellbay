@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-05-30T12:23:22+00:00\n"
+"POT-Creation-Date: 2026-05-30T12:42:00+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: upsellbay\n"
@@ -47,115 +47,97 @@ msgstr ""
 msgid "UpsellBay test mode"
 msgstr ""
 
-#: app/Admin/Analytics/AnalyticsPage.php:67
-msgid "No offer activity yet"
-msgstr ""
-
-#: app/Admin/Analytics/AnalyticsPage.php:68
-msgid "Create your first offer and use test mode preview before shoppers see it."
-msgstr ""
-
-#: app/Admin/Analytics/AnalyticsPage.php:71
-#: app/Admin/Offers/OffersPage.php:63
-msgid "Create offer"
-msgstr ""
-
-#: app/Admin/Analytics/AnalyticsPage.php:75
-msgid "Review test mode"
-msgstr ""
-
-#: app/Admin/Analytics/AnalyticsPage.php:102
-#: app/Admin/Navigation/TabFactory.php:154
-msgid "Analytics"
-msgstr ""
-
-#: app/Admin/Analytics/AnalyticsPage.php:104
-#: app/Admin/Offers/OffersPage.php:115
-msgid "Views"
-msgstr ""
-
-#: app/Admin/Analytics/AnalyticsPage.php:105
-#: app/Admin/Offers/OffersPage.php:116
-msgid "Accepts"
-msgstr ""
-
-#: app/Admin/Analytics/AnalyticsPage.php:106
-msgid "Accept rate"
-msgstr ""
-
-#: app/Admin/Analytics/AnalyticsPage.php:107
-msgid "Attributed revenue"
-msgstr ""
-
-#: app/Admin/Analytics/AnalyticsPage.php:112
-msgid "Dismissals"
-msgstr ""
-
-#: app/Admin/Analytics/AnalyticsPage.php:113
-msgid "Orders"
-msgstr ""
-
-#: app/Admin/Analytics/AnalyticsPage.php:114
-msgid "Discount total"
-msgstr ""
-
-#: app/Admin/Analytics/AnalyticsPage.php:115
-msgid "Revenue per attributed order"
-msgstr ""
-
 #: app/Admin/CompatibilityNotice.php:66
 msgid "Compatibility guide"
 msgstr ""
 
-#: app/Admin/Dashboard/DashboardPage.php:48
-#: app/Admin/Navigation/TabFactory.php:134
+#: app/Admin/Dashboard/DashboardPage.php:60
+#: app/Admin/Navigation/TabFactory.php:122
 msgid "Dashboard / Overview"
 msgstr ""
 
-#: app/Admin/Dashboard/DashboardPage.php:50
+#: app/Admin/Dashboard/DashboardPage.php:62
 msgid "Offers enabled"
 msgstr ""
 
-#: app/Admin/Dashboard/DashboardPage.php:50
+#: app/Admin/Dashboard/DashboardPage.php:62
 msgid "Yes"
 msgstr ""
 
-#: app/Admin/Dashboard/DashboardPage.php:50
+#: app/Admin/Dashboard/DashboardPage.php:62
 msgid "No"
 msgstr ""
 
-#: app/Admin/Dashboard/DashboardPage.php:51
+#: app/Admin/Dashboard/DashboardPage.php:63
 #: app/Admin/Settings/SettingsPage.php:148
 msgid "Test mode"
 msgstr ""
 
-#: app/Admin/Dashboard/DashboardPage.php:51
+#: app/Admin/Dashboard/DashboardPage.php:63
 msgid "On"
 msgstr ""
 
-#: app/Admin/Dashboard/DashboardPage.php:51
+#: app/Admin/Dashboard/DashboardPage.php:63
 msgid "Off"
 msgstr ""
 
-#: app/Admin/Dashboard/DashboardPage.php:52
+#: app/Admin/Dashboard/DashboardPage.php:64
 msgid "Active offers"
 msgstr ""
 
-#: app/Admin/Dashboard/DashboardPage.php:53
+#: app/Admin/Dashboard/DashboardPage.php:65
 msgid "Recent revenue"
 msgstr ""
 
-#: app/Admin/Dashboard/DashboardPage.php:56
+#: app/Admin/Dashboard/DashboardPage.php:68
 msgid "Next action"
 msgstr ""
 
-#: app/Admin/Dashboard/DashboardPage.php:56
+#: app/Admin/Dashboard/DashboardPage.php:68
 #: app/Admin/Offers/OffersPage.php:94
 msgid "Add offer"
 msgstr ""
 
-#: app/Admin/Dashboard/DashboardPage.php:57
+#: app/Admin/Dashboard/DashboardPage.php:69
 msgid "Review settings"
+msgstr ""
+
+#: app/Admin/Dashboard/DashboardPage.php:84
+msgid "Performance (Last 30 days)"
+msgstr ""
+
+#: app/Admin/Dashboard/DashboardPage.php:86
+#: app/Admin/Offers/OffersPage.php:115
+msgid "Views"
+msgstr ""
+
+#: app/Admin/Dashboard/DashboardPage.php:87
+#: app/Admin/Offers/OffersPage.php:116
+msgid "Accepts"
+msgstr ""
+
+#: app/Admin/Dashboard/DashboardPage.php:88
+msgid "Accept rate"
+msgstr ""
+
+#: app/Admin/Dashboard/DashboardPage.php:89
+msgid "Attributed revenue"
+msgstr ""
+
+#: app/Admin/Dashboard/DashboardPage.php:94
+msgid "Dismissals"
+msgstr ""
+
+#: app/Admin/Dashboard/DashboardPage.php:95
+msgid "Orders"
+msgstr ""
+
+#: app/Admin/Dashboard/DashboardPage.php:96
+msgid "Discount total"
+msgstr ""
+
+#: app/Admin/Dashboard/DashboardPage.php:97
+msgid "Revenue per attributed order"
 msgstr ""
 
 #: app/Admin/Help/HelpPage.php:30
@@ -192,26 +174,26 @@ msgid "Use the first offer tutorial to create a draft offer, preview it in test 
 msgstr ""
 
 #: app/Admin/Help/HelpPage.php:95
-#: app/Admin/Navigation/TabFactory.php:186
+#: app/Admin/Navigation/TabFactory.php:166
 msgid "Help"
 msgstr ""
 
-#: app/Admin/Navigation/TabFactory.php:142
+#: app/Admin/Navigation/TabFactory.php:130
 #: app/Admin/Offers/OffersPage.php:93
 msgid "Offers"
 msgstr ""
 
-#: app/Admin/Navigation/TabFactory.php:162
+#: app/Admin/Navigation/TabFactory.php:142
 #: app/Admin/Settings/SettingsPage.php:140
 msgid "Settings"
 msgstr ""
 
-#: app/Admin/Navigation/TabFactory.php:170
+#: app/Admin/Navigation/TabFactory.php:150
 #: app/Admin/Tools/ToolsPage.php:121
 msgid "Tools"
 msgstr ""
 
-#: app/Admin/Navigation/TabFactory.php:178
+#: app/Admin/Navigation/TabFactory.php:158
 msgid "Setup"
 msgstr ""
 
@@ -421,6 +403,10 @@ msgstr ""
 
 #: app/Admin/Offers/OffersPage.php:60
 msgid "Create a checkout bump, product offer, cart offer, or thank-you follow-on offer when you are ready to test it."
+msgstr ""
+
+#: app/Admin/Offers/OffersPage.php:63
+msgid "Create offer"
 msgstr ""
 
 #: app/Admin/Offers/OffersPage.php:67

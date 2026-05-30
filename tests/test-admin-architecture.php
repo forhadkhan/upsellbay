@@ -11,7 +11,6 @@ use WPAnchorBay\UpsellBay\Admin\AdminAssets;
 use WPAnchorBay\UpsellBay\Admin\AdminBar;
 use WPAnchorBay\UpsellBay\Admin\AdminPage;
 use WPAnchorBay\UpsellBay\Admin\AdminPageRegistrar;
-use WPAnchorBay\UpsellBay\Admin\Analytics\AnalyticsPage;
 use WPAnchorBay\UpsellBay\Admin\CompatibilityNotice;
 use WPAnchorBay\UpsellBay\Admin\Coexistence;
 use WPAnchorBay\UpsellBay\Admin\Dashboard\DashboardPage;
@@ -75,13 +74,12 @@ function upsellbay_admin_architecture_tests(): array {
 				array(
 					new AdminTab( 'dashboard', 'Dashboard / Overview', static function ( array $request ): void { unset( $request ); } ),
 					new AdminTab( 'offers', 'Offers', static function ( array $request ): void { unset( $request ); } ),
-					new AdminTab( 'analytics', 'Analytics', static function ( array $request ): void { unset( $request ); } ),
 				)
 			);
 			$router   = new TabRouter( $registry );
 
 			assert_same( 'dashboard', $registry->default_tab()->id() );
-			assert_same( array( 'dashboard', 'offers', 'analytics' ), array_keys( $registry->tabs() ) );
+			assert_same( array( 'dashboard', 'offers' ), array_keys( $registry->tabs() ) );
 			assert_same( 'offers', $router->current_tab( array( 'tab' => 'offers' ) )->id() );
 			assert_same( 'dashboard', $router->current_tab( array( 'tab' => 'missing' ) )->id() );
 		},
@@ -146,10 +144,9 @@ function upsellbay_admin_architecture_tests(): array {
 			$settings   = new Settings( static fn (): array => array(), static fn (): bool => true );
 			$stats      = new StatsRepository( static function (): void {}, static fn (): array => array() );
 			$factory    = new TabFactory(
-				new DashboardPage( new OverviewSummary( $repository, $stats, $settings ) ),
+				new DashboardPage( new OverviewSummary( $repository, $stats, $settings ), $stats ),
 				new OffersPage( new OfferListTable( $repository, $service ) ),
 				new OfferEditPage( $service, $validator ),
-				new AnalyticsPage( $stats ),
 				new SettingsPage( $settings ),
 				new ToolsPage( new ImportExporter( $validator ), $settings ),
 				new WizardController( $service, $settings, new \WPAnchorBay\UpsellBay\Domain\Offers\OfferDefaults() ),
@@ -157,7 +154,7 @@ function upsellbay_admin_architecture_tests(): array {
 			);
 			$registry   = $factory->registry();
 
-			assert_same( array( 'dashboard', 'offers', 'analytics', 'settings', 'tools', 'setup', 'help' ), array_keys( $registry->tabs() ) );
+			assert_same( array( 'dashboard', 'offers', 'settings', 'tools', 'setup', 'help' ), array_keys( $registry->tabs() ) );
 
 			ob_start();
 			$registry->get( 'offers' )->render( array( 'action' => 'edit' ) );
@@ -279,7 +276,10 @@ function upsellbay_admin_architecture_tests(): array {
 			$assets = new AdminAssets();
 
 			assert_same( array(), $assets->assets_for_screen( 'woocommerce_page_wc-orders' ) );
-			assert_same( array( 'upsellbay-admin' ), array_keys( $assets->assets_for_screen( 'woocommerce_page_upsellbay' ) ) );
+			assert_same(
+				array( 'upsellbay-admin', 'upsellbay-analytics' ),
+				array_keys( $assets->assets_for_screen( 'woocommerce_page_upsellbay' ) )
+			);
 			assert_same(
 				array( 'upsellbay-admin', 'upsellbay-offer-editor' ),
 				array_keys( $assets->assets_for_screen( 'woocommerce_page_upsellbay', array( 'tab' => 'offers', 'action' => 'edit' ) ) )
@@ -290,11 +290,11 @@ function upsellbay_admin_architecture_tests(): array {
 			);
 			assert_same(
 				array( 'upsellbay-admin', 'upsellbay-analytics' ),
-				array_keys( $assets->assets_for_screen( 'woocommerce_page_upsellbay', array( 'tab' => 'analytics' ) ) )
+				array_keys( $assets->assets_for_screen( 'woocommerce_page_upsellbay', array( 'tab' => 'dashboard' ) ) )
 			);
 			assert_same( array(), $assets->assets_for_screen( 'woocommerce_page_upsellbay-add-offer' ) );
 		},
-		'analytics and overview use aggregate stats without live order scans' => static function (): void {
+		'dashboard shows overview and analytics from aggregate stats without live order scans' => static function (): void {
 			$stats = new StatsRepository(
 				static function (): void {
 				},
@@ -310,9 +310,7 @@ function upsellbay_admin_architecture_tests(): array {
 				)
 			);
 
-			$analytics = new AnalyticsPage( $stats );
-			$summary   = $analytics->summary( '2026-05-01', '2026-05-31' );
-			$overview  = new OverviewSummary(
+			$overview = new OverviewSummary(
 				upsellbay_test_offer_repository(
 					array(
 						7 => array(
@@ -327,10 +325,14 @@ function upsellbay_admin_architecture_tests(): array {
 				new Settings( static fn (): array => array( 'enabled' => true, 'test_mode' => true ), static fn (): bool => true )
 			);
 
-			assert_same( 10, $summary['views'] );
-			assert_same( '20.00', $summary['accept_rate'] );
-			assert_same( 1, $overview->data()['active_offers'] );
-			assert_true( $overview->data()['test_mode'] );
+			ob_start();
+			( new DashboardPage( $overview, $stats ) )->render();
+			$html = (string) ob_get_clean();
+
+			assert_contains( '10', $html );
+			assert_contains( '20.00%', $html );
+			assert_contains( 'Active offers', $html );
+			assert_contains( 'On', $html );
 		},
 		'compatibility coexistence tools help and admin bar stay product isolated' => static function (): void {
 			$settings    = new Settings( static fn (): array => array( 'test_mode' => true ), static fn (): bool => true );
@@ -379,7 +381,7 @@ function upsellbay_admin_architecture_tests(): array {
 			);
 
 			ob_start();
-			( new DashboardPage( new OverviewSummary( $repository, $stats, $settings ) ) )->render();
+			( new DashboardPage( new OverviewSummary( $repository, $stats, $settings ), $stats ) )->render();
 			$dashboard_html = (string) ob_get_clean();
 
 			ob_start();
@@ -391,21 +393,17 @@ function upsellbay_admin_architecture_tests(): array {
 			$settings_html = (string) ob_get_clean();
 
 			ob_start();
-			( new AnalyticsPage( $stats ) )->render();
-			$analytics_html = (string) ob_get_clean();
-
-			ob_start();
 			( new ToolsPage( new ImportExporter( new OfferValidator( new OfferSchema(), static fn (): bool => true ) ), $settings ) )->render();
 			$tools_html = (string) ob_get_clean();
 
 			assert_contains( 'Dashboard / Overview', $dashboard_html );
 			assert_contains( 'Active offers', $dashboard_html );
+			assert_contains( '25.00%', $dashboard_html );
+			assert_contains( 'Performance (Last 30 days)', $dashboard_html );
 			assert_contains( 'wp-list-table', $offers_html );
 			assert_contains( 'Warranty bump', $offers_html );
 			assert_contains( 'form-table', $settings_html );
 			assert_contains( 'name="test_mode"', $settings_html );
-			assert_contains( 'upsellbay-summary', $analytics_html );
-			assert_contains( '25.00%', $analytics_html );
 			assert_contains( 'System diagnostics', $tools_html );
 			assert_contains( 'Import offers', $tools_html );
 		},

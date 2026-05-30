@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 namespace WPAnchorBay\UpsellBay\Admin\Navigation;
 
-use WPAnchorBay\UpsellBay\Admin\Analytics\AnalyticsPage;
 use WPAnchorBay\UpsellBay\Admin\Dashboard\DashboardPage;
 use WPAnchorBay\UpsellBay\Admin\Help\HelpPage;
 use WPAnchorBay\UpsellBay\Admin\Offers\OfferEditPage;
@@ -50,15 +49,6 @@ final class TabFactory {
 	 * @var OfferEditPage
 	 */
 	private OfferEditPage $offer_editor;
-
-	/**
-	 * Analytics renderer.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @var AnalyticsPage
-	 */
-	private AnalyticsPage $analytics;
 
 	/**
 	 * Settings renderer.
@@ -104,17 +94,15 @@ final class TabFactory {
 	 * @param DashboardPage    $dashboard    Dashboard renderer.
 	 * @param OffersPage       $offers       Offers list renderer.
 	 * @param OfferEditPage    $offer_editor Offer editor renderer.
-	 * @param AnalyticsPage    $analytics    Analytics renderer.
 	 * @param SettingsPage     $settings     Settings renderer.
 	 * @param ToolsPage        $tools        Tools renderer.
 	 * @param WizardController $wizard       Setup wizard renderer.
 	 * @param HelpPage         $help         Help renderer.
 	 */
-	public function __construct( DashboardPage $dashboard, OffersPage $offers, OfferEditPage $offer_editor, AnalyticsPage $analytics, SettingsPage $settings, ToolsPage $tools, WizardController $wizard, HelpPage $help ) {
+	public function __construct( DashboardPage $dashboard, OffersPage $offers, OfferEditPage $offer_editor, SettingsPage $settings, ToolsPage $tools, WizardController $wizard, HelpPage $help ) {
 		$this->dashboard    = $dashboard;
 		$this->offers       = $offers;
 		$this->offer_editor = $offer_editor;
-		$this->analytics    = $analytics;
 		$this->settings     = $settings;
 		$this->tools        = $tools;
 		$this->wizard       = $wizard;
@@ -147,14 +135,6 @@ final class TabFactory {
 						}
 
 						$this->offers->render_content();
-					}
-				),
-				new AdminTab(
-					'analytics',
-					__( 'Analytics', 'upsellbay' ),
-					function ( array $request ): void {
-						unset( $request );
-						$this->analytics->render_content();
 					}
 				),
 				new AdminTab(

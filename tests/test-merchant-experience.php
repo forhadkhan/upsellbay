@@ -7,7 +7,6 @@
 
 declare(strict_types=1);
 
-use WPAnchorBay\UpsellBay\Admin\Analytics\AnalyticsPage;
 use WPAnchorBay\UpsellBay\Admin\Help\HelpPage;
 use WPAnchorBay\UpsellBay\Admin\Offers\OfferEditPage;
 use WPAnchorBay\UpsellBay\Admin\Offers\OfferListTable;
@@ -16,7 +15,6 @@ use WPAnchorBay\UpsellBay\Admin\PreviewLinks;
 use WPAnchorBay\UpsellBay\Admin\Tools\ToolsPage;
 use WPAnchorBay\UpsellBay\Admin\Wizard\WizardController;
 use WPAnchorBay\UpsellBay\Core\Settings;
-use WPAnchorBay\UpsellBay\Data\StatsRepository;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferDefaults;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferSchema;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferService;
@@ -93,12 +91,10 @@ function upsellbay_merchant_experience_tests(): array {
 		},
 		'admin pages expose native empty states with setup actions' => static function (): void {
 			$offers    = new OffersPage( new OfferListTable( upsellbay_test_offer_repository( array() ), new OfferService( upsellbay_test_offer_repository( array() ), new OfferValidator( new OfferSchema(), static fn (): bool => true ) ) ) );
-			$analytics = new AnalyticsPage( new StatsRepository( static function (): void {}, static fn (): array => array() ) );
 			$tools     = new ToolsPage( new ImportExporter( new OfferValidator( new OfferSchema(), static fn (): bool => true ) ), new Settings( static fn (): array => array(), static fn (): bool => true ) );
 			$help      = new HelpPage();
 
 			assert_contains( 'Create offer', $offers->empty_state()['actions'][0]['label'] );
-			assert_contains( 'Create your first offer', $analytics->empty_state()['message'] );
 			assert_contains( 'Import offers', $tools->import_empty_state()['title'] );
 			assert_contains( 'First offer tutorial', $help->empty_state()['actions'][0]['label'] );
 		},
