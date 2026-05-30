@@ -109,14 +109,21 @@ Goal: help merchants create, preview, trust, and improve offers without needing 
 ## [Phase 6 — Developer Extensibility](06-developer-extensibility.md)
 Goal: expose stable, documented customization points without turning internal implementation details into accidental public contracts.
 
-- [ ] UB-P6-001 — Public Hook Contract
-- [ ] UB-P6-002 — Offer Schema Developer Contract
-- [ ] UB-P6-003 — REST Endpoint Contracts
-- [ ] UB-P6-004 — Internal Service API Boundaries
-- [ ] UB-P6-005 — Backward Compatibility Policy
-- [ ] UB-P6-006 — Import/Export Extension Points
-- [ ] UB-P6-007 — WP-CLI Utility Plan
-- [ ] UB-P6-008 — Developer Extensibility Tests
+- [x] UB-P6-001 — Public Hook Contract
+- [x] UB-P6-002 — Offer Schema Developer Contract
+- [x] UB-P6-003 — REST Endpoint Contracts
+- [x] UB-P6-004 — Internal Service API Boundaries
+- [x] UB-P6-005 — Backward Compatibility Policy
+- [x] UB-P6-006 — Import/Export Extension Points
+- [x] UB-P6-007 — WP-CLI Utility Plan
+- [x] UB-P6-008 — Developer Extensibility Tests
+
+## Phase 6.5 — Admin UX and Product Independence Remediation
+Goal: correct the post-Phase 6 admin UX gap before QA by replacing placeholder admin shells with Woo-native operational surfaces and ensuring UpsellBay does not appear dependent on CartBay.
+
+- [x] UB-P6.5-001 — Remove visible CartBay global admin banner
+- [x] UB-P6.5-002 — Render Woo-native operational admin screens instead of heading-only placeholders
+- [x] UB-P6.5-003 — Add regression tests for product independence and admin page rendering
 
 ## [Phase 7 — Quality Assurance](07-quality-assurance.md)
 Goal: prove UpsellBay is secure, stable, performant, Woo-native, HPOS-safe, Block Checkout-safe, and marketplace-ready before release.
@@ -175,8 +182,9 @@ Goal: package, audit, submit, and launch UpsellBay v1 with evidence for every PR
 | 3 — Admin Architecture | 13 | COMPLETED |
 | 4 — Core Business Logic | 18 | COMPLETED |
 | 5 — Merchant Experience | 9 | COMPLETED |
-| 6 — Developer Extensibility | 8 | PENDING |
+| 6 — Developer Extensibility | 8 | COMPLETED |
+| 6.5 — Admin UX and Product Independence Remediation | 3 | COMPLETED |
 | 7 — Quality Assurance | 13 | PENDING |
 | 8 — Documentation | 12 | PENDING |
 | 9 — Release Preparation | 10 | PENDING |
-| **Total** | **118** | |
+| **Total** | **121** | |
