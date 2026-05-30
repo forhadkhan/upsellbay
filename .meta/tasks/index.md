@@ -65,7 +65,7 @@ Goal: build a WooCommerce-native admin experience under WooCommerce -> UpsellBay
 - [x] UB-P3-006 — Settings Page and Sections
 - [x] UB-P3-007 — Test Mode Controls
 - [x] UB-P3-008 — Compatibility and Coexistence Notices
-- [x] UB-P3-009 — Analytics Admin Page
+- [x] UB-P3-009 — Dashboard Analytics Section
 - [x] UB-P3-010 — Tools and Diagnostics Page
 - [x] UB-P3-011 — Help Page and Support Routing
 - [x] UB-P3-012 — Admin Asset Scoping

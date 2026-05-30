@@ -22,7 +22,7 @@ The implementation layout follows PRD v4, the folder structure plan, and the pha
 | `app/Admin/Offers/*` | WP list table and offer editor surfaces. | Phase 3 | Offer repository and validator. |
 | `app/Admin/Settings/*` | Woo-native settings sections and tools. | Phase 3 | Settings service, capability and nonce checks. |
 | `app/Admin/Wizard/*` | First-run wizard. | Phase 5 | Offer service and test mode. |
-| `app/Admin/Analytics/*` | Aggregate analytics dashboard. | Phase 3 and Phase 4 | Analytics service and stats repository. |
+| `app/Admin/Dashboard/*` | Dashboard overview and aggregate analytics section. | Phase 3 and Phase 4 | Overview summary, analytics service, and stats repository. |
 | `app/Admin/Coexistence.php` | Optional CartBay coexistence guidance without data access. | Phase 3 | Identifier isolation rules. |
 | `app/Admin/CompatibilityNotice.php` | Known conflict notices. | Phase 3 and Phase 4 | Compatibility matrix. |
 | `app/Admin/AdminBar.php` | Admin-only test mode indicator. | Phase 3 and Phase 5 | Settings service. |

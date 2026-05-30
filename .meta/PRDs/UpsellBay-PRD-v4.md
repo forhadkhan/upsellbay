@@ -314,7 +314,7 @@ These boundaries protect implementation reliability and make the product easier 
 | Cart | Reviewing order | Cart offer | Add-on products, threshold prompts, small accessory bundles. | Cart offer accept rate and cart AOV. |
 | Checkout | High purchase intent | Checkout bump | One small relevant item with clear value and no interruption. | Checkout bump accept rate and checkout completion impact. |
 | Thank-you page | Purchase complete | Follow-on offer | Low-friction second purchase or next-order incentive. | Follow-on conversion and attributed revenue. |
-| Post-launch analysis | Merchant evaluating ROI | Analytics | Identify best/worst offers and next action. | Attributed revenue, accept rate, AOV lift. |
+| Post-launch analysis | Merchant evaluating ROI | Dashboard / Overview | Identify best/worst offers and next action from the dashboard analytics section. | Attributed revenue, accept rate, AOV lift. |
 
 ## 9. Feature Architecture
 
@@ -389,7 +389,7 @@ These boundaries protect implementation reliability and make the product easier 
 
 #### Workflow B: Growth merchant optimization
 
-1. Merchant opens Analytics.
+1. Merchant opens Dashboard / Overview.
 2. Sees per-offer accept rate, attributed revenue, and AOV lift estimate.
 3. Identifies low-performing offer.
 4. Duplicates offer and adjusts product/discount/copy.
@@ -453,12 +453,14 @@ No top-level WordPress menu is allowed.
 Recommended admin structure:
 
 - WooCommerce -> UpsellBay
+  - Dashboard / Overview
   - Offers
-  - Add Offer
-  - Analytics
   - Settings
   - Tools
+  - Setup
   - Help
+
+Dashboard / Overview is the default landing tab and contains the aggregate analytics summary. There is no separate Analytics tab in v1. Add/Edit Offer is reached from the Offers tab as an internal action, not as a separate WooCommerce submenu item.
 
 Admin UI requirements:
 

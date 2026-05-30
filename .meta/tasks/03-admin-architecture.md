@@ -7,7 +7,7 @@ Goal: build a WooCommerce-native admin experience under WooCommerce -> UpsellBay
 ## UB-P3-001 - Admin Menu and Page Routing
 
 - Objective: Register the UpsellBay admin area under WooCommerce only.
-- Scope definition: Add submenu pages for Offers, Add Offer, Analytics, Settings, Tools, and Help.
+- Scope definition: Add one WooCommerce submenu page with internal tabs for Dashboard / Overview, Offers, Settings, Tools, Setup, and Help. Add/Edit Offer is an internal Offers-tab action, and analytics appears inside Dashboard / Overview instead of a separate tab.
 - Dependencies: UB-P1-005, UB-P1-010.
 - Implementation notes: Use `add_submenu_page()` with `manage_woocommerce`. Do not create a top-level WordPress admin menu. Use screen IDs to scope assets.
 - Acceptance criteria: WooCommerce -> UpsellBay appears and all pages enforce `manage_woocommerce`.
@@ -51,9 +51,9 @@ Goal: build a WooCommerce-native admin experience under WooCommerce -> UpsellBay
 ## UB-P3-005 - Admin Overview Summary
 
 - Objective: Provide a quick operational snapshot without creating a separate marketing dashboard.
-- Scope definition: Add a compact summary band on the Offers or Analytics landing view with active offers, test mode state, recent attributed revenue, and warnings.
+- Scope definition: Add a compact summary band on the Dashboard / Overview landing view with active offers, test mode state, recent attributed revenue, and warnings.
 - Dependencies: UB-P2-005, UB-P3-002, UB-P3-008.
-- Implementation notes: Use native Woo cards/metabox-like panels sparingly. Keep the primary admin workflow focused on offers and analytics.
+- Implementation notes: Use native Woo cards/metabox-like panels sparingly. Keep the primary admin workflow focused on offers and dashboard analytics.
 - Acceptance criteria: Merchant can see whether the plugin is enabled, test mode is on, offers are active, and compatibility warnings exist.
 - Validation and testing requirements: Manual admin layout check on desktop and mobile admin widths; data loading under 500ms on seeded stats.
 - Estimated complexity: Medium.
@@ -92,13 +92,13 @@ Goal: build a WooCommerce-native admin experience under WooCommerce -> UpsellBay
 - Estimated complexity: Medium.
 - Suggested execution order: 40.
 
-## UB-P3-009 - Analytics Admin Page
+## UB-P3-009 - Dashboard Analytics Section
 
 - Objective: Display offer performance from aggregate stats.
-- Scope definition: Create `app/Admin/Analytics/AnalyticsPage.php`.
+- Scope definition: Render aggregate analytics inside `app/Admin/Dashboard/DashboardPage.php`.
 - Dependencies: UB-P2-005, UB-P2-011, UB-P3-001.
 - Implementation notes: Show views, accepts, dismissals, accept rate, orders, attributed revenue, discount total, AOV lift estimate, date range filter, placement filter, and per-offer table.
-- Acceptance criteria: Dashboard loads from `StatsRepository` and does not scan live orders.
+- Acceptance criteria: Dashboard / Overview loads analytics from `StatsRepository` and does not scan live orders.
 - Validation and testing requirements: Performance test with generated data representing 100,000 orders and 500 offers; target under 500ms p95 for dashboard query/render.
 - Estimated complexity: High.
 - Suggested execution order: 66.
@@ -142,7 +142,7 @@ Goal: build a WooCommerce-native admin experience under WooCommerce -> UpsellBay
 - Scope definition: Explicitly document that recovery sequences, recovery notifications, recovery email templates, abandoned-cart sessions, unsubscribe flows, and restore links are not UpsellBay admin modules.
 - Dependencies: UB-P0-002, UB-P3-001.
 - Implementation notes: Add the guard to `.meta/architecture/admin-information-architecture.md` and `AGENTS.md`.
-- Acceptance criteria: Admin IA includes Offers, Add Offer, Analytics, Settings, Tools, Help, Wizard, and diagnostics only; no recovery admin pages exist.
+- Acceptance criteria: Admin IA includes Dashboard / Overview, Offers, offer editor, Settings, Tools, Help, Wizard, and diagnostics only; no recovery admin pages or separate Analytics tab exist.
 - Validation and testing requirements: Static scan for `recovery`, `abandoned`, `sequence`, `unsubscribe`, and `restore` in runtime code; allowed only in docs/guardrails or compatibility copy.
 - Estimated complexity: Low.
 - Suggested execution order: 42.
