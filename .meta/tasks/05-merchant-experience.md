@@ -1,4 +1,4 @@
-<!-- STATUS: PENDING -->
+<!-- STATUS: COMPLETED -->
 
 # Phase 5 - Merchant Experience
 
@@ -102,4 +102,3 @@ Goal: help merchants create, preview, trust, and improve offers without needing 
 - Validation and testing requirements: Static scan plus manual copy review against PRD sections 7, 12, and 15.
 - Estimated complexity: Low.
 - Suggested execution order: 73.
-

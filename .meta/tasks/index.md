@@ -23,88 +23,88 @@ Goal: prove the product, architecture, and technical constraints from PRD v4 bef
 ## [Phase 1 — Core Plugin Bootstrap](01-plugin-bootstrap.md)
 Goal: build the minimal, stable plugin foundation that every later subsystem can depend on.
 
-- [ ] UB-P1-001 — Main Plugin Entrypoint
-- [ ] UB-P1-002 — Core Constants
-- [ ] UB-P1-003 — Composer Autoload and PHP Tooling
-- [ ] UB-P1-004 — Minimal Service Container
-- [ ] UB-P1-005 — Bootstrap Coordinator
-- [ ] UB-P1-006 — Platform Dependency Guards
-- [ ] UB-P1-007 — Installer, Deactivation, and Upgrade Shell
-- [ ] UB-P1-008 — Uninstall and Data Retention Foundation
-- [ ] UB-P1-009 — WooCommerce Feature Compatibility Declarations
-- [ ] UB-P1-010 — Settings Foundation
-- [ ] UB-P1-011 — Scheduler Foundation
-- [ ] UB-P1-012 — License and Updater Foundation
-- [ ] UB-P1-013 — Asset Build Foundation
-- [ ] UB-P1-014 — Base Utilities
+- [x] UB-P1-001 — Main Plugin Entrypoint
+- [x] UB-P1-002 — Core Constants
+- [x] UB-P1-003 — Composer Autoload and PHP Tooling
+- [x] UB-P1-004 — Minimal Service Container
+- [x] UB-P1-005 — Bootstrap Coordinator
+- [x] UB-P1-006 — Platform Dependency Guards
+- [x] UB-P1-007 — Installer, Deactivation, and Upgrade Shell
+- [x] UB-P1-008 — Uninstall and Data Retention Foundation
+- [x] UB-P1-009 — WooCommerce Feature Compatibility Declarations
+- [x] UB-P1-010 — Settings Foundation
+- [x] UB-P1-011 — Scheduler Foundation
+- [x] UB-P1-012 — License and Updater Foundation
+- [x] UB-P1-013 — Asset Build Foundation
+- [x] UB-P1-014 — Base Utilities
 
 ## [Phase 2 — Data Architecture](02-data-architecture.md)
 Goal: implement durable, HPOS-safe, non-PII storage for offers, attribution, settings, analytics, sessions, import/export, and cleanup.
 
-- [ ] UB-P2-001 — Offer CPT Registration
-- [ ] UB-P2-002 — Offer Meta Schema
-- [ ] UB-P2-003 — Offer Repository
-- [ ] UB-P2-004 — Stats Table Migration
-- [ ] UB-P2-005 — Stats Repository
-- [ ] UB-P2-006 — Cart Session State Store
-- [ ] UB-P2-007 — Attribution Data Contract
-- [ ] UB-P2-008 — Data Retention Model
-- [ ] UB-P2-009 — Import/Export JSON Schema
-- [ ] UB-P2-010 — Settings Repository and Migration Helpers
-- [ ] UB-P2-011 — Analytics Reconciliation Data Flow
-- [ ] UB-P2-012 — Data Architecture Tests
+- [x] UB-P2-001 — Offer CPT Registration
+- [x] UB-P2-002 — Offer Meta Schema
+- [x] UB-P2-003 — Offer Repository
+- [x] UB-P2-004 — Stats Table Migration
+- [x] UB-P2-005 — Stats Repository
+- [x] UB-P2-006 — Cart Session State Store
+- [x] UB-P2-007 — Attribution Data Contract
+- [x] UB-P2-008 — Data Retention Model
+- [x] UB-P2-009 — Import/Export JSON Schema
+- [x] UB-P2-010 — Settings Repository and Migration Helpers
+- [x] UB-P2-011 — Analytics Reconciliation Data Flow
+- [x] UB-P2-012 — Data Architecture Tests
 
 ## [Phase 3 — Admin Architecture](03-admin-architecture.md)
 Goal: build a WooCommerce-native admin experience under WooCommerce -> UpsellBay without a custom app shell or CartBay recovery features.
 
-- [ ] UB-P3-001 — Admin Menu and Page Routing
-- [ ] UB-P3-002 — Offers List Table
-- [ ] UB-P3-003 — Offer Editor Shell
-- [ ] UB-P3-004 — Rule Builder UI
-- [ ] UB-P3-005 — Admin Overview Summary
-- [ ] UB-P3-006 — Settings Page and Sections
-- [ ] UB-P3-007 — Test Mode Controls
-- [ ] UB-P3-008 — Compatibility and Coexistence Notices
-- [ ] UB-P3-009 — Analytics Admin Page
-- [ ] UB-P3-010 — Tools and Diagnostics Page
-- [ ] UB-P3-011 — Help Page and Support Routing
-- [ ] UB-P3-012 — Admin Asset Scoping
-- [ ] UB-P3-013 — Recovery Module Exclusion Guard
+- [x] UB-P3-001 — Admin Menu and Page Routing
+- [x] UB-P3-002 — Offers List Table
+- [x] UB-P3-003 — Offer Editor Shell
+- [x] UB-P3-004 — Rule Builder UI
+- [x] UB-P3-005 — Admin Overview Summary
+- [x] UB-P3-006 — Settings Page and Sections
+- [x] UB-P3-007 — Test Mode Controls
+- [x] UB-P3-008 — Compatibility and Coexistence Notices
+- [x] UB-P3-009 — Analytics Admin Page
+- [x] UB-P3-010 — Tools and Diagnostics Page
+- [x] UB-P3-011 — Help Page and Support Routing
+- [x] UB-P3-012 — Admin Asset Scoping
+- [x] UB-P3-013 — Recovery Module Exclusion Guard
 
 ## [Phase 4 — Core Business Logic](04-core-business-logic.md)
 Goal: implement the offer engine that evaluates rules, renders eligible placements, mutates carts safely, applies discounts, writes attribution, records analytics, and keeps checkout stable.
 
-- [ ] UB-P4-001 — Offer Service
-- [ ] UB-P4-002 — Offer Prioritizer
-- [ ] UB-P4-003 — Rule Parser and Evaluator
-- [ ] UB-P4-004 — Discount Calculator
-- [ ] UB-P4-005 — Cart Validator
-- [ ] UB-P4-006 — Cart Mutator
-- [ ] UB-P4-007 — Discount Applier
-- [ ] UB-P4-008 — Placement Renderer Coordinator
-- [ ] UB-P4-009 — Classic Checkout Bump
-- [ ] UB-P4-010 — Block Checkout Bump
-- [ ] UB-P4-011 — Product Page Offer
-- [ ] UB-P4-012 — Cart Cross-Sell Offer
-- [ ] UB-P4-013 — Thank-You Follow-On Offer
-- [ ] UB-P4-014 — Public REST Routes
-- [ ] UB-P4-015 — Attribution Writer and Reader
-- [ ] UB-P4-016 — Analytics Recorder and Reconciler
-- [ ] UB-P4-017 — Conflict Scanner
-- [ ] UB-P4-018 — Core Business Logic Tests
+- [x] UB-P4-001 — Offer Service
+- [x] UB-P4-002 — Offer Prioritizer
+- [x] UB-P4-003 — Rule Parser and Evaluator
+- [x] UB-P4-004 — Discount Calculator
+- [x] UB-P4-005 — Cart Validator
+- [x] UB-P4-006 — Cart Mutator
+- [x] UB-P4-007 — Discount Applier
+- [x] UB-P4-008 — Placement Renderer Coordinator
+- [x] UB-P4-009 — Classic Checkout Bump
+- [x] UB-P4-010 — Block Checkout Bump
+- [x] UB-P4-011 — Product Page Offer
+- [x] UB-P4-012 — Cart Cross-Sell Offer
+- [x] UB-P4-013 — Thank-You Follow-On Offer
+- [x] UB-P4-014 — Public REST Routes
+- [x] UB-P4-015 — Attribution Writer and Reader
+- [x] UB-P4-016 — Analytics Recorder and Reconciler
+- [x] UB-P4-017 — Conflict Scanner
+- [x] UB-P4-018 — Core Business Logic Tests
 
 ## [Phase 5 — Merchant Experience](05-merchant-experience.md)
 Goal: help merchants create, preview, trust, and improve offers without needing custom checkout knowledge.
 
-- [ ] UB-P5-001 — First-Run Wizard Controller
-- [ ] UB-P5-002 — Sensible Defaults
-- [ ] UB-P5-003 — Empty States
-- [ ] UB-P5-004 — Preview Links and Test Mode Flow
-- [ ] UB-P5-005 — Guidance UX and Help Tips
-- [ ] UB-P5-006 — Progressive Configuration
-- [ ] UB-P5-007 — Product Recommendation Assistant Baseline
-- [ ] UB-P5-008 — Accessibility and Mobile UX Pass
-- [ ] UB-P5-009 — Merchant Copy Boundary Review
+- [x] UB-P5-001 — First-Run Wizard Controller
+- [x] UB-P5-002 — Sensible Defaults
+- [x] UB-P5-003 — Empty States
+- [x] UB-P5-004 — Preview Links and Test Mode Flow
+- [x] UB-P5-005 — Guidance UX and Help Tips
+- [x] UB-P5-006 — Progressive Configuration
+- [x] UB-P5-007 — Product Recommendation Assistant Baseline
+- [x] UB-P5-008 — Accessibility and Mobile UX Pass
+- [x] UB-P5-009 — Merchant Copy Boundary Review
 
 ## [Phase 6 — Developer Extensibility](06-developer-extensibility.md)
 Goal: expose stable, documented customization points without turning internal implementation details into accidental public contracts.
@@ -170,11 +170,11 @@ Goal: package, audit, submit, and launch UpsellBay v1 with evidence for every PR
 | Phase | Tasks | Status |
 |-------|-------|--------|
 | 0 — Project Foundation | 9 | COMPLETED |
-| 1 — Core Plugin Bootstrap | 14 | PENDING |
-| 2 — Data Architecture | 12 | PENDING |
-| 3 — Admin Architecture | 13 | PENDING |
-| 4 — Core Business Logic | 18 | PENDING |
-| 5 — Merchant Experience | 9 | PENDING |
+| 1 — Core Plugin Bootstrap | 14 | COMPLETED |
+| 2 — Data Architecture | 12 | COMPLETED |
+| 3 — Admin Architecture | 13 | COMPLETED |
+| 4 — Core Business Logic | 18 | COMPLETED |
+| 5 — Merchant Experience | 9 | COMPLETED |
 | 6 — Developer Extensibility | 8 | PENDING |
 | 7 — Quality Assurance | 13 | PENDING |
 | 8 — Documentation | 12 | PENDING |
