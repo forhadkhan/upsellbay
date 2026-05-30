@@ -1,6 +1,6 @@
 <?php
 /**
- * Help admin page.
+ * Help contextual tabs.
  *
  * @package UpsellBay\Admin\Help
  */
@@ -12,11 +12,114 @@ namespace WPAnchorBay\UpsellBay\Admin\Help;
 use WPAnchorBay\UpsellBay\Core\Constants;
 
 /**
- * Routes merchants to UpsellBay AOV offer docs and support.
+ * Registers WordPress contextual help tabs on UpsellBay admin screens.
  *
  * @since 1.0.0
  */
 final class HelpPage {
+
+	/**
+	 * Register contextual help tabs and sidebar on the UpsellBay admin page.
+	 *
+	 * @since 1.0.0
+	 */
+	public function register(): void {
+		$screen = get_current_screen();
+
+		if ( ! $screen || 'woocommerce_page_upsellbay' !== $screen->id ) {
+			return;
+		}
+
+		$screen->add_help_tab(
+			array(
+				'id'      => 'upsellbay-getting-started',
+				'title'   => __( 'Getting Started', 'upsellbay' ),
+				'content' => $this->getting_started_content(),
+			)
+		);
+
+		$screen->add_help_tab(
+			array(
+				'id'      => 'upsellbay-documentation',
+				'title'   => __( 'Documentation', 'upsellbay' ),
+				'content' => $this->documentation_content(),
+			)
+		);
+
+		$screen->add_help_tab(
+			array(
+				'id'      => 'upsellbay-support',
+				'title'   => __( 'Support', 'upsellbay' ),
+				'content' => $this->support_content(),
+			)
+		);
+
+		$screen->set_help_sidebar( $this->sidebar_content() );
+	}
+
+	/**
+	 * Return the Getting Started help tab markup.
+	 *
+	 * @since 1.0.0
+	 */
+	private function getting_started_content(): string {
+		$empty = $this->empty_state();
+		$html  = '<p>' . esc_html( $empty['message'] ) . '</p>';
+		$html .= '<p><a href="' . esc_url( $empty['actions'][0]['url'] ) . '" class="button">' . esc_html( $empty['actions'][0]['label'] ) . '</a></p>';
+
+		return $html;
+	}
+
+	/**
+	 * Return the Documentation help tab markup.
+	 *
+	 * @since 1.0.0
+	 */
+	private function documentation_content(): string {
+		$html = '<ul>';
+		foreach ( $this->links() as $link ) {
+			if ( str_contains( $link['url'], 'support' ) ) {
+				continue;
+			}
+			$html .= '<li><a href="' . esc_url( $link['url'] ) . '">' . esc_html( $link['label'] ) . '</a></li>';
+		}
+		$html .= '</ul>';
+
+		return $html;
+	}
+
+	/**
+	 * Return the Support help tab markup.
+	 *
+	 * @since 1.0.0
+	 */
+	private function support_content(): string {
+		$links = $this->links();
+
+		$link = end( $links );
+
+		$html  = '<p>' . esc_html__( 'Need help with UpsellBay?', 'upsellbay' ) . '</p>';
+		$html .= '<p><a href="' . esc_url( $link['url'] ) . '" class="button">' . esc_html( $link['label'] ) . '</a></p>';
+
+		return $html;
+	}
+
+	/**
+	 * Return the help sidebar markup.
+	 *
+	 * @since 1.0.0
+	 */
+	private function sidebar_content(): string {
+		$html  = '<p><strong>' . esc_html__( 'Quick links:', 'upsellbay' ) . '</strong></p>';
+		$html .= '<ul>';
+		foreach ( $this->links() as $link ) {
+			$html .= '<li><a href="' . esc_url( $link['url'] ) . '">' . esc_html( $link['label'] ) . '</a></li>';
+		}
+		$html .= '</ul>';
+
+		return $html;
+	}
+
 	/**
 	 * Return help links.
 	 *
@@ -71,33 +174,5 @@ final class HelpPage {
 				),
 			),
 		);
-	}
-
-	/**
-	 * Render help shell.
-	 *
-	 * @since 1.0.0
-	 */
-	public function render(): void {
-		echo '<div class="wrap woocommerce upsellbay-admin">';
-		$this->render_content();
-		echo '</div>';
-	}
-
-	/**
-	 * Render help tab content.
-	 *
-	 * @since 1.0.0
-	 */
-	public function render_content(): void {
-		$empty = $this->empty_state();
-
-		echo '<h2>' . esc_html__( 'Help', 'upsellbay' ) . '</h2>';
-		echo '<p>' . esc_html( $empty['message'] ) . '</p>';
-		echo '<table class="widefat striped upsellbay-help-table"><tbody>';
-		foreach ( $this->links() as $link ) {
-			echo '<tr><td><a href="' . esc_url( $link['url'] ) . '">' . esc_html( $link['label'] ) . '</a></td></tr>';
-		}
-		echo '</tbody></table>';
 	}
 }

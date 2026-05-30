@@ -149,12 +149,11 @@ function upsellbay_admin_architecture_tests(): array {
 				new OfferEditPage( $service, $validator ),
 				new SettingsPage( $settings ),
 				new ToolsPage( new ImportExporter( $validator ), $settings ),
-				new WizardController( $service, $settings, new \WPAnchorBay\UpsellBay\Domain\Offers\OfferDefaults() ),
-				new HelpPage()
+				new WizardController( $service, $settings, new \WPAnchorBay\UpsellBay\Domain\Offers\OfferDefaults() )
 			);
 			$registry   = $factory->registry();
 
-			assert_same( array( 'dashboard', 'offers', 'settings', 'tools', 'setup', 'help' ), array_keys( $registry->tabs() ) );
+			assert_same( array( 'dashboard', 'offers', 'settings', 'tools', 'setup' ), array_keys( $registry->tabs() ) );
 
 			ob_start();
 			$registry->get( 'offers' )->render( array( 'action' => 'edit' ) );

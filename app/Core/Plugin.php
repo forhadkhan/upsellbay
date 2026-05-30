@@ -240,8 +240,7 @@ final class Plugin {
 				$container->get( OfferEditPage::class ),
 				$container->get( SettingsPage::class ),
 				$container->get( ToolsPage::class ),
-				$container->get( WizardController::class ),
-				$container->get( HelpPage::class )
+				$container->get( WizardController::class )
 			)
 		);
 		$this->container->set(
@@ -279,6 +278,8 @@ final class Plugin {
 		add_action( 'init', array( $this, 'maybe_upgrade' ), 20 );
 		add_action( 'admin_notices', array( $this, 'render_dependency_notices' ) );
 		add_action( 'admin_menu', array( $this, 'register_admin_pages' ) );
+
+		add_action( 'load-woocommerce_page_upsellbay', array( $this->container->get( HelpPage::class ), 'register' ) );
 
 		$this->container->get( AdminAssets::class )->register_hooks();
 		$this->container->get( AdminBar::class )->register_hooks();
