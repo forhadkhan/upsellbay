@@ -1,0 +1,12 @@
+parameters:
+	level: 5
+	paths:
+		- app
+		- upsellbay.php
+		- uninstall.php
+	bootstrapFiles:
+		- phpstan-bootstrap.php
+	excludePaths:
+		analyse:
+			- vendor
+			- node_modules

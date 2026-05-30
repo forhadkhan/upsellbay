@@ -1,0 +1,14 @@
+{
+	"name": "upsellbay",
+	"version": "0.1.0",
+	"private": true,
+	"description": "WooCommerce-native AOV offer engine assets.",
+	"scripts": {
+		"build": "wp-scripts build --config webpack.config.js",
+		"start": "wp-scripts start --config webpack.config.js",
+		"i18n:make-pot": "wp i18n make-pot . languages/upsellbay.pot --domain=upsellbay --exclude=node_modules,vendor,.git,.meta,graphify-out"
+	},
+	"devDependencies": {
+		"@wordpress/scripts": "^30.0.0"
+	}
+}

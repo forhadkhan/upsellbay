@@ -1,0 +1,1 @@
+document.addEventListener("click",e=>{e.target.closest("[data-upsellbay-add-rule]")&&(e.preventDefault(),document.dispatchEvent(new CustomEvent("upsellbay:add-rule")))});

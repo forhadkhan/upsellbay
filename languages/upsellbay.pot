@@ -1,0 +1,417 @@
+# Copyright (C) 2026 WP Anchor Bay
+# This file is distributed under the same license as the UpsellBay plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: UpsellBay 0.1.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/upsellbay\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-05-30T05:22:33+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: upsellbay\n"
+
+#. Plugin Name of the plugin
+#: upsellbay.php
+#: app/Admin/AdminPageRegistrar.php:146
+#: app/Admin/AdminPageRegistrar.php:159
+msgid "UpsellBay"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: upsellbay.php
+msgid "https://wpanchorbay.com/upsellbay/"
+msgstr ""
+
+#. Description of the plugin
+#: upsellbay.php
+msgid "WooCommerce-native order bumps and AOV offers for product, cart, checkout, and thank-you journeys."
+msgstr ""
+
+#. Author of the plugin
+#: upsellbay.php
+msgid "WP Anchor Bay"
+msgstr ""
+
+#. Author URI of the plugin
+#: upsellbay.php
+msgid "https://wpanchorbay.com/"
+msgstr ""
+
+#: app/Admin/AdminBar.php:83
+msgid "UpsellBay test mode"
+msgstr ""
+
+#: app/Admin/AdminPageRegistrar.php:158
+#: app/Admin/Offers/OffersPage.php:80
+#: app/Core/Installer.php:115
+msgid "UpsellBay Offers"
+msgstr ""
+
+#: app/Admin/AdminPageRegistrar.php:163
+#: app/Admin/Offers/OfferEditPage.php:267
+msgid "Add UpsellBay Offer"
+msgstr ""
+
+#: app/Admin/AdminPageRegistrar.php:164
+msgid "Add Offer"
+msgstr ""
+
+#: app/Admin/AdminPageRegistrar.php:168
+#: app/Admin/Wizard/WizardController.php:155
+#: templates/admin/wizard.php:11
+msgid "UpsellBay Setup Wizard"
+msgstr ""
+
+#: app/Admin/AdminPageRegistrar.php:169
+msgid "Setup Wizard"
+msgstr ""
+
+#: app/Admin/AdminPageRegistrar.php:173
+#: app/Admin/Analytics/AnalyticsPage.php:88
+msgid "UpsellBay Analytics"
+msgstr ""
+
+#: app/Admin/AdminPageRegistrar.php:174
+msgid "Analytics"
+msgstr ""
+
+#: app/Admin/AdminPageRegistrar.php:178
+#: app/Admin/Settings/SettingsPage.php:124
+msgid "UpsellBay Settings"
+msgstr ""
+
+#: app/Admin/AdminPageRegistrar.php:179
+msgid "Settings"
+msgstr ""
+
+#: app/Admin/AdminPageRegistrar.php:183
+#: app/Admin/Tools/ToolsPage.php:110
+msgid "UpsellBay Tools"
+msgstr ""
+
+#: app/Admin/AdminPageRegistrar.php:184
+msgid "Tools"
+msgstr ""
+
+#: app/Admin/AdminPageRegistrar.php:188
+#: app/Admin/Help/HelpPage.php:82
+msgid "UpsellBay Help"
+msgstr ""
+
+#: app/Admin/AdminPageRegistrar.php:189
+msgid "Help"
+msgstr ""
+
+#: app/Admin/Analytics/AnalyticsPage.php:67
+msgid "No offer activity yet"
+msgstr ""
+
+#: app/Admin/Analytics/AnalyticsPage.php:68
+msgid "Create your first offer and use test mode preview before shoppers see it."
+msgstr ""
+
+#: app/Admin/Analytics/AnalyticsPage.php:71
+#: app/Admin/Offers/OffersPage.php:63
+msgid "Create offer"
+msgstr ""
+
+#: app/Admin/Analytics/AnalyticsPage.php:75
+msgid "Review test mode"
+msgstr ""
+
+#: app/Admin/CompatibilityNotice.php:75
+msgid "CartBay is active. UpsellBay remains a separate AOV offer engine and does not read recovery sessions, recovery coupons, or email sequence data."
+msgstr ""
+
+#: app/Admin/CompatibilityNotice.php:95
+msgid "Compatibility guide"
+msgstr ""
+
+#: app/Admin/Help/HelpPage.php:30
+msgid "AOV offer setup guide"
+msgstr ""
+
+#: app/Admin/Help/HelpPage.php:34
+#: app/Admin/Help/HelpPage.php:69
+msgid "First offer tutorial"
+msgstr ""
+
+#: app/Admin/Help/HelpPage.php:38
+msgid "Compatibility matrix"
+msgstr ""
+
+#: app/Admin/Help/HelpPage.php:42
+msgid "Data retention guide"
+msgstr ""
+
+#: app/Admin/Help/HelpPage.php:46
+msgid "Developer docs"
+msgstr ""
+
+#: app/Admin/Help/HelpPage.php:50
+msgid "UpsellBay AOV offer support"
+msgstr ""
+
+#: app/Admin/Help/HelpPage.php:65
+msgid "Need a starting point?"
+msgstr ""
+
+#: app/Admin/Help/HelpPage.php:66
+msgid "Use the first offer tutorial to create a draft offer, preview it in test mode, and publish only when the checkout looks right."
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:95
+msgid "You do not have permission to manage UpsellBay offers."
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:102
+msgid "Offer save could not be verified. Please try again."
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:144
+msgid "Offer saved."
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:187
+msgid "Required basics"
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:192
+msgid "Targeting rules"
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:197
+msgid "Discount"
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:202
+msgid "Placement display"
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:207
+msgid "Schedule and priority"
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:212
+msgid "Advanced metadata"
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:228
+msgid "Choose the product shoppers can add from this offer. Product and stock are validated again before cart changes."
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:229
+msgid "Rules narrow when an offer appears. Leave them empty for a simple first offer."
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:230
+msgid "Discounts are calculated server-side from the product price. Shopper-sent prices are ignored."
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:231
+msgid "Priority controls which eligible offer wins when a placement has a display limit."
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:232
+msgid "Test mode lets admins preview offers before shoppers can see them."
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:233
+msgid "Compatibility notices flag checkout plugins that may alter the placement area."
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:252
+msgid "Offer targeting rules"
+msgstr ""
+
+#: app/Admin/Offers/OffersPage.php:59
+msgid "No UpsellBay offers yet"
+msgstr ""
+
+#: app/Admin/Offers/OffersPage.php:60
+msgid "Create a checkout bump, product offer, cart offer, or thank-you follow-on offer when you are ready to test it."
+msgstr ""
+
+#: app/Admin/Offers/OffersPage.php:67
+msgid "Open setup wizard"
+msgstr ""
+
+#: app/Admin/PreviewLinks.php:71
+msgid "Preview is unavailable until the placement has enough context, such as a product URL or saved test order."
+msgstr ""
+
+#: app/Admin/PreviewLinks.php:90
+msgid "Open this as an admin while test mode is enabled."
+msgstr ""
+
+#: app/Admin/Settings/DataSection.php:33
+msgid "Data"
+msgstr ""
+
+#: app/Admin/Settings/GeneralSection.php:33
+msgid "General"
+msgstr ""
+
+#: app/Admin/Settings/SettingsPage.php:94
+msgid "You do not have permission to manage UpsellBay settings."
+msgstr ""
+
+#: app/Admin/Settings/SettingsPage.php:101
+msgid "Settings save could not be verified. Please try again."
+msgstr ""
+
+#: app/Admin/Settings/SettingsPage.php:114
+msgid "Settings saved."
+msgstr ""
+
+#: app/Admin/Settings/StyleSection.php:33
+msgid "Style"
+msgstr ""
+
+#: app/Admin/Tools/ToolsPage.php:93
+msgid "Import offers when you have a JSON export"
+msgstr ""
+
+#: app/Admin/Tools/ToolsPage.php:94
+msgid "Agencies can move reviewed offer definitions between stores without copying site-specific product IDs blindly."
+msgstr ""
+
+#: app/Admin/Tools/ToolsPage.php:97
+msgid "Import offers"
+msgstr ""
+
+#: app/Admin/Wizard/WizardController.php:89
+msgid "You do not have permission to run the UpsellBay wizard."
+msgstr ""
+
+#: app/Admin/Wizard/WizardController.php:96
+msgid "Wizard save could not be verified. Please try again."
+msgstr ""
+
+#: app/Admin/Wizard/WizardController.php:116
+msgid "Checkout bump offer"
+msgstr ""
+
+#: app/Admin/Wizard/WizardController.php:138
+msgid "First offer draft created."
+msgstr ""
+
+#: app/Core/Installer.php:116
+msgid "UpsellBay Offer"
+msgstr ""
+
+#: app/Domain/Offers/OfferDefaults.php:57
+msgid "Complete your order with this add-on"
+msgstr ""
+
+#: app/Domain/Offers/OfferDefaults.php:58
+msgid "Add a relevant product before placing the order."
+msgstr ""
+
+#: app/Domain/Offers/OfferDefaults.php:59
+msgid "Add to order"
+msgstr ""
+
+#: app/Domain/Offers/OfferDefaults.php:62
+msgid "Frequently bought with this product"
+msgstr ""
+
+#: app/Domain/Offers/OfferDefaults.php:63
+msgid "Show a relevant add-on on the product page."
+msgstr ""
+
+#: app/Domain/Offers/OfferDefaults.php:64
+msgid "Add item"
+msgstr ""
+
+#: app/Domain/Offers/OfferDefaults.php:67
+msgid "Recommended for your cart"
+msgstr ""
+
+#: app/Domain/Offers/OfferDefaults.php:68
+msgid "Offer a useful add-on while the shopper reviews the cart."
+msgstr ""
+
+#: app/Domain/Offers/OfferDefaults.php:69
+msgid "Add to cart"
+msgstr ""
+
+#: app/Domain/Offers/OfferDefaults.php:72
+msgid "Add another useful item"
+msgstr ""
+
+#: app/Domain/Offers/OfferDefaults.php:73
+msgid "Send shoppers to a separate checkout for this follow-on offer."
+msgstr ""
+
+#: app/Domain/Offers/OfferDefaults.php:74
+msgid "View offer"
+msgstr ""
+
+#: app/Domain/Offers/ProductRecommendationAssistant.php:64
+msgid "WooCommerce upsell configured for this product."
+msgstr ""
+
+#: app/Domain/Offers/ProductRecommendationAssistant.php:69
+msgid "WooCommerce cross-sell configured for this product."
+msgstr ""
+
+#: app/Domain/Offers/ProductRecommendationAssistant.php:74
+msgid "Same-category product that can work as an add-on."
+msgstr ""
+
+#: app/Domain/Offers/ProductRecommendationAssistant.php:79
+msgid "Previously accepted UpsellBay offer product."
+msgstr ""
+
+#: app/Integrations/WooCommerce/CheckoutFields.php:31
+msgid "UpsellBay accepted offer"
+msgstr ""
+
+#: templates/admin/wizard.php:17
+msgid "Offer product"
+msgstr ""
+
+#: templates/admin/wizard.php:20
+msgid "Choose the product shoppers can add from the first offer."
+msgstr ""
+
+#: templates/admin/wizard.php:24
+msgid "Placement"
+msgstr ""
+
+#: templates/admin/wizard.php:27
+msgid "Checkout bump"
+msgstr ""
+
+#: templates/admin/wizard.php:28
+msgid "Product page offer"
+msgstr ""
+
+#: templates/admin/wizard.php:29
+msgid "Cart offer"
+msgstr ""
+
+#: templates/admin/wizard.php:30
+msgid "Thank-you follow-on offer"
+msgstr ""
+
+#: templates/admin/wizard.php:35
+msgid "Headline"
+msgstr ""
+
+#: templates/admin/wizard.php:39
+msgid "Preview first"
+msgstr ""
+
+#: templates/admin/wizard.php:43
+msgid "Enable test mode so only admins can preview the offer before publishing."
+msgstr ""
+
+#: templates/admin/wizard.php:49
+msgid "Create draft offer"
+msgstr ""
