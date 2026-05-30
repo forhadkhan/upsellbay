@@ -31,6 +31,9 @@
 		"phpcs": "phpcs",
 		"phpcbf": "phpcbf",
 		"phpstan": "phpstan analyse",
+		"qa:isolation": "php scripts/qa-product-isolation.php",
+		"qa:performance": "php scripts/qa-performance-bench.php",
+		"qa:static": "php scripts/qa-static-gates.php",
 		"test": "php tests/run.php",
 		"plugin-check": "wp plugin check upsellbay --path=."
 	},
