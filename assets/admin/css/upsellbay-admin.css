@@ -91,10 +91,10 @@
 	width: 220px;
 }
 
-.upsellbay-settings-table .woocommerce-help-tip,
-.upsellbay-wizard .form-table .woocommerce-help-tip {
-	margin: -3px 0 0 4px;
-	vertical-align: middle;
+.upsellbay-settings-table th .woocommerce-help-tip,
+.upsellbay-wizard .form-table th .woocommerce-help-tip {
+	float: right;
+	margin: 0;
 }
 
 @media (max-width: 782px) {

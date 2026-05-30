@@ -88,6 +88,8 @@ final class AdminAssets {
 			return;
 		}
 
+		$this->enqueue_help_tip_assets();
+
 		foreach ( $assets as $handle_suffix => $asset ) {
 			$handle = Constants::asset_handle( str_replace( 'upsellbay-', '', $handle_suffix ) );
 			if ( isset( $asset['css'] ) && function_exists( 'wp_enqueue_style' ) ) {
@@ -97,6 +99,27 @@ final class AdminAssets {
 				wp_enqueue_script( $handle, plugins_url( $asset['js'], Constants::plugin_file() ), array( 'jquery' ), Constants::VERSION, true );
 			}
 		}
+	}
+
+	/**
+	 * Enqueue WooCommerce help-tip dependencies for UpsellBay's custom admin page.
+	 *
+	 * @since 1.0.0
+	 */
+	private function enqueue_help_tip_assets(): void {
+		if ( function_exists( 'wp_enqueue_style' ) ) {
+			wp_enqueue_style( 'woocommerce_admin_styles' );
+		}
+
+		if ( ! function_exists( 'wp_enqueue_script' ) || ! function_exists( 'wp_add_inline_script' ) ) {
+			return;
+		}
+
+		wp_enqueue_script( 'jquery-tiptip' );
+		wp_add_inline_script(
+			'jquery-tiptip',
+			"jQuery( function( $ ) { if ( $.fn.tipTip ) { $( '.upsellbay-admin .woocommerce-help-tip' ).tipTip( { attribute: 'data-tip', fadeIn: 50, fadeOut: 50, delay: 200 } ); } } );"
+		);
 	}
 
 	/**

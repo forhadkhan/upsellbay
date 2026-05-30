@@ -230,7 +230,7 @@ final class SettingsPage {
 	 */
 	private function help_tip( string $text ): string {
 		if ( function_exists( 'wc_help_tip' ) ) {
-			return wp_kses_post( wc_help_tip( $text ) );
+			return wc_help_tip( $text, false );
 		}
 
 		return '<span class="description">' . esc_html( $text ) . '</span>';
