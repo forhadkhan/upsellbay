@@ -139,7 +139,7 @@ Goal: prove UpsellBay is secure, stable, performant, Woo-native, HPOS-safe, Bloc
 - [ ] UB-P7-009 — Security Review
 - [ ] UB-P7-010 — Accessibility Review
 - [ ] UB-P7-011 — WordPress and WooCommerce Standards Gates
-- [ ] UB-P7-012 — Product Isolation Scan
+- [x] UB-P7-012 — Product Isolation Scan
 - [ ] UB-P7-013 — Marketplace Compliance Review
 
 ## [Phase 8 — Documentation](08-documentation.md)
@@ -184,7 +184,7 @@ Goal: package, audit, submit, and launch UpsellBay v1 with evidence for every PR
 | 5 — Merchant Experience | 9 | COMPLETED |
 | 6 — Developer Extensibility | 8 | COMPLETED |
 | 6.5 — Admin UX and Product Independence Remediation | 3 | COMPLETED |
-| 7 — Quality Assurance | 13 | PENDING |
+| 7 — Quality Assurance | 13 | IN_PROGRESS |
 | 8 — Documentation | 12 | PENDING |
 | 9 — Release Preparation | 10 | PENDING |
 | **Total** | **121** | |
