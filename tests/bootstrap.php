@@ -26,6 +26,7 @@ if ( ! function_exists( 'esc_html__' ) ) {
 foreach (
 	array(
 		'app/Core/Constants.php',
+		'app/Core/Hooks.php',
 		'app/Core/Container.php',
 		'app/Core/Settings.php',
 		'app/Core/Platform.php',

@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace WPAnchorBay\UpsellBay\Domain\Rules;
 
+use WPAnchorBay\UpsellBay\Core\Hooks;
+
 /**
  * Evaluates normalized offer rules against a server-side context.
  *
@@ -45,7 +47,15 @@ final class RuleEvaluator {
 	 * @param array<string, mixed> $context Context.
 	 */
 	public function matches( $rules, string $match_mode, array $context ): bool {
-		$parsed = $this->parser->parse( $rules );
+		/**
+		 * Filter the server-side context used for rule evaluation.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param array<string, mixed> $context Rule context.
+		 */
+		$context = Hooks::filter( 'rule_context', $context );
+		$parsed  = $this->parser->parse( $rules );
 		if ( null === $parsed ) {
 			return false;
 		}
@@ -66,7 +76,7 @@ final class RuleEvaluator {
 	 * @param array<string, mixed> $context Context.
 	 */
 	private function evaluate_rule( array $rule, array $context ): bool {
-		return match ( $rule['type'] ) {
+		$result = match ( $rule['type'] ) {
 			'cart_product'                  => $this->compare_list( $context['cart_product_ids'] ?? array(), $rule['operator'], $rule['value'] ),
 			'cart_category'                 => $this->compare_list( $context['cart_category_ids'] ?? array(), $rule['operator'], $rule['value'] ),
 			'cart_tag'                      => $this->compare_list( $context['cart_tag_ids'] ?? array(), $rule['operator'], $rule['value'] ),
@@ -79,6 +89,17 @@ final class RuleEvaluator {
 			'exclude_if_product_in_cart'    => ! $this->compare_list( $context['cart_product_ids'] ?? array(), 'in', $rule['value'] ),
 			default                         => false,
 		};
+
+		/**
+		 * Filter the result for a single normalized rule.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param bool                 $result  Rule match result.
+		 * @param array<string, mixed> $rule    Normalized rule.
+		 * @param array<string, mixed> $context Rule context.
+		 */
+		return (bool) Hooks::filter( 'rule_result', $result, $rule, $context );
 	}
 
 	/**

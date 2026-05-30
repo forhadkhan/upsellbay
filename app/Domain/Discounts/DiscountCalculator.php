@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace WPAnchorBay\UpsellBay\Domain\Discounts;
 
+use WPAnchorBay\UpsellBay\Core\Hooks;
+
 /**
  * Calculates server-side offer prices from current product prices.
  *
@@ -45,8 +47,29 @@ final class DiscountCalculator {
 			return null;
 		}
 
-		$offer_price     = max( 0.0, $offer_price );
+		$offer_price = max( 0.0, $offer_price );
+		/**
+		 * Filter the calculated offer price after server-side validation.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param string               $offer_price Formatted offer price.
+		 * @param float                $original    Original product price.
+		 * @param array<string, mixed> $meta        Offer meta.
+		 */
+		$offer_price     = (float) Hooks::filter( 'offer_price', $this->format_decimal( $offer_price ), $original, $meta );
 		$discount_amount = max( 0.0, $original - $offer_price );
+		/**
+		 * Filter the calculated discount amount after server-side validation.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param string               $discount_amount Formatted discount amount.
+		 * @param float                $original        Original product price.
+		 * @param float                $offer_price     Offer price.
+		 * @param array<string, mixed> $meta            Offer meta.
+		 */
+		$discount_amount = (float) Hooks::filter( 'discount_amount', $this->format_decimal( $discount_amount ), $original, $offer_price, $meta );
 
 		return array(
 			'original_price'  => $this->format_decimal( $original ),

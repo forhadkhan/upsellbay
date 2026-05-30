@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace WPAnchorBay\UpsellBay\Api\Routes;
 
 use WPAnchorBay\UpsellBay\Core\Constants;
+use WPAnchorBay\UpsellBay\Core\Hooks;
 use WPAnchorBay\UpsellBay\Data\CartSession;
 use WPAnchorBay\UpsellBay\Domain\Analytics\AnalyticsService;
 use WPAnchorBay\UpsellBay\Domain\Cart\CartMutator;
@@ -156,6 +157,7 @@ final class PublicOfferRoutes {
 
 		if ( true === ( $result['success'] ?? false ) ) {
 			$this->analytics->record_event( 'accept', (int) $params['offer_id'], (string) ( $params['placement'] ?? 'checkout_bump' ), ( $this->date_provider )(), (string) ( $result['offer_price'] ?? '0.000000' ) );
+			Hooks::action( 'offer_accepted', (int) $params['offer_id'], (string) ( $params['placement'] ?? 'checkout_bump' ), $result );
 		}
 
 		return $this->response( true === ( $result['success'] ?? false ) ? 200 : 400, $result + array( 'notices' => array() ) );
@@ -192,6 +194,7 @@ final class PublicOfferRoutes {
 
 		if ( true === ( $result['success'] ?? false ) ) {
 			$this->analytics->record_event( 'accept', (int) $params['offer_id'], $placement, ( $this->date_provider )(), (string) ( $result['offer_price'] ?? '0.000000' ) );
+			Hooks::action( 'offer_accepted', (int) $params['offer_id'], $placement, $result );
 		}
 
 		return $this->response( true === ( $result['success'] ?? false ) ? 200 : 400, $result + array( 'notices' => array() ) );
@@ -216,6 +219,7 @@ final class PublicOfferRoutes {
 		$placement = (string) ( $params['placement'] ?? '' );
 		$this->session->dismiss_offer( $offer_id, $placement );
 		$this->analytics->record_event( 'dismiss', $offer_id, $placement, ( $this->date_provider )() );
+		Hooks::action( 'offer_dismissed', $offer_id, $placement );
 
 		return $this->response(
 			200,

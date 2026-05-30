@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace WPAnchorBay\UpsellBay\Domain\Analytics;
 
 use WPAnchorBay\UpsellBay\Data\StatsRepository;
+use WPAnchorBay\UpsellBay\Core\Hooks;
 
 /**
  * Repairs missing aggregate rows through bounded, idempotent operations.
@@ -48,5 +49,6 @@ final class StatsReconciler {
 	 */
 	public function repair_missing_row( string $date, int $offer_id, string $placement ): void {
 		$this->stats->increment( $date, $offer_id, $placement, array() );
+		Hooks::action( 'daily_stats_reconciled', $date, $offer_id, $placement );
 	}
 }

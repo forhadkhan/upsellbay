@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace WPAnchorBay\UpsellBay\Domain\Offers;
 
+use WPAnchorBay\UpsellBay\Core\Hooks;
 use WPAnchorBay\UpsellBay\Domain\Rules\RuleEvaluator;
 
 /**
@@ -87,7 +88,18 @@ final class OfferPrioritizer {
 			}
 		);
 
-		return array_slice( $eligible, 0, max( 0, $limit ) );
+		$eligible = array_slice( $eligible, 0, max( 0, $limit ) );
+
+		/**
+		 * Filter eligible offers after rule, schedule, status, and product checks.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param array<int, array<string, mixed>> $eligible  Eligible offers.
+		 * @param string                           $placement Placement key.
+		 * @param array<string, mixed>             $context   Rule context.
+		 */
+		return Hooks::filter( 'eligible_offers', $eligible, $placement, $context );
 	}
 
 	/**

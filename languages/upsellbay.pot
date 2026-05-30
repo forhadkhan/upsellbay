@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-05-30T05:22:33+00:00\n"
+"POT-Creation-Date: 2026-05-30T05:39:16+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: upsellbay\n"
@@ -352,6 +352,24 @@ msgstr ""
 msgid "View offer"
 msgstr ""
 
+#: app/Domain/Offers/OfferSchema.php:83
+#: templates/admin/wizard.php:27
+msgid "Checkout bump"
+msgstr ""
+
+#: app/Domain/Offers/OfferSchema.php:84
+#: templates/admin/wizard.php:28
+msgid "Product page offer"
+msgstr ""
+
+#: app/Domain/Offers/OfferSchema.php:85
+msgid "Cart cross-sell"
+msgstr ""
+
+#: app/Domain/Offers/OfferSchema.php:86
+msgid "Thank-you offer"
+msgstr ""
+
 #: app/Domain/Offers/ProductRecommendationAssistant.php:64
 msgid "WooCommerce upsell configured for this product."
 msgstr ""
@@ -382,14 +400,6 @@ msgstr ""
 
 #: templates/admin/wizard.php:24
 msgid "Placement"
-msgstr ""
-
-#: templates/admin/wizard.php:27
-msgid "Checkout bump"
-msgstr ""
-
-#: templates/admin/wizard.php:28
-msgid "Product page offer"
 msgstr ""
 
 #: templates/admin/wizard.php:29

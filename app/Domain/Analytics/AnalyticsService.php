@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace WPAnchorBay\UpsellBay\Domain\Analytics;
 
+use WPAnchorBay\UpsellBay\Core\Hooks;
+
 /**
  * Routes offer lifecycle analytics events to aggregate counters.
  *
@@ -46,11 +48,21 @@ final class AnalyticsService {
 	 * @param string $discount_total Discount delta.
 	 */
 	public function record_event( string $event, int $offer_id, string $placement, string $date, string $revenue = '0.000000', string $discount_total = '0.000000' ): void {
-		match ( $event ) {
-			'view'    => $this->recorder->record_view( $offer_id, $placement, $date ),
-			'accept'  => $this->recorder->record_accept( $offer_id, $placement, $date, $revenue, $discount_total ),
-			'dismiss' => $this->recorder->record_dismissal( $offer_id, $placement, $date ),
-			'order'   => $this->recorder->record_order( $offer_id, $placement, $date, $revenue, $discount_total ),
+		$payload = array(
+			'event'          => $event,
+			'offer_id'       => $offer_id,
+			'placement'      => $placement,
+			'date'           => $date,
+			'revenue'        => $revenue,
+			'discount_total' => $discount_total,
+		);
+		$payload = Hooks::filter( 'analytics_event', $payload );
+
+		match ( (string) $payload['event'] ) {
+			'view'    => $this->recorder->record_view( (int) $payload['offer_id'], (string) $payload['placement'], (string) $payload['date'] ),
+			'accept'  => $this->recorder->record_accept( (int) $payload['offer_id'], (string) $payload['placement'], (string) $payload['date'], (string) $payload['revenue'], (string) $payload['discount_total'] ),
+			'dismiss' => $this->recorder->record_dismissal( (int) $payload['offer_id'], (string) $payload['placement'], (string) $payload['date'] ),
+			'order'   => $this->recorder->record_order( (int) $payload['offer_id'], (string) $payload['placement'], (string) $payload['date'], (string) $payload['revenue'], (string) $payload['discount_total'] ),
 			default   => null,
 		};
 	}

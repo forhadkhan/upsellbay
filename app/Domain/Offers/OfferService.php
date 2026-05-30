@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace WPAnchorBay\UpsellBay\Domain\Offers;
 
 use RuntimeException;
+use WPAnchorBay\UpsellBay\Core\Hooks;
 use WPAnchorBay\UpsellBay\Data\OfferRepository;
 
 /**
@@ -54,7 +55,19 @@ final class OfferService {
 	 */
 	public function create( array $offer ): int {
 		$this->assert_valid( $offer['meta'] ?? array() );
-		return $this->repository->create( $offer );
+		$offer_id = $this->repository->create( $offer );
+
+		/**
+		 * Fires after an offer is created through the public service boundary.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param int                  $offer_id Offer ID.
+		 * @param array<string, mixed> $offer    Submitted offer payload.
+		 */
+		Hooks::action( 'offer_created', $offer_id, $offer );
+
+		return $offer_id;
 	}
 
 	/**
@@ -72,7 +85,20 @@ final class OfferService {
 		}
 
 		$this->assert_valid( $offer['meta'] ?? array() );
-		return $this->repository->update( $offer_id, $offer );
+		$updated = $this->repository->update( $offer_id, $offer );
+		if ( $updated ) {
+			/**
+			 * Fires after an offer is updated through the public service boundary.
+			 *
+			 * @since 1.0.0
+			 *
+			 * @param int                  $offer_id Offer ID.
+			 * @param array<string, mixed> $offer    Submitted offer payload.
+			 */
+			Hooks::action( 'offer_updated', $offer_id, $offer );
+		}
+
+		return $updated;
 	}
 
 	/**

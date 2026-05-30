@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace WPAnchorBay\UpsellBay\Domain\Offers;
 
+use WPAnchorBay\UpsellBay\Core\Hooks;
+
 /**
  * Defines supported offer types, placements, and meta defaults.
  *
@@ -28,7 +30,7 @@ final class OfferSchema {
 	 * @return array<string, mixed>
 	 */
 	public function defaults(): array {
-		return array(
+		$defaults = array(
 			'_ub_offer_type'           => self::TYPE_CHECKOUT_BUMP,
 			'_ub_status'               => 'draft',
 			'_ub_offer_product_id'     => 0,
@@ -47,6 +49,15 @@ final class OfferSchema {
 			'_ub_end_at'               => null,
 			'_ub_priority'             => 0,
 		);
+
+		/**
+		 * Filter the public offer meta schema defaults.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param array<string, mixed> $defaults Normalized offer meta defaults.
+		 */
+		return Hooks::filter( 'offer_schema', $defaults );
 	}
 
 	/**
@@ -58,6 +69,31 @@ final class OfferSchema {
 	 */
 	public function offer_types(): array {
 		return array( self::TYPE_CHECKOUT_BUMP, self::TYPE_PRODUCT_UPSELL, self::TYPE_CART_CROSSSELL, self::TYPE_THANKYOU_OFFER );
+	}
+
+	/**
+	 * Return public placement labels.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return array<string, string>
+	 */
+	public function placements(): array {
+		$placements = array(
+			self::TYPE_CHECKOUT_BUMP  => function_exists( '__' ) ? __( 'Checkout bump', 'upsellbay' ) : 'Checkout bump',
+			self::TYPE_PRODUCT_UPSELL => function_exists( '__' ) ? __( 'Product page offer', 'upsellbay' ) : 'Product page offer',
+			self::TYPE_CART_CROSSSELL => function_exists( '__' ) ? __( 'Cart cross-sell', 'upsellbay' ) : 'Cart cross-sell',
+			self::TYPE_THANKYOU_OFFER => function_exists( '__' ) ? __( 'Thank-you offer', 'upsellbay' ) : 'Thank-you offer',
+		);
+
+		/**
+		 * Filter the public placement map.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param array<string, string> $placements Placement key to label map.
+		 */
+		return Hooks::filter( 'available_placements', $placements );
 	}
 
 	/**

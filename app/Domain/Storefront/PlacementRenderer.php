@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace WPAnchorBay\UpsellBay\Domain\Storefront;
 
+use WPAnchorBay\UpsellBay\Core\Hooks;
 use WPAnchorBay\UpsellBay\Domain\Analytics\AnalyticsRecorder;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferPrioritizer;
 
@@ -85,7 +86,20 @@ final class PlacementRenderer {
 		foreach ( $selected as $offer ) {
 			$offer_id = (int) ( $offer['id'] ?? 0 );
 			$this->analytics->record_view( $offer_id, $placement, $date );
-			$html .= $this->renderers[ $placement ]->render_offer( $offer, $context );
+			$offer_html = $this->renderers[ $placement ]->render_offer( $offer, $context );
+			/**
+			 * Filter escaped offer HTML for a rendered storefront placement.
+			 *
+			 * @since 1.0.0
+			 *
+			 * @param string               $offer_html Escaped offer HTML.
+			 * @param array<string, mixed> $offer      Offer payload.
+			 * @param string               $placement  Placement key.
+			 * @param array<string, mixed> $context    Render context.
+			 */
+			$offer_html = Hooks::filter( 'render_offer_html', $offer_html, $offer, $placement, $context );
+			$html      .= $offer_html;
+			Hooks::action( 'offer_rendered', $offer_id, $placement, $offer, $context );
 		}
 
 		return $html;

@@ -11,6 +11,7 @@ namespace WPAnchorBay\UpsellBay\Data;
 
 use RuntimeException;
 use WPAnchorBay\UpsellBay\Core\Constants;
+use WPAnchorBay\UpsellBay\Core\Hooks;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferValidator;
 
 /**
@@ -255,16 +256,25 @@ final class OfferRepository {
 	 * @return array<int, array<string, mixed>>
 	 */
 	public function query( array $filters = array() ): array {
-		$posts  = ( $this->query_posts )(
-			array(
-				'post_type'      => Constants::OFFER_POST_TYPE,
-				'post_status'    => 'publish',
-				'posts_per_page' => isset( $filters['limit'] ) ? (int) $filters['limit'] : 50,
-				'orderby'        => 'menu_order',
-				'order'          => 'ASC',
-			)
+		$query_args = array(
+			'post_type'      => Constants::OFFER_POST_TYPE,
+			'post_status'    => 'publish',
+			'posts_per_page' => isset( $filters['limit'] ) ? (int) $filters['limit'] : 50,
+			'orderby'        => 'menu_order',
+			'order'          => 'ASC',
 		);
-		$offers = array();
+
+		/**
+		 * Filter private offer CPT query arguments.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param array<string, mixed> $query_args WP_Query-compatible arguments.
+		 * @param array<string, mixed> $filters    Normalized repository filters.
+		 */
+		$query_args = Hooks::filter( 'offer_query_args', $query_args, $filters );
+		$posts      = ( $this->query_posts )( $query_args );
+		$offers     = array();
 
 		foreach ( $posts as $post ) {
 			$offer_id = (int) ( $post['id'] ?? $post['ID'] ?? 0 );
