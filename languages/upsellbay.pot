@@ -9,15 +9,17 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-05-30T05:53:41+00:00\n"
+"POT-Creation-Date: 2026-05-30T11:57:03+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: upsellbay\n"
 
 #. Plugin Name of the plugin
 #: upsellbay.php
-#: app/Admin/AdminPageRegistrar.php:146
-#: app/Admin/AdminPageRegistrar.php:159
+#: app/Admin/AdminPage.php:76
+#: app/Admin/AdminPageRegistrar.php:140
+#: app/Admin/AdminPageRegistrar.php:152
+#: app/Admin/AdminPageRegistrar.php:153
 msgid "UpsellBay"
 msgstr ""
 
@@ -45,67 +47,6 @@ msgstr ""
 msgid "UpsellBay test mode"
 msgstr ""
 
-#: app/Admin/AdminPageRegistrar.php:158
-#: app/Admin/Offers/OffersPage.php:83
-#: app/Core/Installer.php:115
-msgid "UpsellBay Offers"
-msgstr ""
-
-#: app/Admin/AdminPageRegistrar.php:163
-#: app/Admin/Offers/OfferEditPage.php:268
-msgid "Add UpsellBay Offer"
-msgstr ""
-
-#: app/Admin/AdminPageRegistrar.php:164
-msgid "Add Offer"
-msgstr ""
-
-#: app/Admin/AdminPageRegistrar.php:168
-#: app/Admin/Wizard/WizardController.php:155
-#: templates/admin/wizard.php:11
-msgid "UpsellBay Setup Wizard"
-msgstr ""
-
-#: app/Admin/AdminPageRegistrar.php:169
-msgid "Setup Wizard"
-msgstr ""
-
-#: app/Admin/AdminPageRegistrar.php:173
-#: app/Admin/Analytics/AnalyticsPage.php:92
-msgid "UpsellBay Analytics"
-msgstr ""
-
-#: app/Admin/AdminPageRegistrar.php:174
-msgid "Analytics"
-msgstr ""
-
-#: app/Admin/AdminPageRegistrar.php:178
-#: app/Admin/Settings/SettingsPage.php:130
-msgid "UpsellBay Settings"
-msgstr ""
-
-#: app/Admin/AdminPageRegistrar.php:179
-msgid "Settings"
-msgstr ""
-
-#: app/Admin/AdminPageRegistrar.php:183
-#: app/Admin/Tools/ToolsPage.php:111
-msgid "UpsellBay Tools"
-msgstr ""
-
-#: app/Admin/AdminPageRegistrar.php:184
-msgid "Tools"
-msgstr ""
-
-#: app/Admin/AdminPageRegistrar.php:188
-#: app/Admin/Help/HelpPage.php:85
-msgid "UpsellBay Help"
-msgstr ""
-
-#: app/Admin/AdminPageRegistrar.php:189
-msgid "Help"
-msgstr ""
-
 #: app/Admin/Analytics/AnalyticsPage.php:67
 msgid "No offer activity yet"
 msgstr ""
@@ -123,42 +64,98 @@ msgstr ""
 msgid "Review test mode"
 msgstr ""
 
-#: app/Admin/Analytics/AnalyticsPage.php:94
-#: app/Admin/Offers/OffersPage.php:105
-msgid "Views"
-msgstr ""
-
-#: app/Admin/Analytics/AnalyticsPage.php:95
-#: app/Admin/Offers/OffersPage.php:106
-msgid "Accepts"
-msgstr ""
-
-#: app/Admin/Analytics/AnalyticsPage.php:96
-msgid "Accept rate"
-msgstr ""
-
-#: app/Admin/Analytics/AnalyticsPage.php:97
-msgid "Attributed revenue"
-msgstr ""
-
 #: app/Admin/Analytics/AnalyticsPage.php:102
-msgid "Dismissals"
-msgstr ""
-
-#: app/Admin/Analytics/AnalyticsPage.php:103
-msgid "Orders"
+#: app/Admin/Navigation/TabFactory.php:154
+msgid "Analytics"
 msgstr ""
 
 #: app/Admin/Analytics/AnalyticsPage.php:104
-msgid "Discount total"
+#: app/Admin/Offers/OffersPage.php:115
+msgid "Views"
 msgstr ""
 
 #: app/Admin/Analytics/AnalyticsPage.php:105
+#: app/Admin/Offers/OffersPage.php:116
+msgid "Accepts"
+msgstr ""
+
+#: app/Admin/Analytics/AnalyticsPage.php:106
+msgid "Accept rate"
+msgstr ""
+
+#: app/Admin/Analytics/AnalyticsPage.php:107
+msgid "Attributed revenue"
+msgstr ""
+
+#: app/Admin/Analytics/AnalyticsPage.php:112
+msgid "Dismissals"
+msgstr ""
+
+#: app/Admin/Analytics/AnalyticsPage.php:113
+msgid "Orders"
+msgstr ""
+
+#: app/Admin/Analytics/AnalyticsPage.php:114
+msgid "Discount total"
+msgstr ""
+
+#: app/Admin/Analytics/AnalyticsPage.php:115
 msgid "Revenue per attributed order"
 msgstr ""
 
 #: app/Admin/CompatibilityNotice.php:66
 msgid "Compatibility guide"
+msgstr ""
+
+#: app/Admin/Dashboard/DashboardPage.php:48
+#: app/Admin/Navigation/TabFactory.php:134
+msgid "Dashboard / Overview"
+msgstr ""
+
+#: app/Admin/Dashboard/DashboardPage.php:50
+msgid "Offers enabled"
+msgstr ""
+
+#: app/Admin/Dashboard/DashboardPage.php:50
+msgid "Yes"
+msgstr ""
+
+#: app/Admin/Dashboard/DashboardPage.php:50
+msgid "No"
+msgstr ""
+
+#: app/Admin/Dashboard/DashboardPage.php:51
+#: app/Admin/Settings/SettingsPage.php:148
+msgid "Test mode"
+msgstr ""
+
+#: app/Admin/Dashboard/DashboardPage.php:51
+msgid "On"
+msgstr ""
+
+#: app/Admin/Dashboard/DashboardPage.php:51
+msgid "Off"
+msgstr ""
+
+#: app/Admin/Dashboard/DashboardPage.php:52
+msgid "Active offers"
+msgstr ""
+
+#: app/Admin/Dashboard/DashboardPage.php:53
+msgid "Recent revenue"
+msgstr ""
+
+#: app/Admin/Dashboard/DashboardPage.php:56
+msgid "Next action"
+msgstr ""
+
+#: app/Admin/Dashboard/DashboardPage.php:56
+#: app/Admin/Offers/OffersPage.php:94
+msgid "Add offer"
+msgstr ""
+
+#: app/Admin/Dashboard/DashboardPage.php:57
+msgid "Review settings"
 msgstr ""
 
 #: app/Admin/Help/HelpPage.php:30
@@ -192,6 +189,34 @@ msgstr ""
 
 #: app/Admin/Help/HelpPage.php:66
 msgid "Use the first offer tutorial to create a draft offer, preview it in test mode, and publish only when the checkout looks right."
+msgstr ""
+
+#: app/Admin/Help/HelpPage.php:95
+#: app/Admin/Navigation/TabFactory.php:186
+msgid "Help"
+msgstr ""
+
+#: app/Admin/Navigation/TabFactory.php:142
+#: app/Admin/Offers/OffersPage.php:93
+msgid "Offers"
+msgstr ""
+
+#: app/Admin/Navigation/TabFactory.php:162
+#: app/Admin/Settings/SettingsPage.php:140
+msgid "Settings"
+msgstr ""
+
+#: app/Admin/Navigation/TabFactory.php:170
+#: app/Admin/Tools/ToolsPage.php:121
+msgid "Tools"
+msgstr ""
+
+#: app/Admin/Navigation/TabFactory.php:178
+msgid "Setup"
+msgstr ""
+
+#: app/Admin/Navigation/TabNavigation.php:27
+msgid "UpsellBay sections"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:95
@@ -258,131 +283,135 @@ msgstr ""
 msgid "Offer targeting rules"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:288
+#: app/Admin/Offers/OfferEditPage.php:278
+msgid "Add UpsellBay Offer"
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:298
 msgid "Save offer"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:289
+#: app/Admin/Offers/OfferEditPage.php:299
 msgid "Back to offers"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:302
+#: app/Admin/Offers/OfferEditPage.php:312
 msgid "Offer name"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:303
-#: app/Admin/Offers/OffersPage.php:102
+#: app/Admin/Offers/OfferEditPage.php:313
+#: app/Admin/Offers/OffersPage.php:112
 #: templates/admin/wizard.php:24
 msgid "Placement"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:304
+#: app/Admin/Offers/OfferEditPage.php:314
 msgid "Offer product ID"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:305
+#: app/Admin/Offers/OfferEditPage.php:315
 #: templates/admin/wizard.php:35
 msgid "Headline"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:306
+#: app/Admin/Offers/OfferEditPage.php:316
 msgid "Button text"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:307
+#: app/Admin/Offers/OfferEditPage.php:317
 msgid "Rule matching"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:308
+#: app/Admin/Offers/OfferEditPage.php:318
 msgid "Rules"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:309
+#: app/Admin/Offers/OfferEditPage.php:319
 msgid "Discount type"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:310
+#: app/Admin/Offers/OfferEditPage.php:320
 msgid "Discount value"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:311
+#: app/Admin/Offers/OfferEditPage.php:321
 msgid "Show product image"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:312
+#: app/Admin/Offers/OfferEditPage.php:322
 msgid "Placement options"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:313
+#: app/Admin/Offers/OfferEditPage.php:323
 msgid "Start date"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:314
+#: app/Admin/Offers/OfferEditPage.php:324
 msgid "End date"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:315
-#: app/Admin/Offers/OffersPage.php:104
+#: app/Admin/Offers/OfferEditPage.php:325
+#: app/Admin/Offers/OffersPage.php:114
 msgid "Priority"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:316
+#: app/Admin/Offers/OfferEditPage.php:326
 msgid "Trigger product IDs"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:317
+#: app/Admin/Offers/OfferEditPage.php:327
 msgid "Trigger category IDs"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:327
-#: app/Admin/Offers/OffersPage.php:138
-#: app/Admin/Settings/SettingsPage.php:214
+#: app/Admin/Offers/OfferEditPage.php:337
+#: app/Admin/Offers/OffersPage.php:148
+#: app/Admin/Settings/SettingsPage.php:224
 #: app/Domain/Offers/OfferSchema.php:83
 #: templates/admin/wizard.php:27
 msgid "Checkout bump"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:328
-#: app/Admin/Offers/OffersPage.php:139
-#: app/Admin/Settings/SettingsPage.php:212
+#: app/Admin/Offers/OfferEditPage.php:338
+#: app/Admin/Offers/OffersPage.php:149
+#: app/Admin/Settings/SettingsPage.php:222
 #: app/Domain/Offers/OfferSchema.php:84
 #: templates/admin/wizard.php:28
 msgid "Product page offer"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:329
-#: app/Admin/Offers/OffersPage.php:140
-#: app/Admin/Settings/SettingsPage.php:213
+#: app/Admin/Offers/OfferEditPage.php:339
+#: app/Admin/Offers/OffersPage.php:150
+#: app/Admin/Settings/SettingsPage.php:223
 #: templates/admin/wizard.php:29
 msgid "Cart offer"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:330
+#: app/Admin/Offers/OfferEditPage.php:340
 #: templates/admin/wizard.php:30
 msgid "Thank-you follow-on offer"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:337
+#: app/Admin/Offers/OfferEditPage.php:347
 msgid "All rules"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:337
+#: app/Admin/Offers/OfferEditPage.php:347
 msgid "Any rule"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:339
+#: app/Admin/Offers/OfferEditPage.php:349
 msgid "No discount"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:339
+#: app/Admin/Offers/OfferEditPage.php:349
 msgid "Percentage"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:339
+#: app/Admin/Offers/OfferEditPage.php:349
 msgid "Fixed amount"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:341
+#: app/Admin/Offers/OfferEditPage.php:351
 msgid "Show the WooCommerce product image when available."
 msgstr ""
 
@@ -398,28 +427,24 @@ msgstr ""
 msgid "Open setup wizard"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:84
-msgid "Add offer"
-msgstr ""
-
-#: app/Admin/Offers/OffersPage.php:101
+#: app/Admin/Offers/OffersPage.php:111
 msgid "Offer"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:103
+#: app/Admin/Offers/OffersPage.php:113
 msgid "Status"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:107
+#: app/Admin/Offers/OffersPage.php:117
 msgid "Revenue"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:116
+#: app/Admin/Offers/OffersPage.php:126
 msgid "Edit"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:141
-#: app/Admin/Settings/SettingsPage.php:215
+#: app/Admin/Offers/OffersPage.php:151
+#: app/Admin/Settings/SettingsPage.php:225
 #: app/Domain/Offers/OfferSchema.php:86
 msgid "Thank-you offer"
 msgstr ""
@@ -433,12 +458,12 @@ msgid "Open this as an admin while test mode is enabled."
 msgstr ""
 
 #: app/Admin/Settings/DataSection.php:33
-#: app/Admin/Settings/SettingsPage.php:168
+#: app/Admin/Settings/SettingsPage.php:178
 msgid "Data"
 msgstr ""
 
 #: app/Admin/Settings/GeneralSection.php:33
-#: app/Admin/Settings/SettingsPage.php:135
+#: app/Admin/Settings/SettingsPage.php:145
 msgid "General"
 msgstr ""
 
@@ -454,68 +479,64 @@ msgstr ""
 msgid "Settings saved."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:137
+#: app/Admin/Settings/SettingsPage.php:147
 msgid "Enable offers"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:137
+#: app/Admin/Settings/SettingsPage.php:147
 msgid "Allow eligible live offers to render on enabled placements."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:138
-msgid "Test mode"
-msgstr ""
-
-#: app/Admin/Settings/SettingsPage.php:138
+#: app/Admin/Settings/SettingsPage.php:148
 msgid "Limit previews and draft offer checks to store managers before shoppers see them."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:139
+#: app/Admin/Settings/SettingsPage.php:149
 msgid "Placements"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:150
+#: app/Admin/Settings/SettingsPage.php:160
 #: app/Admin/Settings/StyleSection.php:33
 msgid "Style"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:152
+#: app/Admin/Settings/SettingsPage.php:162
 msgid "Accent color"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:153
+#: app/Admin/Settings/SettingsPage.php:163
 msgid "Button style"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:156
+#: app/Admin/Settings/SettingsPage.php:166
 msgid "Use theme buttons"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:157
+#: app/Admin/Settings/SettingsPage.php:167
 msgid "Outline"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:172
+#: app/Admin/Settings/SettingsPage.php:182
 msgid "Stats retention days"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:173
+#: app/Admin/Settings/SettingsPage.php:183
 msgid "Session retention days"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:174
+#: app/Admin/Settings/SettingsPage.php:184
 msgid "Log retention days"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:179
+#: app/Admin/Settings/SettingsPage.php:189
 msgid "Delete data on uninstall"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:179
+#: app/Admin/Settings/SettingsPage.php:189
 msgid "Keep this off unless the merchant explicitly wants plugin data removed during uninstall."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:181
+#: app/Admin/Settings/SettingsPage.php:191
 msgid "Save changes"
 msgstr ""
 
@@ -528,19 +549,19 @@ msgid "Agencies can move reviewed offer definitions between stores without copyi
 msgstr ""
 
 #: app/Admin/Tools/ToolsPage.php:97
-#: app/Admin/Tools/ToolsPage.php:121
+#: app/Admin/Tools/ToolsPage.php:131
 msgid "Import offers"
 msgstr ""
 
-#: app/Admin/Tools/ToolsPage.php:112
+#: app/Admin/Tools/ToolsPage.php:122
 msgid "System diagnostics"
 msgstr ""
 
-#: app/Admin/Tools/ToolsPage.php:123
+#: app/Admin/Tools/ToolsPage.php:133
 msgid "Offer import JSON"
 msgstr ""
 
-#: app/Admin/Tools/ToolsPage.php:124
+#: app/Admin/Tools/ToolsPage.php:134
 msgid "Validate import"
 msgstr ""
 
@@ -558,6 +579,14 @@ msgstr ""
 
 #: app/Admin/Wizard/WizardController.php:138
 msgid "First offer draft created."
+msgstr ""
+
+#: app/Admin/Wizard/WizardController.php:166
+msgid "Setup Wizard"
+msgstr ""
+
+#: app/Core/Installer.php:115
+msgid "UpsellBay Offers"
 msgstr ""
 
 #: app/Core/Installer.php:116
@@ -634,6 +663,10 @@ msgstr ""
 
 #: app/Integrations/WooCommerce/CheckoutFields.php:31
 msgid "UpsellBay accepted offer"
+msgstr ""
+
+#: templates/admin/wizard.php:11
+msgid "UpsellBay Setup Wizard"
 msgstr ""
 
 #: templates/admin/wizard.php:17

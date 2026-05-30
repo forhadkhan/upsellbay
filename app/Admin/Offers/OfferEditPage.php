@@ -265,7 +265,17 @@ final class OfferEditPage {
 	 */
 	public function render(): void {
 		echo '<div class="wrap woocommerce upsellbay-admin upsellbay-offer-editor">';
-		echo '<h1>' . esc_html__( 'Add UpsellBay Offer', 'upsellbay' ) . '</h1>';
+		$this->render_content();
+		echo '</div>';
+	}
+
+	/**
+	 * Render editor tab content.
+	 *
+	 * @since 1.0.0
+	 */
+	public function render_content(): void {
+		echo '<h2>' . esc_html__( 'Add UpsellBay Offer', 'upsellbay' ) . '</h2>';
 		echo '<form method="post">';
 		if ( function_exists( 'wp_nonce_field' ) ) {
 			wp_nonce_field( 'upsellbay_save_offer', 'nonce' );
@@ -286,8 +296,8 @@ final class OfferEditPage {
 		}
 
 		echo '<p class="submit"><button type="submit" class="button button-primary">' . esc_html__( 'Save offer', 'upsellbay' ) . '</button> ';
-		echo '<a class="button" href="' . esc_url( 'admin.php?page=upsellbay' ) . '">' . esc_html__( 'Back to offers', 'upsellbay' ) . '</a></p>';
-		echo '</form></div>';
+		echo '<a class="button" href="' . esc_url( 'admin.php?page=upsellbay&tab=offers' ) . '">' . esc_html__( 'Back to offers', 'upsellbay' ) . '</a></p>';
+		echo '</form>';
 	}
 
 	/**

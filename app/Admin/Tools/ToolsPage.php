@@ -95,7 +95,7 @@ final class ToolsPage {
 			'actions' => array(
 				array(
 					'label' => __( 'Import offers', 'upsellbay' ),
-					'url'   => 'admin.php?page=upsellbay-tools#import',
+					'url'   => 'admin.php?page=upsellbay&tab=tools#import',
 				),
 			),
 		);
@@ -108,7 +108,17 @@ final class ToolsPage {
 	 */
 	public function render(): void {
 		echo '<div class="wrap woocommerce upsellbay-admin">';
-		echo '<h1>' . esc_html__( 'UpsellBay Tools', 'upsellbay' ) . '</h1>';
+		$this->render_content();
+		echo '</div>';
+	}
+
+	/**
+	 * Render tools tab content.
+	 *
+	 * @since 1.0.0
+	 */
+	public function render_content(): void {
+		echo '<h2>' . esc_html__( 'Tools', 'upsellbay' ) . '</h2>';
 		echo '<h2>' . esc_html__( 'System diagnostics', 'upsellbay' ) . '</h2>';
 		echo '<table class="widefat striped upsellbay-diagnostics-table"><tbody>';
 		foreach ( $this->diagnostics() as $line ) {
@@ -122,6 +132,5 @@ final class ToolsPage {
 		echo '<p>' . esc_html( $empty['message'] ) . '</p>';
 		echo '<form method="post"><textarea name="upsellbay_import_json" class="large-text code" rows="8" aria-label="' . esc_attr( __( 'Offer import JSON', 'upsellbay' ) ) . '"></textarea>';
 		echo '<p><button type="submit" class="button">' . esc_html__( 'Validate import', 'upsellbay' ) . '</button></p></form>';
-		echo '</div>';
 	}
 }

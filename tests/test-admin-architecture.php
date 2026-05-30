@@ -9,17 +9,24 @@ declare(strict_types=1);
 
 use WPAnchorBay\UpsellBay\Admin\AdminAssets;
 use WPAnchorBay\UpsellBay\Admin\AdminBar;
+use WPAnchorBay\UpsellBay\Admin\AdminPage;
 use WPAnchorBay\UpsellBay\Admin\AdminPageRegistrar;
 use WPAnchorBay\UpsellBay\Admin\Analytics\AnalyticsPage;
 use WPAnchorBay\UpsellBay\Admin\CompatibilityNotice;
 use WPAnchorBay\UpsellBay\Admin\Coexistence;
+use WPAnchorBay\UpsellBay\Admin\Dashboard\DashboardPage;
 use WPAnchorBay\UpsellBay\Admin\Help\HelpPage;
+use WPAnchorBay\UpsellBay\Admin\Navigation\AdminTab;
+use WPAnchorBay\UpsellBay\Admin\Navigation\TabFactory;
+use WPAnchorBay\UpsellBay\Admin\Navigation\TabRegistry;
+use WPAnchorBay\UpsellBay\Admin\Navigation\TabRouter;
 use WPAnchorBay\UpsellBay\Admin\Offers\OfferEditPage;
 use WPAnchorBay\UpsellBay\Admin\Offers\OfferListTable;
 use WPAnchorBay\UpsellBay\Admin\Offers\OffersPage;
 use WPAnchorBay\UpsellBay\Admin\OverviewSummary;
 use WPAnchorBay\UpsellBay\Admin\Settings\SettingsPage;
 use WPAnchorBay\UpsellBay\Admin\Tools\ToolsPage;
+use WPAnchorBay\UpsellBay\Admin\Wizard\WizardController;
 use WPAnchorBay\UpsellBay\Core\Constants;
 use WPAnchorBay\UpsellBay\Core\Settings;
 use WPAnchorBay\UpsellBay\Data\OfferRepository;
@@ -38,7 +45,7 @@ use WPAnchorBay\UpsellBay\Utils\ImportExporter;
  */
 function upsellbay_admin_architecture_tests(): array {
 	return array(
-		'admin registrar exposes only woocommerce submenu pages' => static function (): void {
+		'admin registrar exposes a single woocommerce submenu page' => static function (): void {
 			$registered = array();
 			$registrar  = new AdminPageRegistrar(
 				static function ( string $parent_slug, string $page_title, string $menu_title, string $capability, string $menu_slug, callable $callback ) use ( &$registered ): string {
@@ -55,18 +62,109 @@ function upsellbay_admin_architecture_tests(): array {
 			assert_same(
 				array(
 					'upsellbay',
-					'upsellbay-add-offer',
-					'upsellbay-wizard',
-					'upsellbay-analytics',
-					'upsellbay-settings',
-					'upsellbay-tools',
-					'upsellbay-help',
 				),
 				$slugs
 			);
 			assert_same( array(), $registrar->top_level_pages() );
-			assert_true( $registrar->is_upsellbay_screen( 'woocommerce_page_upsellbay-settings' ) );
+			assert_true( $registrar->is_upsellbay_screen( 'woocommerce_page_upsellbay' ) );
+			assert_false( $registrar->is_upsellbay_screen( 'woocommerce_page_upsellbay-settings' ) );
 			assert_false( $registrar->is_upsellbay_screen( 'woocommerce_page_wc-orders' ) );
+		},
+		'admin tabs define dashboard first and route invalid tabs to dashboard' => static function (): void {
+			$registry = new TabRegistry(
+				array(
+					new AdminTab( 'dashboard', 'Dashboard / Overview', static function ( array $request ): void { unset( $request ); } ),
+					new AdminTab( 'offers', 'Offers', static function ( array $request ): void { unset( $request ); } ),
+					new AdminTab( 'analytics', 'Analytics', static function ( array $request ): void { unset( $request ); } ),
+				)
+			);
+			$router   = new TabRouter( $registry );
+
+			assert_same( 'dashboard', $registry->default_tab()->id() );
+			assert_same( array( 'dashboard', 'offers', 'analytics' ), array_keys( $registry->tabs() ) );
+			assert_same( 'offers', $router->current_tab( array( 'tab' => 'offers' ) )->id() );
+			assert_same( 'dashboard', $router->current_tab( array( 'tab' => 'missing' ) )->id() );
+		},
+		'unified admin page renders woocommerce style tabs with dashboard default' => static function (): void {
+			$registry = new TabRegistry(
+				array(
+					new AdminTab(
+						'dashboard',
+						'Dashboard / Overview',
+						static function ( array $request ): void {
+							unset( $request );
+							echo '<p>Dashboard content</p>';
+						}
+					),
+					new AdminTab(
+						'settings',
+						'Settings',
+						static function ( array $request ): void {
+							unset( $request );
+							echo '<p>Settings content</p>';
+						}
+					),
+				)
+			);
+			$page     = new AdminPage( $registry, new TabRouter( $registry ) );
+
+			ob_start();
+			$page->render( array() );
+			$html = (string) ob_get_clean();
+
+			assert_contains( 'nav-tab-wrapper woo-nav-tab-wrapper', $html );
+			assert_contains( 'Dashboard / Overview', $html );
+			assert_contains( 'admin.php?page=upsellbay&amp;tab=settings', $html );
+			assert_contains( 'Dashboard content', $html );
+			assert_false( str_contains( $html, 'Settings content' ) );
+		},
+		'unified admin page tolerates wordpress page hook callback argument' => static function (): void {
+			$registry = new TabRegistry(
+				array(
+					new AdminTab(
+						'dashboard',
+						'Dashboard / Overview',
+						static function ( array $request ): void {
+							unset( $request );
+							echo '<p>Dashboard content</p>';
+						}
+					),
+				)
+			);
+			$page     = new AdminPage( $registry, new TabRouter( $registry ) );
+
+			ob_start();
+			$page->render( 'woocommerce_page_upsellbay' );
+			$html = (string) ob_get_clean();
+
+			assert_contains( 'Dashboard content', $html );
+		},
+		'tab factory owns admin section definitions and offer editor routing' => static function (): void {
+			$repository = upsellbay_test_offer_repository( array() );
+			$validator  = new OfferValidator( new OfferSchema(), static fn (): bool => true );
+			$service    = new OfferService( $repository, $validator );
+			$settings   = new Settings( static fn (): array => array(), static fn (): bool => true );
+			$stats      = new StatsRepository( static function (): void {}, static fn (): array => array() );
+			$factory    = new TabFactory(
+				new DashboardPage( new OverviewSummary( $repository, $stats, $settings ) ),
+				new OffersPage( new OfferListTable( $repository, $service ) ),
+				new OfferEditPage( $service, $validator ),
+				new AnalyticsPage( $stats ),
+				new SettingsPage( $settings ),
+				new ToolsPage( new ImportExporter( $validator ), $settings ),
+				new WizardController( $service, $settings, new \WPAnchorBay\UpsellBay\Domain\Offers\OfferDefaults() ),
+				new HelpPage()
+			);
+			$registry   = $factory->registry();
+
+			assert_same( array( 'dashboard', 'offers', 'analytics', 'settings', 'tools', 'setup', 'help' ), array_keys( $registry->tabs() ) );
+
+			ob_start();
+			$registry->get( 'offers' )->render( array( 'action' => 'edit' ) );
+			$html = (string) ob_get_clean();
+
+			assert_contains( 'Add UpsellBay Offer', $html );
+			assert_false( str_contains( $html, 'wp-list-table' ) );
 		},
 		'offer list table maps native actions to repository calls' => static function (): void {
 			$repository = upsellbay_test_offer_repository(
@@ -182,8 +280,19 @@ function upsellbay_admin_architecture_tests(): array {
 
 			assert_same( array(), $assets->assets_for_screen( 'woocommerce_page_wc-orders' ) );
 			assert_same( array( 'upsellbay-admin' ), array_keys( $assets->assets_for_screen( 'woocommerce_page_upsellbay' ) ) );
-			assert_same( array( 'upsellbay-admin', 'upsellbay-offer-editor' ), array_keys( $assets->assets_for_screen( 'woocommerce_page_upsellbay-add-offer' ) ) );
-			assert_same( array( 'upsellbay-admin', 'upsellbay-analytics' ), array_keys( $assets->assets_for_screen( 'woocommerce_page_upsellbay-analytics' ) ) );
+			assert_same(
+				array( 'upsellbay-admin', 'upsellbay-offer-editor' ),
+				array_keys( $assets->assets_for_screen( 'woocommerce_page_upsellbay', array( 'tab' => 'offers', 'action' => 'edit' ) ) )
+			);
+			assert_same(
+				array( 'upsellbay-admin', 'upsellbay-offer-editor' ),
+				array_keys( $assets->assets_for_screen( 'woocommerce_page_upsellbay', array( 'tab' => 'setup' ) ) )
+			);
+			assert_same(
+				array( 'upsellbay-admin', 'upsellbay-analytics' ),
+				array_keys( $assets->assets_for_screen( 'woocommerce_page_upsellbay', array( 'tab' => 'analytics' ) ) )
+			);
+			assert_same( array(), $assets->assets_for_screen( 'woocommerce_page_upsellbay-add-offer' ) );
 		},
 		'analytics and overview use aggregate stats without live order scans' => static function (): void {
 			$stats = new StatsRepository(
@@ -270,6 +379,10 @@ function upsellbay_admin_architecture_tests(): array {
 			);
 
 			ob_start();
+			( new DashboardPage( new OverviewSummary( $repository, $stats, $settings ) ) )->render();
+			$dashboard_html = (string) ob_get_clean();
+
+			ob_start();
 			( new OffersPage( new OfferListTable( $repository, $service ) ) )->render();
 			$offers_html = (string) ob_get_clean();
 
@@ -285,6 +398,8 @@ function upsellbay_admin_architecture_tests(): array {
 			( new ToolsPage( new ImportExporter( new OfferValidator( new OfferSchema(), static fn (): bool => true ) ), $settings ) )->render();
 			$tools_html = (string) ob_get_clean();
 
+			assert_contains( 'Dashboard / Overview', $dashboard_html );
+			assert_contains( 'Active offers', $dashboard_html );
 			assert_contains( 'wp-list-table', $offers_html );
 			assert_contains( 'Warranty bump', $offers_html );
 			assert_contains( 'form-table', $settings_html );

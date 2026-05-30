@@ -61,11 +61,11 @@ final class OffersPage {
 			'actions' => array(
 				array(
 					'label' => __( 'Create offer', 'upsellbay' ),
-					'url'   => 'admin.php?page=upsellbay-add-offer',
+					'url'   => 'admin.php?page=upsellbay&tab=offers&action=edit',
 				),
 				array(
 					'label' => __( 'Open setup wizard', 'upsellbay' ),
-					'url'   => 'admin.php?page=upsellbay-wizard',
+					'url'   => 'admin.php?page=upsellbay&tab=setup',
 				),
 			),
 		);
@@ -77,11 +77,21 @@ final class OffersPage {
 	 * @since 1.0.0
 	 */
 	public function render(): void {
+		echo '<div class="wrap woocommerce upsellbay-admin">';
+		$this->render_content();
+		echo '</div>';
+	}
+
+	/**
+	 * Render offers tab content.
+	 *
+	 * @since 1.0.0
+	 */
+	public function render_content(): void {
 		$rows = $this->rows();
 
-		echo '<div class="wrap woocommerce upsellbay-admin">';
-		echo '<h1 class="wp-heading-inline">' . esc_html__( 'UpsellBay Offers', 'upsellbay' ) . '</h1> ';
-		echo '<a href="' . esc_url( 'admin.php?page=upsellbay-add-offer' ) . '" class="page-title-action">' . esc_html__( 'Add offer', 'upsellbay' ) . '</a>';
+		echo '<h2 class="wp-heading-inline">' . esc_html__( 'Offers', 'upsellbay' ) . '</h2> ';
+		echo '<a href="' . esc_url( 'admin.php?page=upsellbay&tab=offers&action=edit' ) . '" class="page-title-action">' . esc_html__( 'Add offer', 'upsellbay' ) . '</a>';
 		echo '<hr class="wp-header-end">';
 
 		if ( array() === $rows ) {
@@ -90,7 +100,7 @@ final class OffersPage {
 			foreach ( $empty['actions'] as $action ) {
 				echo '<a class="button" href="' . esc_url( $action['url'] ) . '">' . esc_html( $action['label'] ) . '</a> ';
 			}
-			echo '</p></div></div>';
+			echo '</p></div>';
 			return;
 		}
 
@@ -113,7 +123,7 @@ final class OffersPage {
 
 		foreach ( $rows as $row ) {
 			echo '<tr>';
-			echo '<td><strong>' . esc_html( (string) $row['title'] ) . '</strong><div class="row-actions"><span><a href="' . esc_url( 'admin.php?page=upsellbay-add-offer&offer_id=' . (int) $row['id'] ) . '">' . esc_html__( 'Edit', 'upsellbay' ) . '</a></span></div></td>';
+			echo '<td><strong>' . esc_html( (string) $row['title'] ) . '</strong><div class="row-actions"><span><a href="' . esc_url( 'admin.php?page=upsellbay&tab=offers&action=edit&offer_id=' . (int) $row['id'] ) . '">' . esc_html__( 'Edit', 'upsellbay' ) . '</a></span></div></td>';
 			echo '<td>' . esc_html( $this->placement_label( (string) $row['placement'] ) ) . '</td>';
 			echo '<td>' . esc_html( ucfirst( (string) $row['status'] ) ) . '</td>';
 			echo '<td>' . esc_html( (string) $row['priority'] ) . '</td>';
@@ -123,7 +133,7 @@ final class OffersPage {
 			echo '</tr>';
 		}
 
-		echo '</tbody></table></div>';
+		echo '</tbody></table>';
 	}
 
 	/**

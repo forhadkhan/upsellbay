@@ -146,13 +146,24 @@ final class WizardController {
 	 * @since 1.0.0
 	 */
 	public function render(): void {
+		echo '<div class="wrap woocommerce upsellbay-admin">';
+		$this->render_content();
+		echo '</div>';
+	}
+
+	/**
+	 * Render setup tab content.
+	 *
+	 * @since 1.0.0
+	 */
+	public function render_content(): void {
 		$template = dirname( __DIR__, 3 ) . '/templates/admin/wizard.php';
 		if ( file_exists( $template ) ) {
 			include $template;
 			return;
 		}
 
-		echo '<div class="wrap woocommerce"><h1>' . esc_html__( 'UpsellBay Setup Wizard', 'upsellbay' ) . '</h1></div>';
+		echo '<h2>' . esc_html__( 'Setup Wizard', 'upsellbay' ) . '</h2>';
 	}
 
 	/**

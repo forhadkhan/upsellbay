@@ -75,12 +75,6 @@ final class AdminPageRegistrar {
 	public static function surface_slugs(): array {
 		return array(
 			'upsellbay',
-			'upsellbay-add-offer',
-			'upsellbay-wizard',
-			'upsellbay-analytics',
-			'upsellbay-settings',
-			'upsellbay-tools',
-			'upsellbay-help',
 		);
 	}
 
@@ -134,7 +128,7 @@ final class AdminPageRegistrar {
 	 * @param string $screen_id Screen ID.
 	 */
 	public function is_upsellbay_screen( string $screen_id ): bool {
-		return str_starts_with( $screen_id, 'woocommerce_page_upsellbay' );
+		return 'woocommerce_page_upsellbay' === $screen_id;
 	}
 
 	/**
@@ -155,38 +149,8 @@ final class AdminPageRegistrar {
 		return array(
 			array(
 				'slug'       => Constants::PLUGIN_SLUG,
-				'page_title' => __( 'UpsellBay Offers', 'upsellbay' ),
+				'page_title' => __( 'UpsellBay', 'upsellbay' ),
 				'menu_title' => __( 'UpsellBay', 'upsellbay' ),
-			),
-			array(
-				'slug'       => 'upsellbay-add-offer',
-				'page_title' => __( 'Add UpsellBay Offer', 'upsellbay' ),
-				'menu_title' => __( 'Add Offer', 'upsellbay' ),
-			),
-			array(
-				'slug'       => 'upsellbay-wizard',
-				'page_title' => __( 'UpsellBay Setup Wizard', 'upsellbay' ),
-				'menu_title' => __( 'Setup Wizard', 'upsellbay' ),
-			),
-			array(
-				'slug'       => 'upsellbay-analytics',
-				'page_title' => __( 'UpsellBay Analytics', 'upsellbay' ),
-				'menu_title' => __( 'Analytics', 'upsellbay' ),
-			),
-			array(
-				'slug'       => 'upsellbay-settings',
-				'page_title' => __( 'UpsellBay Settings', 'upsellbay' ),
-				'menu_title' => __( 'Settings', 'upsellbay' ),
-			),
-			array(
-				'slug'       => 'upsellbay-tools',
-				'page_title' => __( 'UpsellBay Tools', 'upsellbay' ),
-				'menu_title' => __( 'Tools', 'upsellbay' ),
-			),
-			array(
-				'slug'       => 'upsellbay-help',
-				'page_title' => __( 'UpsellBay Help', 'upsellbay' ),
-				'menu_title' => __( 'Help', 'upsellbay' ),
 			),
 		);
 	}

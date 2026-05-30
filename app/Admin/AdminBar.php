@@ -81,7 +81,7 @@ final class AdminBar {
 			array(
 				'id'    => 'upsellbay-test-mode',
 				'title' => __( 'UpsellBay test mode', 'upsellbay' ),
-				'href'  => function_exists( 'admin_url' ) ? admin_url( 'admin.php?page=upsellbay-settings' ) : '',
+				'href'  => function_exists( 'admin_url' ) ? admin_url( 'admin.php?page=upsellbay&tab=settings' ) : '',
 			)
 		);
 	}

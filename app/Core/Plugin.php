@@ -11,11 +11,16 @@ namespace WPAnchorBay\UpsellBay\Core;
 
 use WPAnchorBay\UpsellBay\Admin\AdminAssets;
 use WPAnchorBay\UpsellBay\Admin\AdminBar;
+use WPAnchorBay\UpsellBay\Admin\AdminPage;
 use WPAnchorBay\UpsellBay\Admin\AdminPageRegistrar;
 use WPAnchorBay\UpsellBay\Admin\Analytics\AnalyticsPage;
 use WPAnchorBay\UpsellBay\Admin\CompatibilityNotice;
 use WPAnchorBay\UpsellBay\Admin\Coexistence;
+use WPAnchorBay\UpsellBay\Admin\Dashboard\DashboardPage;
 use WPAnchorBay\UpsellBay\Admin\Help\HelpPage;
+use WPAnchorBay\UpsellBay\Admin\Navigation\TabFactory;
+use WPAnchorBay\UpsellBay\Admin\Navigation\TabRegistry;
+use WPAnchorBay\UpsellBay\Admin\Navigation\TabRouter;
 use WPAnchorBay\UpsellBay\Admin\Offers\OfferEditPage;
 use WPAnchorBay\UpsellBay\Admin\Offers\OfferListTable;
 use WPAnchorBay\UpsellBay\Admin\Offers\OffersPage;
@@ -228,6 +233,26 @@ final class Plugin {
 		$this->container->set( ToolsPage::class, static fn ( Container $container ): ToolsPage => new ToolsPage( $container->get( ImportExporter::class ), $container->get( Settings::class ) ) );
 		$this->container->set( HelpPage::class, static fn (): HelpPage => new HelpPage() );
 		$this->container->set( OverviewSummary::class, static fn ( Container $container ): OverviewSummary => new OverviewSummary( $container->get( OfferRepository::class ), $container->get( StatsRepository::class ), $container->get( Settings::class ) ) );
+		$this->container->set( DashboardPage::class, static fn ( Container $container ): DashboardPage => new DashboardPage( $container->get( OverviewSummary::class ) ) );
+		$this->container->set(
+			TabFactory::class,
+			static fn ( Container $container ): TabFactory => new TabFactory(
+				$container->get( DashboardPage::class ),
+				$container->get( OffersPage::class ),
+				$container->get( OfferEditPage::class ),
+				$container->get( AnalyticsPage::class ),
+				$container->get( SettingsPage::class ),
+				$container->get( ToolsPage::class ),
+				$container->get( WizardController::class ),
+				$container->get( HelpPage::class )
+			)
+		);
+		$this->container->set(
+			TabRegistry::class,
+			static fn ( Container $container ): TabRegistry => $container->get( TabFactory::class )->registry()
+		);
+		$this->container->set( TabRouter::class, static fn ( Container $container ): TabRouter => new TabRouter( $container->get( TabRegistry::class ) ) );
+		$this->container->set( AdminPage::class, static fn ( Container $container ): AdminPage => new AdminPage( $container->get( TabRegistry::class ), $container->get( TabRouter::class ) ) );
 		$this->container->set( Coexistence::class, static fn (): Coexistence => new Coexistence() );
 		$this->container->set( CompatibilityNotice::class, static fn ( Container $container ): CompatibilityNotice => new CompatibilityNotice( $container->get( Settings::class ), $container->get( Coexistence::class ) ) );
 		$this->container->set( AdminAssets::class, static fn (): AdminAssets => new AdminAssets() );
@@ -237,13 +262,7 @@ final class Plugin {
 			static fn ( Container $container ): AdminPageRegistrar => new AdminPageRegistrar(
 				null,
 				array(
-					'upsellbay'           => array( $container->get( OffersPage::class ), 'render' ),
-					'upsellbay-add-offer' => array( $container->get( OfferEditPage::class ), 'render' ),
-					'upsellbay-wizard'    => array( $container->get( WizardController::class ), 'render' ),
-					'upsellbay-analytics' => array( $container->get( AnalyticsPage::class ), 'render' ),
-					'upsellbay-settings'  => array( $container->get( SettingsPage::class ), 'render' ),
-					'upsellbay-tools'     => array( $container->get( ToolsPage::class ), 'render' ),
-					'upsellbay-help'      => array( $container->get( HelpPage::class ), 'render' ),
+					'upsellbay' => array( $container->get( AdminPage::class ), 'render' ),
 				)
 			)
 		);
@@ -262,7 +281,7 @@ final class Plugin {
 		add_action( 'init', array( $this->container->get( Installer::class ), 'register_offer_post_type' ) );
 		add_action( 'init', array( $this, 'maybe_upgrade' ), 20 );
 		add_action( 'admin_notices', array( $this, 'render_dependency_notices' ) );
-		add_action( 'admin_menu', array( $this->container->get( AdminPageRegistrar::class ), 'register_pages' ) );
+		add_action( 'admin_menu', array( $this, 'register_admin_pages' ) );
 
 		$this->container->get( AdminAssets::class )->register_hooks();
 		$this->container->get( AdminBar::class )->register_hooks();
@@ -274,6 +293,15 @@ final class Plugin {
 		add_action( 'rest_api_init', array( $this->container->get( OfferPreviewRoute::class ), 'register_routes' ) );
 		add_action( 'woocommerce_init', array( $this->container->get( CheckoutFields::class ), 'register' ) );
 		add_action( 'woocommerce_before_calculate_totals', array( $this, 'apply_offer_discounts' ) );
+	}
+
+	/**
+	 * Register admin pages after WordPress admin APIs and translations are ready.
+	 *
+	 * @since 1.0.0
+	 */
+	public function register_admin_pages(): void {
+		$this->container->get( AdminPageRegistrar::class )->register_pages();
 	}
 
 	/**

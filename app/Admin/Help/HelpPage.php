@@ -79,15 +79,25 @@ final class HelpPage {
 	 * @since 1.0.0
 	 */
 	public function render(): void {
+		echo '<div class="wrap woocommerce upsellbay-admin">';
+		$this->render_content();
+		echo '</div>';
+	}
+
+	/**
+	 * Render help tab content.
+	 *
+	 * @since 1.0.0
+	 */
+	public function render_content(): void {
 		$empty = $this->empty_state();
 
-		echo '<div class="wrap woocommerce upsellbay-admin">';
-		echo '<h1>' . esc_html__( 'UpsellBay Help', 'upsellbay' ) . '</h1>';
+		echo '<h2>' . esc_html__( 'Help', 'upsellbay' ) . '</h2>';
 		echo '<p>' . esc_html( $empty['message'] ) . '</p>';
 		echo '<table class="widefat striped upsellbay-help-table"><tbody>';
 		foreach ( $this->links() as $link ) {
 			echo '<tr><td><a href="' . esc_url( $link['url'] ) . '">' . esc_html( $link['label'] ) . '</a></td></tr>';
 		}
-		echo '</tbody></table></div>';
+		echo '</tbody></table>';
 	}
 }

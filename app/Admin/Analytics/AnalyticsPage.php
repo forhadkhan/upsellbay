@@ -69,11 +69,11 @@ final class AnalyticsPage {
 			'actions' => array(
 				array(
 					'label' => __( 'Create offer', 'upsellbay' ),
-					'url'   => 'admin.php?page=upsellbay-add-offer',
+					'url'   => 'admin.php?page=upsellbay&tab=offers&action=edit',
 				),
 				array(
 					'label' => __( 'Review test mode', 'upsellbay' ),
-					'url'   => 'admin.php?page=upsellbay-settings',
+					'url'   => 'admin.php?page=upsellbay&tab=settings',
 				),
 			),
 		);
@@ -85,11 +85,21 @@ final class AnalyticsPage {
 	 * @since 1.0.0
 	 */
 	public function render(): void {
+		echo '<div class="wrap woocommerce upsellbay-admin">';
+		$this->render_content();
+		echo '</div>';
+	}
+
+	/**
+	 * Render analytics tab content.
+	 *
+	 * @since 1.0.0
+	 */
+	public function render_content(): void {
 		$day_seconds = defined( 'DAY_IN_SECONDS' ) ? DAY_IN_SECONDS : 86400;
 		$summary     = $this->summary( gmdate( 'Y-m-d', time() - $day_seconds * 30 ), gmdate( 'Y-m-d' ) );
 
-		echo '<div class="wrap woocommerce upsellbay-admin">';
-		echo '<h1>' . esc_html__( 'UpsellBay Analytics', 'upsellbay' ) . '</h1>';
+		echo '<h2>' . esc_html__( 'Analytics', 'upsellbay' ) . '</h2>';
 		echo '<div class="upsellbay-summary upsellbay-summary--analytics">';
 		$this->summary_item( __( 'Views', 'upsellbay' ), (string) $summary['views'] );
 		$this->summary_item( __( 'Accepts', 'upsellbay' ), (string) $summary['accepts'] );
@@ -107,7 +117,7 @@ final class AnalyticsPage {
 		) {
 			echo '<tr><th scope="row">' . esc_html( $label ) . '</th><td>' . esc_html( (string) $summary[ $key ] ) . '</td></tr>';
 		}
-		echo '</tbody></table></div>';
+		echo '</tbody></table>';
 	}
 
 	/**

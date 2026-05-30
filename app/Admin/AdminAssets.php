@@ -33,11 +33,16 @@ final class AdminAssets {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param string $screen_id Screen ID.
+	 * @param string               $screen_id Screen ID.
+	 * @param array<string, mixed> $request Request context.
 	 * @return array<string, array<string, string>>
 	 */
-	public function assets_for_screen( string $screen_id ): array {
+	public function assets_for_screen( string $screen_id, array $request = array() ): array {
 		if ( ! str_starts_with( $screen_id, 'woocommerce_page_upsellbay' ) ) {
+			return array();
+		}
+
+		if ( 'woocommerce_page_upsellbay' !== $screen_id ) {
 			return array();
 		}
 
@@ -49,14 +54,17 @@ final class AdminAssets {
 			),
 		);
 
-		if ( in_array( $screen_id, array( 'woocommerce_page_upsellbay-add-offer', 'woocommerce_page_upsellbay-wizard' ), true ) ) {
+		$tab    = $this->request_key( $request['tab'] ?? '' );
+		$action = $this->request_key( $request['action'] ?? '' );
+
+		if ( 'setup' === $tab || ( 'offers' === $tab && 'edit' === $action ) ) {
 			$assets['upsellbay-offer-editor'] = array(
 				'type' => 'script',
 				'js'   => 'assets/admin/js/upsellbay-offer-editor.js',
 			);
 		}
 
-		if ( 'woocommerce_page_upsellbay-analytics' === $screen_id ) {
+		if ( 'analytics' === $tab ) {
 			$assets['upsellbay-analytics'] = array(
 				'type' => 'script',
 				'js'   => 'assets/admin/js/upsellbay-analytics.js',
@@ -74,7 +82,8 @@ final class AdminAssets {
 	 * @param string $hook_suffix Current admin hook suffix.
 	 */
 	public function enqueue( string $hook_suffix ): void {
-		$assets = $this->assets_for_screen( $hook_suffix );
+		$request = $_GET; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$assets  = $this->assets_for_screen( $hook_suffix, $request );
 		if ( array() === $assets || ! function_exists( 'plugins_url' ) ) {
 			return;
 		}
@@ -88,5 +97,20 @@ final class AdminAssets {
 				wp_enqueue_script( $handle, plugins_url( $asset['js'], Constants::plugin_file() ), array( 'jquery' ), Constants::VERSION, true );
 			}
 		}
+	}
+
+	/**
+	 * Sanitize a request key for asset scoping.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param mixed $value Raw value.
+	 */
+	private function request_key( $value ): string {
+		if ( function_exists( 'sanitize_key' ) ) {
+			return sanitize_key( (string) $value );
+		}
+
+		return strtolower( preg_replace( '/[^a-z0-9_\-]/', '', (string) $value ) ?? '' );
 	}
 }

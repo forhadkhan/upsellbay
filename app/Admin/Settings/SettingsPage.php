@@ -121,13 +121,23 @@ final class SettingsPage {
 	 * @since 1.0.0
 	 */
 	public function render(): void {
+		echo '<div class="wrap woocommerce upsellbay-admin">';
+		$this->render_content();
+		echo '</div>';
+	}
+
+	/**
+	 * Render settings tab content.
+	 *
+	 * @since 1.0.0
+	 */
+	public function render_content(): void {
 		$settings   = $this->settings->all();
 		$placements = is_array( $settings['placements'] ?? null ) ? $settings['placements'] : array();
 		$style      = is_array( $settings['style_tokens'] ?? null ) ? $settings['style_tokens'] : array();
 		$retention  = is_array( $settings['data_retention'] ?? null ) ? $settings['data_retention'] : array();
 
-		echo '<div class="wrap woocommerce upsellbay-admin">';
-		echo '<h1>' . esc_html__( 'UpsellBay Settings', 'upsellbay' ) . '</h1>';
+		echo '<h2>' . esc_html__( 'Settings', 'upsellbay' ) . '</h2>';
 		echo '<form method="post">';
 		if ( function_exists( 'wp_nonce_field' ) ) {
 			wp_nonce_field( 'upsellbay_save_settings', 'nonce' );
@@ -179,7 +189,7 @@ final class SettingsPage {
 		$this->checkbox_row( 'cleanup_on_delete', __( 'Delete data on uninstall', 'upsellbay' ), (bool) $settings['cleanup_on_delete'], __( 'Keep this off unless the merchant explicitly wants plugin data removed during uninstall.', 'upsellbay' ) );
 		echo '</tbody></table>';
 		echo '<p class="submit"><button type="submit" class="button button-primary">' . esc_html__( 'Save changes', 'upsellbay' ) . '</button></p>';
-		echo '</form></div>';
+		echo '</form>';
 	}
 
 	/**
