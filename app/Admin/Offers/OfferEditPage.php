@@ -264,7 +264,92 @@ final class OfferEditPage {
 	 * @since 1.0.0
 	 */
 	public function render(): void {
-		echo '<div class="wrap woocommerce"><h1>' . esc_html__( 'Add UpsellBay Offer', 'upsellbay' ) . '</h1></div>';
+		echo '<div class="wrap woocommerce upsellbay-admin upsellbay-offer-editor">';
+		echo '<h1>' . esc_html__( 'Add UpsellBay Offer', 'upsellbay' ) . '</h1>';
+		echo '<form method="post">';
+		if ( function_exists( 'wp_nonce_field' ) ) {
+			wp_nonce_field( 'upsellbay_save_offer', 'nonce' );
+		}
+
+		foreach ( $this->sections() as $section_id => $section ) {
+			$classes = 'postbox upsellbay-offer-editor__section';
+			if ( $section['collapsed'] ) {
+				$classes .= ' closed';
+			}
+			echo '<div class="' . esc_attr( $classes ) . '" id="upsellbay-section-' . esc_attr( $section_id ) . '">';
+			echo '<h2 class="hndle"><span>' . esc_html( $section['label'] ) . '</span></h2>';
+			echo '<div class="inside"><table class="form-table" role="presentation"><tbody>';
+			foreach ( $section['fields'] as $field ) {
+				$this->render_field_row( $field );
+			}
+			echo '</tbody></table></div></div>';
+		}
+
+		echo '<p class="submit"><button type="submit" class="button button-primary">' . esc_html__( 'Save offer', 'upsellbay' ) . '</button> ';
+		echo '<a class="button" href="' . esc_url( 'admin.php?page=upsellbay' ) . '">' . esc_html__( 'Back to offers', 'upsellbay' ) . '</a></p>';
+		echo '</form></div>';
+	}
+
+	/**
+	 * Render an editor field row.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $field Field key.
+	 */
+	private function render_field_row( string $field ): void {
+		$labels = array(
+			'title'                    => __( 'Offer name', 'upsellbay' ),
+			'_ub_offer_type'           => __( 'Placement', 'upsellbay' ),
+			'_ub_offer_product_id'     => __( 'Offer product ID', 'upsellbay' ),
+			'_ub_headline'             => __( 'Headline', 'upsellbay' ),
+			'_ub_button_text'          => __( 'Button text', 'upsellbay' ),
+			'_ub_rules_match'          => __( 'Rule matching', 'upsellbay' ),
+			'_ub_rules'                => __( 'Rules', 'upsellbay' ),
+			'_ub_discount_type'        => __( 'Discount type', 'upsellbay' ),
+			'_ub_discount_value'       => __( 'Discount value', 'upsellbay' ),
+			'_ub_show_image'           => __( 'Show product image', 'upsellbay' ),
+			'_ub_placement_config'     => __( 'Placement options', 'upsellbay' ),
+			'_ub_start_at'             => __( 'Start date', 'upsellbay' ),
+			'_ub_end_at'               => __( 'End date', 'upsellbay' ),
+			'_ub_priority'             => __( 'Priority', 'upsellbay' ),
+			'_ub_trigger_product_ids'  => __( 'Trigger product IDs', 'upsellbay' ),
+			'_ub_trigger_category_ids' => __( 'Trigger category IDs', 'upsellbay' ),
+		);
+		$label  = $labels[ $field ] ?? $field;
+
+		echo '<tr><th scope="row"><label for="upsellbay-' . esc_attr( $field ) . '">' . esc_html( $label ) . '</label></th><td>';
+
+		if ( '_ub_offer_type' === $field ) {
+			echo '<select id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '">';
+			foreach (
+				array(
+					'checkout_bump'  => __( 'Checkout bump', 'upsellbay' ),
+					'product_upsell' => __( 'Product page offer', 'upsellbay' ),
+					'cart_crosssell' => __( 'Cart offer', 'upsellbay' ),
+					'thankyou_offer' => __( 'Thank-you follow-on offer', 'upsellbay' ),
+				) as $value => $option_label
+			) {
+				echo '<option value="' . esc_attr( $value ) . '">' . esc_html( $option_label ) . '</option>';
+			}
+			echo '</select>';
+		} elseif ( '_ub_rules_match' === $field ) {
+			echo '<select id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '"><option value="all">' . esc_html__( 'All rules', 'upsellbay' ) . '</option><option value="any">' . esc_html__( 'Any rule', 'upsellbay' ) . '</option></select>';
+		} elseif ( '_ub_discount_type' === $field ) {
+			echo '<select id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '"><option value="none">' . esc_html__( 'No discount', 'upsellbay' ) . '</option><option value="percent">' . esc_html__( 'Percentage', 'upsellbay' ) . '</option><option value="fixed">' . esc_html__( 'Fixed amount', 'upsellbay' ) . '</option></select>';
+		} elseif ( '_ub_show_image' === $field ) {
+			echo '<label><input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="checkbox" value="1" checked="checked"> ' . esc_html__( 'Show the WooCommerce product image when available.', 'upsellbay' ) . '</label>';
+		} elseif ( str_contains( $field, '_ids' ) || '_ub_offer_product_id' === $field || '_ub_priority' === $field ) {
+			echo '<input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="number" class="regular-text" min="0">';
+		} elseif ( '_ub_rules' === $field || '_ub_placement_config' === $field ) {
+			echo '<textarea id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" class="large-text code" rows="3"></textarea>';
+		} elseif ( '_ub_start_at' === $field || '_ub_end_at' === $field ) {
+			echo '<input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="datetime-local" class="regular-text">';
+		} else {
+			echo '<input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="text" class="regular-text">';
+		}
+
+		echo '</td></tr>';
 	}
 
 	/**

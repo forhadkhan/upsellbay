@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 namespace WPAnchorBay\UpsellBay\Admin;
 
-use WPAnchorBay\UpsellBay\Core\Constants;
 use WPAnchorBay\UpsellBay\Core\Settings;
 
 /**
@@ -19,30 +18,15 @@ use WPAnchorBay\UpsellBay\Core\Settings;
  */
 final class CompatibilityNotice {
 	/**
-	 * Settings service.
-	 *
-	 * @var Settings
-	 */
-	private Settings $settings;
-
-	/**
-	 * Coexistence detector.
-	 *
-	 * @var Coexistence
-	 */
-	private Coexistence $coexistence;
-
-	/**
 	 * Constructor.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param Settings    $settings    Settings service.
-	 * @param Coexistence $coexistence Coexistence detector.
+	 * @param Settings    $settings    Settings service, retained for constructor compatibility.
+	 * @param Coexistence $coexistence Coexistence detector, retained for constructor compatibility.
 	 */
 	public function __construct( Settings $settings, Coexistence $coexistence ) {
-		$this->settings    = $settings;
-		$this->coexistence = $coexistence;
+		unset( $settings, $coexistence );
 	}
 
 	/**
@@ -64,20 +48,7 @@ final class CompatibilityNotice {
 	 * @return array<int, array<string, string>>
 	 */
 	public function notices(): array {
-		$settings   = $this->settings->all();
-		$dismissals = is_array( $settings['notice_dismissals'] ?? null ) ? $settings['notice_dismissals'] : array();
-		$notices    = array();
-
-		if ( $this->coexistence->is_cartbay_active() && true !== ( $dismissals['cartbay_coexistence'] ?? false ) ) {
-			$notices[] = array(
-				'id'      => 'cartbay_coexistence',
-				'type'    => 'info',
-				'message' => __( 'CartBay is active. UpsellBay remains a separate AOV offer engine and does not read recovery sessions, recovery coupons, or email sequence data.', 'upsellbay' ),
-				'url'     => Constants::DOCS_URL . 'compatibility/',
-			);
-		}
-
-		return $notices;
+		return array();
 	}
 
 	/**

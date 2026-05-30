@@ -107,6 +107,21 @@ final class ToolsPage {
 	 * @since 1.0.0
 	 */
 	public function render(): void {
-		echo '<div class="wrap woocommerce"><h1>' . esc_html__( 'UpsellBay Tools', 'upsellbay' ) . '</h1></div>';
+		echo '<div class="wrap woocommerce upsellbay-admin">';
+		echo '<h1>' . esc_html__( 'UpsellBay Tools', 'upsellbay' ) . '</h1>';
+		echo '<h2>' . esc_html__( 'System diagnostics', 'upsellbay' ) . '</h2>';
+		echo '<table class="widefat striped upsellbay-diagnostics-table"><tbody>';
+		foreach ( $this->diagnostics() as $line ) {
+			$parts = explode( '=', $line, 2 );
+			echo '<tr><th scope="row">' . esc_html( $parts[0] ) . '</th><td><code>' . esc_html( $parts[1] ?? '' ) . '</code></td></tr>';
+		}
+		echo '</tbody></table>';
+
+		$empty = $this->import_empty_state();
+		echo '<h2 id="import">' . esc_html__( 'Import offers', 'upsellbay' ) . '</h2>';
+		echo '<p>' . esc_html( $empty['message'] ) . '</p>';
+		echo '<form method="post"><textarea name="upsellbay_import_json" class="large-text code" rows="8" aria-label="' . esc_attr( __( 'Offer import JSON', 'upsellbay' ) ) . '"></textarea>';
+		echo '<p><button type="submit" class="button">' . esc_html__( 'Validate import', 'upsellbay' ) . '</button></p></form>';
+		echo '</div>';
 	}
 }

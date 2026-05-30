@@ -23,6 +23,24 @@ if ( ! function_exists( 'esc_html__' ) ) {
 	}
 }
 
+if ( ! function_exists( 'esc_html' ) ) {
+	function esc_html( string $text ): string {
+		return htmlspecialchars( $text, ENT_QUOTES, 'UTF-8' );
+	}
+}
+
+if ( ! function_exists( 'esc_attr' ) ) {
+	function esc_attr( string $text ): string {
+		return htmlspecialchars( $text, ENT_QUOTES, 'UTF-8' );
+	}
+}
+
+if ( ! function_exists( 'esc_url' ) ) {
+	function esc_url( string $url ): string {
+		return htmlspecialchars( $url, ENT_QUOTES, 'UTF-8' );
+	}
+}
+
 foreach (
 	array(
 		'app/Core/Constants.php',

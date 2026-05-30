@@ -77,6 +77,70 @@ final class OffersPage {
 	 * @since 1.0.0
 	 */
 	public function render(): void {
-		echo '<div class="wrap woocommerce"><h1 class="wp-heading-inline">' . esc_html__( 'UpsellBay Offers', 'upsellbay' ) . '</h1></div>';
+		$rows = $this->rows();
+
+		echo '<div class="wrap woocommerce upsellbay-admin">';
+		echo '<h1 class="wp-heading-inline">' . esc_html__( 'UpsellBay Offers', 'upsellbay' ) . '</h1> ';
+		echo '<a href="' . esc_url( 'admin.php?page=upsellbay-add-offer' ) . '" class="page-title-action">' . esc_html__( 'Add offer', 'upsellbay' ) . '</a>';
+		echo '<hr class="wp-header-end">';
+
+		if ( array() === $rows ) {
+			$empty = $this->empty_state();
+			echo '<div class="notice notice-info inline"><p><strong>' . esc_html( $empty['title'] ) . '</strong></p><p>' . esc_html( $empty['message'] ) . '</p><p>';
+			foreach ( $empty['actions'] as $action ) {
+				echo '<a class="button" href="' . esc_url( $action['url'] ) . '">' . esc_html( $action['label'] ) . '</a> ';
+			}
+			echo '</p></div></div>';
+			return;
+		}
+
+		echo '<table class="wp-list-table widefat fixed striped table-view-list upsellbay-offers-table">';
+		echo '<thead><tr>';
+		foreach (
+			array(
+				__( 'Offer', 'upsellbay' ),
+				__( 'Placement', 'upsellbay' ),
+				__( 'Status', 'upsellbay' ),
+				__( 'Priority', 'upsellbay' ),
+				__( 'Views', 'upsellbay' ),
+				__( 'Accepts', 'upsellbay' ),
+				__( 'Revenue', 'upsellbay' ),
+			) as $heading
+		) {
+			echo '<th scope="col">' . esc_html( $heading ) . '</th>';
+		}
+		echo '</tr></thead><tbody>';
+
+		foreach ( $rows as $row ) {
+			echo '<tr>';
+			echo '<td><strong>' . esc_html( (string) $row['title'] ) . '</strong><div class="row-actions"><span><a href="' . esc_url( 'admin.php?page=upsellbay-add-offer&offer_id=' . (int) $row['id'] ) . '">' . esc_html__( 'Edit', 'upsellbay' ) . '</a></span></div></td>';
+			echo '<td>' . esc_html( $this->placement_label( (string) $row['placement'] ) ) . '</td>';
+			echo '<td>' . esc_html( ucfirst( (string) $row['status'] ) ) . '</td>';
+			echo '<td>' . esc_html( (string) $row['priority'] ) . '</td>';
+			echo '<td>' . esc_html( (string) $row['views'] ) . '</td>';
+			echo '<td>' . esc_html( (string) $row['accepts'] ) . '</td>';
+			echo '<td>' . esc_html( (string) $row['attributed_revenue'] ) . '</td>';
+			echo '</tr>';
+		}
+
+		echo '</tbody></table></div>';
+	}
+
+	/**
+	 * Return a merchant-readable placement label.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $placement Placement key.
+	 */
+	private function placement_label( string $placement ): string {
+		$labels = array(
+			'checkout_bump'  => __( 'Checkout bump', 'upsellbay' ),
+			'product_upsell' => __( 'Product page offer', 'upsellbay' ),
+			'cart_crosssell' => __( 'Cart offer', 'upsellbay' ),
+			'thankyou_offer' => __( 'Thank-you offer', 'upsellbay' ),
+		);
+
+		return $labels[ $placement ] ?? $placement;
 	}
 }

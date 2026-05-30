@@ -232,10 +232,67 @@ function upsellbay_admin_architecture_tests(): array {
 			$admin_bar   = new AdminBar( $settings, static fn (): bool => true );
 
 			assert_true( $coexistence->is_cartbay_active() );
-			assert_same( 'cartbay_coexistence', $notice->notices()[0]['id'] );
+			assert_same( array(), $notice->notices() );
 			assert_false( str_contains( implode( ' ', $tools->diagnostics() ), 'license_key' ) );
 			assert_contains( 'AOV offer', implode( ' ', $help->links()[0] ) );
 			assert_true( $admin_bar->should_show_indicator() );
+		},
+		'admin pages render native operational surfaces instead of placeholder headings' => static function (): void {
+			$repository = upsellbay_test_offer_repository(
+				array(
+					11 => array(
+						'id'    => 11,
+						'title' => 'Warranty bump',
+						'meta'  => array(
+							'_ub_offer_type'       => 'checkout_bump',
+							'_ub_status'           => 'active',
+							'_ub_offer_product_id' => 25,
+							'_ub_priority'         => 4,
+						),
+					),
+				)
+			);
+			$service    = new OfferService( $repository, new OfferValidator( new OfferSchema(), static fn (): bool => true ) );
+			$settings   = new Settings( static fn (): array => array( 'enabled' => true, 'test_mode' => true ), static fn (): bool => true );
+			$stats      = new StatsRepository(
+				static function (): void {
+				},
+				static fn (): array => array(
+					array(
+						'views'          => 20,
+						'accepts'        => 5,
+						'dismissals'     => 2,
+						'orders'         => 4,
+						'revenue'        => '80.000000',
+						'discount_total' => '10.000000',
+					),
+				)
+			);
+
+			ob_start();
+			( new OffersPage( new OfferListTable( $repository, $service ) ) )->render();
+			$offers_html = (string) ob_get_clean();
+
+			ob_start();
+			( new SettingsPage( $settings ) )->render();
+			$settings_html = (string) ob_get_clean();
+
+			ob_start();
+			( new AnalyticsPage( $stats ) )->render();
+			$analytics_html = (string) ob_get_clean();
+
+			ob_start();
+			( new ToolsPage( new ImportExporter( new OfferValidator( new OfferSchema(), static fn (): bool => true ) ), $settings ) )->render();
+			$tools_html = (string) ob_get_clean();
+
+			assert_contains( 'wp-list-table', $offers_html );
+			assert_contains( 'Warranty bump', $offers_html );
+			assert_contains( 'form-table', $settings_html );
+			assert_contains( 'name="test_mode"', $settings_html );
+			assert_contains( 'upsellbay-summary', $analytics_html );
+			assert_contains( '25.00%', $analytics_html );
+			assert_contains( 'System diagnostics', $tools_html );
+			assert_contains( 'Import offers', $tools_html );
 		},
 		'admin architecture excludes recovery modules from runtime surfaces' => static function (): void {
 			$surfaces = AdminPageRegistrar::surface_slugs();

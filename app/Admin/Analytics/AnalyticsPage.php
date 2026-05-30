@@ -85,6 +85,40 @@ final class AnalyticsPage {
 	 * @since 1.0.0
 	 */
 	public function render(): void {
-		echo '<div class="wrap woocommerce"><h1>' . esc_html__( 'UpsellBay Analytics', 'upsellbay' ) . '</h1></div>';
+		$day_seconds = defined( 'DAY_IN_SECONDS' ) ? DAY_IN_SECONDS : 86400;
+		$summary     = $this->summary( gmdate( 'Y-m-d', time() - $day_seconds * 30 ), gmdate( 'Y-m-d' ) );
+
+		echo '<div class="wrap woocommerce upsellbay-admin">';
+		echo '<h1>' . esc_html__( 'UpsellBay Analytics', 'upsellbay' ) . '</h1>';
+		echo '<div class="upsellbay-summary upsellbay-summary--analytics">';
+		$this->summary_item( __( 'Views', 'upsellbay' ), (string) $summary['views'] );
+		$this->summary_item( __( 'Accepts', 'upsellbay' ), (string) $summary['accepts'] );
+		$this->summary_item( __( 'Accept rate', 'upsellbay' ), (string) $summary['accept_rate'] . '%' );
+		$this->summary_item( __( 'Attributed revenue', 'upsellbay' ), (string) $summary['revenue'] );
+		echo '</div>';
+		echo '<table class="widefat striped upsellbay-analytics-table"><tbody>';
+		foreach (
+			array(
+				'dismissals'     => __( 'Dismissals', 'upsellbay' ),
+				'orders'         => __( 'Orders', 'upsellbay' ),
+				'discount_total' => __( 'Discount total', 'upsellbay' ),
+				'aov_lift'       => __( 'Revenue per attributed order', 'upsellbay' ),
+			) as $key => $label
+		) {
+			echo '<tr><th scope="row">' . esc_html( $label ) . '</th><td>' . esc_html( (string) $summary[ $key ] ) . '</td></tr>';
+		}
+		echo '</tbody></table></div>';
+	}
+
+	/**
+	 * Render one summary metric.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $label Metric label.
+	 * @param string $value Metric value.
+	 */
+	private function summary_item( string $label, string $value ): void {
+		echo '<div class="upsellbay-summary__item"><span class="upsellbay-summary__label">' . esc_html( $label ) . '</span><strong>' . esc_html( $value ) . '</strong></div>';
 	}
 }
