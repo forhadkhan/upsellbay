@@ -52,13 +52,16 @@
 	margin: 0;
 }
 
+.upsellbay-offer-editor__section {
+	padding: 16px;
+}
+
 .upsellbay-overview-header {
 	align-items: center;
 	display: flex;
 	gap: 16px;
 	justify-content: space-between;
 	margin: 16px 0 4px;
-	max-width: 1400px;
 }
 
 .upsellbay-overview-title {
@@ -87,13 +90,16 @@
 	border-top-right-radius: 3px;
 }
 
-.upsellbay-settings-table th {
-	width: 220px;
+.upsellbay-settings-table th,
+.upsellbay-wizard .form-table th {
+	position: relative;
+	width: 220px !important;
 }
 
 .upsellbay-settings-table th .woocommerce-help-tip,
 .upsellbay-wizard .form-table th .woocommerce-help-tip {
-	float: right;
+	position: absolute;
+	right: 0;
 	margin: 0;
 }
 
