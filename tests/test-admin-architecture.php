@@ -72,7 +72,7 @@ function upsellbay_admin_architecture_tests(): array {
 		'admin tabs define dashboard first and route invalid tabs to dashboard' => static function (): void {
 			$registry = new TabRegistry(
 				array(
-					new AdminTab( 'dashboard', 'Dashboard / Overview', static function ( array $request ): void { unset( $request ); } ),
+					new AdminTab( 'dashboard', 'Dashboard', static function ( array $request ): void { unset( $request ); } ),
 					new AdminTab( 'offers', 'Offers', static function ( array $request ): void { unset( $request ); } ),
 				)
 			);
@@ -88,7 +88,7 @@ function upsellbay_admin_architecture_tests(): array {
 				array(
 					new AdminTab(
 						'dashboard',
-						'Dashboard / Overview',
+						'Dashboard',
 						static function ( array $request ): void {
 							unset( $request );
 							echo '<p>Dashboard content</p>';
@@ -111,7 +111,7 @@ function upsellbay_admin_architecture_tests(): array {
 			$html = (string) ob_get_clean();
 
 			assert_contains( 'nav-tab-wrapper woo-nav-tab-wrapper', $html );
-			assert_contains( 'Dashboard / Overview', $html );
+			assert_contains( 'Dashboard', $html );
 			assert_contains( 'admin.php?page=upsellbay&amp;tab=settings', $html );
 			assert_contains( 'Dashboard content', $html );
 			assert_false( str_contains( $html, 'Settings content' ) );
@@ -121,7 +121,7 @@ function upsellbay_admin_architecture_tests(): array {
 				array(
 					new AdminTab(
 						'dashboard',
-						'Dashboard / Overview',
+						'Dashboard',
 						static function ( array $request ): void {
 							unset( $request );
 							echo '<p>Dashboard content</p>';
@@ -396,7 +396,7 @@ function upsellbay_admin_architecture_tests(): array {
 			( new ToolsPage( new ImportExporter( new OfferValidator( new OfferSchema(), static fn (): bool => true ) ), $settings ) )->render();
 			$tools_html = (string) ob_get_clean();
 
-			assert_contains( 'Dashboard / Overview', $dashboard_html );
+			assert_contains( 'Dashboard', $dashboard_html );
 			assert_contains( 'Active offers', $dashboard_html );
 			assert_contains( '25.00%', $dashboard_html );
 			assert_contains( 'Performance (Last 30 days)', $dashboard_html );

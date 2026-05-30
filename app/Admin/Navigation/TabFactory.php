@@ -119,7 +119,7 @@ final class TabFactory {
 			array(
 				new AdminTab(
 					'dashboard',
-					__( 'Dashboard / Overview', 'upsellbay' ),
+					__( 'Dashboard', 'upsellbay' ),
 					function ( array $request ): void {
 						unset( $request );
 						$this->dashboard->render();

@@ -57,7 +57,7 @@ final class DashboardPage {
 	public function render(): void {
 		$data = $this->summary->data();
 
-		echo '<h2>' . esc_html__( 'Dashboard / Overview', 'upsellbay' ) . '</h2>';
+		echo '<h2>' . esc_html__( 'Dashboard', 'upsellbay' ) . '</h2>';
 		echo '<div class="upsellbay-summary upsellbay-summary--dashboard">';
 		$this->summary_item( __( 'Offers enabled', 'upsellbay' ), true === $data['enabled'] ? __( 'Yes', 'upsellbay' ) : __( 'No', 'upsellbay' ) );
 		$this->summary_item( __( 'Test mode', 'upsellbay' ), true === $data['test_mode'] ? __( 'On', 'upsellbay' ) : __( 'Off', 'upsellbay' ) );
