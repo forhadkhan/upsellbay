@@ -58,16 +58,18 @@ final class DashboardPage {
 		$data = $this->summary->data();
 
 		echo '<h2>' . esc_html__( 'Dashboard', 'upsellbay' ) . '</h2>';
-		echo '<div class="upsellbay-summary upsellbay-summary--dashboard">';
-		$this->summary_item( __( 'Offers enabled', 'upsellbay' ), true === $data['enabled'] ? __( 'Yes', 'upsellbay' ) : __( 'No', 'upsellbay' ) );
-		$this->summary_item( __( 'Test mode', 'upsellbay' ), true === $data['test_mode'] ? __( 'On', 'upsellbay' ) : __( 'Off', 'upsellbay' ) );
-		$this->summary_item( __( 'Active offers', 'upsellbay' ), (string) $data['active_offers'] );
-		$this->summary_item( __( 'Recent revenue', 'upsellbay' ), (string) $data['recent_revenue'] );
+		echo '<div class="upsellbay-overview-header">';
+		echo '<h3 class="upsellbay-overview-title">' . esc_html__( 'Store offer status', 'upsellbay' ) . '</h3>';
+		echo '<div class="upsellbay-button-group">';
+		echo '<a class="button button-primary" href="' . esc_url( 'admin.php?page=upsellbay&tab=offers&action=edit' ) . '">' . esc_html__( 'Add offer', 'upsellbay' ) . '</a>';
+		echo '<a class="button" href="' . esc_url( 'admin.php?page=upsellbay&tab=settings' ) . '">' . esc_html__( 'Review settings', 'upsellbay' ) . '</a>';
+		echo '</div></div>';
+		echo '<div class="upsellbay-card-grid upsellbay-card-grid--metrics">';
+		$this->summary_item( __( 'Offers enabled', 'upsellbay' ), true === $data['enabled'] ? __( 'Yes', 'upsellbay' ) : __( 'No', 'upsellbay' ), __( 'Whether live eligible offers are allowed to render on enabled placements.', 'upsellbay' ) );
+		$this->summary_item( __( 'Test mode', 'upsellbay' ), true === $data['test_mode'] ? __( 'On', 'upsellbay' ) : __( 'Off', 'upsellbay' ), __( 'Admin-only preview mode for checking offers before shoppers see them.', 'upsellbay' ) );
+		$this->summary_item( __( 'Active offers', 'upsellbay' ), (string) $data['active_offers'], __( 'Published offers currently marked active in UpsellBay.', 'upsellbay' ) );
+		$this->summary_item( __( 'Recent revenue', 'upsellbay' ), (string) $data['recent_revenue'], __( 'Attributed offer revenue from the recent aggregate stats window.', 'upsellbay' ) );
 		echo '</div>';
-		echo '<table class="widefat striped upsellbay-dashboard-actions"><tbody>';
-		echo '<tr><th scope="row">' . esc_html__( 'Next action', 'upsellbay' ) . '</th><td><a class="button button-primary" href="' . esc_url( 'admin.php?page=upsellbay&tab=offers&action=edit' ) . '">' . esc_html__( 'Add offer', 'upsellbay' ) . '</a> ';
-		echo '<a class="button" href="' . esc_url( 'admin.php?page=upsellbay&tab=settings' ) . '">' . esc_html__( 'Review settings', 'upsellbay' ) . '</a></td></tr>';
-		echo '</tbody></table>';
 
 		$this->render_analytics();
 	}
@@ -82,11 +84,11 @@ final class DashboardPage {
 		$summary     = $this->analytics_summary( gmdate( 'Y-m-d', time() - $day_seconds * 30 ), gmdate( 'Y-m-d' ) );
 
 		echo '<h3>' . esc_html__( 'Performance (Last 30 days)', 'upsellbay' ) . '</h3>';
-		echo '<div class="upsellbay-summary upsellbay-summary--analytics">';
-		$this->summary_item( __( 'Views', 'upsellbay' ), (string) $summary['views'] );
-		$this->summary_item( __( 'Accepts', 'upsellbay' ), (string) $summary['accepts'] );
-		$this->summary_item( __( 'Accept rate', 'upsellbay' ), (string) $summary['accept_rate'] . '%' );
-		$this->summary_item( __( 'Attributed revenue', 'upsellbay' ), (string) $summary['revenue'] );
+		echo '<div class="upsellbay-card-grid upsellbay-card-grid--metrics">';
+		$this->summary_item( __( 'Views', 'upsellbay' ), (string) $summary['views'], __( 'Offer render events recorded in aggregate stats.', 'upsellbay' ) );
+		$this->summary_item( __( 'Accepts', 'upsellbay' ), (string) $summary['accepts'], __( 'Accepted offers recorded in aggregate stats.', 'upsellbay' ) );
+		$this->summary_item( __( 'Accept rate', 'upsellbay' ), (string) $summary['accept_rate'] . '%', __( 'Accepted offers divided by offer views for this period.', 'upsellbay' ) );
+		$this->summary_item( __( 'Attributed revenue', 'upsellbay' ), (string) $summary['revenue'], __( 'Revenue attributed to accepted offers in aggregate stats.', 'upsellbay' ) );
 		echo '</div>';
 		echo '<table class="widefat striped upsellbay-analytics-table"><tbody>';
 		foreach (
@@ -127,8 +129,32 @@ final class DashboardPage {
 	 *
 	 * @param string $label Metric label.
 	 * @param string $value Metric value.
+	 * @param string $help  Optional help tip text.
 	 */
-	private function summary_item( string $label, string $value ): void {
-		echo '<div class="upsellbay-summary__item"><span class="upsellbay-summary__label">' . esc_html( $label ) . '</span><strong>' . esc_html( $value ) . '</strong></div>';
+	private function summary_item( string $label, string $value, string $help = '' ): void {
+		echo '<div class="upsellbay-metric-card">';
+		if ( '' !== $help ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- help_tip() returns escaped WooCommerce help tip markup.
+			echo '<span class="upsellbay-metric-card__help">' . $this->help_tip( $help ) . '</span>';
+		}
+		echo '<span class="upsellbay-metric-card__value">' . esc_html( $value ) . '</span>';
+		echo '<span class="upsellbay-metric-card__label">' . esc_html( $label ) . '</span>';
+		echo '</div>';
+	}
+
+	/**
+	 * Render a WooCommerce help tip when available.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $text Tip text.
+	 * @return string Help tip markup.
+	 */
+	private function help_tip( string $text ): string {
+		if ( function_exists( 'wc_help_tip' ) ) {
+			return wp_kses_post( wc_help_tip( $text ) );
+		}
+
+		return '<span class="description">' . esc_html( $text ) . '</span>';
 	}
 }
