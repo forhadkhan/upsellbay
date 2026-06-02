@@ -111,7 +111,13 @@ function upsellbay_admin_architecture_tests(): array {
 			$page->render( array() );
 			$html = (string) ob_get_clean();
 
+			assert_contains( 'upsellbay-layout-header', $html );
+			assert_contains( 'upsellbay-layout-header__heading', $html );
+			assert_contains( 'upsellbay-layout-header__actions', $html );
+			assert_contains( 'upsellbay-layout-header__tabs', $html );
 			assert_contains( 'nav-tab-wrapper woo-nav-tab-wrapper', $html );
+			assert_true( strpos( $html, 'upsellbay-layout-header' ) < strpos( $html, 'nav-tab-wrapper' ) );
+			assert_true( strpos( $html, 'nav-tab-wrapper' ) < strpos( $html, 'upsellbay-tab-content' ) );
 			assert_contains( 'Dashboard', $html );
 			assert_contains( 'admin.php?page=upsellbay&amp;tab=settings', $html );
 			assert_contains( 'Dashboard content', $html );
@@ -138,7 +144,7 @@ function upsellbay_admin_architecture_tests(): array {
 
 			assert_contains( 'Dashboard content', $html );
 		},
-		'unified admin page keeps plugin notices between title and tabs for offers' => static function (): void {
+		'unified admin page keeps plugin notices above attached header and tabs for offers' => static function (): void {
 			$previous_hooks = $GLOBALS['upsellbay_test_hooks'] ?? array();
 			$repository     = upsellbay_test_offer_repository( array() );
 			$offers_page    = new OffersPage(
@@ -178,11 +184,152 @@ function upsellbay_admin_architecture_tests(): array {
 
 			$GLOBALS['upsellbay_test_hooks'] = $previous_hooks;
 
-			assert_true( strpos( $html, '<h1>UpsellBay</h1>' ) < strpos( $html, 'upsellbay-page-notice' ) );
-			assert_true( strpos( $html, 'upsellbay-page-notice' ) < strpos( $html, 'nav-tab-wrapper' ) );
+			assert_contains( 'upsellbay-page-notices', $html );
+			assert_true( strpos( $html, 'upsellbay-page-notice' ) < strpos( $html, 'upsellbay-layout-header' ) );
+			assert_true( strpos( $html, 'upsellbay-layout-header__heading' ) < strpos( $html, 'nav-tab-wrapper' ) );
 			assert_true( strpos( $html, 'nav-tab-wrapper' ) < strpos( $html, 'upsellbay-tab-content' ) );
 			assert_true( strpos( $html, 'upsellbay-tab-content' ) < strpos( $html, 'upsellbay-offers-add-button' ) );
 			assert_true( strpos( $html, 'upsellbay-offers-add-button' ) < strpos( $html, 'upsellbay-offers-notice' ) );
+		},
+		'admin header css styles page license banner and suppresses tab focus side borders' => static function (): void {
+			$root   = dirname( __DIR__ );
+			$plugin = (string) file_get_contents( $root . '/app/Core/Plugin.php' );
+			$css    = (string) file_get_contents( $root . '/assets/admin/css/upsellbay-admin.css' );
+
+			assert_contains( 'upsellbay-license-banner', $plugin );
+			assert_contains( '<p><strong>%s </strong> <a href="%s"', $plugin );
+			assert_false( str_contains( $plugin, "esc_html__( 'UpsellBay License'" ) );
+			assert_contains( '.upsellbay-page-notices:empty', $css );
+			assert_contains( '.upsellbay-license-banner', $css );
+			assert_contains( 'background: #f0b849;', $css );
+			assert_contains( 'text-align: center;', $css );
+			assert_contains( 'width: calc(100% + 20px);', $css );
+			assert_contains( '.upsellbay-license-banner .button', $css );
+			assert_contains( 'background: #1e1e1e;', $css );
+			assert_contains( 'color: #fff;', $css );
+			assert_contains( 'color: #f0b849;', $css );
+			assert_contains( '.upsellbay-tab-content', $css );
+			assert_contains( 'padding-top: 14px;', $css );
+			assert_contains( 'box-shadow: none;', $css );
+			assert_contains( 'outline: none;', $css );
+		},
+		'admin page renders redirect notices above the attached header on every tab' => static function (): void {
+			$registry      = new TabRegistry(
+				array(
+					new AdminTab(
+						'tools',
+						'Tools',
+						static function (): void {
+							echo '<p>Tools content</p>';
+						}
+					),
+				)
+			);
+			$previous_get  = $_GET;
+			$_GET          = array(
+				'wc_error' => 'License check failed: inactive.',
+			);
+
+			ob_start();
+			( new AdminPage( $registry, new TabRouter( $registry ) ) )->render( array( 'tab' => 'tools' ) );
+			$html = (string) ob_get_clean();
+
+			$_GET = $previous_get;
+
+			assert_contains( 'License check failed: inactive.', $html );
+			assert_true( strpos( $html, 'License check failed: inactive.' ) < strpos( $html, 'upsellbay-layout-header' ) );
+			assert_true( strpos( $html, 'upsellbay-layout-header' ) < strpos( $html, 'upsellbay-tab-content' ) );
+			assert_true( strpos( $html, 'upsellbay-tab-content' ) < strpos( $html, 'Tools content' ) );
+		},
+		'settings save notice renders above the attached header instead of inside tab content' => static function (): void {
+			$settings = new Settings( static fn (): array => array(), static fn (): bool => true );
+			$page     = new SettingsPage(
+				$settings,
+				null,
+				static fn (): bool => true,
+				static fn ( string $nonce ): bool => 'good' === $nonce
+			);
+			$registry = new TabRegistry(
+				array(
+					new AdminTab(
+						'settings',
+						'Settings',
+						static function () use ( $page ): void {
+							$page->render_content();
+						},
+						static function () use ( $page ): void {
+							$page->prepare_render();
+						}
+					),
+				)
+			);
+
+			$previous_hooks  = $GLOBALS['upsellbay_test_hooks'] ?? array();
+			$previous_post   = $_POST;
+			$previous_method = $_SERVER['REQUEST_METHOD'] ?? null;
+
+			$_SERVER['REQUEST_METHOD'] = 'POST';
+			$_POST                     = array( 'nonce' => 'good' );
+
+			ob_start();
+			( new AdminPage( $registry, new TabRouter( $registry ) ) )->render( array( 'tab' => 'settings' ) );
+			$html = (string) ob_get_clean();
+
+			$GLOBALS['upsellbay_test_hooks'] = $previous_hooks;
+			$_POST                           = $previous_post;
+			if ( null === $previous_method ) {
+				unset( $_SERVER['REQUEST_METHOD'] );
+			} else {
+				$_SERVER['REQUEST_METHOD'] = $previous_method;
+			}
+
+			assert_contains( 'Settings saved.', $html );
+			assert_contains( 'upsellbay-page-notices', $html );
+			assert_true( strpos( $html, 'Settings saved.' ) < strpos( $html, 'upsellbay-layout-header' ) );
+			assert_true( strpos( $html, 'upsellbay-tab-content' ) < strpos( $html, '<form method="post">' ) );
+			assert_false( strpos( $html, 'Settings saved.' ) > strpos( $html, 'upsellbay-tab-content' ) );
+		},
+		'settings and tools page warnings stay in the top notice area' => static function (): void {
+			$tabs = array( 'settings', 'tools' );
+
+			foreach ( $tabs as $tab_id ) {
+				$previous_hooks = $GLOBALS['upsellbay_test_hooks'] ?? array();
+				add_action(
+					'upsellbay_admin_page_heading_before',
+					static function () use ( $tab_id ): void {
+						echo '<div class="notice warning upsellbay-page-notice">' . esc_html( 'top warning for ' . $tab_id ) . '</div>';
+					}
+				);
+
+				$registry = new TabRegistry(
+					array(
+						new AdminTab(
+							$tab_id,
+							ucfirst( $tab_id ),
+							static function () use ( $tab_id ): void {
+								echo '<p>' . esc_html( $tab_id . ' body' ) . '</p>';
+							}
+						),
+					)
+				);
+
+				ob_start();
+				( new AdminPage( $registry, new TabRouter( $registry ) ) )->render( array( 'tab' => $tab_id ) );
+				$html = (string) ob_get_clean();
+
+				$GLOBALS['upsellbay_test_hooks'] = $previous_hooks;
+
+				$notice_position  = strpos( $html, 'top warning for ' . $tab_id );
+				$notices_position = strpos( $html, 'upsellbay-page-notices' );
+				$header_position  = strpos( $html, 'upsellbay-layout-header' );
+				$content_position = strpos( $html, 'upsellbay-tab-content' );
+
+				assert_true( false !== $notice_position );
+				assert_true( $notices_position < $notice_position );
+				assert_true( $notice_position < $header_position );
+				assert_true( $header_position < $content_position );
+				assert_false( $content_position < $notice_position );
+			}
 		},
 		'tab factory owns admin section definitions and offer editor routing' => static function (): void {
 			$repository = upsellbay_test_offer_repository( array() );
@@ -196,11 +343,12 @@ function upsellbay_admin_architecture_tests(): array {
 				new OfferEditPage( $service, $validator ),
 				new SettingsPage( $settings ),
 				new ToolsPage( new ImportExporter( $validator ), $settings ),
-				new WizardController( $service, $settings, new \WPAnchorBay\UpsellBay\Domain\Offers\OfferDefaults() )
+				new WizardController( $service, $settings, new \WPAnchorBay\UpsellBay\Domain\Offers\OfferDefaults() ),
+				new HelpPage()
 			);
 			$registry   = $factory->registry();
 
-			assert_same( array( 'dashboard', 'offers', 'settings', 'tools', 'setup' ), array_keys( $registry->tabs() ) );
+			assert_same( array( 'dashboard', 'offers', 'settings', 'tools', 'setup', 'help' ), array_keys( $registry->tabs() ) );
 
 			ob_start();
 			$registry->get( 'offers' )->render( array( 'action' => 'edit' ) );
@@ -222,7 +370,8 @@ function upsellbay_admin_architecture_tests(): array {
 				new OfferEditPage( $service, $validator ),
 				new SettingsPage( $incomplete_settings ),
 				new ToolsPage( new ImportExporter( $validator ), $incomplete_settings ),
-				new WizardController( $service, $incomplete_settings, new \WPAnchorBay\UpsellBay\Domain\Offers\OfferDefaults() )
+				new WizardController( $service, $incomplete_settings, new \WPAnchorBay\UpsellBay\Domain\Offers\OfferDefaults() ),
+				new HelpPage()
 			);
 
 			$completed_settings = new Settings( static fn (): array => array( 'wizard_completed' => true ), static fn (): bool => true );
@@ -232,7 +381,8 @@ function upsellbay_admin_architecture_tests(): array {
 				new OfferEditPage( $service, $validator ),
 				new SettingsPage( $completed_settings ),
 				new ToolsPage( new ImportExporter( $validator ), $completed_settings ),
-				new WizardController( $service, $completed_settings, new \WPAnchorBay\UpsellBay\Domain\Offers\OfferDefaults() )
+				new WizardController( $service, $completed_settings, new \WPAnchorBay\UpsellBay\Domain\Offers\OfferDefaults() ),
+				new HelpPage()
 			);
 
 			assert_same( 'Get started', $incomplete_factory->registry()->get( 'setup' )->label() );

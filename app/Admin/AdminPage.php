@@ -76,19 +76,60 @@ final class AdminPage {
 		$active_tab = $this->router->current_tab( $request );
 		$active_tab->prepare( $request );
 
-		echo '<div class="wrap woocommerce upsellbay-admin">';
-		echo '<h1>' . esc_html( $this->page_heading( $active_tab, $request ) ) . '</h1>';
-		echo '<hr class="wp-header-end">';
 		/**
-		 * Fires below the UpsellBay page title and above the tab navigation.
+		 * Fires above the attached UpsellBay page header and tab navigation.
 		 *
 		 * @since 1.0.0
 		 */
+		echo '<div class="upsellbay-page-notices">';
 		do_action( 'upsellbay_admin_page_heading_before' );
-		$this->navigation->render( $this->registry, $active_tab );
+		$this->render_redirect_notices();
+		echo '</div>';
+		$this->render_header( $active_tab );
+		echo '<div class="wrap woocommerce upsellbay-admin">';
 		echo '<div class="upsellbay-tab-content">';
 		$active_tab->render( $request );
 		echo '</div></div>';
+	}
+
+	/**
+	 * Render the WooCommerce-style page header.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param AdminTab $active_tab Active tab.
+	 */
+	private function render_header( AdminTab $active_tab ): void {
+		echo '<div class="upsellbay-layout-header woocommerce-layout__header upsellbay-admin">';
+		echo '<div class="upsellbay-layout-header__wrapper woocommerce-layout__header-wrapper">';
+		echo '<h1 class="upsellbay-layout-header__heading woocommerce-layout__header-heading">' . esc_html__( 'UpsellBay', 'upsellbay' ) . '</h1>';
+		echo '<div class="upsellbay-layout-header__actions">';
+		echo '<a class="button button-primary" href="' . esc_url( 'admin.php?page=upsellbay&tab=offers&action=edit' ) . '">' . esc_html__( 'Add offer', 'upsellbay' ) . '</a>';
+		echo '</div>';
+		echo '</div>';
+		echo '<div class="upsellbay-layout-header__tabs">';
+		$this->navigation->render( $this->registry, $active_tab );
+		echo '</div>';
+		echo '</div>';
+	}
+
+	/**
+	 * Render safe redirect notices above the attached page header.
+	 *
+	 * @since 1.0.0
+	 */
+	private function render_redirect_notices(): void {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		if ( isset( $_GET['wc_message'] ) ) {
+			$message = sanitize_text_field( wp_unslash( $_GET['wc_message'] ) );
+			echo '<div class="notice notice-success upsellbay-page-notice"><p>' . esc_html( $message ) . '</p></div>';
+		}
+
+		if ( isset( $_GET['wc_error'] ) ) {
+			$error = sanitize_text_field( wp_unslash( $_GET['wc_error'] ) );
+			echo '<div class="notice notice-error upsellbay-page-notice"><p>' . esc_html( $error ) . '</p></div>';
+		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 	}
 
 	/**

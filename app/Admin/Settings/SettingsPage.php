@@ -67,6 +67,24 @@ final class SettingsPage {
 	private ?array $prepared_save_result = null;
 
 	/**
+	 * Whether the prepared save notice hook has been registered.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var bool
+	 */
+	private bool $prepared_notice_registered = false;
+
+	/**
+	 * Whether the prepared save notice has already been rendered.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var bool
+	 */
+	private bool $prepared_notice_rendered = false;
+
+	/**
 	 * Whether posted settings were already handled for this render.
 	 *
 	 * @since 1.0.0
@@ -208,12 +226,9 @@ final class SettingsPage {
 	 * @since 1.0.0
 	 */
 	public function render_content(): void {
-		$this->render_admin_notices();
-		$save_result = $this->prepare_render();
-
-		if ( null !== $save_result ) {
-			$notice_class = true === $save_result['success'] ? 'notice-success' : 'notice-error';
-			echo '<div class="notice ' . esc_attr( $notice_class ) . ' inline is-dismissible"><p>' . esc_html( $save_result['message'] ) . '</p></div>';
+		$this->prepare_render();
+		if ( null !== $this->prepared_save_result && ! $this->prepared_notice_rendered ) {
+			$this->render_prepared_save_notice( true );
 		}
 
 		$settings   = $this->settings->all();
@@ -298,29 +313,35 @@ final class SettingsPage {
 
 		$this->prepared_save_result    = $this->maybe_handle_posted_settings();
 		$this->posted_settings_handled = true;
+		if ( null !== $this->prepared_save_result && ! $this->prepared_notice_registered ) {
+			add_action( 'upsellbay_admin_page_heading_before', array( $this, 'render_prepared_save_notice' ) );
+			$this->prepared_notice_registered = true;
+		}
 
 		return $this->prepared_save_result;
 	}
 
 	/**
-	 * Render WooCommerce-style notices from redirect query params.
+	 * Render the prepared settings save notice above the attached page header.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @return void
+	 * @param bool $inline Whether to render the notice inline for standalone settings pages.
 	 */
-	private function render_admin_notices(): void {
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended
-		if ( isset( $_GET['wc_message'] ) ) {
-			$message = sanitize_text_field( wp_unslash( $_GET['wc_message'] ) );
-			echo '<div class="notice notice-success inline is-dismissible"><p>' . esc_html( $message ) . '</p></div>';
+	public function render_prepared_save_notice( bool $inline = false ): void {
+		if ( null === $this->prepared_save_result ) {
+			return;
 		}
 
-		if ( isset( $_GET['wc_error'] ) ) {
-			$error = sanitize_text_field( wp_unslash( $_GET['wc_error'] ) );
-			echo '<div class="notice notice-error inline is-dismissible"><p>' . esc_html( $error ) . '</p></div>';
+		$notice_class                   = true === $this->prepared_save_result['success'] ? 'notice-success' : 'notice-error';
+		$this->prepared_notice_rendered = true;
+
+		if ( $inline ) {
+			echo '<div class="notice ' . esc_attr( $notice_class ) . ' inline is-dismissible"><p>' . esc_html( $this->prepared_save_result['message'] ) . '</p></div>';
+			return;
 		}
-		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		echo '<div class="notice ' . esc_attr( $notice_class ) . ' upsellbay-page-notice is-dismissible"><p>' . esc_html( $this->prepared_save_result['message'] ) . '</p></div>';
 	}
 
 	/**

@@ -59,9 +59,7 @@ final class DashboardPage {
 
 		echo '<div class="upsellbay-overview-header">';
 		echo '<h3 class="upsellbay-overview-title">' . esc_html__( 'Store offer status', 'upsellbay' ) . '</h3>';
-		echo '<div class="upsellbay-button-group">';
-		echo '<a class="button button-primary" href="' . esc_url( 'admin.php?page=upsellbay&tab=offers&action=edit' ) . '">' . esc_html__( 'Add offer', 'upsellbay' ) . '</a>';
-		echo '</div></div>';
+		echo '</div>';
 		echo '<div class="upsellbay-card-grid upsellbay-card-grid--metrics">';
 		$this->summary_item( __( 'Offers enabled', 'upsellbay' ), true === $data['enabled'] ? __( 'Yes', 'upsellbay' ) : __( 'No', 'upsellbay' ), __( 'Whether live eligible offers are allowed to render on enabled placements.', 'upsellbay' ) );
 		$this->summary_item( __( 'Test mode', 'upsellbay' ), true === $data['test_mode'] ? __( 'On', 'upsellbay' ) : __( 'Off', 'upsellbay' ), __( 'Admin-only preview mode for checking offers before shoppers see them.', 'upsellbay' ) );
