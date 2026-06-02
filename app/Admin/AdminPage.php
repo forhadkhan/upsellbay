@@ -74,13 +74,14 @@ final class AdminPage {
 		$active_tab->prepare( $request );
 
 		echo '<div class="wrap woocommerce upsellbay-admin">';
+		echo '<h1>' . esc_html__( 'UpsellBay', 'upsellbay' ) . '</h1>';
+		echo '<hr class="wp-header-end">';
 		/**
-		 * Fires at the top of the UpsellBay admin page, inside the wrap.
+		 * Fires below the UpsellBay page title and above the tab navigation.
 		 *
 		 * @since 1.0.0
 		 */
 		do_action( 'upsellbay_admin_page_heading_before' );
-		echo '<h1>' . esc_html__( 'UpsellBay', 'upsellbay' ) . '</h1>';
 		$this->navigation->render( $this->registry, $active_tab );
 		echo '<div class="upsellbay-tab-content">';
 		$active_tab->render( $request );

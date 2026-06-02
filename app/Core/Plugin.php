@@ -524,7 +524,7 @@ final class Plugin {
 	 * Render a license warning banner inside UpsellBay admin pages.
 	 *
 	 * Hooked into upsellbay_admin_page_heading_before so it appears inside
-	 * the page wrap, below the heading and tab navigation.
+	 * the page wrap, below the page title and above tab navigation.
 	 *
 	 * @since 1.0.0
 	 *

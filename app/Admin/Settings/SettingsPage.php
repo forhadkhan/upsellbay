@@ -213,7 +213,7 @@ final class SettingsPage {
 
 		if ( null !== $save_result ) {
 			$notice_class = true === $save_result['success'] ? 'notice-success' : 'notice-error';
-			echo '<div class="notice ' . esc_attr( $notice_class ) . ' is-dismissible"><p>' . esc_html( $save_result['message'] ) . '</p></div>';
+			echo '<div class="notice ' . esc_attr( $notice_class ) . ' inline is-dismissible"><p>' . esc_html( $save_result['message'] ) . '</p></div>';
 		}
 
 		$settings   = $this->settings->all();
@@ -314,12 +314,12 @@ final class SettingsPage {
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['wc_message'] ) ) {
 			$message = sanitize_text_field( wp_unslash( $_GET['wc_message'] ) );
-			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $message ) . '</p></div>';
+			echo '<div class="notice notice-success inline is-dismissible"><p>' . esc_html( $message ) . '</p></div>';
 		}
 
 		if ( isset( $_GET['wc_error'] ) ) {
 			$error = sanitize_text_field( wp_unslash( $_GET['wc_error'] ) );
-			echo '<div class="notice notice-error is-dismissible"><p>' . esc_html( $error ) . '</p></div>';
+			echo '<div class="notice notice-error inline is-dismissible"><p>' . esc_html( $error ) . '</p></div>';
 		}
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 	}

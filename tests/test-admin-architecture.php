@@ -138,6 +138,52 @@ function upsellbay_admin_architecture_tests(): array {
 
 			assert_contains( 'Dashboard content', $html );
 		},
+		'unified admin page keeps plugin notices between title and tabs for offers' => static function (): void {
+			$previous_hooks = $GLOBALS['upsellbay_test_hooks'] ?? array();
+			$repository     = upsellbay_test_offer_repository( array() );
+			$offers_page    = new OffersPage(
+				new OfferListTable(
+					$repository,
+					new OfferService( $repository, new OfferValidator( new OfferSchema(), static fn (): bool => true ) )
+				)
+			);
+			$registry       = new TabRegistry(
+				array(
+					new AdminTab(
+						'offers',
+						'Offers',
+						static function () use ( $offers_page ): void {
+							$offers_page->render_content();
+						}
+					),
+				)
+			);
+
+			add_action(
+				'upsellbay_admin_page_heading_before',
+				static function (): void {
+					echo '<div class="notice upsellbay-page-notice">plugin notice</div>';
+				}
+			);
+			add_action(
+				'upsellbay_offers_header_after',
+				static function (): void {
+					echo '<div class="notice upsellbay-offers-notice">offers notice</div>';
+				}
+			);
+
+			ob_start();
+			( new AdminPage( $registry, new TabRouter( $registry ) ) )->render( array( 'tab' => 'offers' ) );
+			$html = (string) ob_get_clean();
+
+			$GLOBALS['upsellbay_test_hooks'] = $previous_hooks;
+
+			assert_true( strpos( $html, '<h1>UpsellBay</h1>' ) < strpos( $html, 'upsellbay-page-notice' ) );
+			assert_true( strpos( $html, 'upsellbay-page-notice' ) < strpos( $html, 'nav-tab-wrapper' ) );
+			assert_true( strpos( $html, 'nav-tab-wrapper' ) < strpos( $html, 'upsellbay-tab-content' ) );
+			assert_true( strpos( $html, 'upsellbay-tab-content' ) < strpos( $html, '<h2 class="wp-heading-inline">Offers</h2>' ) );
+			assert_true( strpos( $html, '<h2 class="wp-heading-inline">Offers</h2>' ) < strpos( $html, 'upsellbay-offers-notice' ) );
+		},
 		'tab factory owns admin section definitions and offer editor routing' => static function (): void {
 			$repository = upsellbay_test_offer_repository( array() );
 			$validator  = new OfferValidator( new OfferSchema(), static fn (): bool => true );
@@ -189,6 +235,33 @@ function upsellbay_admin_architecture_tests(): array {
 			assert_true( $table->handle_row_action( 'pause', 11 ) );
 			assert_true( $table->handle_row_action( 'duplicate', 11 ) );
 			assert_true( $table->handle_row_action( 'trash', 11 ) );
+		},
+		'offers page exposes a header-after hook for offers notices below the offers title' => static function (): void {
+			$previous_hooks = $GLOBALS['upsellbay_test_hooks'] ?? array();
+			$repository     = upsellbay_test_offer_repository( array() );
+			$page           = new OffersPage(
+				new OfferListTable(
+					$repository,
+					new OfferService( $repository, new OfferValidator( new OfferSchema(), static fn (): bool => true ) )
+				)
+			);
+
+			add_action(
+				'upsellbay_offers_header_after',
+				static function (): void {
+					echo '<div class="notice upsellbay-offers-notice">offers notice</div>';
+				}
+			);
+
+			ob_start();
+			$page->render_content();
+			$html = (string) ob_get_clean();
+
+			$GLOBALS['upsellbay_test_hooks'] = $previous_hooks;
+
+			assert_true( strpos( $html, '<h2 class="wp-heading-inline">Offers</h2>' ) < strpos( $html, 'upsellbay-offers-notice' ) );
+			assert_true( strpos( $html, '<hr class="wp-header-end">' ) < strpos( $html, 'upsellbay-offers-notice' ) );
+			assert_true( strpos( $html, 'upsellbay-offers-notice' ) < strpos( $html, 'No UpsellBay offers yet' ) );
 		},
 		'offer editor shell sanitizes and validates submitted fields' => static function (): void {
 			$saved      = array();

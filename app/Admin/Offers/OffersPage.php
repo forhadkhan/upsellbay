@@ -92,7 +92,13 @@ final class OffersPage {
 
 		echo '<h2 class="wp-heading-inline">' . esc_html__( 'Offers', 'upsellbay' ) . '</h2> ';
 		echo '<a href="' . esc_url( 'admin.php?page=upsellbay&tab=offers&action=edit' ) . '" class="page-title-action">' . esc_html__( 'Add offer', 'upsellbay' ) . '</a>';
-		echo '<hr class="wp-header-end">';
+
+		/**
+		 * Fires after the native Offers header, before list-table notices.
+		 *
+		 * @since 1.0.0
+		 */
+		do_action( 'upsellbay_offers_header_after' );
 
 		if ( array() === $rows ) {
 			$empty = $this->empty_state();
