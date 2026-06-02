@@ -4,11 +4,16 @@
 	"private": true,
 	"description": "WooCommerce-native AOV offer engine assets.",
 	"scripts": {
-		"build": "wp-scripts build --config webpack.config.js",
 		"start": "wp-scripts start --config webpack.config.js",
-		"i18n:make-pot": "wp i18n make-pot . languages/upsellbay.pot --domain=upsellbay --exclude=node_modules,vendor,.git,.meta,graphify-out"
+		"build": "wp-scripts build --config webpack.config.js",
+		"dev": "node scripts/dev.js",
+		"release": "node scripts/release.js",
+		"i18n:make-pot": "wp i18n make-pot . languages/upsellbay.pot --domain=upsellbay --exclude=node_modules,vendor,.git,.meta,graphify-out",
+		"plugin-check": "wp plugin check upsellbay --path=."
 	},
 	"devDependencies": {
-		"@wordpress/scripts": "^30.0.0"
+		"@wordpress/scripts": "^30.0.0",
+		"archiver": "^7.0.1",
+		"fs-extra": "^11.3.1"
 	}
 }
