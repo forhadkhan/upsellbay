@@ -39,6 +39,7 @@
 	margin-top: 0;
 }
 
+.upsellbay-license-banner-slot:empty,
 .upsellbay-page-notices:empty {
 	display: none;
 }

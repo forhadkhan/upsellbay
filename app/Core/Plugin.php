@@ -281,7 +281,7 @@ final class Plugin {
 		add_action( 'init', array( $this, 'maybe_upgrade' ), 20 );
 		add_action( 'admin_notices', array( $this, 'render_dependency_notices' ) );
 		add_action( 'admin_notices', array( $this, 'render_license_banner' ) );
-		add_action( 'upsellbay_admin_page_heading_before', array( $this, 'render_page_license_banner' ) );
+		add_action( 'upsellbay_admin_page_license_banner', array( $this, 'render_page_license_banner' ) );
 		add_action( 'admin_menu', array( $this, 'register_admin_pages' ) );
 		add_action( 'admin_post_upsellbay_activate_license', array( $this, 'handle_activate_license' ) );
 		add_action( 'admin_post_upsellbay_remove_license', array( $this, 'handle_remove_license' ) );
@@ -502,19 +502,34 @@ final class Plugin {
 	/**
 	 * Render a license warning banner inside UpsellBay admin pages.
 	 *
-	 * Hooked into upsellbay_admin_page_heading_before so it appears above the
-	 * attached page header and tab navigation.
+	 * Hooked into upsellbay_admin_page_license_banner so it appears above regular
+	 * admin notices, the attached page header, and tab navigation.
 	 *
 	 * @since 1.0.0
 	 *
 	 * @return void
 	 */
 	public function render_page_license_banner(): void {
-		$html = $this->get_license_notice_html( 'notice-warning upsellbay-page-notice upsellbay-license-banner' );
+		$html = $this->get_license_page_banner_html();
 
 		if ( '' !== $html ) {
 			echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
+	}
+
+	/**
+	 * Build the UpsellBay page-level license banner HTML.
+	 *
+	 * This intentionally does not use the WordPress .notice class. WooCommerce
+	 * admin scripts can reparent .notice nodes after load, which moves this
+	 * banner back into tab content on some screens.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string Banner HTML or empty string.
+	 */
+	private function get_license_page_banner_html(): string {
+		return $this->get_license_notice_html( 'upsellbay-license-banner', false );
 	}
 
 	/**
@@ -524,10 +539,11 @@ final class Plugin {
 	 * @since 1.0.0
 	 *
 	 * @param string $additional_classes Additional CSS classes for the notice div.
+	 * @param bool   $include_notice_class Whether to include the WordPress .notice class.
 	 *
 	 * @return string Notice HTML or empty string.
 	 */
-	private function get_license_notice_html( string $additional_classes = 'notice-warning' ): string {
+	private function get_license_notice_html( string $additional_classes = 'notice-warning', bool $include_notice_class = true ): string {
 		$license_status = $this->container->get( LicenseClient::class )->get_status();
 		$status_code    = $license_status['status'] ?? 'inactive';
 
@@ -549,9 +565,11 @@ final class Plugin {
 			return '';
 		}
 
+		$classes = true === $include_notice_class ? 'notice ' . $additional_classes : $additional_classes;
+
 		return sprintf(
-			'<div class="notice %s"><p><strong>%s </strong> <a href="%s" class="button button-small">%s</a></p></div>',
-			esc_attr( $additional_classes ),
+			'<div class="%s" role="alert"><p><strong>%s </strong> <a href="%s" class="button button-small">%s</a></p></div>',
+			esc_attr( $classes ),
 			esc_html( $message ),
 			esc_url( $settings_license_url ),
 			esc_html__( 'Manage License', 'upsellbay' )

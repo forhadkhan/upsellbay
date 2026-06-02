@@ -76,6 +76,10 @@ final class AdminPage {
 		$active_tab = $this->router->current_tab( $request );
 		$active_tab->prepare( $request );
 
+		echo '<div class="upsellbay-license-banner-slot">';
+		do_action( 'upsellbay_admin_page_license_banner' );
+		echo '</div>';
+
 		/**
 		 * Fires above the attached UpsellBay page header and tab navigation.
 		 *
@@ -100,9 +104,9 @@ final class AdminPage {
 	 * @param AdminTab $active_tab Active tab.
 	 */
 	private function render_header( AdminTab $active_tab ): void {
-		echo '<div class="upsellbay-layout-header woocommerce-layout__header upsellbay-admin">';
-		echo '<div class="upsellbay-layout-header__wrapper woocommerce-layout__header-wrapper">';
-		echo '<h1 class="upsellbay-layout-header__heading woocommerce-layout__header-heading">' . esc_html__( 'UpsellBay', 'upsellbay' ) . '</h1>';
+		echo '<div class="upsellbay-layout-header upsellbay-admin">';
+		echo '<div class="upsellbay-layout-header__wrapper">';
+		echo '<h1 class="upsellbay-layout-header__heading">' . esc_html__( 'UpsellBay', 'upsellbay' ) . '</h1>';
 		echo '<div class="upsellbay-layout-header__actions">';
 		echo '<a class="button button-primary" href="' . esc_url( 'admin.php?page=upsellbay&tab=offers&action=edit' ) . '">' . esc_html__( 'Add offer', 'upsellbay' ) . '</a>';
 		echo '</div>';
