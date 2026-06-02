@@ -181,8 +181,8 @@ function upsellbay_admin_architecture_tests(): array {
 			assert_true( strpos( $html, '<h1>UpsellBay</h1>' ) < strpos( $html, 'upsellbay-page-notice' ) );
 			assert_true( strpos( $html, 'upsellbay-page-notice' ) < strpos( $html, 'nav-tab-wrapper' ) );
 			assert_true( strpos( $html, 'nav-tab-wrapper' ) < strpos( $html, 'upsellbay-tab-content' ) );
-			assert_true( strpos( $html, 'upsellbay-tab-content' ) < strpos( $html, '<h2 class="wp-heading-inline">Offers</h2>' ) );
-			assert_true( strpos( $html, '<h2 class="wp-heading-inline">Offers</h2>' ) < strpos( $html, 'upsellbay-offers-notice' ) );
+			assert_true( strpos( $html, 'upsellbay-tab-content' ) < strpos( $html, 'upsellbay-offers-add-button' ) );
+			assert_true( strpos( $html, 'upsellbay-offers-add-button' ) < strpos( $html, 'upsellbay-offers-notice' ) );
 		},
 		'tab factory owns admin section definitions and offer editor routing' => static function (): void {
 			$repository = upsellbay_test_offer_repository( array() );
@@ -288,8 +288,7 @@ function upsellbay_admin_architecture_tests(): array {
 
 			$GLOBALS['upsellbay_test_hooks'] = $previous_hooks;
 
-			assert_true( strpos( $html, '<h2 class="wp-heading-inline">Offers</h2>' ) < strpos( $html, 'upsellbay-offers-notice' ) );
-			assert_true( strpos( $html, '<hr class="wp-header-end">' ) < strpos( $html, 'upsellbay-offers-notice' ) );
+			assert_true( strpos( $html, 'upsellbay-offers-add-button' ) < strpos( $html, 'upsellbay-offers-notice' ) );
 			assert_true( strpos( $html, 'upsellbay-offers-notice' ) < strpos( $html, 'No UpsellBay offers yet' ) );
 		},
 		'offer editor shell sanitizes and validates submitted fields' => static function (): void {
@@ -659,7 +658,7 @@ function upsellbay_admin_architecture_tests(): array {
 			( new ToolsPage( new ImportExporter( new OfferValidator( new OfferSchema(), static fn (): bool => true ) ), $settings ) )->render();
 			$tools_html = (string) ob_get_clean();
 
-			assert_contains( 'Dashboard', $dashboard_html );
+			assert_contains( 'Store offer status', $dashboard_html );
 			assert_contains( 'Active offers', $dashboard_html );
 			assert_contains( '25.00%', $dashboard_html );
 			assert_contains( 'Performance (Last 30 days)', $dashboard_html );

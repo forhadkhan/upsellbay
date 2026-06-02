@@ -57,7 +57,6 @@ final class DashboardPage {
 	public function render(): void {
 		$data = $this->summary->data();
 
-		echo '<h2 class="wp-heading-inline">' . esc_html__( 'Dashboard', 'upsellbay' ) . '</h2>';
 		echo '<div class="upsellbay-overview-header">';
 		echo '<h3 class="upsellbay-overview-title">' . esc_html__( 'Store offer status', 'upsellbay' ) . '</h3>';
 		echo '<div class="upsellbay-button-group">';

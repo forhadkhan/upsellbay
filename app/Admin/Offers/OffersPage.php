@@ -90,9 +90,7 @@ final class OffersPage {
 	public function render_content(): void {
 		$rows = $this->rows();
 
-		echo '<h2 class="wp-heading-inline">' . esc_html__( 'Offers', 'upsellbay' ) . '</h2>';
 		echo '<a href="' . esc_url( 'admin.php?page=upsellbay&tab=offers&action=edit' ) . '" class="button button-primary upsellbay-offers-add-button">' . esc_html__( 'Add offer', 'upsellbay' ) . '</a>';
-		echo '<hr class="wp-header-end">';
 
 		/**
 		 * Fires after the native Offers header, before list-table notices.
