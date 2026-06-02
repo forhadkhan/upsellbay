@@ -147,7 +147,7 @@ final class TabFactory {
 				),
 				new AdminTab(
 					'setup',
-					__( 'Setup', 'upsellbay' ),
+					$this->wizard->is_completed() ? __( 'Setup', 'upsellbay' ) : __( 'Get started', 'upsellbay' ),
 					function ( array $request ): void {
 						unset( $request );
 						$this->wizard->render_content();

@@ -209,6 +209,35 @@ function upsellbay_admin_architecture_tests(): array {
 			assert_contains( 'Add UpsellBay Offer', $html );
 			assert_false( str_contains( $html, 'wp-list-table' ) );
 		},
+		'setup tab label is onboarding-first until wizard completion' => static function (): void {
+			$repository = upsellbay_test_offer_repository( array() );
+			$validator  = new OfferValidator( new OfferSchema(), static fn (): bool => true );
+			$service    = new OfferService( $repository, $validator );
+			$stats      = new StatsRepository( static function (): void {}, static fn (): array => array() );
+
+			$incomplete_settings = new Settings( static fn (): array => array( 'wizard_completed' => false ), static fn (): bool => true );
+			$incomplete_factory  = new TabFactory(
+				new DashboardPage( new OverviewSummary( $repository, $stats, $incomplete_settings ), $stats ),
+				new OffersPage( new OfferListTable( $repository, $service ) ),
+				new OfferEditPage( $service, $validator ),
+				new SettingsPage( $incomplete_settings ),
+				new ToolsPage( new ImportExporter( $validator ), $incomplete_settings ),
+				new WizardController( $service, $incomplete_settings, new \WPAnchorBay\UpsellBay\Domain\Offers\OfferDefaults() )
+			);
+
+			$completed_settings = new Settings( static fn (): array => array( 'wizard_completed' => true ), static fn (): bool => true );
+			$completed_factory  = new TabFactory(
+				new DashboardPage( new OverviewSummary( $repository, $stats, $completed_settings ), $stats ),
+				new OffersPage( new OfferListTable( $repository, $service ) ),
+				new OfferEditPage( $service, $validator ),
+				new SettingsPage( $completed_settings ),
+				new ToolsPage( new ImportExporter( $validator ), $completed_settings ),
+				new WizardController( $service, $completed_settings, new \WPAnchorBay\UpsellBay\Domain\Offers\OfferDefaults() )
+			);
+
+			assert_same( 'Get started', $incomplete_factory->registry()->get( 'setup' )->label() );
+			assert_same( 'Setup', $completed_factory->registry()->get( 'setup' )->label() );
+		},
 		'offer list table maps native actions to repository calls' => static function (): void {
 			$repository = upsellbay_test_offer_repository(
 				array(

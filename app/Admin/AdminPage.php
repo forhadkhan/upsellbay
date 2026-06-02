@@ -108,11 +108,26 @@ final class AdminPage {
 			return $base;
 		}
 
-		if ( 'offers' === $tab_id && 'edit' === sanitize_key( (string) ( $request['action'] ?? '' ) ) ) {
+		if ( 'offers' === $tab_id && 'edit' === $this->request_key( $request['action'] ?? '' ) ) {
 			return $base . ' › ' . __( 'Add Offer', 'upsellbay' );
 		}
 
 		return $base . ' › ' . $active_tab->label();
+	}
+
+	/**
+	 * Sanitize an admin request key with a fallback for isolated tests.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param mixed $value Raw value.
+	 */
+	private function request_key( $value ): string {
+		if ( function_exists( 'sanitize_key' ) ) {
+			return sanitize_key( (string) $value );
+		}
+
+		return strtolower( preg_replace( '/[^a-z0-9_\-]/', '', (string) $value ) ?? '' );
 	}
 
 	/**

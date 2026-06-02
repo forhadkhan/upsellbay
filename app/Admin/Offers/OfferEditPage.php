@@ -275,6 +275,8 @@ final class OfferEditPage {
 	 * @since 1.0.0
 	 */
 	public function render_content(): void {
+		echo '<h2 class="wp-heading-inline">' . esc_html__( 'Add UpsellBay Offer', 'upsellbay' ) . '</h2>';
+		echo '<hr class="wp-header-end">';
 		echo '<form method="post">';
 		if ( function_exists( 'wp_nonce_field' ) ) {
 			wp_nonce_field( 'upsellbay_save_offer', 'nonce' );

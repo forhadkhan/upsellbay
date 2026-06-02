@@ -165,6 +165,15 @@ final class WizardController {
 	}
 
 	/**
+	 * Whether the first-run wizard has already been completed.
+	 *
+	 * @since 1.0.0
+	 */
+	public function is_completed(): bool {
+		return true === (bool) $this->settings->all()['wizard_completed'];
+	}
+
+	/**
 	 * Build one optional targeting rule from wizard fields.
 	 *
 	 * @since 1.0.0
