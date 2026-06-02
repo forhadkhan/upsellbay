@@ -242,7 +242,8 @@ final class Plugin {
 				$container->get( OfferEditPage::class ),
 				$container->get( SettingsPage::class ),
 				$container->get( ToolsPage::class ),
-				$container->get( WizardController::class )
+				$container->get( WizardController::class ),
+				$container->get( HelpPage::class )
 			)
 		);
 		$this->container->set(
@@ -285,28 +286,6 @@ final class Plugin {
 		add_action( 'admin_post_upsellbay_activate_license', array( $this, 'handle_activate_license' ) );
 		add_action( 'admin_post_upsellbay_remove_license', array( $this, 'handle_remove_license' ) );
 		add_action( 'admin_post_upsellbay_check_license', array( $this, 'handle_check_license' ) );
-
-		add_action(
-			'load-woocommerce_page_upsellbay',
-			function (): void {
-				$this->container->get( HelpPage::class )->register();
-
-				add_filter(
-					'admin_title',
-					function ( string $admin_title, string $title ): string {
-						$tab = $this->container->get( TabRouter::class )->current_tab( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-
-						return sprintf(
-							'UpsellBay | %s%s',
-							$tab->label(),
-							substr( $admin_title, strlen( $title ) )
-						);
-					},
-					10,
-					2
-				);
-			}
-		);
 
 		$this->container->get( AdminAssets::class )->register_hooks();
 		$this->container->get( AdminBar::class )->register_hooks();
@@ -523,15 +502,15 @@ final class Plugin {
 	/**
 	 * Render a license warning banner inside UpsellBay admin pages.
 	 *
-	 * Hooked into upsellbay_admin_page_heading_before so it appears inside
-	 * the page wrap, below the page title and above tab navigation.
+	 * Hooked into upsellbay_admin_page_heading_before so it appears above the
+	 * attached page header and tab navigation.
 	 *
 	 * @since 1.0.0
 	 *
 	 * @return void
 	 */
 	public function render_page_license_banner(): void {
-		$html = $this->get_license_notice_html( 'notice-warning upsellbay-page-notice' );
+		$html = $this->get_license_notice_html( 'notice-warning upsellbay-page-notice upsellbay-license-banner' );
 
 		if ( '' !== $html ) {
 			echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -571,9 +550,8 @@ final class Plugin {
 		}
 
 		return sprintf(
-			'<div class="notice %s"><p><strong>%s</strong> %s <a href="%s" class="button button-small">%s</a></p></div>',
+			'<div class="notice %s"><p><strong>%s </strong> <a href="%s" class="button button-small">%s</a></p></div>',
 			esc_attr( $additional_classes ),
-			esc_html__( 'UpsellBay License', 'upsellbay' ),
 			esc_html( $message ),
 			esc_url( $settings_license_url ),
 			esc_html__( 'Manage License', 'upsellbay' )
