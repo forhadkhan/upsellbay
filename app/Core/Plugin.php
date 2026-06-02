@@ -28,6 +28,7 @@ use WPAnchorBay\UpsellBay\Admin\PreviewLinks;
 use WPAnchorBay\UpsellBay\Admin\Settings\SettingsPage;
 use WPAnchorBay\UpsellBay\Admin\Tools\ToolsPage;
 use WPAnchorBay\UpsellBay\Admin\Wizard\WizardController;
+use WPAnchorBay\UpsellBay\Api\Routes\LicenseRoute;
 use WPAnchorBay\UpsellBay\Api\Routes\OfferPreviewRoute;
 use WPAnchorBay\UpsellBay\Api\Routes\PublicOfferRoutes;
 use WPAnchorBay\UpsellBay\Data\CartSession;
@@ -137,6 +138,7 @@ final class Plugin {
 
 		$this->initialized = true;
 		$this->register_hooks();
+		$this->container->get( Updater::class )->init();
 
 		if ( function_exists( 'do_action' ) ) {
 			do_action( Constants::hook_name( 'loaded' ), $this );
@@ -277,9 +279,34 @@ final class Plugin {
 		add_action( 'init', array( $this->container->get( Installer::class ), 'register_offer_post_type' ) );
 		add_action( 'init', array( $this, 'maybe_upgrade' ), 20 );
 		add_action( 'admin_notices', array( $this, 'render_dependency_notices' ) );
+		add_action( 'admin_notices', array( $this, 'render_license_banner' ) );
+		add_action( 'upsellbay_admin_page_heading_before', array( $this, 'render_page_license_banner' ) );
 		add_action( 'admin_menu', array( $this, 'register_admin_pages' ) );
+		add_action( 'admin_post_upsellbay_activate_license', array( $this, 'handle_activate_license' ) );
+		add_action( 'admin_post_upsellbay_remove_license', array( $this, 'handle_remove_license' ) );
+		add_action( 'admin_post_upsellbay_check_license', array( $this, 'handle_check_license' ) );
 
-		add_action( 'load-woocommerce_page_upsellbay', array( $this->container->get( HelpPage::class ), 'register' ) );
+		add_action(
+			'load-woocommerce_page_upsellbay',
+			function (): void {
+				$this->container->get( HelpPage::class )->register();
+
+				add_filter(
+					'admin_title',
+					function ( string $admin_title, string $title ): string {
+						$tab = $this->container->get( TabRouter::class )->current_tab( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+						return sprintf(
+							'UpsellBay | %s%s',
+							$tab->label(),
+							substr( $admin_title, strlen( $title ) )
+						);
+					},
+					10,
+					2
+				);
+			}
+		);
 
 		$this->container->get( AdminAssets::class )->register_hooks();
 		$this->container->get( AdminBar::class )->register_hooks();
@@ -289,6 +316,8 @@ final class Plugin {
 
 		add_action( 'rest_api_init', array( $this->container->get( PublicOfferRoutes::class ), 'register_routes' ) );
 		add_action( 'rest_api_init', array( $this->container->get( OfferPreviewRoute::class ), 'register_routes' ) );
+		add_action( 'rest_api_init', array( $this, 'register_license_routes' ) );
+		add_action( Constants::hook_name( 'check_license' ), array( $this, 'check_license' ) );
 		add_action( 'woocommerce_init', array( $this->container->get( CheckoutFields::class ), 'register' ) );
 		add_action( 'woocommerce_before_calculate_totals', array( $this, 'apply_offer_discounts' ) );
 	}
@@ -349,6 +378,206 @@ final class Plugin {
 		}
 
 		$this->container->get( Installer::class )->maybe_upgrade();
+	}
+
+	/**
+	 * Register license REST API routes.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return void
+	 */
+	public function register_license_routes(): void {
+		$route = new LicenseRoute( $this->container->get( LicenseClient::class ) );
+		$route->register();
+	}
+
+	/**
+	 * Run the scheduled license background check.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return void
+	 */
+	public function check_license(): void {
+		$this->container->get( LicenseClient::class )->background_check();
+	}
+
+	/**
+	 * Handle license activation from the admin-post action.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return void
+	 */
+	public function handle_activate_license(): void {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) { // phpcs:ignore WordPress.WP.Capabilities.Unknown
+			wp_die( esc_html__( 'You do not have permission to manage licenses.', 'upsellbay' ) );
+		}
+
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		check_admin_referer( 'upsellbay_activate_license' );
+
+		$license_key = isset( $_POST['upsellbay_license_key'] ) ? sanitize_text_field( wp_unslash( $_POST['upsellbay_license_key'] ) ) : '';
+		if ( '' === $license_key && isset( $_POST['upsellbay_new_license_key'] ) ) {
+			$license_key = sanitize_text_field( wp_unslash( $_POST['upsellbay_new_license_key'] ) );
+		}
+		$result = $this->container->get( LicenseClient::class )->activate( $license_key );
+
+		$redirect_url = admin_url( 'admin.php?page=upsellbay&tab=settings#upsellbay_license_activate' );
+
+		if ( is_wp_error( $result ) ) {
+			$redirect_url = add_query_arg( 'wc_error', $result->get_error_message(), $redirect_url );
+		} else {
+			$redirect_url = add_query_arg( 'wc_message', __( 'License activated successfully.', 'upsellbay' ), $redirect_url );
+		}
+
+		wp_safe_redirect( $redirect_url );
+		exit;
+	}
+
+	/**
+	 * Handle license removal from the admin-post action.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return void
+	 */
+	public function handle_remove_license(): void {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) { // phpcs:ignore WordPress.WP.Capabilities.Unknown
+			wp_die( esc_html__( 'You do not have permission to manage licenses.', 'upsellbay' ) );
+		}
+
+		check_admin_referer( 'upsellbay_remove_license' );
+
+		$this->container->get( LicenseClient::class )->remove_local();
+
+		$redirect_url = add_query_arg(
+			'wc_message',
+			__( 'Local license data removed.', 'upsellbay' ),
+			admin_url( 'admin.php?page=upsellbay&tab=settings' )
+		);
+
+		wp_safe_redirect( $redirect_url );
+		exit;
+	}
+
+	/**
+	 * Handle manual license check from the admin-post action.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return void
+	 */
+	public function handle_check_license(): void {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) { // phpcs:ignore WordPress.WP.Capabilities.Unknown
+			wp_die( esc_html__( 'You do not have permission to manage licenses.', 'upsellbay' ) );
+		}
+
+		check_admin_referer( 'upsellbay_check_license' );
+
+		$is_valid     = $this->container->get( LicenseClient::class )->is_valid();
+		$redirect_url = admin_url( 'admin.php?page=upsellbay&tab=settings' );
+
+		if ( $is_valid ) {
+			$redirect_url = add_query_arg( 'wc_message', __( 'License check complete: valid.', 'upsellbay' ), $redirect_url );
+		} else {
+			$redirect_url = add_query_arg( 'wc_error', __( 'License check failed: inactive.', 'upsellbay' ), $redirect_url );
+		}
+
+		wp_safe_redirect( $redirect_url );
+		exit;
+	}
+
+	/**
+	 * Render a license warning banner on the Plugins admin page.
+	 *
+	 * Hooked into admin_notices.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return void
+	 */
+	public function render_license_banner(): void {
+		if ( ! function_exists( 'get_current_screen' ) ) {
+			return;
+		}
+
+		$screen = get_current_screen();
+
+		if ( null === $screen ) {
+			return;
+		}
+
+		if ( 'plugins' !== $screen->id ) {
+			return;
+		}
+
+		$html = $this->get_license_notice_html( 'notice-warning is-dismissible' );
+
+		if ( '' !== $html ) {
+			echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		}
+	}
+
+	/**
+	 * Render a license warning banner inside UpsellBay admin pages.
+	 *
+	 * Hooked into upsellbay_admin_page_heading_before so it appears inside
+	 * the page wrap, below the heading and tab navigation.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return void
+	 */
+	public function render_page_license_banner(): void {
+		$html = $this->get_license_notice_html( 'notice-warning upsellbay-page-notice' );
+
+		if ( '' !== $html ) {
+			echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		}
+	}
+
+	/**
+	 * Build license warning notice HTML if the license is missing or in a
+	 * problem state. Returns empty string when no notice is needed.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $additional_classes Additional CSS classes for the notice div.
+	 *
+	 * @return string Notice HTML or empty string.
+	 */
+	private function get_license_notice_html( string $additional_classes = 'notice-warning' ): string {
+		$license_status = $this->container->get( LicenseClient::class )->get_status();
+		$status_code    = $license_status['status'] ?? 'inactive';
+
+		// Active or dev-mode license needs no notice.
+		if ( in_array( $status_code, array( 'active', 'dev' ), true ) ) {
+			return '';
+		}
+
+		$settings_license_url = admin_url( Constants::SETTINGS_LICENSE_ACTIVATION_URL );
+
+		$message = match ( $status_code ) {
+			'expired'      => __( 'Your UpsellBay license has expired. Renew your license to restore updates and support.', 'upsellbay' ),
+			'invalid'      => __( 'The UpsellBay license key on this site is invalid. Please verify and re-enter your license key.', 'upsellbay' ),
+			'server_error' => __( 'UpsellBay could not verify your license because the license server is unreachable. Offers will keep running, but updates and support checks are suspended.', 'upsellbay' ),
+			default        => __( 'UpsellBay license is not activated. Activate your license key to receive updates and support.', 'upsellbay' ),
+		};
+
+		if ( '' === $message ) {
+			return '';
+		}
+
+		return sprintf(
+			'<div class="notice %s"><p><strong>%s</strong> %s <a href="%s" class="button button-small">%s</a></p></div>',
+			esc_attr( $additional_classes ),
+			esc_html__( 'UpsellBay License', 'upsellbay' ),
+			esc_html( $message ),
+			esc_url( $settings_license_url ),
+			esc_html__( 'Manage License', 'upsellbay' )
+		);
 	}
 
 	/**

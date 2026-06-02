@@ -131,6 +131,10 @@ final class TabFactory {
 					function ( array $request ): void {
 						unset( $request );
 						$this->settings->render_content();
+					},
+					function ( array $request ): void {
+						unset( $request );
+						$this->settings->prepare_render();
 					}
 				),
 				new AdminTab(

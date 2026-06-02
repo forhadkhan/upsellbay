@@ -1,6 +1,6 @@
 <?php
 /**
- * Private updater shell.
+ * Plugin update checker bootstrap.
  *
  * @package UpsellBay\Core
  */
@@ -10,9 +10,10 @@ declare(strict_types=1);
 namespace WPAnchorBay\UpsellBay\Core;
 
 use WPAnchorBay\UpsellBay\Integrations\Licensing\LicenseClient;
+use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 
 /**
- * Coordinates future private update checks through the license client.
+ * Initializes the automatic update checker via Plugin Update Checker.
  *
  * @since 1.0.0
  */
@@ -38,26 +39,32 @@ final class Updater {
 	}
 
 	/**
-	 * Return product identity for update requests.
+	 * Initialize PUC with the current license key.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @return array<string, string>
+	 * @return void
 	 */
-	public function product_identity(): array {
-		return array(
-			'slug'    => Constants::PLUGIN_SLUG,
-			'product' => Constants::LICENSE_PRODUCT_SLUG,
-			'version' => Constants::VERSION,
-		);
-	}
+	public function init(): void {
+		$license_data = $this->license_client->get_status();
+		$license_key  = '';
 
-	/**
-	 * License client accessor for future updater integration.
-	 *
-	 * @since 1.0.0
-	 */
-	public function license_client(): LicenseClient {
-		return $this->license_client;
+		if ( isset( $license_data['key'] ) ) {
+			$license_key = sanitize_text_field( (string) $license_data['key'] );
+		}
+
+		if ( '' === $license_key ) {
+			return;
+		}
+
+		$update_url = Constants::LICENSE_SERVER_URL . '/update-check/' . Constants::LICENSE_PRODUCT_SLUG . '/' . rawurlencode( $license_key );
+		$checker    = PucFactory::buildUpdateChecker( $update_url, Constants::plugin_file(), Constants::PLUGIN_SLUG );
+
+		$checker->addQueryArgFilter(
+			static function ( array $args ): array {
+				$args['host'] = wp_parse_url( home_url(), PHP_URL_HOST );
+				return $args;
+			}
+		);
 	}
 }

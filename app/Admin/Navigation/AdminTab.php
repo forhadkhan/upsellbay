@@ -43,18 +43,29 @@ final class AdminTab {
 	private $render_callback;
 
 	/**
+	 * Optional pre-render callback.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var callable|null
+	 */
+	private $prepare_callback;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param string   $id              Tab identifier.
-	 * @param string   $label           Tab label.
-	 * @param callable $render_callback Tab renderer.
+	 * @param string        $id               Tab identifier.
+	 * @param string        $label            Tab label.
+	 * @param callable      $render_callback  Tab renderer.
+	 * @param callable|null $prepare_callback Optional pre-render callback.
 	 */
-	public function __construct( string $id, string $label, callable $render_callback ) {
-		$this->id              = $this->sanitize_id( $id );
-		$this->label           = $label;
-		$this->render_callback = $render_callback;
+	public function __construct( string $id, string $label, callable $render_callback, ?callable $prepare_callback = null ) {
+		$this->id               = $this->sanitize_id( $id );
+		$this->label            = $label;
+		$this->render_callback  = $render_callback;
+		$this->prepare_callback = $prepare_callback;
 	}
 
 	/**
@@ -84,6 +95,21 @@ final class AdminTab {
 	 */
 	public function render( array $request ): void {
 		( $this->render_callback )( $request );
+	}
+
+	/**
+	 * Run pre-render work for this tab.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<string, mixed> $request Request context.
+	 */
+	public function prepare( array $request ): void {
+		if ( null === $this->prepare_callback ) {
+			return;
+		}
+
+		( $this->prepare_callback )( $request );
 	}
 
 	/**

@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace WPAnchorBay\UpsellBay\Admin\Settings;
 
 use WPAnchorBay\UpsellBay\Core\Settings;
+use WPAnchorBay\UpsellBay\Integrations\Licensing\LicenseClient;
 
 /**
  * Handles Woo-style settings sections and saves.
@@ -25,6 +26,15 @@ final class SettingsPage {
 	 * @var Settings
 	 */
 	private Settings $settings;
+
+	/**
+	 * License client.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var LicenseClient
+	 */
+	private LicenseClient $license_client;
 
 	/**
 	 * Capability callback.
@@ -48,20 +58,47 @@ final class SettingsPage {
 	private array $sections;
 
 	/**
+	 * Settings save result prepared for the current render.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var array{success: bool, message: string}|null
+	 */
+	private ?array $prepared_save_result = null;
+
+	/**
+	 * Whether posted settings were already handled for this render.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var bool
+	 */
+	private bool $posted_settings_handled = false;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param Settings                             $settings     Settings service.
-	 * @param callable|null                        $can_manage   Capability callback.
-	 * @param callable|null                        $verify_nonce Nonce callback.
-	 * @param array<SettingsSectionInterface>|null $sections Sections.
+	 * @param Settings                                      $settings       Settings service.
+	 * @param LicenseClient|callable|null                   $license_client License client, or legacy capability callback.
+	 * @param callable|null                                 $can_manage     Capability callback, or legacy nonce callback.
+	 * @param callable|array<SettingsSectionInterface>|null $verify_nonce Nonce callback, or legacy sections.
+	 * @param array<SettingsSectionInterface>|null          $sections       Sections.
 	 */
-	public function __construct( Settings $settings, ?callable $can_manage = null, ?callable $verify_nonce = null, ?array $sections = null ) {
-		$this->settings     = $settings;
-		$this->can_manage   = $can_manage ?? static fn (): bool => function_exists( 'current_user_can' ) && current_user_can( 'manage_woocommerce' ); // phpcs:ignore WordPress.WP.Capabilities.Unknown
-		$this->verify_nonce = $verify_nonce ?? static fn ( string $nonce ): bool => function_exists( 'wp_verify_nonce' ) && (bool) wp_verify_nonce( $nonce, 'upsellbay_save_settings' );
-		$this->sections     = array();
+	public function __construct( Settings $settings, LicenseClient|callable|null $license_client = null, ?callable $can_manage = null, callable|array|null $verify_nonce = null, ?array $sections = null ) {
+		if ( is_callable( $license_client ) ) {
+			$sections       = is_array( $verify_nonce ) ? $verify_nonce : $sections;
+			$verify_nonce   = $can_manage;
+			$can_manage     = $license_client;
+			$license_client = null;
+		}
+
+		$this->settings       = $settings;
+		$this->license_client = $license_client ?? new LicenseClient();
+		$this->can_manage     = $can_manage ?? static fn (): bool => function_exists( 'current_user_can' ) && current_user_can( 'manage_woocommerce' ); // phpcs:ignore WordPress.WP.Capabilities.Unknown
+		$this->verify_nonce   = is_callable( $verify_nonce ) ? $verify_nonce : static fn ( string $nonce ): bool => function_exists( 'wp_verify_nonce' ) && (bool) wp_verify_nonce( $nonce, 'upsellbay_save_settings' );
+		$this->sections       = array();
 
 		foreach ( $sections ?? array( new GeneralSection(), new StyleSection(), new DataSection() ) as $section ) {
 			$this->sections[ $section->id() ] = $section;
@@ -109,10 +146,49 @@ final class SettingsPage {
 
 		$this->settings->update( $next );
 
+		$license_result = $this->maybe_activate_license_from_request( $request );
+
+		if ( is_wp_error( $license_result ) ) {
+			return array(
+				'success' => false,
+				'message' => $license_result->get_error_message(),
+			);
+		}
+
 		return array(
 			'success' => true,
-			'message' => __( 'Settings saved.', 'upsellbay' ),
+			'message' => true === $license_result ? __( 'Settings saved and license activated successfully.', 'upsellbay' ) : __( 'Settings saved.', 'upsellbay' ),
 		);
+	}
+
+	/**
+	 * Activate a posted license key during the normal settings save.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<string, mixed> $request Request data.
+	 *
+	 * @return true|null|\WP_Error
+	 */
+	private function maybe_activate_license_from_request( array $request ) {
+		if ( ! isset( $request['upsellbay_new_license_key'] ) ) {
+			return null;
+		}
+
+		$license_key = sanitize_text_field( (string) $request['upsellbay_new_license_key'] );
+
+		if ( '' === $license_key ) {
+			return null;
+		}
+
+		if ( ! preg_match( '/^WPAB-[A-Z0-9]+-[A-Z0-9]+$/', $license_key ) ) {
+			return new \WP_Error(
+				'upsellbay_license_invalid_format',
+				__( 'Invalid license format. Expected: WPAB-XXXXXXXXXXXX-XXXXXXXXXXXX', 'upsellbay' )
+			);
+		}
+
+		return $this->license_client->activate( $license_key );
 	}
 
 	/**
@@ -132,6 +208,14 @@ final class SettingsPage {
 	 * @since 1.0.0
 	 */
 	public function render_content(): void {
+		$this->render_admin_notices();
+		$save_result = $this->prepare_render();
+
+		if ( null !== $save_result ) {
+			$notice_class = true === $save_result['success'] ? 'notice-success' : 'notice-error';
+			echo '<div class="notice ' . esc_attr( $notice_class ) . ' is-dismissible"><p>' . esc_html( $save_result['message'] ) . '</p></div>';
+		}
+
 		$settings   = $this->settings->all();
 		$placements = is_array( $settings['placements'] ?? null ) ? $settings['placements'] : array();
 		$style      = is_array( $settings['style_tokens'] ?? null ) ? $settings['style_tokens'] : array();
@@ -192,8 +276,172 @@ final class SettingsPage {
 		}
 		$this->checkbox_row( 'cleanup_on_delete', __( 'Delete data on uninstall', 'upsellbay' ), (bool) $settings['cleanup_on_delete'], __( 'Keep this off unless the merchant explicitly wants plugin data removed during uninstall.', 'upsellbay' ), __( 'When enabled, uninstall cleanup can remove UpsellBay settings, offers, and aggregate stats instead of preserving them.', 'upsellbay' ) );
 		echo '</tbody></table>';
+		echo '<h2 id="license">' . esc_html__( 'License', 'upsellbay' ) . '</h2>';
+		echo '<table class="form-table upsellbay-settings-table" role="presentation"><tbody>';
+		$this->render_license_section();
+		echo '</tbody></table>';
+
 		echo '<p class="submit"><button type="submit" class="button button-primary">' . esc_html__( 'Save changes', 'upsellbay' ) . '</button></p>';
 		echo '</form>';
+	}
+
+	/**
+	 * Process posted settings before rendering any page-level notices.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return array{success: bool, message: string}|null
+	 */
+	public function prepare_render(): ?array {
+		if ( $this->posted_settings_handled ) {
+			return $this->prepared_save_result;
+		}
+
+		$this->prepared_save_result    = $this->maybe_handle_posted_settings();
+		$this->posted_settings_handled = true;
+
+		return $this->prepared_save_result;
+	}
+
+	/**
+	 * Render WooCommerce-style notices from redirect query params.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return void
+	 */
+	private function render_admin_notices(): void {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		if ( isset( $_GET['wc_message'] ) ) {
+			$message = sanitize_text_field( wp_unslash( $_GET['wc_message'] ) );
+			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $message ) . '</p></div>';
+		}
+
+		if ( isset( $_GET['wc_error'] ) ) {
+			$error = sanitize_text_field( wp_unslash( $_GET['wc_error'] ) );
+			echo '<div class="notice notice-error is-dismissible"><p>' . esc_html( $error ) . '</p></div>';
+		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+	}
+
+	/**
+	 * Save settings when the settings tab form posts back to itself.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return array{success: bool, message: string}|null
+	 */
+	private function maybe_handle_posted_settings(): ?array {
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated -- Presence is checked before sanitizing the method string.
+		$method = isset( $_SERVER['REQUEST_METHOD'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) : '';
+
+		if ( 'POST' !== $method ) {
+			return null;
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- save() verifies the submitted nonce and sanitizes section values.
+		$request = wp_unslash( $_POST );
+
+		return $this->save( $request );
+	}
+
+	/**
+	 * Render the license section with status, key display, and actions.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return void
+	 */
+	private function render_license_section(): void {
+		$license_status = $this->license_client->get_status();
+		$masked_key     = $this->license_client->get_masked_key();
+		$status_code    = $license_status['status'] ?? 'inactive';
+		$expires_at     = $license_status['expires_at'] ?? '';
+		$plan           = $license_status['plan'] ?? '';
+
+		// Status row.
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo '<tr><th scope="row">' . esc_html__( 'Status', 'upsellbay' ) . ' ' . $this->help_tip( __( 'Shows the most recent license state returned by UpsellBay licensing.', 'upsellbay' ) ) . '</th>';
+		echo '<td>' . $this->license_badge( $status_code ) . '</td></tr>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+
+		if ( '' !== $masked_key ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo '<tr><th scope="row">' . esc_html__( 'Current Key', 'upsellbay' ) . ' ' . $this->help_tip( __( 'Only a masked version is shown here. The full key stays stored in the protected license option.', 'upsellbay' ) ) . '</th>';
+			echo '<td><code>' . esc_html( $masked_key ) . '</code></td></tr>';
+
+			if ( '' !== $expires_at ) {
+				$expiry_timestamp = strtotime( $expires_at );
+				$expiry_date      = $expiry_timestamp > 0 ? wp_date( 'Y-m-d', $expiry_timestamp ) : '';
+				$is_expired       = $expiry_timestamp > 0 && $expiry_timestamp < time();
+				$expiry_html      = $is_expired
+					? '<span style="color:#d63638;">' . esc_html( $expiry_date ) . ' (' . esc_html__( 'Expired', 'upsellbay' ) . ')</span>'
+					: '<span style="color:#007017;">' . esc_html( $expiry_date ) . '</span>';
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo '<tr><th scope="row">' . esc_html__( 'Expires', 'upsellbay' ) . ' ' . $this->help_tip( __( 'The date your current license term ends according to the license server.', 'upsellbay' ) ) . '</th>';
+				echo '<td>' . $expiry_html . '</td></tr>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			}
+
+			if ( '' !== $plan ) {
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo '<tr><th scope="row">' . esc_html__( 'Plan', 'upsellbay' ) . ' ' . $this->help_tip( __( 'The product plan currently associated with the active UpsellBay license.', 'upsellbay' ) ) . '</th>';
+				echo '<td>' . esc_html( ucfirst( $plan ) ) . '</td></tr>';
+			}
+
+			// Check and Remove actions.
+			$check_nonce  = wp_create_nonce( 'upsellbay_check_license' );
+			$remove_nonce = wp_create_nonce( 'upsellbay_remove_license' );
+			$check_url    = admin_url( 'admin-post.php?action=upsellbay_check_license&_wpnonce=' . $check_nonce );
+			$remove_url   = admin_url( 'admin-post.php?action=upsellbay_remove_license&_wpnonce=' . $remove_nonce );
+
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo '<tr><th scope="row">' . esc_html__( 'Actions', 'upsellbay' ) . ' ' . $this->help_tip( __( 'Use these tools to verify the current license status or remove a stored key from this site.', 'upsellbay' ) ) . '</th>';
+			echo '<td>';
+			echo '<a href="' . esc_url( $check_url ) . '" class="button">' . esc_html__( 'Check License', 'upsellbay' ) . '</a> ';
+			echo '<a href="' . esc_url( $remove_url ) . '" class="button button-secondary upsellbay-button-danger" onclick="return confirm(\'' . esc_js( __( 'Removing this license disconnects this site from UpsellBay updates and support checks until a new key is activated. Offers will continue running.', 'upsellbay' ) ) . '\');">' . esc_html__( 'Remove License', 'upsellbay' ) . '</a>';
+			echo '</td></tr>';
+		}
+
+		// Activation field for new key.
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo '<tr id="upsellbay_license_activate"><th scope="row"><label for="upsellbay_new_license_key">' . esc_html__( 'Activate New Key', 'upsellbay' ) . '</label> ' . $this->help_tip( __( 'Paste a new UpsellBay license key here to replace the currently stored key without exposing it in normal option fields.', 'upsellbay' ) ) . '</th>';
+		echo '<td>';
+		echo '<input type="text" name="upsellbay_new_license_key" id="upsellbay_new_license_key" value="" placeholder="WPAB-XXXXXXXXXXXX-XXXXXXXXXXXX" class="regular-text" autocomplete="off" />';
+		echo ' <button type="submit" name="upsellbay_activate_license" value="1" class="button button-primary">' . esc_html__( 'Activate License', 'upsellbay' ) . '</button>';
+		echo '<p class="description">' . esc_html__( 'Leave blank to keep the existing key unchanged.', 'upsellbay' ) . '</p>';
+		echo '</td></tr>';
+	}
+
+	/**
+	 * Render a license status badge.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $status License status code.
+	 *
+	 * @return string Badge HTML.
+	 */
+	private function license_badge( string $status ): string {
+		$label = match ( $status ) {
+			'active'       => __( 'Active', 'upsellbay' ),
+			'inactive'     => __( 'Inactive', 'upsellbay' ),
+			'expired'      => __( 'Expired', 'upsellbay' ),
+			'invalid'      => __( 'Invalid', 'upsellbay' ),
+			'dev'          => __( 'Dev Mode', 'upsellbay' ),
+			'server_error' => __( 'Server Error', 'upsellbay' ),
+			default        => __( 'Unknown', 'upsellbay' ),
+		};
+
+		$badge_class = match ( $status ) {
+			'active'       => 'upsellbay-badge--active',
+			'inactive'     => 'upsellbay-badge--inactive',
+			'expired'      => 'upsellbay-badge--expired',
+			'invalid'      => 'upsellbay-badge--invalid',
+			'dev'          => 'upsellbay-badge--dev',
+			'server_error' => 'upsellbay-badge--error',
+			default        => 'upsellbay-badge--unknown',
+		};
+
+		return '<span class="upsellbay-badge ' . esc_attr( $badge_class ) . '">' . esc_html( $label ) . '</span>';
 	}
 
 	/**

@@ -71,8 +71,15 @@ final class AdminPage {
 	public function render( $request = null ): void {
 		$request    = is_array( $request ) ? $request : $_GET; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$active_tab = $this->router->current_tab( $request );
+		$active_tab->prepare( $request );
 
 		echo '<div class="wrap woocommerce upsellbay-admin">';
+		/**
+		 * Fires at the top of the UpsellBay admin page, inside the wrap.
+		 *
+		 * @since 1.0.0
+		 */
+		do_action( 'upsellbay_admin_page_heading_before' );
 		echo '<h1>' . esc_html__( 'UpsellBay', 'upsellbay' ) . '</h1>';
 		$this->navigation->render( $this->registry, $active_tab );
 		echo '<div class="upsellbay-tab-content">';

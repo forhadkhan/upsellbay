@@ -45,8 +45,9 @@ final class StyleSection extends AbstractSettingsSection {
 	public function apply( array $request, array $settings ): array {
 		$tokens = is_array( $settings['style_tokens'] ?? null ) ? $settings['style_tokens'] : array();
 
+		$button_style           = (string) ( $request['button_style'] ?? 'theme' );
 		$tokens['accent_color'] = $this->color_value( (string) ( $request['accent_color'] ?? '#2271b1' ), '#2271b1' );
-		$tokens['button_style'] = in_array( $request['button_style'] ?? 'theme', array( 'theme', 'outline' ), true ) ? (string) $request['button_style'] : 'theme';
+		$tokens['button_style'] = in_array( $button_style, array( 'theme', 'outline' ), true ) ? $button_style : 'theme';
 
 		$settings['style_tokens'] = $tokens;
 		return $settings;

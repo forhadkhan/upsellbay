@@ -26,7 +26,7 @@ final class HelpPage {
 	public function register(): void {
 		$screen = get_current_screen();
 
-		if ( ! $screen || 'woocommerce_page_upsellbay' !== $screen->id ) {
+		if ( null === $screen || 'woocommerce_page_upsellbay' !== $screen->id ) {
 			return;
 		}
 

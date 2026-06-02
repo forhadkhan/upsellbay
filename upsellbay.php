@@ -47,6 +47,7 @@ if ( file_exists( $upsellbay_autoload ) ) {
 	require_once __DIR__ . '/app/Domain/Analytics/StatsReconciler.php';
 	require_once __DIR__ . '/app/Core/Plugin.php';
 	require_once __DIR__ . '/app/Integrations/Licensing/LicenseClient.php';
+	require_once __DIR__ . '/app/Api/Routes/LicenseRoute.php';
 	require_once __DIR__ . '/app/Utils/ImportExporter.php';
 	require_once __DIR__ . '/app/Utils/Logger.php';
 	require_once __DIR__ . '/app/Utils/RateLimiter.php';

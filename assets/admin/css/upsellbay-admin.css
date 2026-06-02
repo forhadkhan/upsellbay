@@ -74,6 +74,58 @@
 	gap: 0;
 }
 
+.upsellbay-badge {
+	display: inline-block;
+	padding: 3px 10px;
+	border-radius: 3px;
+	font-size: 12px;
+	font-weight: 500;
+	line-height: 1.4;
+}
+
+.upsellbay-badge--active {
+	background: #d7f1e3;
+	color: #007017;
+}
+
+.upsellbay-badge--inactive {
+	background: #f0f0f1;
+	color: #646970;
+}
+
+.upsellbay-badge--expired,
+.upsellbay-badge--invalid {
+	background: #fcf0f1;
+	color: #a00;
+}
+
+.upsellbay-badge--dev {
+	background: #e7f0ff;
+	color: #0073aa;
+}
+
+.upsellbay-badge--error {
+	background: #fff3cd;
+	color: #856404;
+}
+
+.upsellbay-badge--unknown {
+	background: #eceff1;
+	color: #3c434a;
+}
+
+.upsellbay-button-danger {
+	color: #a00 !important;
+	border-color: #a00 !important;
+}
+
+.upsellbay-button-danger:hover,
+.upsellbay-button-danger:focus {
+	background: #fcf0f1 !important;
+	color: #a00 !important;
+	border-color: #a00 !important;
+}
+
 .upsellbay-button-group .button {
 	border-radius: 0;
 	margin-left: -1px;

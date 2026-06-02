@@ -181,6 +181,131 @@ function upsellbay_foundation_tests(): array {
 			assert_true( $client->is_non_production_domain( 'store.test' ) );
 			assert_true( $client->is_non_production_domain( 'example.local' ) );
 			assert_false( $client->is_non_production_domain( 'example.com' ) );
+			},
+			'license activation rejects invalid server responses without storing active state' => static function (): void {
+				$stored                                                    = array();
+				$GLOBALS['upsellbay_test_transients']['upsellbay_license_valid'] = true;
+				$client = new LicenseClient(
+					static fn (): array => $stored,
+					static function ( array $state ) use ( &$stored ): bool {
+						$stored = $state;
+					return true;
+				},
+				static fn (): string => 'store.test',
+				static fn (): array => array(
+					'response' => array( 'code' => 404 ),
+					'body'     => wp_json_encode(
+						array(
+							'success' => false,
+							'error'   => array(
+								'code'    => 'invalid_license',
+								'message' => 'The provided license key does not exist.',
+							),
+						)
+					),
+				)
+			);
+
+			$result = $client->activate( 'WPAB-FAKEKEY-DOESNOTEXIST' );
+
+				assert_true( is_wp_error( $result ) );
+				assert_same( array(), $stored );
+				assert_false( isset( $GLOBALS['upsellbay_test_transients']['upsellbay_license_valid'] ) );
+			},
+			'license activation requires a valid server license field before storing active state' => static function (): void {
+				$stored = array();
+				$client = new LicenseClient(
+					static fn (): array => $stored,
+					static function ( array $state ) use ( &$stored ): bool {
+						$stored = $state;
+						return true;
+					},
+					static fn (): string => 'store.test',
+					static fn (): array => array(
+						'response' => array( 'code' => 200 ),
+						'body'     => wp_json_encode(
+							array(
+								'success' => true,
+								'license' => 'invalid',
+							)
+						),
+					)
+				);
+
+				$result = $client->activate( 'WPAB-FAKEKEY-DOESNOTEXIST' );
+
+				assert_true( is_wp_error( $result ) );
+				assert_same( array(), $stored );
+			},
+			'license activation rejection corrects a previously stored matching false key' => static function (): void {
+				$stored = array(
+					'key'    => 'WPAB-FAKEKEY-DOESNOTEXIST',
+					'status' => 'active',
+				);
+			$client = new LicenseClient(
+				static fn (): array => $stored,
+				static function ( array $state ) use ( &$stored ): bool {
+					$stored = $state;
+					return true;
+				},
+				static fn (): string => 'store.test',
+				static fn (): array => array(
+					'response' => array( 'code' => 404 ),
+					'body'     => wp_json_encode(
+						array(
+							'success' => false,
+							'error'   => array(
+								'code'    => 'invalid_license',
+								'message' => 'The provided license key does not exist.',
+							),
+						)
+					),
+				)
+			);
+
+			$result = $client->activate( 'WPAB-FAKEKEY-DOESNOTEXIST' );
+
+			assert_true( is_wp_error( $result ) );
+			assert_same( 'invalid', $stored['status'] );
+			assert_same( 'WPAB-FAKEKEY-DOESNOTEXIST', $stored['key'] );
+		},
+		'license activation persists active state only after valid server response' => static function (): void {
+			$stored       = array();
+			$request_body = array();
+			$client       = new LicenseClient(
+				static fn (): array => $stored,
+				static function ( array $state ) use ( &$stored ): bool {
+					$stored = $state;
+					return true;
+				},
+				static fn (): string => 'store.test',
+				static function ( string $url, array $args ) use ( &$request_body ): array {
+					unset( $url );
+					$request_body = json_decode( (string) ( $args['body'] ?? '' ), true );
+
+					return array(
+						'response' => array( 'code' => 200 ),
+						'body'     => wp_json_encode(
+							array(
+								'success'    => true,
+								'message'    => 'License activated successfully.',
+								'license'    => 'valid',
+								'expires_at' => '2026-12-31 23:59:59',
+							)
+						),
+					);
+				}
+			);
+
+			$result = $client->activate( 'WPAB-VALIDKEY-123456789012' );
+
+			assert_true( true === $result );
+			assert_same( 'WPAB-VALIDKEY-123456789012', $request_body['license_key'] );
+			assert_same( 'upsellbay', $request_body['slug'] );
+			assert_same( 'store.test', $request_body['domain'] );
+			assert_same( 'active', $stored['status'] );
+			assert_same( 'WPAB-VALIDKEY-123456789012', $stored['key'] );
+			assert_same( '2026-12-31 23:59:59', $stored['expires_at'] );
 		},
 		'token helper hashes random tokens without exposing raw values' => static function (): void {
 			$helper = new TokenHelper();

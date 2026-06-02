@@ -33,6 +33,7 @@ use WPAnchorBay\UpsellBay\Data\StatsRepository;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferSchema;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferService;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferValidator;
+use WPAnchorBay\UpsellBay\Integrations\Licensing\LicenseClient;
 use WPAnchorBay\UpsellBay\Utils\ImportExporter;
 
 /**
@@ -271,6 +272,167 @@ function upsellbay_admin_architecture_tests(): array {
 			assert_same( array( 'general', 'style', 'data' ), array_keys( $page->sections() ) );
 			assert_false( $page->save( array( 'nonce' => 'bad' ) )['success'] );
 		},
+		'settings license row saves through the existing settings form without nesting forms' => static function (): void {
+			$stored        = array();
+			$license_state = array();
+			$settings      = new Settings(
+				static fn (): array => array(),
+				static function ( array $value ) use ( &$stored ): bool {
+					$stored = $value;
+					return true;
+				}
+			);
+			$license       = new LicenseClient(
+				static function () use ( &$license_state ): array {
+					return $license_state;
+				},
+				static function ( array $state ) use ( &$license_state ): bool {
+					$license_state = $state;
+					return true;
+				},
+				static fn (): string => 'store.test',
+				upsellbay_test_valid_license_post()
+			);
+			$page          = new SettingsPage(
+				$settings,
+				$license,
+				static fn (): bool => true,
+				static fn ( string $nonce ): bool => 'good' === $nonce
+			);
+
+			ob_start();
+			$page->render();
+			$html = (string) ob_get_clean();
+
+			assert_same( 1, substr_count( $html, '<form' ) );
+			assert_contains( 'id="upsellbay_license_activate"', $html );
+			assert_contains( 'name="upsellbay_new_license_key"', $html );
+			assert_contains( 'Activate License', $html );
+
+			$result = $page->save(
+				array(
+					'nonce'                    => 'good',
+					'upsellbay_new_license_key' => 'WPAB-ABCDEFGHIJKL-123456789012',
+				)
+			);
+
+			assert_true( $result['success'] );
+			assert_same( 'active', $license_state['status'] );
+			assert_same( 'WPAB-ABCDEFGHIJKL-123456789012', $license_state['key'] );
+			assert_false( isset( $stored['license']['key'] ) );
+		},
+		'settings tab render processes posted license saves' => static function (): void {
+			$license_state = array();
+			$settings      = new Settings( static fn (): array => array(), static fn (): bool => true );
+			$license       = new LicenseClient(
+				static function () use ( &$license_state ): array {
+					return $license_state;
+				},
+				static function ( array $state ) use ( &$license_state ): bool {
+					$license_state = $state;
+					return true;
+				},
+				static fn (): string => 'store.test',
+				upsellbay_test_valid_license_post()
+			);
+			$page          = new SettingsPage(
+				$settings,
+				$license,
+				static fn (): bool => true,
+				static fn ( string $nonce ): bool => 'good' === $nonce
+			);
+			$previous_post = $_POST;
+			$previous_method = $_SERVER['REQUEST_METHOD'] ?? null;
+
+			$_SERVER['REQUEST_METHOD'] = 'POST';
+			$_POST                     = array(
+				'nonce'                    => 'good',
+				'upsellbay_new_license_key' => 'WPAB-ZYXWVUTSRQPO-123456789012',
+			);
+
+			ob_start();
+			$page->render_content();
+			$html = (string) ob_get_clean();
+
+			$_POST = $previous_post;
+			if ( null === $previous_method ) {
+				unset( $_SERVER['REQUEST_METHOD'] );
+			} else {
+				$_SERVER['REQUEST_METHOD'] = $previous_method;
+			}
+
+			assert_same( 'active', $license_state['status'] );
+			assert_same( 'WPAB-ZYXWVUTSRQPO-123456789012', $license_state['key'] );
+			assert_contains( 'Settings saved and license activated successfully.', $html );
+		},
+		'settings tab post is processed before top page notices render' => static function (): void {
+			$license_state = array( 'status' => 'inactive' );
+			$settings      = new Settings( static fn (): array => array(), static fn (): bool => true );
+			$license       = new LicenseClient(
+				static function () use ( &$license_state ): array {
+					return $license_state;
+				},
+				static function ( array $state ) use ( &$license_state ): bool {
+					$license_state = $state;
+					return true;
+				},
+				static fn (): string => 'store.test',
+				upsellbay_test_valid_license_post()
+			);
+			$page          = new SettingsPage(
+				$settings,
+				$license,
+				static fn (): bool => true,
+				static fn ( string $nonce ): bool => 'good' === $nonce
+			);
+			$registry      = new TabRegistry(
+				array(
+					new AdminTab(
+						'settings',
+						'Settings',
+						static function () use ( $page ): void {
+							$page->render_content();
+						},
+						static function () use ( $page ): void {
+							$page->prepare_render();
+						}
+					),
+				)
+			);
+
+			$previous_hooks  = $GLOBALS['upsellbay_test_hooks'] ?? array();
+			$previous_post   = $_POST;
+			$previous_method = $_SERVER['REQUEST_METHOD'] ?? null;
+
+			add_action(
+				'upsellbay_admin_page_heading_before',
+				static function () use ( &$license_state ): void {
+					echo '<div data-license-before="' . esc_attr( (string) ( $license_state['status'] ?? 'missing' ) ) . '"></div>';
+				}
+			);
+
+			$_SERVER['REQUEST_METHOD'] = 'POST';
+			$_POST                     = array(
+				'nonce'                    => 'good',
+				'upsellbay_new_license_key' => 'WPAB-PRENDERTEST-123456789012',
+			);
+
+			ob_start();
+			( new AdminPage( $registry, new TabRouter( $registry ) ) )->render( array( 'tab' => 'settings' ) );
+			$html = (string) ob_get_clean();
+
+			$GLOBALS['upsellbay_test_hooks'] = $previous_hooks;
+			$_POST                           = $previous_post;
+			if ( null === $previous_method ) {
+				unset( $_SERVER['REQUEST_METHOD'] );
+			} else {
+				$_SERVER['REQUEST_METHOD'] = $previous_method;
+			}
+
+			assert_same( 'active', $license_state['status'] );
+			assert_contains( 'data-license-before="active"', $html );
+			assert_contains( 'Settings saved and license activated successfully.', $html );
+		},
 		'admin assets load only on upsellbay screens' => static function (): void {
 			$assets = new AdminAssets();
 
@@ -453,4 +615,29 @@ function upsellbay_test_offer_repository( array $offers, array &$saved = array()
 			return true;
 		}
 	);
+}
+
+/**
+ * Build a fake successful license-server activation callback.
+ *
+ * @since 1.0.0
+ *
+ * @return callable(string, array<string, mixed>): array<string, mixed>
+ */
+function upsellbay_test_valid_license_post(): callable {
+	return static function ( string $url, array $args ): array {
+		unset( $url, $args );
+
+		return array(
+			'response' => array( 'code' => 200 ),
+			'body'     => wp_json_encode(
+				array(
+					'success'    => true,
+					'message'    => 'License activated successfully.',
+					'license'    => 'valid',
+					'expires_at' => '2026-12-31 23:59:59',
+				)
+			),
+		);
+	};
 }

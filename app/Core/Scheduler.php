@@ -51,7 +51,7 @@ final class Scheduler {
 		};
 		$this->schedule_action   = $schedule_action ?? static function ( int $timestamp, string $recurrence, string $hook, array $args, string $group ): void {
 			if ( function_exists( 'as_schedule_recurring_action' ) ) {
-				as_schedule_recurring_action( $timestamp, DAY_IN_SECONDS, $hook, $args, $group );
+				as_schedule_recurring_action( $timestamp, self::recurrence_interval( $recurrence ), $hook, $args, $group );
 			}
 		};
 		$this->unschedule_action = $unschedule_action ?? static function ( string $hook, array $args, string $group ): void {
@@ -83,6 +83,24 @@ final class Scheduler {
 				'recurrence' => 'twicedaily',
 			),
 		);
+	}
+
+	/**
+	 * Convert a recurrence string to interval in seconds.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $recurrence Named recurrence (hourly, twicedaily, daily).
+	 *
+	 * @return int Interval in seconds.
+	 */
+	private static function recurrence_interval( string $recurrence ): int {
+		return match ( $recurrence ) {
+			'hourly'     => HOUR_IN_SECONDS,
+			'twicedaily' => 12 * HOUR_IN_SECONDS,
+			'daily'      => DAY_IN_SECONDS,
+			default      => DAY_IN_SECONDS,
+		};
 	}
 
 	/**
