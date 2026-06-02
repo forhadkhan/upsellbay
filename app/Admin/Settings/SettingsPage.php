@@ -221,7 +221,6 @@ final class SettingsPage {
 		$style      = is_array( $settings['style_tokens'] ?? null ) ? $settings['style_tokens'] : array();
 		$retention  = is_array( $settings['data_retention'] ?? null ) ? $settings['data_retention'] : array();
 
-		echo '<h2>' . esc_html__( 'Settings', 'upsellbay' ) . '</h2>';
 		echo '<form method="post">';
 		if ( function_exists( 'wp_nonce_field' ) ) {
 			wp_nonce_field( 'upsellbay_save_settings', 'nonce' );

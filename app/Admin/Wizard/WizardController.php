@@ -162,12 +162,12 @@ final class WizardController {
 			include $template;
 			return;
 		}
-
-		echo '<h2>' . esc_html__( 'Setup Wizard', 'upsellbay' ) . '</h2>';
 	}
 
 	/**
 	 * Build one optional targeting rule from wizard fields.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @param array<string, mixed> $request Request data.
 	 * @return array<int, array<string, mixed>>

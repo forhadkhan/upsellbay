@@ -118,7 +118,6 @@ final class ToolsPage {
 	 * @since 1.0.0
 	 */
 	public function render_content(): void {
-		echo '<h2>' . esc_html__( 'Tools', 'upsellbay' ) . '</h2>';
 		echo '<h2>' . esc_html__( 'System diagnostics', 'upsellbay' ) . '</h2>';
 		echo '<table class="widefat striped upsellbay-diagnostics-table"><tbody>';
 		foreach ( $this->diagnostics() as $line ) {

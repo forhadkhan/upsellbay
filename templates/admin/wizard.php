@@ -15,8 +15,7 @@ $upsellbay_help_tip = static function ( string $text ): string {
 	return '<span class="description">' . esc_html( $text ) . '</span>';
 };
 ?>
-<div class="wrap woocommerce upsellbay-admin upsellbay-wizard">
-	<h1><?php esc_html_e( 'UpsellBay Setup Wizard', 'upsellbay' ); ?></h1>
+<div class="upsellbay-wizard">
 	<form method="post" class="upsellbay-wizard__form">
 		<?php wp_nonce_field( 'upsellbay_wizard', 'nonce' ); ?>
 		<table class="form-table" role="presentation">

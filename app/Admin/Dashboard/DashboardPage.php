@@ -57,12 +57,10 @@ final class DashboardPage {
 	public function render(): void {
 		$data = $this->summary->data();
 
-		echo '<h2>' . esc_html__( 'Dashboard', 'upsellbay' ) . '</h2>';
 		echo '<div class="upsellbay-overview-header">';
 		echo '<h3 class="upsellbay-overview-title">' . esc_html__( 'Store offer status', 'upsellbay' ) . '</h3>';
 		echo '<div class="upsellbay-button-group">';
 		echo '<a class="button button-primary" href="' . esc_url( 'admin.php?page=upsellbay&tab=offers&action=edit' ) . '">' . esc_html__( 'Add offer', 'upsellbay' ) . '</a>';
-		echo '<a class="button" href="' . esc_url( 'admin.php?page=upsellbay&tab=settings' ) . '">' . esc_html__( 'Review settings', 'upsellbay' ) . '</a>';
 		echo '</div></div>';
 		echo '<div class="upsellbay-card-grid upsellbay-card-grid--metrics">';
 		$this->summary_item( __( 'Offers enabled', 'upsellbay' ), true === $data['enabled'] ? __( 'Yes', 'upsellbay' ) : __( 'No', 'upsellbay' ), __( 'Whether live eligible offers are allowed to render on enabled placements.', 'upsellbay' ) );
