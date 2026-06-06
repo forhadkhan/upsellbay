@@ -141,8 +141,7 @@ final class TabFactory {
 					'settings',
 					__( 'Settings', 'upsellbay' ),
 					function ( array $request ): void {
-						unset( $request );
-						$this->settings->render_content();
+						$this->settings->render_content( $request );
 					},
 					function ( array $request ): void {
 						unset( $request );

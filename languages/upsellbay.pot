@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-06-06T10:21:55+00:00\n"
+"POT-Creation-Date: 2026-06-06T10:39:31+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: upsellbay\n"
@@ -21,10 +21,6 @@ msgstr ""
 #: app/Admin/AdminPageRegistrar.php:140
 #: app/Admin/AdminPageRegistrar.php:152
 #: app/Admin/AdminPageRegistrar.php:153
-#: dist/upsellbay/app/Admin/AdminPage.php:104
-#: dist/upsellbay/app/Admin/AdminPageRegistrar.php:140
-#: dist/upsellbay/app/Admin/AdminPageRegistrar.php:152
-#: dist/upsellbay/app/Admin/AdminPageRegistrar.php:153
 msgid "UpsellBay"
 msgstr ""
 
@@ -49,7 +45,6 @@ msgid "https://wpanchorbay.com/"
 msgstr ""
 
 #: app/Admin/AdminBar.php:83
-#: dist/upsellbay/app/Admin/AdminBar.php:83
 msgid "UpsellBay test mode"
 msgstr ""
 
@@ -60,489 +55,379 @@ msgstr ""
 #: app/Admin/AdminPage.php:112
 #: app/Admin/AdminPage.php:158
 #: app/Admin/Offers/OfferSectionNavigation.php:59
-#: dist/upsellbay/app/Admin/AdminPage.php:112
 msgid "Add Offer"
 msgstr ""
 
 #: app/Admin/CompatibilityNotice.php:66
-#: dist/upsellbay/app/Admin/CompatibilityNotice.php:66
 msgid "Compatibility guide"
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:61
-#: dist/upsellbay/app/Admin/Dashboard/DashboardPage.php:62
 msgid "Store offer status"
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:64
-#: dist/upsellbay/app/Admin/Dashboard/DashboardPage.php:67
 msgid "Offers enabled"
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:64
-#: dist/upsellbay/app/Admin/Dashboard/DashboardPage.php:67
 msgid "Yes"
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:64
-#: dist/upsellbay/app/Admin/Dashboard/DashboardPage.php:67
 msgid "No"
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:64
-#: dist/upsellbay/app/Admin/Dashboard/DashboardPage.php:67
 msgid "Whether live eligible offers are allowed to render on enabled placements."
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:65
-#: app/Admin/Settings/SettingsPage.php:246
-#: dist/upsellbay/app/Admin/Dashboard/DashboardPage.php:68
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:231
+#: app/Admin/Settings/SettingsPage.php:282
 msgid "Test mode"
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:65
-#: dist/upsellbay/app/Admin/Dashboard/DashboardPage.php:68
 msgid "On"
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:65
-#: dist/upsellbay/app/Admin/Dashboard/DashboardPage.php:68
 msgid "Off"
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:65
-#: dist/upsellbay/app/Admin/Dashboard/DashboardPage.php:68
 msgid "Admin-only preview mode for checking offers before shoppers see them."
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:66
-#: dist/upsellbay/app/Admin/Dashboard/DashboardPage.php:69
 msgid "Active offers"
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:66
-#: dist/upsellbay/app/Admin/Dashboard/DashboardPage.php:69
 msgid "Published offers currently marked active in UpsellBay."
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:67
-#: dist/upsellbay/app/Admin/Dashboard/DashboardPage.php:70
 msgid "Recent revenue"
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:67
-#: dist/upsellbay/app/Admin/Dashboard/DashboardPage.php:70
 msgid "Attributed offer revenue from the recent aggregate stats window."
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:82
-#: dist/upsellbay/app/Admin/Dashboard/DashboardPage.php:85
 msgid "Performance (Last 30 days)"
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:84
-#: app/Admin/Offers/OffersPage.php:133
-#: dist/upsellbay/app/Admin/Dashboard/DashboardPage.php:87
-#: dist/upsellbay/app/Admin/Offers/OffersPage.php:122
+#: app/Admin/Offers/OffersPage.php:131
 msgid "Views"
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:84
-#: dist/upsellbay/app/Admin/Dashboard/DashboardPage.php:87
 msgid "Offer render events recorded in aggregate stats."
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:85
-#: app/Admin/Offers/OffersPage.php:134
-#: dist/upsellbay/app/Admin/Dashboard/DashboardPage.php:88
-#: dist/upsellbay/app/Admin/Offers/OffersPage.php:123
+#: app/Admin/Offers/OffersPage.php:132
 msgid "Accepts"
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:85
-#: dist/upsellbay/app/Admin/Dashboard/DashboardPage.php:88
 msgid "Accepted offers recorded in aggregate stats."
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:86
-#: dist/upsellbay/app/Admin/Dashboard/DashboardPage.php:89
 msgid "Accept rate"
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:86
-#: dist/upsellbay/app/Admin/Dashboard/DashboardPage.php:89
 msgid "Accepted offers divided by offer views for this period."
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:87
-#: dist/upsellbay/app/Admin/Dashboard/DashboardPage.php:90
 msgid "Attributed revenue"
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:87
-#: dist/upsellbay/app/Admin/Dashboard/DashboardPage.php:90
 msgid "Revenue attributed to accepted offers in aggregate stats."
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:92
-#: dist/upsellbay/app/Admin/Dashboard/DashboardPage.php:95
 msgid "Dismissals"
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:93
-#: dist/upsellbay/app/Admin/Dashboard/DashboardPage.php:96
 msgid "Orders"
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:94
-#: dist/upsellbay/app/Admin/Dashboard/DashboardPage.php:97
 msgid "Discount total"
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:95
-#: dist/upsellbay/app/Admin/Dashboard/DashboardPage.php:98
 msgid "Revenue per attributed order"
 msgstr ""
 
 #: app/Admin/Help/HelpPage.php:30
-#: dist/upsellbay/app/Admin/Help/HelpPage.php:133
 msgid "AOV offer setup guide"
 msgstr ""
 
 #: app/Admin/Help/HelpPage.php:34
 #: app/Admin/Help/HelpPage.php:69
-#: dist/upsellbay/app/Admin/Help/HelpPage.php:137
-#: dist/upsellbay/app/Admin/Help/HelpPage.php:172
 msgid "First offer tutorial"
 msgstr ""
 
 #: app/Admin/Help/HelpPage.php:38
-#: dist/upsellbay/app/Admin/Help/HelpPage.php:141
 msgid "Compatibility matrix"
 msgstr ""
 
 #: app/Admin/Help/HelpPage.php:42
-#: dist/upsellbay/app/Admin/Help/HelpPage.php:145
 msgid "Data retention guide"
 msgstr ""
 
 #: app/Admin/Help/HelpPage.php:46
-#: dist/upsellbay/app/Admin/Help/HelpPage.php:149
 msgid "Developer docs"
 msgstr ""
 
 #: app/Admin/Help/HelpPage.php:50
-#: dist/upsellbay/app/Admin/Help/HelpPage.php:153
 msgid "UpsellBay AOV offer support"
 msgstr ""
 
 #: app/Admin/Help/HelpPage.php:65
-#: dist/upsellbay/app/Admin/Help/HelpPage.php:168
 msgid "Need a starting point?"
 msgstr ""
 
 #: app/Admin/Help/HelpPage.php:66
-#: dist/upsellbay/app/Admin/Help/HelpPage.php:169
 msgid "Use the first offer tutorial to create a draft offer, preview it in test mode, and publish only when the checkout looks right."
 msgstr ""
 
 #: app/Admin/Help/HelpPage.php:83
-#: app/Admin/Navigation/TabFactory.php:172
+#: app/Admin/Navigation/TabFactory.php:171
 msgid "Help"
 msgstr ""
 
 #: app/Admin/Navigation/TabFactory.php:122
-#: dist/upsellbay/app/Admin/Dashboard/DashboardPage.php:60
-#: dist/upsellbay/app/Admin/Navigation/TabFactory.php:110
 msgid "Dashboard"
 msgstr ""
 
 #: app/Admin/Navigation/TabFactory.php:130
-#: dist/upsellbay/app/Admin/Navigation/TabFactory.php:118
-#: dist/upsellbay/app/Admin/Offers/OffersPage.php:93
 msgid "Offers"
 msgstr ""
 
 #: app/Admin/Navigation/TabFactory.php:142
-#: dist/upsellbay/app/Admin/Navigation/TabFactory.php:130
 msgid "Settings"
 msgstr ""
 
-#: app/Admin/Navigation/TabFactory.php:154
-#: dist/upsellbay/app/Admin/Navigation/TabFactory.php:142
+#: app/Admin/Navigation/TabFactory.php:153
 msgid "Tools"
 msgstr ""
 
-#: app/Admin/Navigation/TabFactory.php:162
-#: dist/upsellbay/app/Admin/Navigation/TabFactory.php:150
+#: app/Admin/Navigation/TabFactory.php:161
 msgid "Setup"
 msgstr ""
 
-#: app/Admin/Navigation/TabFactory.php:162
-#: dist/upsellbay/app/Admin/Navigation/TabFactory.php:150
+#: app/Admin/Navigation/TabFactory.php:161
 msgid "Get started"
 msgstr ""
 
 #: app/Admin/Navigation/TabNavigation.php:27
-#: dist/upsellbay/app/Admin/Navigation/TabNavigation.php:27
 msgid "UpsellBay sections"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:106
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:95
 msgid "You do not have permission to manage UpsellBay offers."
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:113
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:102
 msgid "Offer save could not be verified. Please try again."
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:155
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:144
 msgid "Offer saved."
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:198
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:187
 msgid "Required basics"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:203
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:192
 msgid "Targeting rules"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:208
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:197
 msgid "Discount"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:213
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:202
 msgid "Placement display"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:218
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:207
 msgid "Schedule and priority"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:223
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:212
 msgid "Advanced metadata"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:239
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:228
 msgid "Choose the product shoppers can add from this offer. Product and stock are validated again before cart changes."
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:240
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:229
 msgid "Rules narrow when an offer appears. Leave them empty for a simple first offer."
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:241
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:230
 msgid "Discounts are calculated server-side from the product price. Shopper-sent prices are ignored."
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:242
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:231
 msgid "Priority controls which eligible offer wins when a placement has a display limit."
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:243
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:232
 msgid "Test mode lets admins preview offers before shoppers can see them."
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:244
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:233
 msgid "Compatibility notices flag checkout plugins that may alter the placement area."
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:263
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:252
 msgid "Offer targeting rules"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:291
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:278
 msgid "Add UpsellBay Offer"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:312
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:299
 msgid "Save offer"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:313
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:300
 msgid "Back to offers"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:326
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:313
 msgid "Offer name"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:327
-#: app/Admin/Offers/OffersPage.php:130
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:314
-#: dist/upsellbay/app/Admin/Offers/OffersPage.php:119
-#: dist/upsellbay/templates/admin/wizard.php:30
+#: app/Admin/Offers/OffersPage.php:128
 #: templates/admin/wizard.php:30
 msgid "Placement"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:328
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:315
 msgid "Offer product ID"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:329
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:316
-#: dist/upsellbay/templates/admin/wizard.php:41
 #: templates/admin/wizard.php:41
 msgid "Headline"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:330
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:317
 msgid "Button text"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:331
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:318
 msgid "Rule matching"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:332
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:319
 msgid "Rules"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:333
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:320
 msgid "Discount type"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:334
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:321
 msgid "Discount value"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:335
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:322
 msgid "Show product image"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:336
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:323
 msgid "Placement options"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:337
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:324
 msgid "Start date"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:338
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:325
 msgid "End date"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:339
-#: app/Admin/Offers/OffersPage.php:132
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:326
-#: dist/upsellbay/app/Admin/Offers/OffersPage.php:121
+#: app/Admin/Offers/OffersPage.php:130
 msgid "Priority"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:340
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:327
 msgid "Trigger product IDs"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:341
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:328
 msgid "Trigger category IDs"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:351
-#: app/Admin/Offers/OffersPage.php:166
-#: app/Admin/Settings/SettingsPage.php:534
+#: app/Admin/Offers/OffersPage.php:164
+#: app/Admin/Settings/SettingsPage.php:618
 #: app/Domain/Offers/OfferSchema.php:83
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:338
-#: dist/upsellbay/app/Admin/Offers/OffersPage.php:155
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:513
-#: dist/upsellbay/app/Domain/Offers/OfferSchema.php:83
-#: dist/upsellbay/templates/admin/wizard.php:33
 #: templates/admin/wizard.php:33
 msgid "Checkout bump"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:352
-#: app/Admin/Offers/OffersPage.php:167
-#: app/Admin/Settings/SettingsPage.php:532
+#: app/Admin/Offers/OffersPage.php:165
+#: app/Admin/Settings/SettingsPage.php:616
 #: app/Domain/Offers/OfferSchema.php:84
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:339
-#: dist/upsellbay/app/Admin/Offers/OffersPage.php:156
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:511
-#: dist/upsellbay/app/Domain/Offers/OfferSchema.php:84
-#: dist/upsellbay/templates/admin/wizard.php:34
 #: templates/admin/wizard.php:34
 msgid "Product page offer"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:353
-#: app/Admin/Offers/OffersPage.php:168
-#: app/Admin/Settings/SettingsPage.php:533
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:340
-#: dist/upsellbay/app/Admin/Offers/OffersPage.php:157
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:512
-#: dist/upsellbay/templates/admin/wizard.php:35
+#: app/Admin/Offers/OffersPage.php:166
+#: app/Admin/Settings/SettingsPage.php:617
 #: templates/admin/wizard.php:35
 msgid "Cart offer"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:354
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:341
-#: dist/upsellbay/templates/admin/wizard.php:36
 #: templates/admin/wizard.php:36
 msgid "Thank-you follow-on offer"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:361
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:348
 msgid "All rules"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:361
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:348
 msgid "Any rule"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:363
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:350
 msgid "No discount"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:363
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:350
 msgid "Percentage"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:363
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:350
 msgid "Fixed amount"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:365
-#: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:352
 msgid "Show the WooCommerce product image when available."
 msgstr ""
 
@@ -551,652 +436,502 @@ msgid "Offer sections"
 msgstr ""
 
 #: app/Admin/Offers/OfferSectionNavigation.php:55
-#: app/Admin/Settings/GeneralSection.php:33
-#: app/Admin/Settings/SettingsPage.php:243
-#: dist/upsellbay/app/Admin/Settings/GeneralSection.php:33
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:228
+#: app/Admin/Settings/SettingsSectionNavigation.php:55
 msgid "General"
 msgstr ""
 
 #: app/Admin/Offers/OffersPage.php:70
-#: dist/upsellbay/app/Admin/Offers/OffersPage.php:59
 msgid "No UpsellBay offers yet"
 msgstr ""
 
 #: app/Admin/Offers/OffersPage.php:71
-#: dist/upsellbay/app/Admin/Offers/OffersPage.php:60
 msgid "Create a checkout bump, product offer, cart offer, or thank-you follow-on offer when you are ready to test it."
 msgstr ""
 
 #: app/Admin/Offers/OffersPage.php:74
-#: dist/upsellbay/app/Admin/Offers/OffersPage.php:63
 msgid "Create offer"
 msgstr ""
 
 #: app/Admin/Offers/OffersPage.php:78
-#: dist/upsellbay/app/Admin/Offers/OffersPage.php:67
 msgid "Open setup wizard"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:106
-#: dist/upsellbay/app/Admin/Dashboard/DashboardPage.php:64
-#: dist/upsellbay/app/Admin/Offers/OffersPage.php:94
-msgid "Add offer"
-msgstr ""
-
-#: app/Admin/Offers/OffersPage.php:129
-#: dist/upsellbay/app/Admin/Offers/OffersPage.php:118
+#: app/Admin/Offers/OffersPage.php:127
 msgid "Offer"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:131
-#: app/Admin/Settings/SettingsPage.php:384
-#: dist/upsellbay/app/Admin/Offers/OffersPage.php:120
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:363
+#: app/Admin/Offers/OffersPage.php:129
+#: app/Admin/Settings/SettingsPage.php:468
 msgid "Status"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:135
-#: dist/upsellbay/app/Admin/Offers/OffersPage.php:124
+#: app/Admin/Offers/OffersPage.php:133
 msgid "Revenue"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:144
-#: dist/upsellbay/app/Admin/Offers/OffersPage.php:133
+#: app/Admin/Offers/OffersPage.php:142
 msgid "Edit"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:169
-#: app/Admin/Settings/SettingsPage.php:535
+#: app/Admin/Offers/OffersPage.php:167
+#: app/Admin/Settings/SettingsPage.php:619
 #: app/Domain/Offers/OfferSchema.php:86
-#: dist/upsellbay/app/Admin/Offers/OffersPage.php:158
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:514
-#: dist/upsellbay/app/Domain/Offers/OfferSchema.php:86
 msgid "Thank-you offer"
 msgstr ""
 
 #: app/Admin/PreviewLinks.php:71
-#: dist/upsellbay/app/Admin/PreviewLinks.php:71
 msgid "Preview is unavailable until the placement has enough context, such as a product URL or saved test order."
 msgstr ""
 
 #: app/Admin/PreviewLinks.php:90
-#: dist/upsellbay/app/Admin/PreviewLinks.php:90
 msgid "Open this as an admin while test mode is enabled."
 msgstr ""
 
-#: app/Admin/Settings/DataSection.php:33
+#: app/Admin/Settings/BasicSection.php:33
 #: app/Admin/Settings/SettingsPage.php:279
-#: dist/upsellbay/app/Admin/Settings/DataSection.php:33
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:264
+msgid "Basic"
+msgstr ""
+
+#: app/Admin/Settings/DataSection.php:33
+#: app/Admin/Settings/SettingsPage.php:326
+#: app/Admin/Settings/SettingsSectionNavigation.php:59
 msgid "Data"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:149
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:131
+#: app/Admin/Settings/SettingsPage.php:160
 msgid "You do not have permission to manage UpsellBay settings."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:156
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:138
+#: app/Admin/Settings/SettingsPage.php:167
 msgid "Settings save could not be verified. Please try again."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:178
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:160
+#: app/Admin/Settings/SettingsPage.php:189
 msgid "Settings saved and license activated successfully."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:178
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:160
+#: app/Admin/Settings/SettingsPage.php:189
 msgid "Settings saved."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:205
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:187
+#: app/Admin/Settings/SettingsPage.php:216
 msgid "Invalid license format. Expected: WPAB-XXXXXXXXXXXX-XXXXXXXXXXXX"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:245
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:230
-msgid "Enable offers"
-msgstr ""
-
-#: app/Admin/Settings/SettingsPage.php:245
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:230
-msgid "Allow eligible live offers to render on enabled placements."
-msgstr ""
-
-#: app/Admin/Settings/SettingsPage.php:245
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:230
-msgid "Turn this off to pause all shopper-facing UpsellBay offers without changing individual offer status."
-msgstr ""
-
-#: app/Admin/Settings/SettingsPage.php:246
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:231
-msgid "Limit previews and draft offer checks to store managers before shoppers see them."
-msgstr ""
-
-#: app/Admin/Settings/SettingsPage.php:246
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:231
-msgid "Use test mode while configuring offers. It should be disabled before live shoppers need to see offers."
-msgstr ""
-
-#: app/Admin/Settings/SettingsPage.php:248
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:233
-msgid "Placements"
-msgstr ""
-
-#: app/Admin/Settings/SettingsPage.php:248
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:233
-msgid "Choose where UpsellBay is allowed to render active, eligible offers. Individual offers still need matching placement settings."
-msgstr ""
-
-#: app/Admin/Settings/SettingsPage.php:259
-#: app/Admin/Settings/StyleSection.php:33
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:244
-#: dist/upsellbay/app/Admin/Settings/StyleSection.php:33
-msgid "Style"
-msgstr ""
-
-#: app/Admin/Settings/SettingsPage.php:262
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:247
-msgid "Accent color"
-msgstr ""
-
-#: app/Admin/Settings/SettingsPage.php:262
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:247
-msgid "Used for UpsellBay offer accents while preserving the theme and WooCommerce layout."
-msgstr ""
-
 #: app/Admin/Settings/SettingsPage.php:264
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:249
-msgid "Button style"
-msgstr ""
-
-#: app/Admin/Settings/SettingsPage.php:264
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:249
-msgid "Theme buttons inherit the storefront button styling. Outline keeps the offer action visually lighter."
-msgstr ""
-
-#: app/Admin/Settings/SettingsPage.php:267
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:252
-msgid "Use theme buttons"
-msgstr ""
-
-#: app/Admin/Settings/SettingsPage.php:268
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:253
-msgid "Outline"
-msgstr ""
-
-#: app/Admin/Settings/SettingsPage.php:283
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:268
-msgid "Stats retention days"
-msgstr ""
-
-#: app/Admin/Settings/SettingsPage.php:284
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:269
-msgid "Session retention days"
-msgstr ""
-
-#: app/Admin/Settings/SettingsPage.php:285
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:270
-msgid "Log retention days"
-msgstr ""
-
-#: app/Admin/Settings/SettingsPage.php:291
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:276
-msgid "Delete data on uninstall"
-msgstr ""
-
-#: app/Admin/Settings/SettingsPage.php:291
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:276
-msgid "Keep this off unless the merchant explicitly wants plugin data removed during uninstall."
-msgstr ""
-
-#: app/Admin/Settings/SettingsPage.php:291
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:276
-msgid "When enabled, uninstall cleanup can remove UpsellBay settings, offers, and aggregate stats instead of preserving them."
-msgstr ""
-
-#: app/Admin/Settings/SettingsPage.php:293
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:278
-msgid "License"
-msgstr ""
-
-#: app/Admin/Settings/SettingsPage.php:298
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:283
 msgid "Save changes"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:384
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:363
+#: app/Admin/Settings/SettingsPage.php:281
+msgid "Enable offers"
+msgstr ""
+
+#: app/Admin/Settings/SettingsPage.php:281
+msgid "Allow eligible live offers to render on enabled placements."
+msgstr ""
+
+#: app/Admin/Settings/SettingsPage.php:281
+msgid "Turn this off to pause all shopper-facing UpsellBay offers without changing individual offer status."
+msgstr ""
+
+#: app/Admin/Settings/SettingsPage.php:282
+msgid "Limit previews and draft offer checks to store managers before shoppers see them."
+msgstr ""
+
+#: app/Admin/Settings/SettingsPage.php:282
+msgid "Use test mode while configuring offers. It should be disabled before live shoppers need to see offers."
+msgstr ""
+
+#: app/Admin/Settings/SettingsPage.php:284
+msgid "Placements"
+msgstr ""
+
+#: app/Admin/Settings/SettingsPage.php:284
+msgid "Choose where UpsellBay is allowed to render active, eligible offers. Individual offers still need matching placement settings."
+msgstr ""
+
+#: app/Admin/Settings/SettingsPage.php:295
+#: app/Admin/Settings/StyleSection.php:33
+msgid "Style"
+msgstr ""
+
+#: app/Admin/Settings/SettingsPage.php:298
+msgid "Accent color"
+msgstr ""
+
+#: app/Admin/Settings/SettingsPage.php:298
+msgid "Used for UpsellBay offer accents while preserving the theme and WooCommerce layout."
+msgstr ""
+
+#: app/Admin/Settings/SettingsPage.php:300
+msgid "Button style"
+msgstr ""
+
+#: app/Admin/Settings/SettingsPage.php:300
+msgid "Theme buttons inherit the storefront button styling. Outline keeps the offer action visually lighter."
+msgstr ""
+
+#: app/Admin/Settings/SettingsPage.php:303
+msgid "Use theme buttons"
+msgstr ""
+
+#: app/Admin/Settings/SettingsPage.php:304
+msgid "Outline"
+msgstr ""
+
+#: app/Admin/Settings/SettingsPage.php:330
+msgid "Stats retention days"
+msgstr ""
+
+#: app/Admin/Settings/SettingsPage.php:331
+msgid "Session retention days"
+msgstr ""
+
+#: app/Admin/Settings/SettingsPage.php:332
+msgid "Log retention days"
+msgstr ""
+
+#: app/Admin/Settings/SettingsPage.php:338
+msgid "Delete data on uninstall"
+msgstr ""
+
+#: app/Admin/Settings/SettingsPage.php:338
+msgid "Keep this off unless the merchant explicitly wants plugin data removed during uninstall."
+msgstr ""
+
+#: app/Admin/Settings/SettingsPage.php:338
+msgid "When enabled, uninstall cleanup can remove UpsellBay settings, offers, and aggregate stats instead of preserving them."
+msgstr ""
+
+#: app/Admin/Settings/SettingsPage.php:348
+#: app/Admin/Settings/SettingsSectionNavigation.php:63
+msgid "License"
+msgstr ""
+
+#: app/Admin/Settings/SettingsPage.php:468
 msgid "Shows the most recent license state returned by UpsellBay licensing."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:389
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:368
+#: app/Admin/Settings/SettingsPage.php:473
 msgid "Current Key"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:389
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:368
+#: app/Admin/Settings/SettingsPage.php:473
 msgid "Only a masked version is shown here. The full key stays stored in the protected license option."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:397
-#: app/Admin/Settings/SettingsPage.php:447
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:376
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:426
+#: app/Admin/Settings/SettingsPage.php:481
+#: app/Admin/Settings/SettingsPage.php:531
 msgid "Expired"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:400
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:379
+#: app/Admin/Settings/SettingsPage.php:484
 msgid "Expires"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:400
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:379
+#: app/Admin/Settings/SettingsPage.php:484
 msgid "The date your current license term ends according to the license server."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:406
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:385
+#: app/Admin/Settings/SettingsPage.php:490
 msgid "Plan"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:406
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:385
+#: app/Admin/Settings/SettingsPage.php:490
 msgid "The product plan currently associated with the active UpsellBay license."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:417
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:396
+#: app/Admin/Settings/SettingsPage.php:501
 msgid "Actions"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:417
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:396
+#: app/Admin/Settings/SettingsPage.php:501
 msgid "Use these tools to verify the current license status or remove a stored key from this site."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:419
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:398
+#: app/Admin/Settings/SettingsPage.php:503
 msgid "Check License"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:420
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:399
+#: app/Admin/Settings/SettingsPage.php:504
 msgid "Removing this license disconnects this site from UpsellBay updates and support checks until a new key is activated. Offers will continue running."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:420
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:399
+#: app/Admin/Settings/SettingsPage.php:504
 msgid "Remove License"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:426
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:405
+#: app/Admin/Settings/SettingsPage.php:510
 msgid "Activate New Key"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:426
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:405
+#: app/Admin/Settings/SettingsPage.php:510
 msgid "Paste a new UpsellBay license key here to replace the currently stored key without exposing it in normal option fields."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:429
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:408
+#: app/Admin/Settings/SettingsPage.php:513
 msgid "Activate License"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:430
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:409
+#: app/Admin/Settings/SettingsPage.php:514
 msgid "Leave blank to keep the existing key unchanged."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:445
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:424
+#: app/Admin/Settings/SettingsPage.php:529
 msgid "Active"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:446
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:425
+#: app/Admin/Settings/SettingsPage.php:530
 msgid "Inactive"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:448
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:427
+#: app/Admin/Settings/SettingsPage.php:532
 msgid "Invalid"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:449
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:428
+#: app/Admin/Settings/SettingsPage.php:533
 msgid "Dev Mode"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:450
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:429
+#: app/Admin/Settings/SettingsPage.php:534
 msgid "Server Error"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:451
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:430
+#: app/Admin/Settings/SettingsPage.php:535
 msgid "Unknown"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:517
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:496
+#: app/Admin/Settings/SettingsPage.php:601
 msgid "How long aggregate, non-PII offer analytics are retained for dashboard reporting."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:518
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:497
+#: app/Admin/Settings/SettingsPage.php:602
 msgid "How long temporary offer session state is retained for shopper interactions such as dismissals."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:519
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:498
+#: app/Admin/Settings/SettingsPage.php:603
 msgid "How long UpsellBay operational logs are retained for troubleshooting."
 msgstr ""
 
+#: app/Admin/Settings/SettingsSectionNavigation.php:29
+msgid "Settings sections"
+msgstr ""
+
 #: app/Admin/Tools/ToolsPage.php:93
-#: dist/upsellbay/app/Admin/Tools/ToolsPage.php:93
 msgid "Import offers when you have a JSON export"
 msgstr ""
 
 #: app/Admin/Tools/ToolsPage.php:94
-#: dist/upsellbay/app/Admin/Tools/ToolsPage.php:94
 msgid "Agencies can move reviewed offer definitions between stores without copying site-specific product IDs blindly."
 msgstr ""
 
 #: app/Admin/Tools/ToolsPage.php:97
 #: app/Admin/Tools/ToolsPage.php:130
-#: dist/upsellbay/app/Admin/Tools/ToolsPage.php:97
-#: dist/upsellbay/app/Admin/Tools/ToolsPage.php:130
 msgid "Import offers"
 msgstr ""
 
 #: app/Admin/Tools/ToolsPage.php:121
-#: dist/upsellbay/app/Admin/Tools/ToolsPage.php:121
 msgid "System diagnostics"
 msgstr ""
 
 #: app/Admin/Tools/ToolsPage.php:132
-#: dist/upsellbay/app/Admin/Tools/ToolsPage.php:132
 msgid "Offer import JSON"
 msgstr ""
 
 #: app/Admin/Tools/ToolsPage.php:133
-#: dist/upsellbay/app/Admin/Tools/ToolsPage.php:133
 msgid "Validate import"
 msgstr ""
 
 #: app/Admin/Wizard/WizardController.php:89
-#: dist/upsellbay/app/Admin/Wizard/WizardController.php:89
 msgid "You do not have permission to run the UpsellBay wizard."
 msgstr ""
 
 #: app/Admin/Wizard/WizardController.php:96
-#: dist/upsellbay/app/Admin/Wizard/WizardController.php:96
 msgid "Wizard save could not be verified. Please try again."
 msgstr ""
 
 #: app/Admin/Wizard/WizardController.php:116
-#: dist/upsellbay/app/Admin/Wizard/WizardController.php:116
 msgid "Checkout bump offer"
 msgstr ""
 
 #: app/Admin/Wizard/WizardController.php:138
-#: dist/upsellbay/app/Admin/Wizard/WizardController.php:138
 msgid "First offer draft created."
 msgstr ""
 
 #: app/Api/Routes/LicenseRoute.php:97
-#: dist/upsellbay/app/Api/Routes/LicenseRoute.php:97
 msgid "You do not have permission to manage license settings."
 msgstr ""
 
 #: app/Api/Routes/LicenseRoute.php:120
-#: dist/upsellbay/app/Api/Routes/LicenseRoute.php:120
 msgid "License key is required."
 msgstr ""
 
 #: app/Core/Installer.php:115
-#: dist/upsellbay/app/Core/Installer.php:115
 msgid "UpsellBay Offers"
 msgstr ""
 
 #: app/Core/Installer.php:116
-#: dist/upsellbay/app/Core/Installer.php:116
 msgid "UpsellBay Offer"
 msgstr ""
 
 #: app/Core/Plugin.php:394
 #: app/Core/Plugin.php:427
 #: app/Core/Plugin.php:453
-#: dist/upsellbay/app/Core/Plugin.php:415
-#: dist/upsellbay/app/Core/Plugin.php:448
-#: dist/upsellbay/app/Core/Plugin.php:474
 msgid "You do not have permission to manage licenses."
 msgstr ""
 
 #: app/Core/Plugin.php:411
-#: dist/upsellbay/app/Core/Plugin.php:432
 msgid "License activated successfully."
 msgstr ""
 
 #: app/Core/Plugin.php:436
-#: dist/upsellbay/app/Core/Plugin.php:457
 msgid "Local license data removed."
 msgstr ""
 
 #: app/Core/Plugin.php:462
-#: dist/upsellbay/app/Core/Plugin.php:483
 msgid "License check complete: valid."
 msgstr ""
 
 #: app/Core/Plugin.php:464
-#: dist/upsellbay/app/Core/Plugin.php:485
 msgid "License check failed: inactive."
 msgstr ""
 
 #: app/Core/Plugin.php:558
-#: dist/upsellbay/app/Core/Plugin.php:563
 msgid "Your UpsellBay license has expired. Renew your license to restore updates and support."
 msgstr ""
 
 #: app/Core/Plugin.php:559
-#: dist/upsellbay/app/Core/Plugin.php:564
 msgid "The UpsellBay license key on this site is invalid. Please verify and re-enter your license key."
 msgstr ""
 
 #: app/Core/Plugin.php:560
-#: dist/upsellbay/app/Core/Plugin.php:565
 msgid "UpsellBay could not verify your license because the license server is unreachable. Offers will keep running, but updates and support checks are suspended."
 msgstr ""
 
 #: app/Core/Plugin.php:561
-#: dist/upsellbay/app/Core/Plugin.php:566
 msgid "UpsellBay license is not activated. Activate your license key to receive updates and support."
 msgstr ""
 
 #: app/Core/Plugin.php:575
-#: dist/upsellbay/app/Core/Plugin.php:579
 msgid "Manage License"
 msgstr ""
 
 #: app/Domain/Offers/OfferDefaults.php:57
-#: dist/upsellbay/app/Domain/Offers/OfferDefaults.php:57
 msgid "Complete your order with this add-on"
 msgstr ""
 
 #: app/Domain/Offers/OfferDefaults.php:58
-#: dist/upsellbay/app/Domain/Offers/OfferDefaults.php:58
 msgid "Add a relevant product before placing the order."
 msgstr ""
 
 #: app/Domain/Offers/OfferDefaults.php:59
-#: dist/upsellbay/app/Domain/Offers/OfferDefaults.php:59
 msgid "Add to order"
 msgstr ""
 
 #: app/Domain/Offers/OfferDefaults.php:62
-#: dist/upsellbay/app/Domain/Offers/OfferDefaults.php:62
 msgid "Frequently bought with this product"
 msgstr ""
 
 #: app/Domain/Offers/OfferDefaults.php:63
-#: dist/upsellbay/app/Domain/Offers/OfferDefaults.php:63
 msgid "Show a relevant add-on on the product page."
 msgstr ""
 
 #: app/Domain/Offers/OfferDefaults.php:64
-#: dist/upsellbay/app/Domain/Offers/OfferDefaults.php:64
 msgid "Add item"
 msgstr ""
 
 #: app/Domain/Offers/OfferDefaults.php:67
-#: dist/upsellbay/app/Domain/Offers/OfferDefaults.php:67
 msgid "Recommended for your cart"
 msgstr ""
 
 #: app/Domain/Offers/OfferDefaults.php:68
-#: dist/upsellbay/app/Domain/Offers/OfferDefaults.php:68
 msgid "Offer a useful add-on while the shopper reviews the cart."
 msgstr ""
 
 #: app/Domain/Offers/OfferDefaults.php:69
-#: dist/upsellbay/app/Domain/Offers/OfferDefaults.php:69
 msgid "Add to cart"
 msgstr ""
 
 #: app/Domain/Offers/OfferDefaults.php:72
-#: dist/upsellbay/app/Domain/Offers/OfferDefaults.php:72
 msgid "Add another useful item"
 msgstr ""
 
 #: app/Domain/Offers/OfferDefaults.php:73
-#: dist/upsellbay/app/Domain/Offers/OfferDefaults.php:73
 msgid "Send shoppers to a separate checkout for this follow-on offer."
 msgstr ""
 
 #: app/Domain/Offers/OfferDefaults.php:74
-#: dist/upsellbay/app/Domain/Offers/OfferDefaults.php:74
 msgid "View offer"
 msgstr ""
 
 #: app/Domain/Offers/OfferSchema.php:85
-#: dist/upsellbay/app/Domain/Offers/OfferSchema.php:85
 msgid "Cart cross-sell"
 msgstr ""
 
 #: app/Domain/Offers/ProductRecommendationAssistant.php:64
-#: dist/upsellbay/app/Domain/Offers/ProductRecommendationAssistant.php:64
 msgid "WooCommerce upsell configured for this product."
 msgstr ""
 
 #: app/Domain/Offers/ProductRecommendationAssistant.php:69
-#: dist/upsellbay/app/Domain/Offers/ProductRecommendationAssistant.php:69
 msgid "WooCommerce cross-sell configured for this product."
 msgstr ""
 
 #: app/Domain/Offers/ProductRecommendationAssistant.php:74
-#: dist/upsellbay/app/Domain/Offers/ProductRecommendationAssistant.php:74
 msgid "Same-category product that can work as an add-on."
 msgstr ""
 
 #: app/Domain/Offers/ProductRecommendationAssistant.php:79
-#: dist/upsellbay/app/Domain/Offers/ProductRecommendationAssistant.php:79
 msgid "Previously accepted UpsellBay offer product."
 msgstr ""
 
 #: app/Integrations/Licensing/LicenseClient.php:124
-#: dist/upsellbay/app/Integrations/Licensing/LicenseClient.php:124
 msgid "Please enter a license key."
 msgstr ""
 
 #: app/Integrations/Licensing/LicenseClient.php:154
-#: dist/upsellbay/app/Integrations/Licensing/LicenseClient.php:154
 msgid "The license server could not be reached. Please try again shortly."
 msgstr ""
 
 #: app/Integrations/Licensing/LicenseClient.php:423
-#: dist/upsellbay/app/Integrations/Licensing/LicenseClient.php:423
 msgid "The license server returned an unexpected response."
 msgstr ""
 
 #: app/Integrations/Licensing/LicenseClient.php:500
-#: dist/upsellbay/app/Integrations/Licensing/LicenseClient.php:500
 msgid "The license key could not be activated."
 msgstr ""
 
 #: app/Integrations/WooCommerce/CheckoutFields.php:31
-#: dist/upsellbay/app/Integrations/WooCommerce/CheckoutFields.php:31
 msgid "UpsellBay accepted offer"
 msgstr ""
 
-#: dist/upsellbay/app/Admin/Help/HelpPage.php:36
-msgid "Getting Started"
-msgstr ""
-
-#: dist/upsellbay/app/Admin/Help/HelpPage.php:44
-msgid "Documentation"
-msgstr ""
-
-#: dist/upsellbay/app/Admin/Help/HelpPage.php:52
-msgid "Support"
-msgstr ""
-
-#: dist/upsellbay/app/Admin/Help/HelpPage.php:101
-msgid "Need help with UpsellBay?"
-msgstr ""
-
-#: dist/upsellbay/app/Admin/Help/HelpPage.php:113
-msgid "Quick links:"
-msgstr ""
-
-#: dist/upsellbay/app/Core/Plugin.php:576
-msgid "UpsellBay License"
-msgstr ""
-
-#: dist/upsellbay/templates/admin/wizard.php:24
 #: templates/admin/wizard.php:24
 msgid "Offer product"
 msgstr ""
 
-#: dist/upsellbay/templates/admin/wizard.php:24
 #: templates/admin/wizard.php:24
 msgid "Choose the product shoppers can add from the first offer. The draft is not shown to shoppers until published."
 msgstr ""
 
-#: dist/upsellbay/templates/admin/wizard.php:30
 #: templates/admin/wizard.php:30
 msgid "Start with the offer location you want to test first. You can change placement settings later in the offer editor."
 msgstr ""
 
-#: dist/upsellbay/templates/admin/wizard.php:41
 #: templates/admin/wizard.php:41
 msgid "Keep this short and specific. It appears next to the offer product in the selected placement."
 msgstr ""
 
-#: dist/upsellbay/templates/admin/wizard.php:45
 #: templates/admin/wizard.php:45
 msgid "Preview first"
 msgstr ""
 
-#: dist/upsellbay/templates/admin/wizard.php:45
 #: templates/admin/wizard.php:45
 msgid "Test mode is admin-only and helps verify the offer before live shoppers can see it."
 msgstr ""
 
-#: dist/upsellbay/templates/admin/wizard.php:49
 #: templates/admin/wizard.php:49
 msgid "Enable test mode so only admins can preview the offer before publishing."
 msgstr ""
 
-#: dist/upsellbay/templates/admin/wizard.php:55
 #: templates/admin/wizard.php:55
 msgid "Create draft offer"
 msgstr ""

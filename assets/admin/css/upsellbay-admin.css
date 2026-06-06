@@ -85,7 +85,8 @@
 	padding-top: 14px;
 }
 
-.upsellbay-offers-section-menu {
+.upsellbay-offers-section-menu,
+.upsellbay-settings-section-menu {
 	margin-bottom: 16px !important;
 	margin-top: 0;
 }

@@ -23,6 +23,7 @@ use WPAnchorBay\UpsellBay\Admin\Offers\OfferEditPage;
 use WPAnchorBay\UpsellBay\Admin\Offers\OfferListTable;
 use WPAnchorBay\UpsellBay\Admin\Offers\OffersPage;
 use WPAnchorBay\UpsellBay\Admin\OverviewSummary;
+use WPAnchorBay\UpsellBay\Admin\Settings\BasicSection;
 use WPAnchorBay\UpsellBay\Admin\Settings\SettingsPage;
 use WPAnchorBay\UpsellBay\Admin\Tools\ToolsPage;
 use WPAnchorBay\UpsellBay\Admin\Wizard\WizardController;
@@ -188,8 +189,8 @@ function upsellbay_admin_architecture_tests(): array {
 			assert_true( strpos( $html, 'upsellbay-page-notice' ) < strpos( $html, 'upsellbay-layout-header' ) );
 			assert_true( strpos( $html, 'upsellbay-layout-header__heading' ) < strpos( $html, 'nav-tab-wrapper' ) );
 			assert_true( strpos( $html, 'nav-tab-wrapper' ) < strpos( $html, 'upsellbay-tab-content' ) );
-			assert_true( strpos( $html, 'upsellbay-tab-content' ) < strpos( $html, 'upsellbay-offers-add-button' ) );
-			assert_true( strpos( $html, 'upsellbay-offers-add-button' ) < strpos( $html, 'upsellbay-offers-notice' ) );
+			assert_true( strpos( $html, 'upsellbay-tab-content' ) < strpos( $html, 'upsellbay-offers-section-menu' ) );
+			assert_true( strpos( $html, 'upsellbay-offers-section-menu' ) < strpos( $html, 'upsellbay-offers-notice' ) );
 		},
 		'admin header css styles page license banner and suppresses tab focus side borders' => static function (): void {
 			$root   = dirname( __DIR__ );
@@ -441,7 +442,7 @@ function upsellbay_admin_architecture_tests(): array {
 
 			$GLOBALS['upsellbay_test_hooks'] = $previous_hooks;
 
-			assert_true( strpos( $html, 'upsellbay-offers-add-button' ) < strpos( $html, 'upsellbay-offers-notice' ) );
+			assert_true( strpos( $html, 'upsellbay-offers-section-menu' ) < strpos( $html, 'upsellbay-offers-notice' ) );
 			assert_true( strpos( $html, 'upsellbay-offers-notice' ) < strpos( $html, 'No UpsellBay offers yet' ) );
 		},
 		'offers tab renders native section links above list and editor content' => static function (): void {
@@ -460,7 +461,7 @@ function upsellbay_admin_architecture_tests(): array {
 			assert_contains( 'subsubsub upsellbay-offers-section-menu', $list_html );
 			assert_contains( 'admin.php?page=upsellbay&amp;tab=offers" class="current" aria-current="page">General</a>', $list_html );
 			assert_contains( 'admin.php?page=upsellbay&amp;tab=offers&amp;action=edit">Add Offer</a>', $list_html );
-			assert_true( strpos( $list_html, 'upsellbay-offers-section-menu' ) < strpos( $list_html, 'upsellbay-offers-add-button' ) );
+			assert_true( strpos( $list_html, 'upsellbay-offers-section-menu' ) < strpos( $list_html, 'No UpsellBay offers yet' ) );
 
 			assert_contains( 'admin.php?page=upsellbay&amp;tab=offers">General</a>', $editor_html );
 			assert_contains( 'admin.php?page=upsellbay&amp;tab=offers&amp;action=edit" class="current" aria-current="page">Add Offer</a>', $editor_html );
@@ -545,8 +546,45 @@ function upsellbay_admin_architecture_tests(): array {
 			assert_same( '#cc0000', $stored['style_tokens']['accent_color'] );
 			assert_same( 90, $stored['data_retention']['stats_days'] );
 			assert_false( $stored['cleanup_on_delete'] );
-			assert_same( array( 'general', 'style', 'data' ), array_keys( $page->sections() ) );
+			assert_same( array( 'basic', 'style', 'data' ), array_keys( $page->sections() ) );
+			assert_same( 'basic', ( new BasicSection() )->id() );
+			assert_same( 'Basic', ( new BasicSection() )->label() );
 			assert_false( $page->save( array( 'nonce' => 'bad' ) )['success'] );
+		},
+		'settings tab renders native section menu and routes section content' => static function (): void {
+			$settings = new Settings( static fn (): array => array(), static fn (): bool => true );
+			$page     = new SettingsPage( $settings );
+
+			ob_start();
+			$page->render_content( array( 'section' => 'general' ) );
+			$general_html = (string) ob_get_clean();
+
+			ob_start();
+			$page->render_content( array( 'section' => 'data' ) );
+			$data_html = (string) ob_get_clean();
+
+			ob_start();
+			$page->render_content( array( 'section' => 'license' ) );
+			$license_html = (string) ob_get_clean();
+
+			assert_contains( 'subsubsub upsellbay-settings-section-menu', $general_html );
+			assert_contains( 'admin.php?page=upsellbay&amp;tab=settings" class="current" aria-current="page">General</a>', $general_html );
+			assert_contains( 'admin.php?page=upsellbay&amp;tab=settings&amp;section=data">Data</a>', $general_html );
+			assert_contains( 'admin.php?page=upsellbay&amp;tab=settings&amp;section=license">License</a>', $general_html );
+			assert_contains( '<h2>Basic</h2>', $general_html );
+			assert_contains( '<h2>Style</h2>', $general_html );
+			assert_false( str_contains( $general_html, '<h2>Data</h2>' ) );
+			assert_false( str_contains( $general_html, 'id="upsellbay_license_activate"' ) );
+
+			assert_contains( 'admin.php?page=upsellbay&amp;tab=settings&amp;section=data" class="current" aria-current="page">Data</a>', $data_html );
+			assert_contains( '<h2>Data</h2>', $data_html );
+			assert_false( str_contains( $data_html, '<h2>Basic</h2>' ) );
+			assert_false( str_contains( $data_html, '<h2>Style</h2>' ) );
+
+			assert_contains( 'admin.php?page=upsellbay&amp;tab=settings&amp;section=license" class="current" aria-current="page">License</a>', $license_html );
+			assert_contains( '<h2>License</h2>', $license_html );
+			assert_contains( 'id="upsellbay_license_activate"', $license_html );
+			assert_false( str_contains( $license_html, '<h2>Data</h2>' ) );
 		},
 		'settings license row saves through the existing settings form without nesting forms' => static function (): void {
 			$stored        = array();
@@ -577,7 +615,7 @@ function upsellbay_admin_architecture_tests(): array {
 			);
 
 			ob_start();
-			$page->render();
+			$page->render_content( array( 'section' => 'license' ) );
 			$html = (string) ob_get_clean();
 
 			assert_same( 1, substr_count( $html, '<form' ) );

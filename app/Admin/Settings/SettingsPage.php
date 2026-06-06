@@ -58,6 +58,15 @@ final class SettingsPage {
 	private array $sections;
 
 	/**
+	 * Settings section navigation.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var SettingsSectionNavigation
+	 */
+	private SettingsSectionNavigation $section_navigation;
+
+	/**
 	 * Settings save result prepared for the current render.
 	 *
 	 * @since 1.0.0
@@ -103,8 +112,9 @@ final class SettingsPage {
 	 * @param callable|null                                 $can_manage     Capability callback, or legacy nonce callback.
 	 * @param callable|array<SettingsSectionInterface>|null $verify_nonce Nonce callback, or legacy sections.
 	 * @param array<SettingsSectionInterface>|null          $sections       Sections.
+	 * @param SettingsSectionNavigation|null                $section_navigation Settings section navigation.
 	 */
-	public function __construct( Settings $settings, LicenseClient|callable|null $license_client = null, ?callable $can_manage = null, callable|array|null $verify_nonce = null, ?array $sections = null ) {
+	public function __construct( Settings $settings, LicenseClient|callable|null $license_client = null, ?callable $can_manage = null, callable|array|null $verify_nonce = null, ?array $sections = null, ?SettingsSectionNavigation $section_navigation = null ) {
 		if ( is_callable( $license_client ) ) {
 			$sections       = is_array( $verify_nonce ) ? $verify_nonce : $sections;
 			$verify_nonce   = $can_manage;
@@ -112,13 +122,14 @@ final class SettingsPage {
 			$license_client = null;
 		}
 
-		$this->settings       = $settings;
-		$this->license_client = $license_client ?? new LicenseClient();
-		$this->can_manage     = $can_manage ?? static fn (): bool => function_exists( 'current_user_can' ) && current_user_can( 'manage_woocommerce' ); // phpcs:ignore WordPress.WP.Capabilities.Unknown
-		$this->verify_nonce   = is_callable( $verify_nonce ) ? $verify_nonce : static fn ( string $nonce ): bool => function_exists( 'wp_verify_nonce' ) && (bool) wp_verify_nonce( $nonce, 'upsellbay_save_settings' );
-		$this->sections       = array();
+		$this->settings           = $settings;
+		$this->license_client     = $license_client ?? new LicenseClient();
+		$this->can_manage         = $can_manage ?? static fn (): bool => function_exists( 'current_user_can' ) && current_user_can( 'manage_woocommerce' ); // phpcs:ignore WordPress.WP.Capabilities.Unknown
+		$this->verify_nonce       = is_callable( $verify_nonce ) ? $verify_nonce : static fn ( string $nonce ): bool => function_exists( 'wp_verify_nonce' ) && (bool) wp_verify_nonce( $nonce, 'upsellbay_save_settings' );
+		$this->sections           = array();
+		$this->section_navigation = $section_navigation ?? new SettingsSectionNavigation();
 
-		foreach ( $sections ?? array( new GeneralSection(), new StyleSection(), new DataSection() ) as $section ) {
+		foreach ( $sections ?? array( new BasicSection(), new StyleSection(), new DataSection() ) as $section ) {
 			$this->sections[ $section->id() ] = $section;
 		}
 	}
@@ -224,23 +235,48 @@ final class SettingsPage {
 	 * Render settings tab content.
 	 *
 	 * @since 1.0.0
+	 *
+	 * @param array<string, mixed> $request Request data.
 	 */
-	public function render_content(): void {
+	public function render_content( array $request = array() ): void {
 		$this->prepare_render();
 		if ( null !== $this->prepared_save_result && ! $this->prepared_notice_rendered ) {
 			$this->render_prepared_save_notice( true );
 		}
 
-		$settings   = $this->settings->all();
-		$placements = is_array( $settings['placements'] ?? null ) ? $settings['placements'] : array();
-		$style      = is_array( $settings['style_tokens'] ?? null ) ? $settings['style_tokens'] : array();
-		$retention  = is_array( $settings['data_retention'] ?? null ) ? $settings['data_retention'] : array();
+		$settings       = $this->settings->all();
+		$active_section = $this->current_section( $request );
 
 		echo '<form method="post">';
 		if ( function_exists( 'wp_nonce_field' ) ) {
 			wp_nonce_field( 'upsellbay_save_settings', 'nonce' );
 		}
-		echo '<h2>' . esc_html__( 'General', 'upsellbay' ) . '</h2>';
+		$this->section_navigation->render( $active_section );
+
+		if ( 'data' === $active_section ) {
+			$this->render_data_section( $settings );
+		} elseif ( 'license' === $active_section ) {
+			$this->render_license_settings_section();
+		} else {
+			$this->render_general_settings_section( $settings );
+		}
+
+		echo '<p class="submit"><button type="submit" class="button button-primary">' . esc_html__( 'Save changes', 'upsellbay' ) . '</button></p>';
+		echo '</form>';
+	}
+
+	/**
+	 * Render the General menu section.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<string, mixed> $settings Normalized settings.
+	 */
+	private function render_general_settings_section( array $settings ): void {
+		$placements = is_array( $settings['placements'] ?? null ) ? $settings['placements'] : array();
+		$style      = is_array( $settings['style_tokens'] ?? null ) ? $settings['style_tokens'] : array();
+
+		echo '<h2>' . esc_html__( 'Basic', 'upsellbay' ) . '</h2>';
 		echo '<table class="form-table upsellbay-settings-table" role="presentation"><tbody>';
 		$this->checkbox_row( 'enabled', __( 'Enable offers', 'upsellbay' ), (bool) $settings['enabled'], __( 'Allow eligible live offers to render on enabled placements.', 'upsellbay' ), __( 'Turn this off to pause all shopper-facing UpsellBay offers without changing individual offer status.', 'upsellbay' ) );
 		$this->checkbox_row( 'test_mode', __( 'Test mode', 'upsellbay' ), (bool) $settings['test_mode'], __( 'Limit previews and draft offer checks to store managers before shoppers see them.', 'upsellbay' ), __( 'Use test mode while configuring offers. It should be disabled before live shoppers need to see offers.', 'upsellbay' ) );
@@ -275,6 +311,17 @@ final class SettingsPage {
 			echo '>' . esc_html( $label ) . '</option>';
 		}
 		echo '</select></td></tr></tbody></table>';
+	}
+
+	/**
+	 * Render the Data menu section.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<string, mixed> $settings Normalized settings.
+	 */
+	private function render_data_section( array $settings ): void {
+		$retention = is_array( $settings['data_retention'] ?? null ) ? $settings['data_retention'] : array();
 
 		echo '<h2>' . esc_html__( 'Data', 'upsellbay' ) . '</h2>';
 		echo '<table class="form-table upsellbay-settings-table" role="presentation"><tbody>';
@@ -290,13 +337,50 @@ final class SettingsPage {
 		}
 		$this->checkbox_row( 'cleanup_on_delete', __( 'Delete data on uninstall', 'upsellbay' ), (bool) $settings['cleanup_on_delete'], __( 'Keep this off unless the merchant explicitly wants plugin data removed during uninstall.', 'upsellbay' ), __( 'When enabled, uninstall cleanup can remove UpsellBay settings, offers, and aggregate stats instead of preserving them.', 'upsellbay' ) );
 		echo '</tbody></table>';
-		echo '<h2 id="license">' . esc_html__( 'License', 'upsellbay' ) . '</h2>';
+	}
+
+	/**
+	 * Render the License menu section.
+	 *
+	 * @since 1.0.0
+	 */
+	private function render_license_settings_section(): void {
+		echo '<h2>' . esc_html__( 'License', 'upsellbay' ) . '</h2>';
 		echo '<table class="form-table upsellbay-settings-table" role="presentation"><tbody>';
 		$this->render_license_section();
 		echo '</tbody></table>';
+	}
 
-		echo '<p class="submit"><button type="submit" class="button button-primary">' . esc_html__( 'Save changes', 'upsellbay' ) . '</button></p>';
-		echo '</form>';
+	/**
+	 * Return the active visible Settings section.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<string, mixed> $request Request data.
+	 */
+	private function current_section( array $request ): string {
+		$section = $this->request_key( $request['section'] ?? '' );
+
+		if ( in_array( $section, array( 'general', 'data', 'license' ), true ) ) {
+			return $section;
+		}
+
+		return 'general';
+	}
+
+	/**
+	 * Sanitize a request key with a fallback for isolated tests.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param mixed $value Raw value.
+	 */
+	private function request_key( $value ): string {
+		if ( function_exists( 'sanitize_key' ) ) {
+			return sanitize_key( (string) $value );
+		}
+
+		return strtolower( preg_replace( '/[^a-z0-9_\-]/', '', (string) $value ) ?? '' );
 	}
 
 	/**

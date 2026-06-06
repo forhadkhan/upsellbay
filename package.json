@@ -8,7 +8,7 @@
 		"build": "wp-scripts build --config webpack.config.js",
 		"dev": "node scripts/dev.js",
 		"release": "node scripts/release.js",
-		"i18n:make-pot": "wp i18n make-pot . languages/upsellbay.pot --domain=upsellbay --exclude=node_modules,vendor,.git,.meta,graphify-out",
+		"i18n:make-pot": "wp i18n make-pot . languages/upsellbay.pot --domain=upsellbay --exclude=node_modules,vendor,.git,.meta,graphify-out,dist",
 		"plugin-check": "wp plugin check upsellbay --path=."
 	},
 	"devDependencies": {

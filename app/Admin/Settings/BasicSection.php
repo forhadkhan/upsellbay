@@ -1,6 +1,6 @@
 <?php
 /**
- * General settings section.
+ * Basic settings section.
  *
  * @package UpsellBay\Admin\Settings
  */
@@ -14,14 +14,14 @@ namespace WPAnchorBay\UpsellBay\Admin\Settings;
  *
  * @since 1.0.0
  */
-final class GeneralSection extends AbstractSettingsSection {
+final class BasicSection extends AbstractSettingsSection {
 	/**
 	 * Section identifier.
 	 *
 	 * @since 1.0.0
 	 */
 	public function id(): string {
-		return 'general';
+		return 'basic';
 	}
 
 	/**
@@ -30,11 +30,11 @@ final class GeneralSection extends AbstractSettingsSection {
 	 * @since 1.0.0
 	 */
 	public function label(): string {
-		return __( 'General', 'upsellbay' );
+		return __( 'Basic', 'upsellbay' );
 	}
 
 	/**
-	 * Apply submitted general settings.
+	 * Apply submitted basic settings.
 	 *
 	 * @since 1.0.0
 	 *
