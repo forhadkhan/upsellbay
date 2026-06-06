@@ -163,7 +163,9 @@ final class TabFactory {
 					function ( array $request ): void {
 						unset( $request );
 						$this->wizard->render_content();
-					}
+					},
+					null,
+					false
 				),
 				new AdminTab(
 					'help',

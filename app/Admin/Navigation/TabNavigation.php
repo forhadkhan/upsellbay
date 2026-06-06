@@ -27,6 +27,10 @@ final class TabNavigation {
 		echo '<nav class="nav-tab-wrapper woo-nav-tab-wrapper upsellbay-tabs" aria-label="' . esc_attr( __( 'UpsellBay sections', 'upsellbay' ) ) . '">';
 
 		foreach ( $registry->tabs() as $tab ) {
+			if ( ! $tab->show_in_nav() ) {
+				continue;
+			}
+
 			$classes = 'nav-tab';
 			if ( $tab->id() === $active_tab->id() ) {
 				$classes .= ' nav-tab-active';

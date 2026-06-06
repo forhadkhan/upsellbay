@@ -52,6 +52,15 @@ final class AdminTab {
 	private $prepare_callback;
 
 	/**
+	 * Whether the tab should appear in the navigation bar.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var bool
+	 */
+	private bool $show_in_nav;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.0.0
@@ -60,12 +69,14 @@ final class AdminTab {
 	 * @param string        $label            Tab label.
 	 * @param callable      $render_callback  Tab renderer.
 	 * @param callable|null $prepare_callback Optional pre-render callback.
+	 * @param bool          $show_in_nav      Whether to show in the navigation bar.
 	 */
-	public function __construct( string $id, string $label, callable $render_callback, ?callable $prepare_callback = null ) {
+	public function __construct( string $id, string $label, callable $render_callback, ?callable $prepare_callback = null, bool $show_in_nav = true ) {
 		$this->id               = $this->sanitize_id( $id );
 		$this->label            = $label;
 		$this->render_callback  = $render_callback;
 		$this->prepare_callback = $prepare_callback;
+		$this->show_in_nav      = $show_in_nav;
 	}
 
 	/**
@@ -84,6 +95,15 @@ final class AdminTab {
 	 */
 	public function label(): string {
 		return $this->label;
+	}
+
+	/**
+	 * Whether the tab should appear in the navigation bar.
+	 *
+	 * @since 1.0.0
+	 */
+	public function show_in_nav(): bool {
+		return $this->show_in_nav;
 	}
 
 	/**

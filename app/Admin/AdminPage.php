@@ -108,7 +108,8 @@ final class AdminPage {
 		echo '<div class="upsellbay-layout-header__wrapper">';
 		echo '<h1 class="upsellbay-layout-header__heading">' . esc_html__( 'UpsellBay', 'upsellbay' ) . '</h1>';
 		echo '<div class="upsellbay-layout-header__actions">';
-		echo '<a class="button button-primary" href="' . esc_url( 'admin.php?page=upsellbay&tab=offers&action=edit' ) . '">' . esc_html__( 'Add offer', 'upsellbay' ) . '</a>';
+		echo '<a class="button button-secondary" href="' . esc_url( 'admin.php?page=upsellbay&tab=setup' ) . '">' . esc_html__( 'Get Started', 'upsellbay' ) . '</a>';
+		echo '<a class="button button-primary" href="' . esc_url( 'admin.php?page=upsellbay&tab=offers&action=edit' ) . '">' . esc_html__( 'Add Offer', 'upsellbay' ) . '</a>';
 		echo '</div>';
 		echo '</div>';
 		echo '<div class="upsellbay-layout-header__tabs">';
