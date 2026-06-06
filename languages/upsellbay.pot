@@ -9,15 +9,15 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-06-02T13:09:32+00:00\n"
+"POT-Creation-Date: 2026-06-06T10:21:55+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: upsellbay\n"
 
 #. Plugin Name of the plugin
 #: upsellbay.php
-#: app/Admin/AdminPage.php:105
-#: app/Admin/AdminPage.php:145
+#: app/Admin/AdminPage.php:109
+#: app/Admin/AdminPage.php:150
 #: app/Admin/AdminPageRegistrar.php:140
 #: app/Admin/AdminPageRegistrar.php:152
 #: app/Admin/AdminPageRegistrar.php:153
@@ -53,14 +53,13 @@ msgstr ""
 msgid "UpsellBay test mode"
 msgstr ""
 
-#: app/Admin/AdminPage.php:107
-#: app/Admin/Offers/OffersPage.php:93
-#: dist/upsellbay/app/Admin/Dashboard/DashboardPage.php:64
-#: dist/upsellbay/app/Admin/Offers/OffersPage.php:94
-msgid "Add offer"
+#: app/Admin/AdminPage.php:111
+msgid "Get Started"
 msgstr ""
 
-#: app/Admin/AdminPage.php:153
+#: app/Admin/AdminPage.php:112
+#: app/Admin/AdminPage.php:158
+#: app/Admin/Offers/OfferSectionNavigation.php:59
 #: dist/upsellbay/app/Admin/AdminPage.php:112
 msgid "Add Offer"
 msgstr ""
@@ -143,7 +142,7 @@ msgid "Performance (Last 30 days)"
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:84
-#: app/Admin/Offers/OffersPage.php:120
+#: app/Admin/Offers/OffersPage.php:133
 #: dist/upsellbay/app/Admin/Dashboard/DashboardPage.php:87
 #: dist/upsellbay/app/Admin/Offers/OffersPage.php:122
 msgid "Views"
@@ -155,7 +154,7 @@ msgid "Offer render events recorded in aggregate stats."
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:85
-#: app/Admin/Offers/OffersPage.php:121
+#: app/Admin/Offers/OffersPage.php:134
 #: dist/upsellbay/app/Admin/Dashboard/DashboardPage.php:88
 #: dist/upsellbay/app/Admin/Offers/OffersPage.php:123
 msgid "Accepts"
@@ -249,7 +248,7 @@ msgid "Use the first offer tutorial to create a draft offer, preview it in test 
 msgstr ""
 
 #: app/Admin/Help/HelpPage.php:83
-#: app/Admin/Navigation/TabFactory.php:170
+#: app/Admin/Navigation/TabFactory.php:172
 msgid "Help"
 msgstr ""
 
@@ -290,108 +289,108 @@ msgstr ""
 msgid "UpsellBay sections"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:95
+#: app/Admin/Offers/OfferEditPage.php:106
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:95
 msgid "You do not have permission to manage UpsellBay offers."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:102
+#: app/Admin/Offers/OfferEditPage.php:113
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:102
 msgid "Offer save could not be verified. Please try again."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:144
+#: app/Admin/Offers/OfferEditPage.php:155
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:144
 msgid "Offer saved."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:187
+#: app/Admin/Offers/OfferEditPage.php:198
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:187
 msgid "Required basics"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:192
+#: app/Admin/Offers/OfferEditPage.php:203
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:192
 msgid "Targeting rules"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:197
+#: app/Admin/Offers/OfferEditPage.php:208
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:197
 msgid "Discount"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:202
+#: app/Admin/Offers/OfferEditPage.php:213
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:202
 msgid "Placement display"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:207
+#: app/Admin/Offers/OfferEditPage.php:218
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:207
 msgid "Schedule and priority"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:212
+#: app/Admin/Offers/OfferEditPage.php:223
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:212
 msgid "Advanced metadata"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:228
+#: app/Admin/Offers/OfferEditPage.php:239
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:228
 msgid "Choose the product shoppers can add from this offer. Product and stock are validated again before cart changes."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:229
+#: app/Admin/Offers/OfferEditPage.php:240
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:229
 msgid "Rules narrow when an offer appears. Leave them empty for a simple first offer."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:230
+#: app/Admin/Offers/OfferEditPage.php:241
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:230
 msgid "Discounts are calculated server-side from the product price. Shopper-sent prices are ignored."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:231
+#: app/Admin/Offers/OfferEditPage.php:242
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:231
 msgid "Priority controls which eligible offer wins when a placement has a display limit."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:232
+#: app/Admin/Offers/OfferEditPage.php:243
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:232
 msgid "Test mode lets admins preview offers before shoppers can see them."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:233
+#: app/Admin/Offers/OfferEditPage.php:244
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:233
 msgid "Compatibility notices flag checkout plugins that may alter the placement area."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:252
+#: app/Admin/Offers/OfferEditPage.php:263
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:252
 msgid "Offer targeting rules"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:278
+#: app/Admin/Offers/OfferEditPage.php:291
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:278
 msgid "Add UpsellBay Offer"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:299
+#: app/Admin/Offers/OfferEditPage.php:312
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:299
 msgid "Save offer"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:300
+#: app/Admin/Offers/OfferEditPage.php:313
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:300
 msgid "Back to offers"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:313
+#: app/Admin/Offers/OfferEditPage.php:326
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:313
 msgid "Offer name"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:314
-#: app/Admin/Offers/OffersPage.php:117
+#: app/Admin/Offers/OfferEditPage.php:327
+#: app/Admin/Offers/OffersPage.php:130
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:314
 #: dist/upsellbay/app/Admin/Offers/OffersPage.php:119
 #: dist/upsellbay/templates/admin/wizard.php:30
@@ -399,82 +398,82 @@ msgstr ""
 msgid "Placement"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:315
+#: app/Admin/Offers/OfferEditPage.php:328
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:315
 msgid "Offer product ID"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:316
+#: app/Admin/Offers/OfferEditPage.php:329
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:316
 #: dist/upsellbay/templates/admin/wizard.php:41
 #: templates/admin/wizard.php:41
 msgid "Headline"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:317
+#: app/Admin/Offers/OfferEditPage.php:330
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:317
 msgid "Button text"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:318
+#: app/Admin/Offers/OfferEditPage.php:331
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:318
 msgid "Rule matching"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:319
+#: app/Admin/Offers/OfferEditPage.php:332
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:319
 msgid "Rules"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:320
+#: app/Admin/Offers/OfferEditPage.php:333
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:320
 msgid "Discount type"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:321
+#: app/Admin/Offers/OfferEditPage.php:334
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:321
 msgid "Discount value"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:322
+#: app/Admin/Offers/OfferEditPage.php:335
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:322
 msgid "Show product image"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:323
+#: app/Admin/Offers/OfferEditPage.php:336
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:323
 msgid "Placement options"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:324
+#: app/Admin/Offers/OfferEditPage.php:337
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:324
 msgid "Start date"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:325
+#: app/Admin/Offers/OfferEditPage.php:338
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:325
 msgid "End date"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:326
-#: app/Admin/Offers/OffersPage.php:119
+#: app/Admin/Offers/OfferEditPage.php:339
+#: app/Admin/Offers/OffersPage.php:132
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:326
 #: dist/upsellbay/app/Admin/Offers/OffersPage.php:121
 msgid "Priority"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:327
+#: app/Admin/Offers/OfferEditPage.php:340
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:327
 msgid "Trigger product IDs"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:328
+#: app/Admin/Offers/OfferEditPage.php:341
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:328
 msgid "Trigger category IDs"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:338
-#: app/Admin/Offers/OffersPage.php:153
+#: app/Admin/Offers/OfferEditPage.php:351
+#: app/Admin/Offers/OffersPage.php:166
 #: app/Admin/Settings/SettingsPage.php:534
 #: app/Domain/Offers/OfferSchema.php:83
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:338
@@ -486,8 +485,8 @@ msgstr ""
 msgid "Checkout bump"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:339
-#: app/Admin/Offers/OffersPage.php:154
+#: app/Admin/Offers/OfferEditPage.php:352
+#: app/Admin/Offers/OffersPage.php:167
 #: app/Admin/Settings/SettingsPage.php:532
 #: app/Domain/Offers/OfferSchema.php:84
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:339
@@ -499,8 +498,8 @@ msgstr ""
 msgid "Product page offer"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:340
-#: app/Admin/Offers/OffersPage.php:155
+#: app/Admin/Offers/OfferEditPage.php:353
+#: app/Admin/Offers/OffersPage.php:168
 #: app/Admin/Settings/SettingsPage.php:533
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:340
 #: dist/upsellbay/app/Admin/Offers/OffersPage.php:157
@@ -510,86 +509,104 @@ msgstr ""
 msgid "Cart offer"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:341
+#: app/Admin/Offers/OfferEditPage.php:354
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:341
 #: dist/upsellbay/templates/admin/wizard.php:36
 #: templates/admin/wizard.php:36
 msgid "Thank-you follow-on offer"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:348
+#: app/Admin/Offers/OfferEditPage.php:361
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:348
 msgid "All rules"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:348
+#: app/Admin/Offers/OfferEditPage.php:361
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:348
 msgid "Any rule"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:350
+#: app/Admin/Offers/OfferEditPage.php:363
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:350
 msgid "No discount"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:350
+#: app/Admin/Offers/OfferEditPage.php:363
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:350
 msgid "Percentage"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:350
+#: app/Admin/Offers/OfferEditPage.php:363
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:350
 msgid "Fixed amount"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:352
+#: app/Admin/Offers/OfferEditPage.php:365
 #: dist/upsellbay/app/Admin/Offers/OfferEditPage.php:352
 msgid "Show the WooCommerce product image when available."
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:59
+#: app/Admin/Offers/OfferSectionNavigation.php:29
+msgid "Offer sections"
+msgstr ""
+
+#: app/Admin/Offers/OfferSectionNavigation.php:55
+#: app/Admin/Settings/GeneralSection.php:33
+#: app/Admin/Settings/SettingsPage.php:243
+#: dist/upsellbay/app/Admin/Settings/GeneralSection.php:33
+#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:228
+msgid "General"
+msgstr ""
+
+#: app/Admin/Offers/OffersPage.php:70
 #: dist/upsellbay/app/Admin/Offers/OffersPage.php:59
 msgid "No UpsellBay offers yet"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:60
+#: app/Admin/Offers/OffersPage.php:71
 #: dist/upsellbay/app/Admin/Offers/OffersPage.php:60
 msgid "Create a checkout bump, product offer, cart offer, or thank-you follow-on offer when you are ready to test it."
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:63
+#: app/Admin/Offers/OffersPage.php:74
 #: dist/upsellbay/app/Admin/Offers/OffersPage.php:63
 msgid "Create offer"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:67
+#: app/Admin/Offers/OffersPage.php:78
 #: dist/upsellbay/app/Admin/Offers/OffersPage.php:67
 msgid "Open setup wizard"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:116
+#: app/Admin/Offers/OffersPage.php:106
+#: dist/upsellbay/app/Admin/Dashboard/DashboardPage.php:64
+#: dist/upsellbay/app/Admin/Offers/OffersPage.php:94
+msgid "Add offer"
+msgstr ""
+
+#: app/Admin/Offers/OffersPage.php:129
 #: dist/upsellbay/app/Admin/Offers/OffersPage.php:118
 msgid "Offer"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:118
+#: app/Admin/Offers/OffersPage.php:131
 #: app/Admin/Settings/SettingsPage.php:384
 #: dist/upsellbay/app/Admin/Offers/OffersPage.php:120
 #: dist/upsellbay/app/Admin/Settings/SettingsPage.php:363
 msgid "Status"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:122
+#: app/Admin/Offers/OffersPage.php:135
 #: dist/upsellbay/app/Admin/Offers/OffersPage.php:124
 msgid "Revenue"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:131
+#: app/Admin/Offers/OffersPage.php:144
 #: dist/upsellbay/app/Admin/Offers/OffersPage.php:133
 msgid "Edit"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:156
+#: app/Admin/Offers/OffersPage.php:169
 #: app/Admin/Settings/SettingsPage.php:535
 #: app/Domain/Offers/OfferSchema.php:86
 #: dist/upsellbay/app/Admin/Offers/OffersPage.php:158
@@ -613,13 +630,6 @@ msgstr ""
 #: dist/upsellbay/app/Admin/Settings/DataSection.php:33
 #: dist/upsellbay/app/Admin/Settings/SettingsPage.php:264
 msgid "Data"
-msgstr ""
-
-#: app/Admin/Settings/GeneralSection.php:33
-#: app/Admin/Settings/SettingsPage.php:243
-#: dist/upsellbay/app/Admin/Settings/GeneralSection.php:33
-#: dist/upsellbay/app/Admin/Settings/SettingsPage.php:228
-msgid "General"
 msgstr ""
 
 #: app/Admin/Settings/SettingsPage.php:149
@@ -992,27 +1002,27 @@ msgstr ""
 msgid "License check failed: inactive."
 msgstr ""
 
-#: app/Core/Plugin.php:542
+#: app/Core/Plugin.php:558
 #: dist/upsellbay/app/Core/Plugin.php:563
 msgid "Your UpsellBay license has expired. Renew your license to restore updates and support."
 msgstr ""
 
-#: app/Core/Plugin.php:543
+#: app/Core/Plugin.php:559
 #: dist/upsellbay/app/Core/Plugin.php:564
 msgid "The UpsellBay license key on this site is invalid. Please verify and re-enter your license key."
 msgstr ""
 
-#: app/Core/Plugin.php:544
+#: app/Core/Plugin.php:560
 #: dist/upsellbay/app/Core/Plugin.php:565
 msgid "UpsellBay could not verify your license because the license server is unreachable. Offers will keep running, but updates and support checks are suspended."
 msgstr ""
 
-#: app/Core/Plugin.php:545
+#: app/Core/Plugin.php:561
 #: dist/upsellbay/app/Core/Plugin.php:566
 msgid "UpsellBay license is not activated. Activate your license key to receive updates and support."
 msgstr ""
 
-#: app/Core/Plugin.php:557
+#: app/Core/Plugin.php:575
 #: dist/upsellbay/app/Core/Plugin.php:579
 msgid "Manage License"
 msgstr ""

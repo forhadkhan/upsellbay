@@ -48,6 +48,15 @@ final class OfferEditPage {
 	private OfferDefaults $defaults;
 
 	/**
+	 * Offers section navigation.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var OfferSectionNavigation
+	 */
+	private OfferSectionNavigation $section_navigation;
+
+	/**
 	 * Capability callback.
 	 *
 	 * @var callable(): bool
@@ -66,18 +75,20 @@ final class OfferEditPage {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param OfferService       $service      Offer service.
-	 * @param OfferValidator     $validator    Offer validator.
-	 * @param callable|null      $can_manage   Capability callback.
-	 * @param callable|null      $verify_nonce Nonce callback.
-	 * @param OfferDefaults|null $defaults Offer defaults.
+	 * @param OfferService                $service            Offer service.
+	 * @param OfferValidator              $validator          Offer validator.
+	 * @param callable|null               $can_manage         Capability callback.
+	 * @param callable|null               $verify_nonce       Nonce callback.
+	 * @param OfferDefaults|null          $defaults           Offer defaults.
+	 * @param OfferSectionNavigation|null $section_navigation Offers section navigation.
 	 */
-	public function __construct( OfferService $service, OfferValidator $validator, ?callable $can_manage = null, ?callable $verify_nonce = null, ?OfferDefaults $defaults = null ) {
-		$this->service      = $service;
-		$this->validator    = $validator;
-		$this->defaults     = $defaults ?? new OfferDefaults();
-		$this->can_manage   = $can_manage ?? static fn (): bool => function_exists( 'current_user_can' ) && current_user_can( 'manage_woocommerce' ); // phpcs:ignore WordPress.WP.Capabilities.Unknown
-		$this->verify_nonce = $verify_nonce ?? static fn ( string $nonce ): bool => function_exists( 'wp_verify_nonce' ) && (bool) wp_verify_nonce( $nonce, 'upsellbay_save_offer' );
+	public function __construct( OfferService $service, OfferValidator $validator, ?callable $can_manage = null, ?callable $verify_nonce = null, ?OfferDefaults $defaults = null, ?OfferSectionNavigation $section_navigation = null ) {
+		$this->service            = $service;
+		$this->validator          = $validator;
+		$this->defaults           = $defaults ?? new OfferDefaults();
+		$this->section_navigation = $section_navigation ?? new OfferSectionNavigation();
+		$this->can_manage         = $can_manage ?? static fn (): bool => function_exists( 'current_user_can' ) && current_user_can( 'manage_woocommerce' ); // phpcs:ignore WordPress.WP.Capabilities.Unknown
+		$this->verify_nonce       = $verify_nonce ?? static fn ( string $nonce ): bool => function_exists( 'wp_verify_nonce' ) && (bool) wp_verify_nonce( $nonce, 'upsellbay_save_offer' );
 	}
 
 	/**
@@ -275,6 +286,8 @@ final class OfferEditPage {
 	 * @since 1.0.0
 	 */
 	public function render_content(): void {
+		$this->section_navigation->render( 'add_offer' );
+
 		echo '<h2 class="wp-heading-inline">' . esc_html__( 'Add UpsellBay Offer', 'upsellbay' ) . '</h2>';
 		echo '<hr class="wp-header-end">';
 		echo '<form method="post">';

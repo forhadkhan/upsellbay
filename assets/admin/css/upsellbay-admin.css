@@ -85,6 +85,11 @@
 	padding-top: 14px;
 }
 
+.upsellbay-offers-section-menu {
+	margin-bottom: 16px !important;
+	margin-top: 0;
+}
+
 .upsellbay-admin .upsellbay-tabs {
 	background: #fff;
 	border-bottom: 1px solid #dcdcde;

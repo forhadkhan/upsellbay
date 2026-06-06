@@ -287,6 +287,7 @@ foreach (
 		'app/Admin/OverviewSummary.php',
 		'app/Admin/Dashboard/DashboardPage.php',
 		'app/Admin/Offers/OfferListTable.php',
+		'app/Admin/Offers/OfferSectionNavigation.php',
 		'app/Admin/Offers/OffersPage.php',
 		'app/Admin/Offers/OfferEditPage.php',
 		'app/Admin/Settings/SettingsSectionInterface.php',

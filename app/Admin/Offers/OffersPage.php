@@ -25,14 +25,25 @@ final class OffersPage {
 	private OfferListTable $table;
 
 	/**
+	 * Offers section navigation.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var OfferSectionNavigation
+	 */
+	private OfferSectionNavigation $section_navigation;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param OfferListTable $table Offer list table.
+	 * @param OfferListTable              $table              Offer list table.
+	 * @param OfferSectionNavigation|null $section_navigation Offers section navigation.
 	 */
-	public function __construct( OfferListTable $table ) {
-		$this->table = $table;
+	public function __construct( OfferListTable $table, ?OfferSectionNavigation $section_navigation = null ) {
+		$this->table              = $table;
+		$this->section_navigation = $section_navigation ?? new OfferSectionNavigation();
 	}
 
 	/**
@@ -90,7 +101,7 @@ final class OffersPage {
 	public function render_content(): void {
 		$rows = $this->rows();
 
-		echo '<a href="' . esc_url( 'admin.php?page=upsellbay&tab=offers&action=edit' ) . '" class="button button-primary upsellbay-offers-add-button">' . esc_html__( 'Add offer', 'upsellbay' ) . '</a>';
+		$this->section_navigation->render( 'general' );
 
 		/**
 		 * Fires after the native Offers header, before list-table notices.

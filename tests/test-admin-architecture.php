@@ -444,6 +444,28 @@ function upsellbay_admin_architecture_tests(): array {
 			assert_true( strpos( $html, 'upsellbay-offers-add-button' ) < strpos( $html, 'upsellbay-offers-notice' ) );
 			assert_true( strpos( $html, 'upsellbay-offers-notice' ) < strpos( $html, 'No UpsellBay offers yet' ) );
 		},
+		'offers tab renders native section links above list and editor content' => static function (): void {
+			$repository = upsellbay_test_offer_repository( array() );
+			$validator  = new OfferValidator( new OfferSchema(), static fn (): bool => true );
+			$service    = new OfferService( $repository, $validator );
+
+			ob_start();
+			( new OffersPage( new OfferListTable( $repository, $service ) ) )->render_content();
+			$list_html = (string) ob_get_clean();
+
+			ob_start();
+			( new OfferEditPage( $service, $validator ) )->render_content();
+			$editor_html = (string) ob_get_clean();
+
+			assert_contains( 'subsubsub upsellbay-offers-section-menu', $list_html );
+			assert_contains( 'admin.php?page=upsellbay&amp;tab=offers" class="current" aria-current="page">General</a>', $list_html );
+			assert_contains( 'admin.php?page=upsellbay&amp;tab=offers&amp;action=edit">Add Offer</a>', $list_html );
+			assert_true( strpos( $list_html, 'upsellbay-offers-section-menu' ) < strpos( $list_html, 'upsellbay-offers-add-button' ) );
+
+			assert_contains( 'admin.php?page=upsellbay&amp;tab=offers">General</a>', $editor_html );
+			assert_contains( 'admin.php?page=upsellbay&amp;tab=offers&amp;action=edit" class="current" aria-current="page">Add Offer</a>', $editor_html );
+			assert_true( strpos( $editor_html, 'upsellbay-offers-section-menu' ) < strpos( $editor_html, 'Add UpsellBay Offer' ) );
+		},
 		'offer editor shell sanitizes and validates submitted fields' => static function (): void {
 			$saved      = array();
 			$repository = upsellbay_test_offer_repository( array(), $saved );
