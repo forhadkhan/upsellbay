@@ -20,12 +20,14 @@ The implementation layout follows PRD v4, the folder structure plan, and the pha
 | `app/Core/Installer.php` | Activation, deactivation, upgrade shell, stats table migration, scheduled action setup. | Phase 1 and Phase 2 | Constants, stats schema, Action Scheduler. |
 | `app/Core/Settings.php` | Settings defaults, normalization, option access. | Phase 1 and Phase 2 | Single `upsellbay_settings` option. |
 | `app/Admin/Offers/*` | WP list table and offer editor surfaces. | Phase 3 | Offer repository and validator. |
-| `app/Admin/Settings/*` | Woo-native settings sections and tools. | Phase 3 | Settings service, capability and nonce checks. |
+| `app/Admin/Settings/*` | Woo-native settings sections, section navigation (`SettingsSectionNavigation`), and tools. `BasicSection` replaces the former `GeneralSection`. | Phase 3 | Settings service, capability and nonce checks. |
 | `app/Admin/Wizard/*` | First-run wizard. | Phase 5 | Offer service and test mode. |
 | `app/Admin/Dashboard/*` | Dashboard overview and aggregate analytics section. | Phase 3 and Phase 4 | Overview summary, analytics service, and stats repository. |
 | `app/Admin/Coexistence.php` | Optional CartBay coexistence guidance without data access. | Phase 3 | Identifier isolation rules. |
 | `app/Admin/CompatibilityNotice.php` | Known conflict notices. | Phase 3 and Phase 4 | Compatibility matrix. |
 | `app/Admin/AdminBar.php` | Admin-only test mode indicator. | Phase 3 and Phase 5 | Settings service. |
+| `app/Admin/AdminPage.php` | Unified WooCommerce submenu page shell with tab routing. Renders the layout header with `Get Started` and `Add Offer` action buttons, page notices, tab navigation, and active tab content. Owns the `admin_title` filter. | Phase 1 | Tab registry, tab router, tab navigation. |
+| `app/Admin/Navigation/TabFactory.php` | Registers all tabs. The setup tab is marked `is_visible = false` and labeled `Get started`. | Phase 1 | Dashboard, Offers, Settings, Tools, Wizard, Help page renderers. |
 | `app/Api/Routes/*` | REST route registration, permissions, validation, safe responses. | Phase 4 | Domain services, rate limiter, nonces. |
 | `app/Data/OfferRepository.php` | Private `upsellbay_offer` CPT and `_ub_` offer meta access. | Phase 2 | Constants and schema. |
 | `app/Data/StatsRepository.php` | Aggregate stats table reads/writes. | Phase 2 and Phase 4 | Installer migration. |

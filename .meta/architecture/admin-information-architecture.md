@@ -5,12 +5,12 @@ UpsellBay admin surfaces live under WooCommerce -> UpsellBay. Runtime code must 
 ## Surfaces
 
 - Dashboard / Overview: default landing tab with operational status, primary next actions, and aggregate offer performance loaded from `StatsRepository`.
-- Offers: primary offer list and offer management actions.
+- Offers: primary offer list and offer management actions, with WooCommerce-style section links for General and Add Offer actions.
 - Add/Edit Offer: internal Offers-tab action for native offer configuration and P0 rule rows.
-- Settings: general enablement, test mode, placements, style tokens, retention, and cleanup preferences.
+- Settings: WooCommerce-style subsubsub section links (General, Data, License) via `SettingsSectionNavigation`. The General section renders Basic enablement/test-mode/placement settings plus Style controls; Data renders retention and cleanup preferences; License renders protected license status and activation rows. Only the active section's `<h2>` and table rows are rendered — no hidden sections.
 - Tools: import/export validation, compatibility scan entry points, diagnostics, log controls, reconciliation trigger, and cleanup preview.
 - Help: concise routing to UpsellBay merchant, compatibility, data retention, developer, and support docs.
-- Setup: first-run setup belongs to Phase 5 and remains a Woo-native admin surface.
+- Setup: first-run setup remains a hidden tab (not shown in tab navigation). The `Get Started` button lives in the page header alongside the `Add Offer` action button, not as a tab label.
 
 ## Runtime Boundaries
 
