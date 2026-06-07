@@ -42,7 +42,7 @@ final class Constants {
 	public const SUPPORT_URL                     = 'https://wpanchorbay.com/support/';
 	public const LICENSE_SERVER_URL              = 'https://wpanchorbay.com/wp-json/license-server/v1';
 	public const SETTINGS_URL                    = 'admin.php?page=upsellbay&tab=settings';
-	public const SETTINGS_LICENSE_ACTIVATION_URL = 'admin.php?page=upsellbay&tab=settings#upsellbay_license_activate';
+	public const SETTINGS_LICENSE_ACTIVATION_URL = 'admin.php?page=upsellbay&tab=settings&section=license';
 	public const MIN_PHP_VERSION                 = '8.1';
 	public const MIN_WP_VERSION                  = '6.9';
 	public const MIN_WC_VERSION                  = '10.8';

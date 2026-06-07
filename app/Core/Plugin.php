@@ -403,7 +403,7 @@ final class Plugin {
 		}
 		$result = $this->container->get( LicenseClient::class )->activate( $license_key );
 
-		$redirect_url = admin_url( 'admin.php?page=upsellbay&tab=settings#upsellbay_license_activate' );
+		$redirect_url = admin_url( 'admin.php?page=upsellbay&tab=settings&section=license' );
 
 		if ( is_wp_error( $result ) ) {
 			$redirect_url = add_query_arg( 'wc_error', $result->get_error_message(), $redirect_url );
