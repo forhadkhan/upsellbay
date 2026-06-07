@@ -71,6 +71,12 @@ final class AdminAssets {
 			);
 		}
 
+		if ( 'settings' === $tab ) {
+			$assets['upsellbay-color-picker'] = array(
+				'type' => 'native-color-picker',
+			);
+		}
+
 		return $assets;
 	}
 
@@ -89,15 +95,41 @@ final class AdminAssets {
 		}
 
 		$this->enqueue_help_tip_assets();
+		$this->enqueue_color_picker_assets( $assets );
 
 		foreach ( $assets as $handle_suffix => $asset ) {
+			if ( 'native-color-picker' === ( $asset['type'] ?? '' ) ) {
+				continue;
+			}
+
 			$handle = Constants::asset_handle( str_replace( 'upsellbay-', '', $handle_suffix ) );
 			if ( isset( $asset['css'] ) && function_exists( 'wp_enqueue_style' ) ) {
 				wp_enqueue_style( $handle, plugins_url( $asset['css'], Constants::plugin_file() ), array(), Constants::VERSION );
 			}
 			if ( isset( $asset['js'] ) && function_exists( 'wp_enqueue_script' ) ) {
-				wp_enqueue_script( $handle, plugins_url( $asset['js'], Constants::plugin_file() ), array( 'jquery' ), Constants::VERSION, true );
+				$dependencies = array( 'jquery' );
+				if ( isset( $assets['upsellbay-color-picker'] ) && 'upsellbay-admin' === $handle_suffix ) {
+					$dependencies[] = 'wp-color-picker';
+				}
+				wp_enqueue_script( $handle, plugins_url( $asset['js'], Constants::plugin_file() ), $dependencies, Constants::VERSION, true );
 			}
+		}
+	}
+
+	/**
+	 * Enqueue WordPress's native color picker assets when the Settings tab needs them.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<string, array<string, string>> $assets Assets selected for the current screen.
+	 */
+	private function enqueue_color_picker_assets( array $assets ): void {
+		if ( ! isset( $assets['upsellbay-color-picker'] ) ) {
+			return;
+		}
+
+		if ( function_exists( 'wp_enqueue_style' ) ) {
+			wp_enqueue_style( 'wp-color-picker' );
 		}
 	}
 

@@ -1,1 +1,1 @@
-document.documentElement.classList.add("upsellbay-admin-ready");
+document.documentElement.classList.add("upsellbay-admin-ready"),window.jQuery(function(e){e.fn.wpColorPicker&&e(".upsellbay-color-picker").wpColorPicker()});

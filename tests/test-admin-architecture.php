@@ -573,6 +573,8 @@ function upsellbay_admin_architecture_tests(): array {
 			assert_contains( 'admin.php?page=upsellbay&amp;tab=settings&amp;section=license">License</a>', $general_html );
 			assert_contains( '<h2>Basic</h2>', $general_html );
 			assert_contains( '<h2>Style</h2>', $general_html );
+			assert_contains( 'class="upsellbay-color-picker"', $general_html );
+			assert_contains( 'data-default-color="#2271b1"', $general_html );
 			assert_false( str_contains( $general_html, '<h2>Data</h2>' ) );
 			assert_false( str_contains( $general_html, 'id="upsellbay_license_activate"' ) );
 
@@ -766,6 +768,10 @@ function upsellbay_admin_architecture_tests(): array {
 			assert_same(
 				array( 'upsellbay-admin', 'upsellbay-analytics' ),
 				array_keys( $assets->assets_for_screen( 'woocommerce_page_upsellbay', array( 'tab' => 'dashboard' ) ) )
+			);
+			assert_same(
+				array( 'upsellbay-admin', 'upsellbay-color-picker' ),
+				array_keys( $assets->assets_for_screen( 'woocommerce_page_upsellbay', array( 'tab' => 'settings' ) ) )
 			);
 			assert_same( array(), $assets->assets_for_screen( 'woocommerce_page_upsellbay-add-offer' ) );
 		},

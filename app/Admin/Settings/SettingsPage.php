@@ -295,7 +295,7 @@ final class SettingsPage {
 		echo '<h2>' . esc_html__( 'Style', 'upsellbay' ) . '</h2>';
 		echo '<table class="form-table upsellbay-settings-table" role="presentation"><tbody>';
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- help_tip() returns escaped WooCommerce help tip markup.
-		echo '<tr><th scope="row"><label for="upsellbay-accent-color">' . esc_html__( 'Accent color', 'upsellbay' ) . '</label> ' . $this->help_tip( __( 'Used for UpsellBay offer accents while preserving the theme and WooCommerce layout.', 'upsellbay' ) ) . '</th><td><input id="upsellbay-accent-color" name="accent_color" type="text" class="regular-text" value="' . esc_attr( (string) ( $style['accent_color'] ?? '#2271b1' ) ) . '"></td></tr>';
+		echo '<tr><th scope="row"><label for="upsellbay-accent-color">' . esc_html__( 'Accent color', 'upsellbay' ) . '</label> ' . $this->help_tip( __( 'Used for UpsellBay offer accents while preserving the theme and WooCommerce layout.', 'upsellbay' ) ) . '</th><td><input id="upsellbay-accent-color" name="accent_color" type="text" class="upsellbay-color-picker" value="' . esc_attr( (string) ( $style['accent_color'] ?? '#2271b1' ) ) . '" data-default-color="#2271b1"></td></tr>';
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- help_tip() returns escaped WooCommerce help tip markup.
 		echo '<tr><th scope="row"><label for="upsellbay-button-style">' . esc_html__( 'Button style', 'upsellbay' ) . '</label> ' . $this->help_tip( __( 'Theme buttons inherit the storefront button styling. Outline keeps the offer action visually lighter.', 'upsellbay' ) ) . '</th><td><select id="upsellbay-button-style" name="button_style">';
 		foreach (
