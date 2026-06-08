@@ -403,7 +403,7 @@ final class Plugin {
 		}
 		$result = $this->container->get( LicenseClient::class )->activate( $license_key );
 
-		$redirect_url = admin_url( 'admin.php?page=upsellbay&tab=settings&section=license' );
+		$redirect_url = admin_url( Constants::SETTINGS_LICENSE_ACTIVATION_URL );
 
 		if ( is_wp_error( $result ) ) {
 			$redirect_url = add_query_arg( 'wc_error', $result->get_error_message(), $redirect_url );
@@ -434,7 +434,7 @@ final class Plugin {
 		$redirect_url = add_query_arg(
 			'wc_message',
 			__( 'Local license data removed.', 'upsellbay' ),
-			admin_url( 'admin.php?page=upsellbay&tab=settings' )
+			admin_url( Constants::SETTINGS_LICENSE_ACTIVATION_URL )
 		);
 
 		wp_safe_redirect( $redirect_url );
@@ -456,7 +456,7 @@ final class Plugin {
 		check_admin_referer( 'upsellbay_check_license' );
 
 		$is_valid     = $this->container->get( LicenseClient::class )->is_valid();
-		$redirect_url = admin_url( 'admin.php?page=upsellbay&tab=settings' );
+		$redirect_url = admin_url( Constants::SETTINGS_LICENSE_ACTIVATION_URL );
 
 		if ( $is_valid ) {
 			$redirect_url = add_query_arg( 'wc_message', __( 'License check complete: valid.', 'upsellbay' ), $redirect_url );

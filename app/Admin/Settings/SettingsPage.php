@@ -244,8 +244,9 @@ final class SettingsPage {
 			$this->render_prepared_save_notice( true );
 		}
 
-		$settings       = $this->settings->all();
-		$active_section = $this->current_section( $request );
+		$settings           = $this->settings->all();
+		$active_section     = $this->current_section( $request );
+		$show_license_modal = 'license' === $active_section;
 
 		echo '<form method="post">';
 		if ( function_exists( 'wp_nonce_field' ) ) {
@@ -263,6 +264,10 @@ final class SettingsPage {
 
 		echo '<p class="submit"><button type="submit" class="button button-primary">' . esc_html__( 'Save changes', 'upsellbay' ) . '</button></p>';
 		echo '</form>';
+
+		if ( $show_license_modal ) {
+			$this->render_license_remove_confirmation_template();
+		}
 	}
 
 	/**
@@ -501,7 +506,7 @@ final class SettingsPage {
 			echo '<tr><th scope="row">' . esc_html__( 'Actions', 'upsellbay' ) . ' ' . $this->help_tip( __( 'Use these tools to verify the current license status or remove a stored key from this site.', 'upsellbay' ) ) . '</th>';
 			echo '<td>';
 			echo '<a href="' . esc_url( $check_url ) . '" class="button">' . esc_html__( 'Check License', 'upsellbay' ) . '</a> ';
-			echo '<a href="' . esc_url( $remove_url ) . '" class="button button-secondary upsellbay-button-danger" onclick="return confirm(\'' . esc_js( __( 'Removing this license disconnects this site from UpsellBay updates and support checks until a new key is activated. Offers will continue running.', 'upsellbay' ) ) . '\');">' . esc_html__( 'Remove License', 'upsellbay' ) . '</a>';
+			echo '<a href="' . esc_url( $remove_url ) . '" class="button button-secondary upsellbay-button-danger upsellbay-license-remove-trigger" data-modal-title="' . esc_attr__( 'Remove License', 'upsellbay' ) . '" data-modal-message="' . esc_attr__( 'Removing this license disconnects this site from UpsellBay updates and support checks until a new key is activated. Offers will continue running.', 'upsellbay' ) . '" data-modal-confirm="' . esc_attr__( 'Remove License', 'upsellbay' ) . '" data-modal-cancel="' . esc_attr__( 'Cancel', 'upsellbay' ) . '">' . esc_html__( 'Remove License', 'upsellbay' ) . '</a>';
 			echo '</td></tr>';
 		}
 
@@ -513,6 +518,36 @@ final class SettingsPage {
 		echo ' <button type="submit" name="upsellbay_activate_license" value="1" class="button button-primary">' . esc_html__( 'Activate License', 'upsellbay' ) . '</button>';
 		echo '<p class="description">' . esc_html__( 'Leave blank to keep the existing key unchanged.', 'upsellbay' ) . '</p>';
 		echo '</td></tr>';
+	}
+
+	/**
+	 * Render the WooCommerce Backbone confirmation template for license removal.
+	 *
+	 * @since 1.0.0
+	 */
+	private function render_license_remove_confirmation_template(): void {
+		echo '<script type="text/template" id="tmpl-upsellbay-confirmation-modal">';
+		echo '<div class="wc-backbone-modal upsellbay-confirmation-modal">';
+		echo '<div class="wc-backbone-modal-content">';
+		echo '<section class="wc-backbone-modal-main" role="main">';
+		echo '<header class="wc-backbone-modal-header">';
+		echo '<h1>{{ data.title }}</h1>';
+		echo '<button type="button" class="modal-close modal-close-link dashicons dashicons-no-alt">';
+		echo '<span class="screen-reader-text">' . esc_html__( 'Close modal panel', 'upsellbay' ) . '</span>';
+		echo '</button>';
+		echo '</header>';
+		echo '<form>';
+		echo '<article><p>{{ data.message }}</p></article>';
+		echo '<footer><div class="inner">';
+		echo '<button type="button" class="button button-large upsellbay-confirmation-cancel">{{ data.cancel }}</button>';
+		echo '<button type="button" class="button button-large button-primary upsellbay-button-danger upsellbay-confirmation-confirm" data-url="{{ data.url }}">{{ data.confirm }}</button>';
+		echo '</div></footer>';
+		echo '</form>';
+		echo '</section>';
+		echo '</div>';
+		echo '</div>';
+		echo '<div class="wc-backbone-modal-backdrop modal-close"></div>';
+		echo '</script>';
 	}
 
 	/**

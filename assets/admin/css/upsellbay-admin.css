@@ -264,6 +264,26 @@
 	border-color: #a00 !important;
 }
 
+.upsellbay-confirmation-modal footer .inner {
+	display: flex;
+	gap: 8px;
+	justify-content: flex-end;
+}
+
+.upsellbay-confirmation-modal .upsellbay-confirmation-confirm.upsellbay-button-danger,
+.upsellbay-confirmation-modal .upsellbay-confirmation-confirm.upsellbay-button-danger:active {
+	background: #b32d2e !important;
+	border-color: #b32d2e !important;
+	color: #fff !important;
+}
+
+.upsellbay-confirmation-modal .upsellbay-confirmation-confirm.upsellbay-button-danger:hover,
+.upsellbay-confirmation-modal .upsellbay-confirmation-confirm.upsellbay-button-danger:focus {
+	background: #8a2424 !important;
+	border-color: #8a2424 !important;
+	color: #fff !important;
+}
+
 .upsellbay-button-group .button {
 	border-radius: 0;
 	margin-left: -1px;

@@ -35,7 +35,7 @@ final class AdminAssets {
 	 *
 	 * @param string               $screen_id Screen ID.
 	 * @param array<string, mixed> $request Request context.
-	 * @return array<string, array<string, string>>
+	 * @return array<string, array<string, mixed>>
 	 */
 	public function assets_for_screen( string $screen_id, array $request = array() ): array {
 		if ( ! str_starts_with( $screen_id, 'woocommerce_page_upsellbay' ) ) {
@@ -51,6 +51,7 @@ final class AdminAssets {
 				'type' => 'style-script',
 				'css'  => 'assets/admin/css/upsellbay-admin.css',
 				'js'   => 'assets/admin/js/upsellbay-admin.js',
+				'deps' => array( 'jquery' ),
 			),
 		);
 
@@ -75,6 +76,8 @@ final class AdminAssets {
 			$assets['upsellbay-color-picker'] = array(
 				'type' => 'native-color-picker',
 			);
+
+			$assets['upsellbay-admin']['deps'] = array( 'jquery', 'wp-color-picker', 'wp-util', 'wc-backbone-modal' );
 		}
 
 		return $assets;
@@ -107,9 +110,10 @@ final class AdminAssets {
 				wp_enqueue_style( $handle, plugins_url( $asset['css'], Constants::plugin_file() ), array(), Constants::VERSION );
 			}
 			if ( isset( $asset['js'] ) && function_exists( 'wp_enqueue_script' ) ) {
-				$dependencies = array( 'jquery' );
+				$dependencies = isset( $asset['deps'] ) && is_array( $asset['deps'] ) ? $asset['deps'] : array( 'jquery' );
 				if ( isset( $assets['upsellbay-color-picker'] ) && 'upsellbay-admin' === $handle_suffix ) {
 					$dependencies[] = 'wp-color-picker';
+					$dependencies   = array_values( array_unique( $dependencies ) );
 				}
 				wp_enqueue_script( $handle, plugins_url( $asset['js'], Constants::plugin_file() ), $dependencies, Constants::VERSION, true );
 			}

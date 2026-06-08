@@ -620,7 +620,7 @@ function upsellbay_admin_architecture_tests(): array {
 			$page->render_content( array( 'section' => 'license' ) );
 			$html = (string) ob_get_clean();
 
-			assert_same( 1, substr_count( $html, '<form' ) );
+			assert_same( 1, substr_count( $html, '<form method="post"' ) );
 			assert_contains( 'id="upsellbay_license_activate"', $html );
 			assert_contains( 'name="upsellbay_new_license_key"', $html );
 			assert_contains( 'Activate License', $html );
@@ -636,6 +636,38 @@ function upsellbay_admin_architecture_tests(): array {
 			assert_same( 'active', $license_state['status'] );
 			assert_same( 'WPAB-ABCDEFGHIJKL-123456789012', $license_state['key'] );
 			assert_false( isset( $stored['license']['key'] ) );
+		},
+		'license admin actions redirect back to the license settings section' => static function (): void {
+			$plugin = (string) file_get_contents( dirname( __DIR__ ) . '/app/Core/Plugin.php' );
+
+			assert_true( substr_count( $plugin, 'admin_url( Constants::SETTINGS_LICENSE_ACTIVATION_URL )' ) >= 3 );
+			assert_false( str_contains( $plugin, "admin_url( 'admin.php?page=upsellbay&tab=settings' )" ) );
+		},
+		'settings license removal uses woocommerce confirmation modal data instead of inline confirm' => static function (): void {
+			$license = new LicenseClient(
+				static fn (): array => array(
+					'status' => 'active',
+					'key'    => 'WPAB-ABCDEFGHIJKL-123456789012',
+				),
+				static fn (): bool => true
+			);
+			$page    = new SettingsPage(
+				new Settings( static fn (): array => array(), static fn (): bool => true ),
+				$license,
+				static fn (): bool => true,
+				static fn (): bool => true
+			);
+
+			ob_start();
+			$page->render_content( array( 'section' => 'license' ) );
+			$html = (string) ob_get_clean();
+
+			assert_contains( 'upsellbay-license-remove-trigger', $html );
+			assert_contains( 'data-modal-title="Remove License"', $html );
+			assert_contains( 'data-modal-confirm="Remove License"', $html );
+			assert_contains( 'data-modal-cancel="Cancel"', $html );
+			assert_contains( 'id="tmpl-upsellbay-confirmation-modal"', $html );
+			assert_false( str_contains( $html, 'onclick="return confirm' ) );
 		},
 		'settings tab render processes posted license saves' => static function (): void {
 			$license_state = array();
@@ -772,6 +804,10 @@ function upsellbay_admin_architecture_tests(): array {
 			assert_same(
 				array( 'upsellbay-admin', 'upsellbay-color-picker' ),
 				array_keys( $assets->assets_for_screen( 'woocommerce_page_upsellbay', array( 'tab' => 'settings' ) ) )
+			);
+			assert_same(
+				array( 'jquery', 'wp-color-picker', 'wp-util', 'wc-backbone-modal' ),
+				$assets->assets_for_screen( 'woocommerce_page_upsellbay', array( 'tab' => 'settings' ) )['upsellbay-admin']['deps']
 			);
 			assert_same( array(), $assets->assets_for_screen( 'woocommerce_page_upsellbay-add-offer' ) );
 		},
