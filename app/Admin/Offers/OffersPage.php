@@ -101,14 +101,14 @@ final class OffersPage {
 	public function render_content(): void {
 		$rows = $this->rows();
 
-		$this->section_navigation->render( 'general' );
-
 		/**
-		 * Fires after the native Offers header, before list-table notices.
+		 * Fires before the Offers section navigation and list-table content.
 		 *
 		 * @since 1.0.0
 		 */
 		do_action( 'upsellbay_offers_header_after' );
+
+		$this->section_navigation->render( 'general' );
 
 		if ( array() === $rows ) {
 			$empty = $this->empty_state();

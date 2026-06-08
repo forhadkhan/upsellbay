@@ -116,9 +116,14 @@ function upsellbay_admin_architecture_tests(): array {
 			assert_contains( 'upsellbay-layout-header__heading', $html );
 			assert_contains( 'upsellbay-layout-header__actions', $html );
 			assert_contains( 'upsellbay-layout-header__tabs', $html );
+			assert_contains( '<h1 class="screen-reader-text">UpsellBay</h1>', $html );
+			assert_contains( '<div id="lost-connection-notice" class="notice error hidden"></div>', $html );
 			assert_contains( 'nav-tab-wrapper woo-nav-tab-wrapper', $html );
-			assert_true( strpos( $html, 'upsellbay-layout-header' ) < strpos( $html, 'nav-tab-wrapper' ) );
-			assert_true( strpos( $html, 'nav-tab-wrapper' ) < strpos( $html, 'upsellbay-tab-content' ) );
+			assert_true( strpos( $html, 'upsellbay-license-banner-slot' ) < strpos( $html, 'upsellbay-layout-header' ) );
+			assert_true( strpos( $html, 'upsellbay-layout-header' ) < strpos( $html, 'upsellbay-tab-content' ) );
+			assert_true( strpos( $html, 'upsellbay-tab-content' ) < strpos( $html, 'screen-reader-text' ) );
+			assert_true( strpos( $html, 'screen-reader-text' ) < strpos( $html, 'lost-connection-notice' ) );
+			assert_true( strpos( $html, 'lost-connection-notice' ) < strpos( $html, 'upsellbay-page-notices' ) );
 			assert_contains( 'Dashboard', $html );
 			assert_contains( 'admin.php?page=upsellbay&amp;tab=settings', $html );
 			assert_contains( 'Dashboard content', $html );
@@ -186,11 +191,12 @@ function upsellbay_admin_architecture_tests(): array {
 			$GLOBALS['upsellbay_test_hooks'] = $previous_hooks;
 
 			assert_contains( 'upsellbay-page-notices', $html );
-			assert_true( strpos( $html, 'upsellbay-page-notice' ) < strpos( $html, 'upsellbay-layout-header' ) );
+			assert_true( strpos( $html, 'upsellbay-layout-header' ) < strpos( $html, 'upsellbay-page-notice' ) );
 			assert_true( strpos( $html, 'upsellbay-layout-header__heading' ) < strpos( $html, 'nav-tab-wrapper' ) );
 			assert_true( strpos( $html, 'nav-tab-wrapper' ) < strpos( $html, 'upsellbay-tab-content' ) );
-			assert_true( strpos( $html, 'upsellbay-tab-content' ) < strpos( $html, 'upsellbay-offers-section-menu' ) );
-			assert_true( strpos( $html, 'upsellbay-offers-section-menu' ) < strpos( $html, 'upsellbay-offers-notice' ) );
+			assert_true( strpos( $html, 'upsellbay-tab-content' ) < strpos( $html, 'upsellbay-page-notice' ) );
+			assert_true( strpos( $html, 'upsellbay-page-notice' ) < strpos( $html, 'upsellbay-offers-notice' ) );
+			assert_true( strpos( $html, 'upsellbay-offers-notice' ) < strpos( $html, 'upsellbay-offers-section-menu' ) );
 		},
 		'admin header css styles page license banner and suppresses tab focus side borders' => static function (): void {
 			$root   = dirname( __DIR__ );
@@ -241,8 +247,8 @@ function upsellbay_admin_architecture_tests(): array {
 			$_GET = $previous_get;
 
 			assert_contains( 'License check failed: inactive.', $html );
-			assert_true( strpos( $html, 'License check failed: inactive.' ) < strpos( $html, 'upsellbay-layout-header' ) );
-			assert_true( strpos( $html, 'upsellbay-layout-header' ) < strpos( $html, 'upsellbay-tab-content' ) );
+			assert_true( strpos( $html, 'upsellbay-layout-header' ) < strpos( $html, 'License check failed: inactive.' ) );
+			assert_true( strpos( $html, 'License check failed: inactive.' ) > strpos( $html, 'upsellbay-tab-content' ) );
 			assert_true( strpos( $html, 'upsellbay-tab-content' ) < strpos( $html, 'Tools content' ) );
 		},
 		'settings save notice renders above the attached header instead of inside tab content' => static function (): void {
@@ -289,9 +295,9 @@ function upsellbay_admin_architecture_tests(): array {
 
 			assert_contains( 'Settings saved.', $html );
 			assert_contains( 'upsellbay-page-notices', $html );
-			assert_true( strpos( $html, 'Settings saved.' ) < strpos( $html, 'upsellbay-layout-header' ) );
-			assert_true( strpos( $html, 'upsellbay-tab-content' ) < strpos( $html, '<form method="post">' ) );
-			assert_false( strpos( $html, 'Settings saved.' ) > strpos( $html, 'upsellbay-tab-content' ) );
+			assert_true( strpos( $html, 'upsellbay-layout-header' ) < strpos( $html, 'Settings saved.' ) );
+			assert_true( strpos( $html, 'upsellbay-tab-content' ) < strpos( $html, 'Settings saved.' ) );
+			assert_true( strpos( $html, 'Settings saved.' ) < strpos( $html, '<form method="post">' ) );
 		},
 		'settings and tools page warnings stay in the top notice area' => static function (): void {
 			$tabs = array( 'settings', 'tools' );
@@ -329,10 +335,10 @@ function upsellbay_admin_architecture_tests(): array {
 				$content_position = strpos( $html, 'upsellbay-tab-content' );
 
 				assert_true( false !== $notice_position );
+				assert_true( $content_position < $notices_position );
 				assert_true( $notices_position < $notice_position );
-				assert_true( $notice_position < $header_position );
 				assert_true( $header_position < $content_position );
-				assert_false( $content_position < $notice_position );
+				assert_true( $content_position < $notice_position );
 			}
 		},
 		'tab factory owns admin section definitions and offer editor routing' => static function (): void {
@@ -419,7 +425,7 @@ function upsellbay_admin_architecture_tests(): array {
 			assert_true( $table->handle_row_action( 'duplicate', 11 ) );
 			assert_true( $table->handle_row_action( 'trash', 11 ) );
 		},
-		'offers page exposes a header-after hook for offers notices below the offers title' => static function (): void {
+		'offers page exposes a header-after hook for offers notices above the offers section nav' => static function (): void {
 			$previous_hooks = $GLOBALS['upsellbay_test_hooks'] ?? array();
 			$repository     = upsellbay_test_offer_repository( array() );
 			$page           = new OffersPage(
@@ -442,7 +448,7 @@ function upsellbay_admin_architecture_tests(): array {
 
 			$GLOBALS['upsellbay_test_hooks'] = $previous_hooks;
 
-			assert_true( strpos( $html, 'upsellbay-offers-section-menu' ) < strpos( $html, 'upsellbay-offers-notice' ) );
+			assert_true( strpos( $html, 'upsellbay-offers-notice' ) < strpos( $html, 'upsellbay-offers-section-menu' ) );
 			assert_true( strpos( $html, 'upsellbay-offers-notice' ) < strpos( $html, 'No UpsellBay offers yet' ) );
 		},
 		'offers tab renders native section links above list and editor content' => static function (): void {

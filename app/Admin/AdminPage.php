@@ -80,8 +80,17 @@ final class AdminPage {
 		do_action( 'upsellbay_admin_page_license_banner' );
 		echo '</div>';
 
+		$this->render_header( $active_tab );
+
+		echo '<div class="wrap woocommerce upsellbay-admin">';
+		echo '<div class="upsellbay-tab-content">';
+
+		echo '<h1 class="screen-reader-text">' . esc_html( $this->page_heading( $active_tab, $request ) ) . '</h1>';
+		echo '<div id="lost-connection-notice" class="notice error hidden"></div>';
+
 		/**
-		 * Fires above the attached UpsellBay page header and tab navigation.
+		 * Fires at the top of the active tab, before the attached page header,
+		 * tab navigation, and tab-local section navigation.
 		 *
 		 * @since 1.0.0
 		 */
@@ -89,9 +98,7 @@ final class AdminPage {
 		do_action( 'upsellbay_admin_page_heading_before' );
 		$this->render_redirect_notices();
 		echo '</div>';
-		$this->render_header( $active_tab );
-		echo '<div class="wrap woocommerce upsellbay-admin">';
-		echo '<div class="upsellbay-tab-content">';
+
 		$active_tab->render( $request );
 		echo '</div></div>';
 	}
