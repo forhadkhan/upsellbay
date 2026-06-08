@@ -20,12 +20,6 @@ $upsellbay_help_tip = static function ( string $text ): string {
 		<?php wp_nonce_field( 'upsellbay_wizard', 'nonce' ); ?>
 		<table class="form-table" role="presentation">
 			<tbody>
-			<tr>
-				<th scope="row"><label for="upsellbay-wizard-product"><?php esc_html_e( 'Offer product', 'upsellbay' ); ?></label> <?php echo $upsellbay_help_tip( __( 'Choose the product shoppers can add from the first offer. The draft is not shown to shoppers until published.', 'upsellbay' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $upsellbay_help_tip returns escaped WooCommerce help tip markup. ?></th>
-				<td>
-					<input id="upsellbay-wizard-product" name="offer_product_id" type="number" min="1" class="regular-text" required>
-				</td>
-			</tr>
 				<tr>
 					<th scope="row"><label for="upsellbay-wizard-placement"><?php esc_html_e( 'Placement', 'upsellbay' ); ?></label> <?php echo $upsellbay_help_tip( __( 'Start with the offer location you want to test first. You can change placement settings later in the offer editor.', 'upsellbay' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $upsellbay_help_tip returns escaped WooCommerce help tip markup. ?></th>
 					<td>
@@ -37,6 +31,17 @@ $upsellbay_help_tip = static function ( string $text ): string {
 						</select>
 					</td>
 				</tr>
+    			<tr>
+    				<th scope="row"><label for="upsellbay-wizard-product-search"><?php esc_html_e( 'Offer product', 'upsellbay' ); ?></label> <?php echo $upsellbay_help_tip( __( 'Choose the product shoppers can add from the first offer. The draft is not shown to shoppers until published.', 'upsellbay' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $upsellbay_help_tip returns escaped WooCommerce help tip markup. ?></th>
+    				<td>
+						<div class="upsellbay-product-selector" data-upsellbay-product-selector>
+    						<input id="upsellbay-wizard-product-search" type="text" class="regular-text" placeholder="<?php esc_attr_e( 'Search for a product...', 'upsellbay' ); ?>" autocomplete="off">
+							<input type="hidden" id="upsellbay-wizard-product" name="offer_product_id" required>
+							<div class="upsellbay-product-selector__results" data-upsellbay-results></div>
+							<div class="upsellbay-product-selector__selection" data-upsellbay-selection></div>
+						</div>
+    				</td>
+    			</tr>
 				<tr>
 					<th scope="row"><label for="upsellbay-wizard-headline"><?php esc_html_e( 'Headline', 'upsellbay' ); ?></label> <?php echo $upsellbay_help_tip( __( 'Keep this short and specific. It appears next to the offer product in the selected placement.', 'upsellbay' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $upsellbay_help_tip returns escaped WooCommerce help tip markup. ?></th>
 					<td><input id="upsellbay-wizard-headline" name="headline" type="text" class="regular-text"></td>

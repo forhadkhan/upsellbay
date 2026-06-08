@@ -325,7 +325,7 @@ final class OfferEditPage {
 		$labels = array(
 			'title'                    => __( 'Offer name', 'upsellbay' ),
 			'_ub_offer_type'           => __( 'Placement', 'upsellbay' ),
-			'_ub_offer_product_id'     => __( 'Offer product ID', 'upsellbay' ),
+			'_ub_offer_product_id'     => __( 'Offer product', 'upsellbay' ),
 			'_ub_headline'             => __( 'Headline', 'upsellbay' ),
 			'_ub_button_text'          => __( 'Button text', 'upsellbay' ),
 			'_ub_rules_match'          => __( 'Rule matching', 'upsellbay' ),
@@ -363,7 +363,16 @@ final class OfferEditPage {
 			echo '<select id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '"><option value="none">' . esc_html__( 'No discount', 'upsellbay' ) . '</option><option value="percent">' . esc_html__( 'Percentage', 'upsellbay' ) . '</option><option value="fixed">' . esc_html__( 'Fixed amount', 'upsellbay' ) . '</option></select>';
 		} elseif ( '_ub_show_image' === $field ) {
 			echo '<label><input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="checkbox" value="1" checked="checked"> ' . esc_html__( 'Show the WooCommerce product image when available.', 'upsellbay' ) . '</label>';
-		} elseif ( str_contains( $field, '_ids' ) || '_ub_offer_product_id' === $field || '_ub_priority' === $field ) {
+		} elseif ( '_ub_offer_product_id' === $field ) {
+			// This placeholder receives value from JS since PHP rendering lacks context here.
+			// It will be populated with the correct value and UI state via upsellbay-offer-editor.js.
+			echo '<div class="upsellbay-product-selector" data-upsellbay-product-selector>';
+			echo '<input id="upsellbay-' . esc_attr( $field ) . '-search" type="text" class="regular-text" placeholder="' . esc_attr__( 'Search for a product...', 'upsellbay' ) . '" autocomplete="off">';
+			echo '<input type="hidden" id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" required>';
+			echo '<div class="upsellbay-product-selector__results" data-upsellbay-results></div>';
+			echo '<div class="upsellbay-product-selector__selection" data-upsellbay-selection></div>';
+			echo '</div>';
+		} elseif ( str_contains( $field, '_ids' ) || '_ub_priority' === $field ) {
 			echo '<input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="number" class="regular-text" min="0">';
 		} elseif ( '_ub_rules' === $field || '_ub_placement_config' === $field ) {
 			echo '<textarea id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" class="large-text code" rows="3"></textarea>';

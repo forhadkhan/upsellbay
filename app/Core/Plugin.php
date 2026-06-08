@@ -28,8 +28,10 @@ use WPAnchorBay\UpsellBay\Admin\PreviewLinks;
 use WPAnchorBay\UpsellBay\Admin\Settings\SettingsPage;
 use WPAnchorBay\UpsellBay\Admin\Tools\ToolsPage;
 use WPAnchorBay\UpsellBay\Admin\Wizard\WizardController;
+use WPAnchorBay\UpsellBay\Api\ProductsController;
 use WPAnchorBay\UpsellBay\Api\Routes\LicenseRoute;
 use WPAnchorBay\UpsellBay\Api\Routes\OfferPreviewRoute;
+use WPAnchorBay\UpsellBay\Api\Routes\ProductsRoute;
 use WPAnchorBay\UpsellBay\Api\Routes\PublicOfferRoutes;
 use WPAnchorBay\UpsellBay\Data\CartSession;
 use WPAnchorBay\UpsellBay\Data\OfferRepository;
@@ -215,6 +217,8 @@ final class Plugin {
 				$container->get( AnalyticsService::class )
 			)
 		);
+		$this->container->set( ProductsController::class, static fn (): ProductsController => new ProductsController() );
+		$this->container->set( ProductsRoute::class, static fn ( Container $container ): ProductsRoute => new ProductsRoute( $container->get( ProductsController::class ) ) );
 		$this->container->set( OfferPreviewRoute::class, static fn ( Container $container ): OfferPreviewRoute => new OfferPreviewRoute( $container->get( OfferService::class ) ) );
 		$this->container->set( CheckoutFields::class, static fn (): CheckoutFields => new CheckoutFields() );
 		$this->container->set( BlockCheckoutIntegration::class, static fn (): BlockCheckoutIntegration => new BlockCheckoutIntegration() );
@@ -294,6 +298,7 @@ final class Plugin {
 		$this->container->get( StorefrontController::class )->register_hooks();
 
 		add_action( 'rest_api_init', array( $this->container->get( PublicOfferRoutes::class ), 'register_routes' ) );
+		add_action( 'rest_api_init', array( $this->container->get( ProductsRoute::class ), 'register_routes' ) );
 		add_action( 'rest_api_init', array( $this->container->get( OfferPreviewRoute::class ), 'register_routes' ) );
 		add_action( 'rest_api_init', array( $this, 'register_license_routes' ) );
 		add_action( Constants::hook_name( 'check_license' ), array( $this, 'check_license' ) );

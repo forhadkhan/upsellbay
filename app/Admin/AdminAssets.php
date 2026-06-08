@@ -62,6 +62,7 @@ final class AdminAssets {
 			$assets['upsellbay-offer-editor'] = array(
 				'type' => 'script',
 				'js'   => 'assets/admin/js/upsellbay-offer-editor.js',
+				'deps' => array( 'jquery', Constants::asset_handle( 'admin' ) ),
 			);
 		}
 
@@ -116,6 +117,17 @@ final class AdminAssets {
 					$dependencies   = array_values( array_unique( $dependencies ) );
 				}
 				wp_enqueue_script( $handle, plugins_url( $asset['js'], Constants::plugin_file() ), $dependencies, Constants::VERSION, true );
+
+				if ( 'upsellbay-admin' === $handle_suffix ) {
+					wp_localize_script(
+						$handle,
+						'upsellbay_data',
+						array(
+							'rest_url' => get_rest_url( null, '/' ),
+							'nonce'    => wp_create_nonce( 'wp_rest' ),
+						)
+					);
+				}
 			}
 		}
 	}
