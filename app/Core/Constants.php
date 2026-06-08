@@ -15,7 +15,7 @@ namespace WPAnchorBay\UpsellBay\Core;
  * @since 1.0.0
  */
 final class Constants {
-	public const VERSION                         = '0.1.0';
+	public const VERSION                         = '0.1.1';
 	public const DB_VERSION                      = '1';
 	public const NAMESPACE_ROOT                  = 'WPAnchorBay\\UpsellBay';
 	public const TEXT_DOMAIN                     = 'upsellbay';
