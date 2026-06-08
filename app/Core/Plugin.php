@@ -28,6 +28,7 @@ use WPAnchorBay\UpsellBay\Admin\PreviewLinks;
 use WPAnchorBay\UpsellBay\Admin\Settings\SettingsPage;
 use WPAnchorBay\UpsellBay\Admin\Tools\ToolsPage;
 use WPAnchorBay\UpsellBay\Admin\Wizard\WizardController;
+use WPAnchorBay\UpsellBay\Api\ProductsAjax;
 use WPAnchorBay\UpsellBay\Api\ProductsController;
 use WPAnchorBay\UpsellBay\Api\Routes\LicenseRoute;
 use WPAnchorBay\UpsellBay\Api\Routes\OfferPreviewRoute;
@@ -218,6 +219,7 @@ final class Plugin {
 			)
 		);
 		$this->container->set( ProductsController::class, static fn (): ProductsController => new ProductsController() );
+		$this->container->set( ProductsAjax::class, static fn (): ProductsAjax => new ProductsAjax() );
 		$this->container->set( ProductsRoute::class, static fn ( Container $container ): ProductsRoute => new ProductsRoute( $container->get( ProductsController::class ) ) );
 		$this->container->set( OfferPreviewRoute::class, static fn ( Container $container ): OfferPreviewRoute => new OfferPreviewRoute( $container->get( OfferService::class ) ) );
 		$this->container->set( CheckoutFields::class, static fn (): CheckoutFields => new CheckoutFields() );
@@ -296,6 +298,7 @@ final class Plugin {
 		$this->container->get( CompatibilityNotice::class )->register_hooks();
 		$this->container->get( BlockCheckoutIntegration::class )->register_hooks();
 		$this->container->get( StorefrontController::class )->register_hooks();
+		$this->container->get( ProductsAjax::class )->register();
 
 		add_action( 'rest_api_init', array( $this->container->get( PublicOfferRoutes::class ), 'register_routes' ) );
 		add_action( 'rest_api_init', array( $this->container->get( ProductsRoute::class ), 'register_routes' ) );

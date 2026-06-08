@@ -367,7 +367,10 @@ final class OfferEditPage {
 			// This placeholder receives value from JS since PHP rendering lacks context here.
 			// It will be populated with the correct value and UI state via upsellbay-offer-editor.js.
 			echo '<div class="upsellbay-product-selector" data-upsellbay-product-selector>';
+			echo '<div class="upsellbay-product-selector__input-wrapper">';
 			echo '<input id="upsellbay-' . esc_attr( $field ) . '-search" type="text" class="regular-text" placeholder="' . esc_attr__( 'Search for a product...', 'upsellbay' ) . '" autocomplete="off">';
+			echo '<button type="button" class="upsellbay-product-selector__clear" style="display: none;" title="' . esc_attr__( 'Clear search', 'upsellbay' ) . '">&times;</button>';
+			echo '</div>';
 			echo '<input type="hidden" id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" required>';
 			echo '<div class="upsellbay-product-selector__results" data-upsellbay-results></div>';
 			echo '<div class="upsellbay-product-selector__selection" data-upsellbay-selection></div>';

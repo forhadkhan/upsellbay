@@ -123,8 +123,10 @@ final class AdminAssets {
 						$handle,
 						'upsellbay_data',
 						array(
-							'rest_url' => get_rest_url( null, '/' ),
-							'nonce'    => wp_create_nonce( 'wp_rest' ),
+							'rest_url'   => get_rest_url( null, '/' ),
+							'ajax_url'   => admin_url( 'admin-ajax.php' ),
+							'nonce'      => wp_create_nonce( 'wp_rest' ),
+							'ajax_nonce' => wp_create_nonce( 'upsellbay_admin_ajax' ),
 						)
 					);
 				}

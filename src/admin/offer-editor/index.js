@@ -1,157 +1,232 @@
 /**
  * UpsellBay offer editor entry.
  */
-document.addEventListener( 'click', ( event ) => {
-	const button = event.target.closest( '[data-upsellbay-add-rule]' );
+document.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-upsellbay-add-rule]");
 
-	if ( ! button ) {
-		return;
-	}
+  if (!button) {
+    return;
+  }
 
-	event.preventDefault();
-	document.dispatchEvent( new CustomEvent( 'upsellbay:add-rule' ) );
-} );
+  event.preventDefault();
+  document.dispatchEvent(new CustomEvent("upsellbay:add-rule"));
+});
 
 /**
  * UpsellBay product selector.
  */
-window.jQuery( function ( $ ) {
-	const $selector = $( '[data-upsellbay-product-selector]' );
-	if ( ! $selector.length ) {
-		return;
-	}
+window.jQuery(function ($) {
+  const $selectors = $("[data-upsellbay-product-selector]");
+  if (!$selectors.length) {
+    return;
+  }
 
-	const $search = $selector.find( 'input[type="text"]' );
-	const $input = $selector.find( 'input[type="hidden"]' );
-	const $results = $selector.find( '[data-upsellbay-results]' );
-	const $selection = $selector.find( '[data-upsellbay-selection]' );
+  $selectors.each(function () {
+    const $selector = $(this);
+    const $inputWrapper = $selector.find(
+      ".upsellbay-product-selector__input-wrapper",
+    );
+    const $search = $selector.find('input[type="text"]');
+    const $clear = $selector.find(".upsellbay-product-selector__clear");
+    const $input = $selector.find('input[type="hidden"]');
+    const $results = $selector.find("[data-upsellbay-results]");
+    const $selection = $selector.find("[data-upsellbay-selection]");
 
-	let searchTimeout = null;
+    let searchTimeout = null;
+    let page = 1;
+    let isLoading = false;
+    let hasMore = true;
+    let currentSearch = "";
+    let hasOpened = false;
 
-	$search.on( 'input', function () {
-		const query = $( this ).val();
+    function fetchProducts(append = false) {
+      if (isLoading || (append && !hasMore)) {
+        return;
+      }
 
-		clearTimeout( searchTimeout );
-		if ( query.length < 3 ) {
-			$results.empty().removeClass( 'is-active' );
-			return;
-		}
+      isLoading = true;
 
-		searchTimeout = setTimeout( () => {
-			$.ajax( {
-				url: `${ window.upsellbay_data.rest_url }upsellbay/v1/products`,
-				data: { search: query },
-				beforeSend: ( xhr ) => {
-					xhr.setRequestHeader( 'X-WP-Nonce', window.upsellbay_data.nonce );
-				},
-				success: ( response ) => {
-					$results.empty();
-					if ( response && response.length ) {
-						response.forEach( ( product ) => {
-							const $result = $( `
-								<div class="upsellbay-product-selector__result" data-id="${ product.id }">
-									<div class="upsellbay-product-selector__result-image">
-										${ product.image ? `<img src="${ product.image }" alt="">` : '' }
+      if (!append) {
+        $results.empty();
+        $results.append(
+          '<div class="upsellbay-product-selector__message">Loading...</div>',
+        );
+      } else {
+        $results.append(
+          '<div class="upsellbay-product-selector__loading-more">Loading more...</div>',
+        );
+      }
+
+      $.ajax({
+        url: window.upsellbay_data.ajax_url,
+        type: "POST",
+        data: {
+          action: "upsellbay_search_products",
+          nonce: window.upsellbay_data.ajax_nonce,
+          search: currentSearch,
+          page: page,
+        },
+        success: (response) => {
+          isLoading = false;
+          $results
+            .find(
+              ".upsellbay-product-selector__message, .upsellbay-product-selector__loading-more",
+            )
+            .remove();
+
+          if (response && response.success) {
+            hasMore = response.data.has_more;
+            const products = response.data.products;
+
+            if (products && products.length) {
+              products.forEach((product) => {
+                const skuText = product.sku ? `SKU: ${product.sku}` : "";
+                const $result = $(`
+									<div class="upsellbay-product-selector__result" data-id="${product.id}">
+										<div class="upsellbay-product-selector__result-image">
+											${product.image ? `<img src="${product.image}" alt="">` : ""}
+										</div>
+										<div class="upsellbay-product-selector__result-info">
+											<span class="upsellbay-product-selector__result-name">${product.name}</span>
+											<span class="upsellbay-product-selector__result-meta">${
+                        product.id ? `ID: ${product.id}` : ""
+                      } ${skuText ? `| ${skuText}` : ""}</span>
+										</div>
 									</div>
-									<div class="upsellbay-product-selector__result-info">
-										<span class="upsellbay-product-selector__result-name">${ product.name }</span>
-										<span class="upsellbay-product-selector__result-meta">ID: ${ product.id } | SKU: ${ product.sku || 'N/A' } | ${ product.price }</span>
-									</div>
-								</div>
-							` );
+								`);
 
-							$result.on( 'click', () => {
-								selectProduct( product );
-							} );
+                $result.on("click", () => {
+                  selectProduct(product);
+                });
 
-							$results.append( $result );
-						} );
-						$results.addClass( 'is-active' );
-					} else {
-						$results.removeClass( 'is-active' );
-					}
-				},
-			} );
-		}, 300 );
-	} );
+                $results.append($result);
+              });
+            } else if (!append) {
+              $results.append(
+                '<div class="upsellbay-product-selector__message">No products found.</div>',
+              );
+            }
+          } else {
+            if (!append) {
+              $results.append(
+                '<div class="upsellbay-product-selector__message upsellbay-product-selector__message--error">Error loading products.</div>',
+              );
+            }
+          }
+        },
+        error: () => {
+          isLoading = false;
+          $results
+            .find(
+              ".upsellbay-product-selector__message, .upsellbay-product-selector__loading-more",
+            )
+            .remove();
+          if (!append) {
+            $results.append(
+              '<div class="upsellbay-product-selector__message upsellbay-product-selector__message--error">Error loading products.</div>',
+            );
+          }
+        },
+      });
+    }
 
-	function selectProduct( product ) {
-		$input.val( product.id );
-		$search.val( '' ).hide();
-		$results.empty().removeClass( 'is-active' );
+    function selectProduct(product) {
+      $input.val(product.id);
+      $inputWrapper.hide();
+      $results.removeClass("is-active");
 
-		$selection.html( `
-			<div class="upsellbay-product-selector__result-image">
-				${ product.image ? `<img src="${ product.image }" alt="">` : '' }
-			</div>
-			<div class="upsellbay-product-selector__result-info">
-				<span class="upsellbay-product-selector__result-name">${ product.name }</span>
-				<span class="upsellbay-product-selector__result-meta">${ product.price }</span>
-			</div>
-			<span class="upsellbay-product-selector__selection-remove">&times;</span>
-		` ).addClass( 'is-active' );
+      $selection
+        .html(
+          `
+				<div class="upsellbay-product-selector__result-image">
+					${product.image ? `<img src="${product.image}" alt="">` : ""}
+				</div>
+				<div class="upsellbay-product-selector__result-info">
+					<span class="upsellbay-product-selector__result-name">${product.name}</span>
+					<span class="upsellbay-product-selector__result-meta">${
+            product.price || ""
+          }</span>
+				</div>
+				<span class="upsellbay-product-selector__selection-remove">&times;</span>
+			`,
+        )
+        .addClass("is-active");
 
-		$selection.find( '.upsellbay-product-selector__selection-remove' ).on( 'click', () => {
-			$input.val( '' );
-			$selection.empty().removeClass( 'is-active' );
-			$search.show().focus();
-		} );
-	}
+      $selection
+        .find(".upsellbay-product-selector__selection-remove")
+        .on("click", () => {
+          $input.val("");
+          $selection.empty().removeClass("is-active");
+          $inputWrapper.show();
+          $search.focus();
+        });
+    }
 
-	$( document ).on( 'click', ( e ) => {
-		if ( ! $( e.target ).closest( $selector ).length ) {
-			$results.removeClass( 'is-active' );
-		}
-	} );
-} );
+    $search.on("focus", function () {
+      $results.addClass("is-active");
+      if (!hasOpened) {
+        hasOpened = true;
+        fetchProducts(false);
+      }
+    });
 
-	// Initialization of product selector from PHP rendered value
-	jQuery( '.upsellbay-product-selector' ).each( function () {
-		const container = jQuery( this );
-		const input = container.find( 'input[type="hidden"]' );
-		const initialId = input.attr( 'value' ); // Read raw attribute in case it's set by PHP but not JS yet
+    $search.on("input", function () {
+      currentSearch = $(this).val();
 
-		if ( initialId && initialId !== '0' ) {
-			jQuery.ajax( {
-				url: window.upsellbay_data.rest_url + 'upsellbay/v1/products',
-				data: { include: initialId },
-				beforeSend: ( xhr ) => {
-					if ( window.upsellbay_data && window.upsellbay_data.nonce ) {
-						xhr.setRequestHeader( 'X-WP-Nonce', window.upsellbay_data.nonce );
-					}
-				},
-				success: ( response ) => {
-					if ( response && response.length ) {
-						// We have to scope the variables for this specific instance
-						const search = container.find( 'input[type="text"]' );
-						const results = container.find( '[data-upsellbay-results]' );
-						const selection = container.find( '[data-upsellbay-selection]' );
+      if (currentSearch.length > 0) {
+        $clear.show();
+      } else {
+        $clear.hide();
+      }
 
-						const product = response[0];
-						
-						// Reproducing selectProduct logic here to avoid scope issues in the loop
-						input.val( product.id );
-						search.val( '' ).hide();
-						results.empty().removeClass( 'is-active' );
+      clearTimeout(searchTimeout);
 
-						selection.html( '
-							<div class="upsellbay-product-selector__result-image">
-								' + ( product.image ? '<img src="' + product.image + '" alt="">' : '' ) + '
-							</div>
-							<div class="upsellbay-product-selector__result-info">
-								<span class="upsellbay-product-selector__result-name">' + product.name + '</span>
-								<span class="upsellbay-product-selector__result-meta">' + product.price + '</span>
-							</div>
-							<span class="upsellbay-product-selector__selection-remove">&times;</span>
-						' ).addClass( 'is-active' );
+      searchTimeout = setTimeout(() => {
+        page = 1;
+        hasMore = true;
+        fetchProducts(false);
+      }, 400);
+    });
 
-						selection.find( '.upsellbay-product-selector__selection-remove' ).on( 'click', () => {
-							input.val( '' );
-							selection.empty().removeClass( 'is-active' );
-							search.show().focus();
-						} );
-					}
-				},
-			} );
-		}
-	} );
+    $clear.on("click", function () {
+      $search.val("");
+      currentSearch = "";
+      $clear.hide();
+      page = 1;
+      hasMore = true;
+      fetchProducts(false);
+      $search.focus();
+    });
+
+    $results.on("scroll", function () {
+      const $this = $(this);
+      if (
+        $this[0].scrollHeight - $this.scrollTop() - $this.innerHeight() <
+        50
+      ) {
+        if (hasMore && !isLoading) {
+          page++;
+          fetchProducts(true);
+        }
+      }
+    });
+
+    // Initialization for pre-selected product removal handler
+    if ($selection.hasClass("is-active")) {
+      $selection
+        .find(".upsellbay-product-selector__selection-remove")
+        .on("click", () => {
+          $input.val("");
+          $selection.empty().removeClass("is-active");
+          $inputWrapper.show();
+          $search.focus();
+        });
+    }
+  });
+
+  $(document).on("click", (e) => {
+    if (!$(e.target).closest(".upsellbay-product-selector").length) {
+      $(".upsellbay-product-selector__results").removeClass("is-active");
+    }
+  });
+});
