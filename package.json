@@ -2,6 +2,7 @@
 	"name": "upsellbay",
 	"version": "0.1.0",
 	"private": true,
+	"sideEffects": true,
 	"description": "WooCommerce-native AOV offer engine assets.",
 	"scripts": {
 		"start": "wp-scripts start --config webpack.config.js",

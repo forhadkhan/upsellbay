@@ -95,4 +95,4 @@ GEMINI.md
 AGENTS.md
 .meta/
 .antigravitycli
-.generic-ui/
+.generic-ui/*.js.map

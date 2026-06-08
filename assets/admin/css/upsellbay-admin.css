@@ -191,7 +191,12 @@
 }
 
 .upsellbay-offer-editor__section {
+	overflow: visible;
 	padding: 16px;
+}
+
+.upsellbay-offer-editor__section .inside {
+	overflow: visible;
 }
 
 .upsellbay-overview-header {
