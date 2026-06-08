@@ -108,7 +108,12 @@ final class AdminAssets {
 
 			$handle = Constants::asset_handle( str_replace( 'upsellbay-', '', $handle_suffix ) );
 			if ( isset( $asset['css'] ) && function_exists( 'wp_enqueue_style' ) ) {
-				wp_enqueue_style( $handle, plugins_url( $asset['css'], Constants::plugin_file() ), array(), Constants::VERSION );
+				$css_version = Constants::VERSION;
+				$css_file    = dirname( Constants::plugin_file() ) . '/' . $asset['css'];
+				if ( file_exists( $css_file ) ) {
+					$css_version = (string) filemtime( $css_file );
+				}
+				wp_enqueue_style( $handle, plugins_url( $asset['css'], Constants::plugin_file() ), array(), $css_version );
 			}
 			if ( isset( $asset['js'] ) && function_exists( 'wp_enqueue_script' ) ) {
 				$dependencies = isset( $asset['deps'] ) && is_array( $asset['deps'] ) ? $asset['deps'] : array( 'jquery' );
@@ -116,7 +121,15 @@ final class AdminAssets {
 					$dependencies[] = 'wp-color-picker';
 					$dependencies   = array_values( array_unique( $dependencies ) );
 				}
-				wp_enqueue_script( $handle, plugins_url( $asset['js'], Constants::plugin_file() ), $dependencies, Constants::VERSION, true );
+
+				$version    = Constants::VERSION;
+				$asset_file = dirname( Constants::plugin_file() ) . '/' . str_replace( '.js', '.asset.php', $asset['js'] );
+				if ( file_exists( $asset_file ) ) {
+					$asset_data = require $asset_file;
+					$version    = $asset_data['version'] ?? $version;
+				}
+
+				wp_enqueue_script( $handle, plugins_url( $asset['js'], Constants::plugin_file() ), $dependencies, $version, true );
 
 				if ( 'upsellbay-admin' === $handle_suffix ) {
 					wp_localize_script(
