@@ -197,7 +197,7 @@ final class OfferEditPage {
 			'basics'    => array(
 				'label'     => __( 'Required basics', 'upsellbay' ),
 				'collapsed' => false,
-				'fields'    => array( 'title', '_ub_offer_type', '_ub_offer_product_id', '_ub_headline', '_ub_button_text' ),
+				'fields'    => array( 'title', '_ub_status', '_ub_offer_type', '_ub_offer_product_id', '_ub_headline', '_ub_body', '_ub_button_text' ),
 			),
 			'targeting' => array(
 				'label'     => __( 'Targeting rules', 'upsellbay' ),
@@ -216,7 +216,7 @@ final class OfferEditPage {
 			),
 			'schedule'  => array(
 				'label'     => __( 'Schedule and priority', 'upsellbay' ),
-				'collapsed' => true,
+				'collapsed' => false,
 				'fields'    => array( '_ub_start_at', '_ub_end_at', '_ub_priority' ),
 			),
 			'advanced'  => array(
@@ -344,6 +344,7 @@ final class OfferEditPage {
 			'_ub_offer_type'           => __( 'Placement', 'upsellbay' ),
 			'_ub_offer_product_id'     => __( 'Offer product', 'upsellbay' ),
 			'_ub_headline'             => __( 'Headline', 'upsellbay' ),
+			'_ub_body'                 => __( 'Body text', 'upsellbay' ),
 			'_ub_button_text'          => __( 'Button text', 'upsellbay' ),
 			'_ub_rules_match'          => __( 'Rule matching', 'upsellbay' ),
 			'_ub_rules'                => __( 'Rules', 'upsellbay' ),
@@ -351,6 +352,7 @@ final class OfferEditPage {
 			'_ub_discount_value'       => __( 'Discount value', 'upsellbay' ),
 			'_ub_show_image'           => __( 'Show product image', 'upsellbay' ),
 			'_ub_placement_config'     => __( 'Placement options', 'upsellbay' ),
+			'_ub_status'               => __( 'Status', 'upsellbay' ),
 			'_ub_start_at'             => __( 'Start date', 'upsellbay' ),
 			'_ub_end_at'               => __( 'End date', 'upsellbay' ),
 			'_ub_priority'             => __( 'Priority', 'upsellbay' ),
@@ -379,12 +381,29 @@ final class OfferEditPage {
 			echo '<option value="all" ' . selected( $value, 'all', false ) . '>' . esc_html__( 'All rules', 'upsellbay' ) . '</option>';
 			echo '<option value="any" ' . selected( $value, 'any', false ) . '>' . esc_html__( 'Any rule', 'upsellbay' ) . '</option>';
 			echo '</select>';
+		} elseif ( '_ub_status' === $field ) {
+			echo '<select id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '">';
+			foreach (
+				array(
+					'draft'  => __( 'Draft', 'upsellbay' ),
+					'active' => __( 'Active', 'upsellbay' ),
+					'paused' => __( 'Paused', 'upsellbay' ),
+				) as $option_val => $option_label
+			) {
+				echo '<option value="' . esc_attr( $option_val ) . '" ' . selected( $value, $option_val, false ) . '>' . esc_html( $option_label ) . '</option>';
+			}
+			echo '</select>';
+			echo '<p class="description">' . esc_html__( 'Draft offers are only visible in the admin. Active offers are shown to shoppers. Paused offers are temporarily hidden.', 'upsellbay' ) . '</p>';
 		} elseif ( '_ub_discount_type' === $field ) {
 			echo '<select id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '">';
 			echo '<option value="none" ' . selected( $value, 'none', false ) . '>' . esc_html__( 'No discount', 'upsellbay' ) . '</option>';
 			echo '<option value="percent" ' . selected( $value, 'percent', false ) . '>' . esc_html__( 'Percentage', 'upsellbay' ) . '</option>';
-			echo '<option value="fixed" ' . selected( $value, 'fixed', false ) . '>' . esc_html__( 'Fixed amount', 'upsellbay' ) . '</option>';
+			echo '<option value="fixed_amount" ' . selected( $value, 'fixed_amount', false ) . '>' . esc_html__( 'Fixed amount off', 'upsellbay' ) . '</option>';
+			echo '<option value="fixed_price" ' . selected( $value, 'fixed_price', false ) . '>' . esc_html__( 'Fixed offer price', 'upsellbay' ) . '</option>';
 			echo '</select>';
+		} elseif ( '_ub_body' === $field ) {
+			echo '<textarea id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" class="large-text" rows="3" maxlength="240">' . esc_textarea( (string) $value ) . '</textarea>';
+			echo '<p class="description">' . esc_html__( 'Optional short description shown below the headline. Max 240 characters. Supports limited HTML: links, line breaks, bold, italic.', 'upsellbay' ) . '</p>';
 		} elseif ( '_ub_show_image' === $field ) {
 			echo '<label><input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="checkbox" value="1" ' . checked( $value, true, false ) . '> ' . esc_html__( 'Show the WooCommerce product image when available.', 'upsellbay' ) . '</label>';
 		} elseif ( '_ub_offer_product_id' === $field ) {
@@ -414,9 +433,17 @@ final class OfferEditPage {
 			}
 			echo '</div>';
 			echo '</div>';
-		} elseif ( str_contains( $field, '_ids' ) || '_ub_priority' === $field ) {
+		} elseif ( '_ub_priority' === $field ) {
+			echo '<input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="number" class="small-text" min="0" step="1" value="' . esc_attr( (string) (int) $value ) . '">';
+			echo '<p class="description">' . esc_html__( 'Lower numbers appear first when multiple offers are eligible for the same placement.', 'upsellbay' ) . '</p>';
+		} elseif ( str_contains( $field, '_ids' ) ) {
 			$val_str = is_array( $value ) ? implode( ',', $value ) : $value;
 			echo '<input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="text" class="regular-text" value="' . esc_attr( (string) $val_str ) . '">';
+			if ( '_ub_trigger_product_ids' === $field ) {
+				echo '<p class="description">' . esc_html__( 'Comma-separated product IDs. When set, this offer only appears if one of these products is in the cart or being viewed.', 'upsellbay' ) . '</p>';
+			} elseif ( '_ub_trigger_category_ids' === $field ) {
+				echo '<p class="description">' . esc_html__( 'Comma-separated category IDs. When set, this offer only appears if a product from one of these categories is in the cart or being viewed.', 'upsellbay' ) . '</p>';
+			}
 		} elseif ( '_ub_rules' === $field || '_ub_placement_config' === $field ) {
 			$val_str = is_array( $value ) ? wp_json_encode( $value ) : $value;
 			echo '<textarea id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" class="large-text code" rows="3">' . esc_textarea( (string) $val_str ) . '</textarea>';
@@ -482,8 +509,8 @@ final class OfferEditPage {
 				'_ub_rules_match'          => $this->sanitize_key( (string) ( $request['_ub_rules_match'] ?? 'all' ) ),
 				'_ub_placement_config'     => array_map( array( $this, 'sanitize_text' ), $parse_json( $request['_ub_placement_config'] ?? null, $defaults['_ub_placement_config'] ) ),
 				'_ub_show_image'           => $show_image,
-				'_ub_start_at'             => null,
-				'_ub_end_at'               => null,
+				'_ub_start_at'             => $this->sanitize_text( (string) ( $request['_ub_start_at'] ?? '' ) ),
+				'_ub_end_at'               => $this->sanitize_text( (string) ( $request['_ub_end_at'] ?? '' ) ),
 				'_ub_priority'             => (int) ( $request['_ub_priority'] ?? 0 ),
 			)
 		);
