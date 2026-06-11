@@ -135,7 +135,7 @@ final class WizardController {
 
 		return array(
 			'success'  => true,
-			'message'  => __( 'First offer draft created.', 'upsellbay' ),
+			'message'  => __( 'The offer draft created.', 'upsellbay' ),
 			'offer_id' => $offer_id,
 		);
 	}
@@ -157,6 +157,14 @@ final class WizardController {
 	 * @since 1.0.0
 	 */
 	public function render_content(): void {
+		$result = null;
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'] && isset( $_POST['nonce'] ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$result = $this->complete( wp_unslash( $_POST ) );
+		}
+
 		$template = dirname( __DIR__, 3 ) . '/templates/admin/wizard.php';
 		if ( file_exists( $template ) ) {
 			include $template;

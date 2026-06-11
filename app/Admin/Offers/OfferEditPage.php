@@ -288,11 +288,26 @@ final class OfferEditPage {
 	public function render_content(): void {
 		$this->section_navigation->render( 'add_offer' );
 
-		echo '<h2 class="wp-heading-inline">' . esc_html__( 'Add UpsellBay Offer', 'upsellbay' ) . '</h2>';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$offer_id = isset( $_GET['offer_id'] ) ? (int) $_GET['offer_id'] : ( isset( $_GET['id'] ) ? (int) $_GET['id'] : 0 );
+		$offer    = null;
+
+		if ( $offer_id > 0 ) {
+			$offer = $this->service->get( $offer_id );
+		}
+
+		$meta  = $offer ? $offer['meta'] : $this->defaults->for_type( 'checkout_bump' );
+		$title = $offer ? $offer['title'] : '';
+
+		echo '<h2 class="wp-heading-inline">' . esc_html( $offer ? __( 'Edit UpsellBay Offer', 'upsellbay' ) : __( 'Add UpsellBay Offer', 'upsellbay' ) ) . '</h2>';
 		echo '<hr class="wp-header-end">';
 		echo '<form method="post">';
 		if ( function_exists( 'wp_nonce_field' ) ) {
 			wp_nonce_field( 'upsellbay_save_offer', 'nonce' );
+		}
+
+		if ( $offer_id > 0 ) {
+			echo '<input type="hidden" name="offer_id" value="' . esc_attr( (string) $offer_id ) . '">';
 		}
 
 		foreach ( $this->sections() as $section_id => $section ) {
@@ -304,7 +319,8 @@ final class OfferEditPage {
 			echo '<h2 class="hndle"><span>' . esc_html( $section['label'] ) . '</span></h2>';
 			echo '<div class="inside"><table class="form-table" role="presentation"><tbody>';
 			foreach ( $section['fields'] as $field ) {
-				$this->render_field_row( $field );
+				$value = 'title' === $field ? $title : ( $meta[ $field ] ?? '' );
+				$this->render_field_row( $field, $value );
 			}
 			echo '</tbody></table></div></div>';
 		}
@@ -320,8 +336,9 @@ final class OfferEditPage {
 	 * @since 1.0.0
 	 *
 	 * @param string $field Field key.
+	 * @param mixed  $value Field value.
 	 */
-	private function render_field_row( string $field ): void {
+	private function render_field_row( string $field, $value = '' ): void {
 		$labels = array(
 			'title'                    => __( 'Offer name', 'upsellbay' ),
 			'_ub_offer_type'           => __( 'Placement', 'upsellbay' ),
@@ -352,37 +369,61 @@ final class OfferEditPage {
 					'product_upsell' => __( 'Product page offer', 'upsellbay' ),
 					'cart_crosssell' => __( 'Cart offer', 'upsellbay' ),
 					'thankyou_offer' => __( 'Thank-you follow-on offer', 'upsellbay' ),
-				) as $value => $option_label
+				) as $option_val => $option_label
 			) {
-				echo '<option value="' . esc_attr( $value ) . '">' . esc_html( $option_label ) . '</option>';
+				echo '<option value="' . esc_attr( $option_val ) . '" ' . selected( $value, $option_val, false ) . '>' . esc_html( $option_label ) . '</option>';
 			}
 			echo '</select>';
 		} elseif ( '_ub_rules_match' === $field ) {
-			echo '<select id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '"><option value="all">' . esc_html__( 'All rules', 'upsellbay' ) . '</option><option value="any">' . esc_html__( 'Any rule', 'upsellbay' ) . '</option></select>';
+			echo '<select id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '">';
+			echo '<option value="all" ' . selected( $value, 'all', false ) . '>' . esc_html__( 'All rules', 'upsellbay' ) . '</option>';
+			echo '<option value="any" ' . selected( $value, 'any', false ) . '>' . esc_html__( 'Any rule', 'upsellbay' ) . '</option>';
+			echo '</select>';
 		} elseif ( '_ub_discount_type' === $field ) {
-			echo '<select id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '"><option value="none">' . esc_html__( 'No discount', 'upsellbay' ) . '</option><option value="percent">' . esc_html__( 'Percentage', 'upsellbay' ) . '</option><option value="fixed">' . esc_html__( 'Fixed amount', 'upsellbay' ) . '</option></select>';
+			echo '<select id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '">';
+			echo '<option value="none" ' . selected( $value, 'none', false ) . '>' . esc_html__( 'No discount', 'upsellbay' ) . '</option>';
+			echo '<option value="percent" ' . selected( $value, 'percent', false ) . '>' . esc_html__( 'Percentage', 'upsellbay' ) . '</option>';
+			echo '<option value="fixed" ' . selected( $value, 'fixed', false ) . '>' . esc_html__( 'Fixed amount', 'upsellbay' ) . '</option>';
+			echo '</select>';
 		} elseif ( '_ub_show_image' === $field ) {
-			echo '<label><input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="checkbox" value="1" checked="checked"> ' . esc_html__( 'Show the WooCommerce product image when available.', 'upsellbay' ) . '</label>';
+			echo '<label><input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="checkbox" value="1" ' . checked( $value, true, false ) . '> ' . esc_html__( 'Show the WooCommerce product image when available.', 'upsellbay' ) . '</label>';
 		} elseif ( '_ub_offer_product_id' === $field ) {
-			// This placeholder receives value from JS since PHP rendering lacks context here.
-			// It will be populated with the correct value and UI state via upsellbay-offer-editor.js.
 			echo '<div class="upsellbay-product-selector" data-upsellbay-product-selector>';
-			echo '<div class="upsellbay-product-selector__input-wrapper">';
+			echo '<div class="upsellbay-product-selector__input-wrapper" ' . ( $value ? 'style="display:none;"' : '' ) . '>';
 			echo '<input id="upsellbay-' . esc_attr( $field ) . '-search" type="text" class="regular-text" placeholder="' . esc_attr__( 'Search for a product...', 'upsellbay' ) . '" autocomplete="off">';
 			echo '<button type="button" class="upsellbay-product-selector__clear" style="display: none;" title="' . esc_attr__( 'Clear search', 'upsellbay' ) . '">&times;</button>';
 			echo '</div>';
-			echo '<input type="hidden" id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" required>';
+			echo '<input type="hidden" id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" value="' . esc_attr( (string) $value ) . '" required>';
 			echo '<div class="upsellbay-product-selector__results" data-upsellbay-results></div>';
-			echo '<div class="upsellbay-product-selector__selection" data-upsellbay-selection></div>';
+			echo '<div class="upsellbay-product-selector__selection' . ( $value ? ' is-active' : '' ) . '" data-upsellbay-selection>';
+			if ( $value && function_exists( 'wc_get_product' ) ) {
+				$product = wc_get_product( $value );
+				if ( $product ) {
+					echo '<div class="upsellbay-product-selector__result-image">';
+					$image = wp_get_attachment_image_url( $product->get_image_id(), 'thumbnail' );
+					if ( $image ) {
+						echo '<img src="' . esc_url( $image ) . '" alt="">';
+					}
+					echo '</div>';
+					echo '<div class="upsellbay-product-selector__result-info">';
+					echo '<span class="upsellbay-product-selector__result-name">' . esc_html( $product->get_name() ) . '</span>';
+					echo '<span class="upsellbay-product-selector__result-meta">' . wp_kses_post( $product->get_price_html() ) . '</span>';
+					echo '</div>';
+					echo '<span class="upsellbay-product-selector__selection-remove">&times;</span>';
+				}
+			}
+			echo '</div>';
 			echo '</div>';
 		} elseif ( str_contains( $field, '_ids' ) || '_ub_priority' === $field ) {
-			echo '<input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="number" class="regular-text" min="0">';
+			$val_str = is_array( $value ) ? implode( ',', $value ) : $value;
+			echo '<input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="text" class="regular-text" value="' . esc_attr( (string) $val_str ) . '">';
 		} elseif ( '_ub_rules' === $field || '_ub_placement_config' === $field ) {
-			echo '<textarea id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" class="large-text code" rows="3"></textarea>';
+			$val_str = is_array( $value ) ? wp_json_encode( $value ) : $value;
+			echo '<textarea id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" class="large-text code" rows="3">' . esc_textarea( (string) $val_str ) . '</textarea>';
 		} elseif ( '_ub_start_at' === $field || '_ub_end_at' === $field ) {
-			echo '<input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="datetime-local" class="regular-text">';
+			echo '<input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="datetime-local" class="regular-text" value="' . esc_attr( (string) $value ) . '">';
 		} else {
-			echo '<input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="text" class="regular-text">';
+			echo '<input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="text" class="regular-text" value="' . esc_attr( (string) $value ) . '">';
 		}
 
 		echo '</td></tr>';
@@ -401,22 +442,45 @@ final class OfferEditPage {
 			&& false !== $request['_ub_show_image']
 			&& '' !== (string) $request['_ub_show_image'];
 
+		$parse_ids = function ( $val ): array {
+			if ( is_array( $val ) ) {
+				return array_map( array( $this, 'positive_int' ), $val );
+			}
+			if ( is_string( $val ) && '' !== trim( $val ) ) {
+				return array_map( array( $this, 'positive_int' ), explode( ',', $val ) );
+			}
+			return array();
+		};
+
+		$parse_json = function ( $val, $fallback ) {
+			if ( is_array( $val ) ) {
+				return $val;
+			}
+			if ( is_string( $val ) && '' !== trim( $val ) ) {
+				$decoded = json_decode( wp_unslash( $val ), true );
+				if ( is_array( $decoded ) ) {
+					return $decoded;
+				}
+			}
+			return $fallback;
+		};
+
 		return array_replace(
 			$defaults,
 			array(
 				'_ub_offer_type'           => $offer_type,
 				'_ub_status'               => $this->sanitize_key( (string) ( $request['_ub_status'] ?? $defaults['_ub_status'] ) ),
 				'_ub_offer_product_id'     => (int) ( $request['_ub_offer_product_id'] ?? 0 ),
-				'_ub_trigger_product_ids'  => array_map( array( $this, 'positive_int' ), is_array( $request['_ub_trigger_product_ids'] ?? null ) ? $request['_ub_trigger_product_ids'] : array() ),
-				'_ub_trigger_category_ids' => array_map( array( $this, 'positive_int' ), is_array( $request['_ub_trigger_category_ids'] ?? null ) ? $request['_ub_trigger_category_ids'] : array() ),
+				'_ub_trigger_product_ids'  => $parse_ids( $request['_ub_trigger_product_ids'] ?? null ),
+				'_ub_trigger_category_ids' => $parse_ids( $request['_ub_trigger_category_ids'] ?? null ),
 				'_ub_discount_type'        => $this->sanitize_key( (string) ( $request['_ub_discount_type'] ?? $defaults['_ub_discount_type'] ) ),
 				'_ub_discount_value'       => (string) ( $request['_ub_discount_value'] ?? $defaults['_ub_discount_value'] ),
 				'_ub_headline'             => $this->sanitize_text( (string) ( $request['_ub_headline'] ?? $defaults['_ub_headline'] ) ),
 				'_ub_body'                 => $this->sanitize_html( (string) ( $request['_ub_body'] ?? $defaults['_ub_body'] ) ),
 				'_ub_button_text'          => $this->sanitize_text( (string) ( $request['_ub_button_text'] ?? $defaults['_ub_button_text'] ) ),
-				'_ub_rules'                => $this->normalize_rules( is_array( $request['_ub_rules'] ?? null ) ? $request['_ub_rules'] : array() ),
+				'_ub_rules'                => $this->normalize_rules( $parse_json( $request['_ub_rules'] ?? null, array() ) ),
 				'_ub_rules_match'          => $this->sanitize_key( (string) ( $request['_ub_rules_match'] ?? 'all' ) ),
-				'_ub_placement_config'     => is_array( $request['_ub_placement_config'] ?? null ) ? array_map( array( $this, 'sanitize_text' ), $request['_ub_placement_config'] ) : $defaults['_ub_placement_config'],
+				'_ub_placement_config'     => array_map( array( $this, 'sanitize_text' ), $parse_json( $request['_ub_placement_config'] ?? null, $defaults['_ub_placement_config'] ) ),
 				'_ub_show_image'           => $show_image,
 				'_ub_start_at'             => null,
 				'_ub_end_at'               => null,
