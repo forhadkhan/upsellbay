@@ -309,7 +309,7 @@ final class OfferEditPage {
 
 		echo '<h2 class="wp-heading-inline">' . esc_html( $offer ? __( 'Edit UpsellBay Offer', 'upsellbay' ) : __( 'Add UpsellBay Offer', 'upsellbay' ) ) . '</h2>';
 		echo '<hr class="wp-header-end">';
-		echo '<form method="post" id="upsellbay-offer-editor-form">';
+		echo '<form method="post">';
 		if ( function_exists( 'wp_nonce_field' ) ) {
 			wp_nonce_field( 'upsellbay_save_offer', 'nonce' );
 		}
@@ -324,7 +324,7 @@ final class OfferEditPage {
 				$classes .= ' closed';
 			}
 			echo '<div class="' . esc_attr( $classes ) . '" id="upsellbay-section-' . esc_attr( $section_id ) . '">';
-			echo '<h2 class="hndle"><span>' . esc_html( $section['label'] ) . '</span></h2>';
+			echo '<h2><span>' . esc_html( $section['label'] ) . '</span></h2>';
 			echo '<div class="inside"><table class="form-table" role="presentation"><tbody>';
 			foreach ( $section['fields'] as $field ) {
 				$value = 'title' === $field ? $title : ( $meta[ $field ] ?? '' );
@@ -333,11 +333,8 @@ final class OfferEditPage {
 			echo '</tbody></table></div></div>';
 		}
 
-		echo '<p class="submit">';
-		echo '<button type="submit" class="button button-primary">' . esc_html__( 'Save offer', 'upsellbay' ) . '</button> ';
-		echo '<button type="button" class="button" id="upsellbay-clear-offer-form">' . esc_html__( 'Clear fields', 'upsellbay' ) . '</button> ';
-		echo '<a class="button" href="' . esc_url( 'admin.php?page=upsellbay&tab=offers' ) . '">' . esc_html__( 'Back to offers', 'upsellbay' ) . '</a>';
-		echo '</p>';
+		echo '<p class="submit"><button type="submit" class="button button-primary">' . esc_html__( 'Save offer', 'upsellbay' ) . '</button> ';
+		echo '<a class="button" href="' . esc_url( 'admin.php?page=upsellbay&tab=offers' ) . '">' . esc_html__( 'Back to offers', 'upsellbay' ) . '</a></p>';
 		echo '</form>';
 	}
 
