@@ -26,9 +26,9 @@ window.jQuery(function ($) {
     const $inputWrapper = $selector.find(
       ".upsellbay-product-selector__input-wrapper",
     );
-    const $search = $selector.find('input[type="text"]');
+    const $search = $inputWrapper.find("input");
     const $clear = $selector.find(".upsellbay-product-selector__clear");
-    const $input = $selector.find('input[type="hidden"]');
+    const $input = $selector.children('input[type="hidden"]');
     const $results = $selector.find("[data-upsellbay-results]");
     const $selection = $selector.find("[data-upsellbay-selection]");
 
@@ -58,13 +58,14 @@ window.jQuery(function ($) {
       }
 
       $.ajax({
-        url: window.upsellbay_data.ajax_url,
-        type: "POST",
+        url: window.upsellbay_data.rest_url + "upsellbay/v1/products",
+        type: "GET",
         data: {
-          action: "upsellbay_search_products",
-          nonce: window.upsellbay_data.ajax_nonce,
           search: currentSearch,
           page: page,
+        },
+        beforeSend: function (xhr) {
+          xhr.setRequestHeader("X-WP-Nonce", window.upsellbay_data.nonce);
         },
         success: (response) => {
           isLoading = false;
@@ -74,9 +75,9 @@ window.jQuery(function ($) {
             )
             .remove();
 
-          if (response && response.success) {
-            hasMore = response.data.has_more;
-            const products = response.data.products;
+          if (Array.isArray(response)) {
+            hasMore = response.length >= 10;
+            const products = response;
 
             if (products && products.length) {
               products.forEach((product) => {
