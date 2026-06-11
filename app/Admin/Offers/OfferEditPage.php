@@ -423,7 +423,7 @@ final class OfferEditPage {
 			echo '<input id="upsellbay-' . esc_attr( $field ) . '-search" type="text" class="regular-text" placeholder="' . esc_attr__( 'Search for a product...', 'upsellbay' ) . '" autocomplete="off">';
 			echo '<button type="button" class="upsellbay-product-selector__clear" style="display: none;" title="' . esc_attr__( 'Clear search', 'upsellbay' ) . '">&times;</button>';
 			echo '</div>';
-			echo '<input type="hidden" id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" value="' . esc_attr( (string) $value ) . '" required>';
+			echo '<input type="hidden" id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" value="' . esc_attr( (string) $value ) . '">';
 			echo '<div class="upsellbay-product-selector__results" data-upsellbay-results></div>';
 			echo '<div class="upsellbay-product-selector__selection' . ( $value ? ' is-active' : '' ) . '" data-upsellbay-selection>';
 			if ( $value && function_exists( 'wc_get_product' ) ) {

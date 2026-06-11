@@ -69,7 +69,9 @@ final class OfferValidator {
 			$errors['_ub_status'] = 'Invalid offer status.';
 		}
 
-		if ( $normalized['_ub_offer_product_id'] <= 0 || ! ( $this->product_exists )( $normalized['_ub_offer_product_id'] ) ) {
+		if ( $normalized['_ub_offer_product_id'] <= 0 ) {
+			$errors['_ub_offer_product_id'] = 'Offer product is required.';
+		} elseif ( ! ( $this->product_exists )( $normalized['_ub_offer_product_id'] ) ) {
 			$errors['_ub_offer_product_id'] = 'Offer product does not exist.';
 		}
 
