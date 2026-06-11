@@ -221,8 +221,8 @@ final class OfferEditPage {
 			),
 			'advanced'  => array(
 				'label'     => __( 'Advanced metadata', 'upsellbay' ),
-				'collapsed' => true,
-				'fields'    => array( '_ub_trigger_product_ids', '_ub_trigger_category_ids' ),
+				'collapsed' => false,
+				'fields'    => array( '_ub_stats_summary', '_ub_trigger_product_ids', '_ub_trigger_category_ids' ),
 			),
 		);
 	}
@@ -341,6 +341,7 @@ final class OfferEditPage {
 	private function render_field_row( string $field, $value = '' ): void {
 		$labels = array(
 			'title'                    => __( 'Offer name', 'upsellbay' ),
+			'_ub_status'               => __( 'Status', 'upsellbay' ),
 			'_ub_offer_type'           => __( 'Placement', 'upsellbay' ),
 			'_ub_offer_product_id'     => __( 'Offer product', 'upsellbay' ),
 			'_ub_headline'             => __( 'Headline', 'upsellbay' ),
@@ -352,10 +353,10 @@ final class OfferEditPage {
 			'_ub_discount_value'       => __( 'Discount value', 'upsellbay' ),
 			'_ub_show_image'           => __( 'Show product image', 'upsellbay' ),
 			'_ub_placement_config'     => __( 'Placement options', 'upsellbay' ),
-			'_ub_status'               => __( 'Status', 'upsellbay' ),
 			'_ub_start_at'             => __( 'Start date', 'upsellbay' ),
 			'_ub_end_at'               => __( 'End date', 'upsellbay' ),
 			'_ub_priority'             => __( 'Priority', 'upsellbay' ),
+			'_ub_stats_summary'        => __( 'Performance', 'upsellbay' ),
 			'_ub_trigger_product_ids'  => __( 'Trigger product IDs', 'upsellbay' ),
 			'_ub_trigger_category_ids' => __( 'Trigger category IDs', 'upsellbay' ),
 		);
@@ -363,7 +364,9 @@ final class OfferEditPage {
 
 		echo '<tr><th scope="row"><label for="upsellbay-' . esc_attr( $field ) . '">' . esc_html( $label ) . '</label></th><td>';
 
-		if ( '_ub_offer_type' === $field ) {
+		if ( '_ub_stats_summary' === $field ) {
+			$this->render_stats_summary();
+		} elseif ( '_ub_offer_type' === $field ) {
 			echo '<select id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '">';
 			foreach (
 				array(
@@ -558,5 +561,115 @@ final class OfferEditPage {
 	 */
 	private function positive_int( $value ): int {
 		return max( 0, (int) $value );
+	}
+
+	/**
+	 * Render read-only performance stats summary for an existing offer.
+	 *
+	 * @since 1.0.0
+	 */
+	private function render_stats_summary(): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$offer_id = isset( $_GET['offer_id'] ) ? (int) $_GET['offer_id'] : ( isset( $_GET['id'] ) ? (int) $_GET['id'] : 0 );
+
+		if ( $offer_id <= 0 ) {
+			echo '<p class="description">' . esc_html__( 'Performance stats will appear here after the offer is saved and starts receiving traffic.', 'upsellbay' ) . '</p>';
+			return;
+		}
+
+		$stats = $this->fetch_offer_stats( $offer_id );
+
+		$accept_rate = $stats['views'] > 0
+			? number_format( ( $stats['accepts'] / $stats['views'] ) * 100, 1 ) . '%'
+			: '—';
+
+		$currency_symbol = function_exists( 'get_woocommerce_currency_symbol' ) ? get_woocommerce_currency_symbol() : '$';
+
+		echo '<table class="widefat striped" style="max-width: 480px;">';
+		echo '<tbody>';
+
+		$rows = array(
+			array( __( 'Views', 'upsellbay' ), number_format_i18n( $stats['views'] ) ),
+			array( __( 'Accepts', 'upsellbay' ), number_format_i18n( $stats['accepts'] ) ),
+			array( __( 'Dismissals', 'upsellbay' ), number_format_i18n( $stats['dismissals'] ) ),
+			array( __( 'Accept rate', 'upsellbay' ), $accept_rate ),
+			array( __( 'Orders', 'upsellbay' ), number_format_i18n( $stats['orders'] ) ),
+			array(
+				__( 'Attributed revenue', 'upsellbay' ),
+				$currency_symbol . number_format_i18n( (float) $stats['revenue'], 2 ),
+			),
+			array(
+				__( 'Total discounts', 'upsellbay' ),
+				$currency_symbol . number_format_i18n( (float) $stats['discount_total'], 2 ),
+			),
+		);
+
+		foreach ( $rows as $row ) {
+			echo '<tr>';
+			echo '<td><strong>' . esc_html( $row[0] ) . '</strong></td>';
+			echo '<td>' . esc_html( $row[1] ) . '</td>';
+			echo '</tr>';
+		}
+
+		echo '</tbody></table>';
+		echo '<p class="description">' . esc_html__( 'All-time aggregate stats for this offer. For date-range analytics, use the Dashboard tab.', 'upsellbay' ) . '</p>';
+	}
+
+	/**
+	 * Fetch all-time aggregate stats for one offer from the stats table.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int $offer_id Offer ID.
+	 * @return array{views: int, accepts: int, dismissals: int, orders: int, revenue: string, discount_total: string}
+	 */
+	private function fetch_offer_stats( int $offer_id ): array {
+		$defaults = array(
+			'views'          => 0,
+			'accepts'        => 0,
+			'dismissals'     => 0,
+			'orders'         => 0,
+			'revenue'        => '0.000000',
+			'discount_total' => '0.000000',
+		);
+
+		if ( ! isset( $GLOBALS['wpdb'] ) ) {
+			return $defaults;
+		}
+
+		$wpdb       = $GLOBALS['wpdb'];
+		$table_name = $wpdb->prefix . \WPAnchorBay\UpsellBay\Core\Constants::STATS_TABLE_SUFFIX;
+
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$row = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT
+					COALESCE(SUM(views), 0) AS views,
+					COALESCE(SUM(accepts), 0) AS accepts,
+					COALESCE(SUM(dismissals), 0) AS dismissals,
+					COALESCE(SUM(orders), 0) AS orders,
+					COALESCE(SUM(revenue), 0) AS revenue,
+					COALESCE(SUM(discount_total), 0) AS discount_total
+				FROM {$table_name}
+				WHERE offer_id = %d",
+				$offer_id
+			),
+			ARRAY_A
+		);
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+
+		if ( ! is_array( $row ) ) {
+			return $defaults;
+		}
+
+		return array(
+			'views'          => (int) $row['views'],
+			'accepts'        => (int) $row['accepts'],
+			'dismissals'     => (int) $row['dismissals'],
+			'orders'         => (int) $row['orders'],
+			'revenue'        => number_format( (float) $row['revenue'], 6, '.', '' ),
+			'discount_total' => number_format( (float) $row['discount_total'], 6, '.', '' ),
+		);
 	}
 }
