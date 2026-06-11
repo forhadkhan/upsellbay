@@ -174,18 +174,18 @@ final class OfferEditPage {
 	 * @return array<int, array<string, mixed>>
 	 */
 	public function normalize_rules( array $rules ): array {
-		$allowed_types = array( 'cart_product', 'cart_category', 'cart_tag', 'cart_subtotal', 'viewed_product', 'user_role', 'customer_order_count', 'lifetime_spend', 'stock_status', 'exclude_product_in_cart' );
+		$allowed_types = array( 'cart_product', 'cart_category', 'cart_tag', 'cart_subtotal', 'viewed_product', 'user_role', 'customer_order_count', 'customer_lifetime_spend', 'stock_status', 'exclude_if_product_in_cart' );
 		$normalized    = array();
 
 		foreach ( $rules as $rule ) {
-			$type = $this->sanitize_key( (string) ( $rule['type'] ?? '' ) );
+			$type = $this->normalize_rule_type( (string) ( $rule['type'] ?? '' ) );
 			if ( ! in_array( $type, $allowed_types, true ) ) {
 				continue;
 			}
 
 			$normalized[] = array(
 				'type'     => $type,
-				'operator' => $this->sanitize_key( (string) ( $rule['operator'] ?? 'is' ) ),
+				'operator' => $this->normalize_rule_operator( (string) ( $rule['operator'] ?? 'eq' ) ),
 				'value'    => is_array( $rule['value'] ?? null ) ? array_map( array( $this, 'positive_int' ), $rule['value'] ) : $this->sanitize_text( (string) ( $rule['value'] ?? '' ) ),
 			);
 		}
@@ -302,12 +302,13 @@ final class OfferEditPage {
 			$offer = $this->service->get( $offer_id );
 		}
 
-		$this->section_navigation->render( $offer ? '' : 'add_offer' );
+		$this->section_navigation->render( null !== $offer ? '' : 'add_offer' );
 
-		$meta  = $offer ? $offer['meta'] : $this->defaults->for_type( 'checkout_bump' );
-		$title = $offer ? $offer['title'] : '';
+		$meta  = null !== $offer ? $offer['meta'] : $this->defaults->for_type( 'checkout_bump' );
+		$title = null !== $offer ? $offer['title'] : '';
 
-		if ( $offer ) {
+		if ( null !== $offer ) {
+			/* translators: %d: offer ID */
 			echo '<h2 class="wp-heading-inline">' . esc_html( sprintf( __( 'UpsellBay Offer: ID - %d', 'upsellbay' ), $offer_id ) ) . '</h2>';
 			echo '<p class="description" style="margin-bottom: 8px;">' . esc_html__( 'You can modify and save data', 'upsellbay' ) . '</p>';
 		} else {
@@ -424,14 +425,14 @@ final class OfferEditPage {
 			echo '<label><input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="checkbox" value="1" ' . checked( $value, true, false ) . '> ' . esc_html__( 'Show the WooCommerce product image when available.', 'upsellbay' ) . '</label>';
 		} elseif ( '_ub_offer_product_id' === $field ) {
 			echo '<div class="upsellbay-product-selector" data-upsellbay-product-selector>';
-			echo '<div class="upsellbay-product-selector__input-wrapper" ' . ( $value ? 'style="display:none;"' : '' ) . '>';
+			echo '<div class="upsellbay-product-selector__input-wrapper" ' . ( 0 !== (int) $value ? 'style="display:none;"' : '' ) . '>';
 			echo '<input id="upsellbay-' . esc_attr( $field ) . '-search" type="text" class="regular-text" placeholder="' . esc_attr__( 'Search for a product...', 'upsellbay' ) . '" autocomplete="off">';
 			echo '<button type="button" class="upsellbay-product-selector__clear" style="display: none;" title="' . esc_attr__( 'Clear search', 'upsellbay' ) . '">&times;</button>';
 			echo '</div>';
 			echo '<input type="hidden" id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" value="' . esc_attr( (string) $value ) . '">';
 			echo '<div class="upsellbay-product-selector__results" data-upsellbay-results></div>';
-			echo '<div class="upsellbay-product-selector__selection' . ( $value ? ' is-active' : '' ) . '" data-upsellbay-selection>';
-			if ( $value && function_exists( 'wc_get_product' ) ) {
+			echo '<div class="upsellbay-product-selector__selection' . ( 0 !== (int) $value ? ' is-active' : '' ) . '" data-upsellbay-selection>';
+			if ( 0 !== (int) $value && function_exists( 'wc_get_product' ) ) {
 				$product = wc_get_product( $value );
 				if ( $product ) {
 					echo '<div class="upsellbay-product-selector__result-image">';
@@ -557,6 +558,36 @@ final class OfferEditPage {
 	 */
 	private function sanitize_key( string $value ): string {
 		return function_exists( 'sanitize_key' ) ? sanitize_key( $value ) : strtolower( preg_replace( '/[^a-z0-9_\-]/', '', $value ) ?? '' );
+	}
+
+	/**
+	 * Normalize legacy editor rule type aliases to runtime parser keys.
+	 *
+	 * @param string $value Raw rule type.
+	 */
+	private function normalize_rule_type( string $value ): string {
+		$type = $this->sanitize_key( $value );
+
+		return match ( $type ) {
+			'lifetime_spend'         => 'customer_lifetime_spend',
+			'exclude_product_in_cart' => 'exclude_if_product_in_cart',
+			default                  => $type,
+		};
+	}
+
+	/**
+	 * Normalize legacy editor operator aliases to runtime evaluator keys.
+	 *
+	 * @param string $value Raw operator.
+	 */
+	private function normalize_rule_operator( string $value ): string {
+		$operator = $this->sanitize_key( $value );
+
+		return match ( $operator ) {
+			'is'     => 'eq',
+			'is_not' => 'neq',
+			default  => $operator,
+		};
 	}
 
 	/**

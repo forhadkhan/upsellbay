@@ -49,10 +49,36 @@ if ( ! function_exists( 'esc_js' ) ) {
 	}
 }
 
+if ( ! function_exists( 'esc_textarea' ) ) {
+	function esc_textarea( string $text ): string {
+		return htmlspecialchars( $text, ENT_NOQUOTES, 'UTF-8' );
+	}
+}
+
 if ( ! function_exists( 'esc_attr__' ) ) {
 	function esc_attr__( string $text, string $domain = 'default' ): string {
 		unset( $domain );
 		return htmlspecialchars( $text, ENT_QUOTES, 'UTF-8' );
+	}
+}
+
+if ( ! function_exists( 'selected' ) ) {
+	function selected( $selected, $current = true, bool $display = true ): string {
+		$result = (string) $selected === (string) $current ? ' selected="selected"' : '';
+		if ( $display ) {
+			echo $result; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		}
+		return $result;
+	}
+}
+
+if ( ! function_exists( 'checked' ) ) {
+	function checked( $checked, $current = true, bool $display = true ): string {
+		$result = (string) $checked === (string) $current ? ' checked="checked"' : '';
+		if ( $display ) {
+			echo $result; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		}
+		return $result;
 	}
 }
 
@@ -113,6 +139,55 @@ if ( ! function_exists( 'wp_create_nonce' ) ) {
 if ( ! function_exists( 'admin_url' ) ) {
 	function admin_url( string $path = '' ): string {
 		return 'https://store.test/wp-admin/' . ltrim( $path, '/' );
+	}
+}
+
+if ( ! function_exists( 'wp_get_attachment_image_url' ) ) {
+	function wp_get_attachment_image_url( int $attachment_id, string $size = 'thumbnail' ): string {
+		unset( $size );
+		return $attachment_id > 0 ? 'https://store.test/uploads/' . $attachment_id . '.jpg' : '';
+	}
+}
+
+if ( ! function_exists( 'wc_format_decimal' ) ) {
+	function wc_format_decimal( $number, int $dp = 6 ): string {
+		return number_format( (float) $number, $dp, '.', '' );
+	}
+}
+
+if ( ! function_exists( 'wc_price' ) ) {
+	function wc_price( $price ): string {
+		return '$' . number_format( (float) $price, 2, '.', '' );
+	}
+}
+
+if ( ! function_exists( 'wc_get_product' ) ) {
+	function wc_get_product( int $product_id ) {
+		return $GLOBALS['upsellbay_test_products'][ $product_id ] ?? false;
+	}
+}
+
+if ( ! function_exists( 'wc_get_customer_order_count' ) ) {
+	function wc_get_customer_order_count( int $customer_id ): int {
+		return (int) ( $GLOBALS['upsellbay_test_customer_order_counts'][ $customer_id ] ?? 0 );
+	}
+}
+
+if ( ! function_exists( 'wc_get_customer_total_spent' ) ) {
+	function wc_get_customer_total_spent( int $customer_id ): string {
+		return (string) ( $GLOBALS['upsellbay_test_customer_total_spent'][ $customer_id ] ?? '0' );
+	}
+}
+
+if ( ! function_exists( 'current_user_can' ) ) {
+	function current_user_can( string $capability ): bool {
+		return (bool) ( $GLOBALS['upsellbay_test_current_user_can'][ $capability ] ?? false );
+	}
+}
+
+if ( ! function_exists( 'get_current_user_id' ) ) {
+	function get_current_user_id(): int {
+		return (int) ( $GLOBALS['upsellbay_test_current_user_id'] ?? 0 );
 	}
 }
 

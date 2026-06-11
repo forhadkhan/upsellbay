@@ -129,9 +129,9 @@ final class PublicOfferRoutes {
 	 * @since 1.0.0
 	 *
 	 * @param mixed $request Request or array.
-	 * @return array<string, mixed>
+	 * @return array<string, mixed>|\WP_REST_Response
 	 */
-	public function bump_toggle( $request ): array {
+	public function bump_toggle( $request ) {
 		$params = $this->params( $request );
 		$guard  = $this->guard( 'bump_toggle', $params );
 		if ( null !== $guard ) {
@@ -144,20 +144,22 @@ final class PublicOfferRoutes {
 				404,
 				array(
 					'success' => false,
-					'message' => 'Offer not found.',
+					'message' => __( 'Offer not found.', 'upsellbay' ),
 				)
 			);
 		}
 
-		if ( true !== ( $params['accepted'] ?? false ) ) {
-			$result = $this->cart->remove( (int) $params['offer_id'] );
-		} else {
-			$result = $this->cart->accept( $offer, (string) ( $params['placement'] ?? 'checkout_bump' ), array( 'source_context' => 'checkout' ) );
+		$result = true === ( $params['accepted'] ?? false )
+			? $this->cart->accept( $offer, (string) ( $params['placement'] ?? 'checkout_bump' ), array( 'source_context' => 'checkout' ) )
+			: $this->cart->remove( (int) $params['offer_id'] );
+
+		if ( true === ( $params['accepted'] ?? false ) && true === ( $result['success'] ?? false ) ) {
+			$this->analytics->record_event( 'accept', (int) $params['offer_id'], (string) ( $params['placement'] ?? 'checkout_bump' ), ( $this->date_provider )(), (string) ( $result['offer_price'] ?? '0.000000' ), (string) ( $result['discount_amount'] ?? '0.000000' ) );
+			Hooks::action( 'offer_accepted', (int) $params['offer_id'], (string) ( $params['placement'] ?? 'checkout_bump' ), $result );
 		}
 
-		if ( true === ( $result['success'] ?? false ) ) {
-			$this->analytics->record_event( 'accept', (int) $params['offer_id'], (string) ( $params['placement'] ?? 'checkout_bump' ), ( $this->date_provider )(), (string) ( $result['offer_price'] ?? '0.000000' ) );
-			Hooks::action( 'offer_accepted', (int) $params['offer_id'], (string) ( $params['placement'] ?? 'checkout_bump' ), $result );
+		if ( true !== ( $result['success'] ?? false ) && isset( $result['errors'] ) ) {
+			$result['message'] = $this->error_message( (array) $result['errors'] );
 		}
 
 		return $this->response( true === ( $result['success'] ?? false ) ? 200 : 400, $result + array( 'notices' => array() ) );
@@ -169,9 +171,9 @@ final class PublicOfferRoutes {
 	 * @since 1.0.0
 	 *
 	 * @param mixed $request Request or array.
-	 * @return array<string, mixed>
+	 * @return array<string, mixed>|\WP_REST_Response
 	 */
-	public function cart_offer_add( $request ): array {
+	public function cart_offer_add( $request ) {
 		$params = $this->params( $request );
 		$guard  = $this->guard( 'cart_offer_add', $params );
 		if ( null !== $guard ) {
@@ -184,20 +186,49 @@ final class PublicOfferRoutes {
 				404,
 				array(
 					'success' => false,
-					'message' => 'Offer not found.',
+					'message' => __( 'Offer not found.', 'upsellbay' ),
 				)
 			);
 		}
 
 		$placement = (string) ( $params['placement'] ?? 'cart_crosssell' );
-		$result    = $this->cart->accept( $offer, $placement, array( 'source_context' => $placement ) );
+		$result    = $this->cart->accept(
+			$offer,
+			$placement,
+			array(
+				'source_context'  => $placement,
+				'source_order_id' => (int) ( $params['source_order_id'] ?? 0 ),
+			)
+		);
 
 		if ( true === ( $result['success'] ?? false ) ) {
-			$this->analytics->record_event( 'accept', (int) $params['offer_id'], $placement, ( $this->date_provider )(), (string) ( $result['offer_price'] ?? '0.000000' ) );
+			$this->analytics->record_event( 'accept', (int) $params['offer_id'], $placement, ( $this->date_provider )(), (string) ( $result['offer_price'] ?? '0.000000' ), (string) ( $result['discount_amount'] ?? '0.000000' ) );
 			Hooks::action( 'offer_accepted', (int) $params['offer_id'], $placement, $result );
+			$result['message'] = __( 'Offer added to your cart.', 'upsellbay' );
+		} elseif ( isset( $result['errors'] ) ) {
+			$result['message'] = $this->error_message( (array) $result['errors'] );
 		}
 
 		return $this->response( true === ( $result['success'] ?? false ) ? 200 : 400, $result + array( 'notices' => array() ) );
+	}
+
+	/**
+	 * Map internal validator errors to safe shopper-facing messages.
+	 *
+	 * @param array<int, string> $errors Validator error keys.
+	 */
+	private function error_message( array $errors ): string {
+		$first = $errors[0] ?? 'unknown';
+
+		return match ( $first ) {
+			'product_in_stock'     => __( 'This product is currently out of stock.', 'upsellbay' ),
+			'product_purchasable'  => __( 'This product is not currently available for purchase.', 'upsellbay' ),
+			'missing_product'      => __( 'This product could not be found.', 'upsellbay' ),
+			'rules_failed'         => __( 'You are no longer eligible for this offer.', 'upsellbay' ),
+			'placement_mismatch'   => __( 'This offer is not valid for this placement.', 'upsellbay' ),
+			'subscription_discount_blocked' => __( 'Discounts cannot be applied to subscription products.', 'upsellbay' ),
+			default                => __( 'Unable to add this offer. Please try again.', 'upsellbay' ),
+		};
 	}
 
 	/**
@@ -206,9 +237,9 @@ final class PublicOfferRoutes {
 	 * @since 1.0.0
 	 *
 	 * @param mixed $request Request or array.
-	 * @return array<string, mixed>
+	 * @return array<string, mixed>|\WP_REST_Response
 	 */
-	public function dismiss( $request ): array {
+	public function dismiss( $request ) {
 		$params = $this->params( $request );
 		$guard  = $this->guard( 'dismiss', $params );
 		if ( null !== $guard ) {
@@ -235,16 +266,16 @@ final class PublicOfferRoutes {
 	 *
 	 * @param string               $endpoint Endpoint key.
 	 * @param array<string, mixed> $params   Params.
-	 * @return array<string, mixed>|null
+	 * @return array<string, mixed>|\WP_REST_Response|null
 	 */
-	private function guard( string $endpoint, array $params ): ?array {
+	private function guard( string $endpoint, array $params ) {
 		$client_key = (string) ( $params['token'] ?? $params['_wpnonce'] ?? 'guest' );
 		if ( ! isset( $params['token'] ) || '' === (string) $params['token'] || ! $this->session->validate_token( (string) $params['token'] ) ) {
 			return $this->response(
 				403,
 				array(
 					'success' => false,
-					'message' => 'Invalid session token.',
+					'message' => __( 'Invalid session token.', 'upsellbay' ),
 				)
 			);
 		}
@@ -254,7 +285,7 @@ final class PublicOfferRoutes {
 				429,
 				array(
 					'success' => false,
-					'message' => 'Too many requests.',
+					'message' => __( 'Too many requests.', 'upsellbay' ),
 				)
 			);
 		}
@@ -264,7 +295,7 @@ final class PublicOfferRoutes {
 				400,
 				array(
 					'success' => false,
-					'message' => 'Invalid offer.',
+					'message' => __( 'Invalid offer.', 'upsellbay' ),
 				)
 			);
 		}
@@ -296,9 +327,13 @@ final class PublicOfferRoutes {
 	 *
 	 * @param int                  $status Status.
 	 * @param array<string, mixed> $data   Data.
-	 * @return array<string, mixed>
+	 * @return array<string, mixed>|\WP_REST_Response
 	 */
-	private function response( int $status, array $data ): array {
+	private function response( int $status, array $data ) {
+		if ( class_exists( '\WP_REST_Response' ) ) {
+			return new \WP_REST_Response( $data, $status );
+		}
+
 		return array(
 			'status' => $status,
 			'data'   => $data,

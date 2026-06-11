@@ -1,0 +1,67 @@
+.upsellbay-offer {
+	--upsellbay-accent: #2271b1;
+	align-items: center;
+	border: 1px solid currentColor;
+	border-radius: 4px;
+	display: flex;
+	gap: 12px;
+	margin: 16px 0;
+	padding: 12px;
+}
+
+.upsellbay-offer__image {
+	flex: 0 0 56px;
+}
+
+.upsellbay-offer__image img {
+	display: block;
+	height: 56px;
+	object-fit: cover;
+	width: 56px;
+}
+
+.upsellbay-offer__content {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.upsellbay-offer__headline,
+.upsellbay-offer__product-name,
+.upsellbay-offer__price {
+	display: block;
+}
+
+.upsellbay-offer__product-name,
+.upsellbay-offer__body,
+.upsellbay-offer__price {
+	margin-top: 4px;
+}
+
+.upsellbay-offer__price ins {
+	text-decoration: none;
+}
+
+.upsellbay-offer__action {
+	flex: 0 0 auto;
+}
+
+.upsellbay-offer__toggle {
+	align-items: center;
+	display: inline-flex;
+	gap: 6px;
+}
+
+.upsellbay-offer-notice {
+	margin-bottom: 12px;
+}
+
+@media (max-width: 600px) {
+	.upsellbay-offer {
+		align-items: flex-start;
+		flex-wrap: wrap;
+	}
+
+	.upsellbay-offer__action {
+		width: 100%;
+	}
+}

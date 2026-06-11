@@ -24,7 +24,6 @@ final class ThankYouOfferRenderer extends AbstractOfferRenderer {
 	 * @param array<string, mixed> $context Context.
 	 */
 	public function render_offer( array $offer, array $context = array() ): string {
-		unset( $context );
-		return $this->render_card( $offer, 'thankyou_offer', false );
+		return $this->render_card( $offer, 'thankyou_offer', false, $context );
 	}
 }

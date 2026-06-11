@@ -47,14 +47,14 @@ final class RuleParser {
 				return null;
 			}
 
-			$type = $this->sanitize_key( $rule['type'] ?? '' );
+			$type = $this->normalize_type( $rule['type'] ?? '' );
 			if ( ! in_array( $type, self::TYPES, true ) ) {
 				return null;
 			}
 
 			$parsed[] = array(
 				'type'     => $type,
-				'operator' => $this->sanitize_key( $rule['operator'] ?? 'eq' ),
+				'operator' => $this->normalize_operator( $rule['operator'] ?? 'eq' ),
 				'value'    => $rule['value'] ?? null,
 			);
 		}
@@ -69,5 +69,35 @@ final class RuleParser {
 	 */
 	private function sanitize_key( $value ): string {
 		return function_exists( 'sanitize_key' ) ? sanitize_key( (string) $value ) : strtolower( preg_replace( '/[^a-z0-9_\-]/i', '', (string) $value ) ?? '' );
+	}
+
+	/**
+	 * Normalize legacy rule aliases to canonical runtime keys.
+	 *
+	 * @param mixed $value Raw rule type.
+	 */
+	private function normalize_type( $value ): string {
+		$type = $this->sanitize_key( $value );
+
+		return match ( $type ) {
+			'lifetime_spend'          => 'customer_lifetime_spend',
+			'exclude_product_in_cart' => 'exclude_if_product_in_cart',
+			default                   => $type,
+		};
+	}
+
+	/**
+	 * Normalize legacy operator aliases to canonical evaluator keys.
+	 *
+	 * @param mixed $value Raw operator.
+	 */
+	private function normalize_operator( $value ): string {
+		$operator = $this->sanitize_key( $value );
+
+		return match ( $operator ) {
+			'is'     => 'eq',
+			'is_not' => 'neq',
+			default  => $operator,
+		};
 	}
 }

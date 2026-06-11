@@ -24,7 +24,6 @@ final class ProductPageRenderer extends AbstractOfferRenderer {
 	 * @param array<string, mixed> $context Context.
 	 */
 	public function render_offer( array $offer, array $context = array() ): string {
-		unset( $context );
-		return $this->render_card( $offer, 'product_upsell', false );
+		return $this->render_card( $offer, 'product_upsell', false, $context );
 	}
 }

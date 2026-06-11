@@ -71,6 +71,7 @@ final class CartSession {
 			'accepted'        => is_array( $state['accepted'] ?? null ) ? $state['accepted'] : array(),
 			'dismissed'       => is_array( $state['dismissed'] ?? null ) ? $state['dismissed'] : array(),
 			'token_hash'      => (string) ( $state['token_hash'] ?? '' ),
+			'token_raw'       => (string) ( $state['token_raw'] ?? '' ),
 			'token_issued_at' => (int) ( $state['token_issued_at'] ?? 0 ),
 		);
 	}
@@ -80,16 +81,23 @@ final class CartSession {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param int    $offer_id      Offer ID.
-	 * @param string $placement     Placement key.
-	 * @param string $cart_item_key Cart item key.
+	 * @param int                  $offer_id      Offer ID.
+	 * @param string               $placement     Placement key.
+	 * @param string               $cart_item_key Cart item key.
+	 * @param array<string, mixed> $extra         Extra non-PII state.
 	 */
-	public function accept_offer( int $offer_id, string $placement, string $cart_item_key ): void {
+	public function accept_offer( int $offer_id, string $placement, string $cart_item_key, array $extra = array() ): void {
 		$state                          = $this->state();
-		$state['accepted'][ $offer_id ] = array(
-			'placement'     => $placement,
-			'cart_item_key' => $cart_item_key,
-			'accepted_at'   => time(),
+		$state['accepted'][ $offer_id ] = array_filter(
+			array_merge(
+				array(
+					'placement'     => $placement,
+					'cart_item_key' => $cart_item_key,
+					'accepted_at'   => time(),
+				),
+				$extra
+			),
+			static fn ( $value ): bool => null !== $value && '' !== $value && 0 !== $value
 		);
 		$this->save( $state );
 	}
@@ -125,13 +133,22 @@ final class CartSession {
 	}
 
 	/**
-	 * Ensure a REST validation token exists.
+	 * Ensure a REST validation token exists and is reused if still fresh.
 	 *
 	 * @since 1.0.0
 	 */
 	public function ensure_token(): string {
+		$state     = $this->state();
+		$issued_at = (int) ( $state['token_issued_at'] ?? 0 );
+		$token_raw = (string) ( $state['token_raw'] ?? '' );
+		$day       = defined( 'DAY_IN_SECONDS' ) ? DAY_IN_SECONDS : 86400;
+
+		if ( '' !== $token_raw && $issued_at > ( time() - $day ) ) {
+			return $token_raw;
+		}
+
 		$token                    = $this->tokens->generate( 32 );
-		$state                    = $this->state();
+		$state['token_raw']       = $token;
 		$state['token_hash']      = $this->tokens->hash( $token );
 		$state['token_issued_at'] = time();
 		$this->save( $state );

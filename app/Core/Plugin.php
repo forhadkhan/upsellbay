@@ -222,7 +222,7 @@ final class Plugin {
 		$this->container->set( OfferPreviewRoute::class, static fn ( Container $container ): OfferPreviewRoute => new OfferPreviewRoute( $container->get( OfferService::class ) ) );
 		$this->container->set( CheckoutFields::class, static fn (): CheckoutFields => new CheckoutFields() );
 		$this->container->set( BlockCheckoutIntegration::class, static fn (): BlockCheckoutIntegration => new BlockCheckoutIntegration() );
-		$this->container->set( StorefrontController::class, static fn ( Container $container ): StorefrontController => new StorefrontController( $container->get( OfferRepository::class ), $container->get( PlacementRenderer::class ), $container->get( CartSession::class ) ) );
+		$this->container->set( StorefrontController::class, static fn ( Container $container ): StorefrontController => new StorefrontController( $container->get( OfferRepository::class ), $container->get( PlacementRenderer::class ), $container->get( CartSession::class ), $container->get( Settings::class ) ) );
 		$this->container->set( ImportExporter::class, static fn ( Container $container ): ImportExporter => new ImportExporter( $container->get( OfferValidator::class ) ) );
 		$this->container->set( Logger::class, static fn ( Container $container ): Logger => new Logger( null, (bool) $container->get( Settings::class )->all()['debug_logging'] ) );
 		$this->container->set( TokenHelper::class, static fn (): TokenHelper => new TokenHelper() );
@@ -304,6 +304,9 @@ final class Plugin {
 		add_action( Constants::hook_name( 'check_license' ), array( $this, 'check_license' ) );
 		add_action( 'woocommerce_init', array( $this->container->get( CheckoutFields::class ), 'register' ) );
 		add_action( 'woocommerce_before_calculate_totals', array( $this, 'apply_offer_discounts' ) );
+		add_action( 'woocommerce_checkout_create_order_line_item', array( $this, 'write_offer_line_item_attribution' ), 10, 4 );
+		add_action( 'woocommerce_order_status_processing', array( $this, 'record_order_offer_analytics' ) );
+		add_action( 'woocommerce_order_status_completed', array( $this, 'record_order_offer_analytics' ) );
 	}
 
 	/**
@@ -335,6 +338,98 @@ final class Plugin {
 	}
 
 	/**
+	 * Persist accepted offer attribution onto checkout order items.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param object               $item          WooCommerce order item.
+	 * @param string               $cart_item_key Cart item key.
+	 * @param array<string, mixed> $values        Cart item values.
+	 * @param object|null          $order         WooCommerce order.
+	 */
+	public function write_offer_line_item_attribution( object $item, string $cart_item_key, array $values, ?object $order = null ): void {
+		unset( $cart_item_key );
+
+		$offer_id = (int) ( $values[ Constants::ATTRIBUTION_OFFER_ID ] ?? 0 );
+		if ( $offer_id <= 0 ) {
+			return;
+		}
+
+		$offer     = $this->container->get( OfferService::class )->get( $offer_id );
+		$placement = (string) ( $values[ Constants::ATTRIBUTION_OFFER_PLACEMENT ] ?? $values[ Constants::ATTRIBUTION_OFFER_TYPE ] ?? '' );
+		$discount  = (string) ( $values[ Constants::ATTRIBUTION_DISCOUNT_AMOUNT ] ?? '0.000000' );
+		$context   = (string) ( $values[ Constants::ATTRIBUTION_SOURCE_CONTEXT ] ?? $values['_ub_source_context'] ?? $placement );
+
+		if ( null === $offer ) {
+			$offer = array(
+				'id'   => $offer_id,
+				'meta' => array(
+					'_ub_offer_type'    => (string) ( $values[ Constants::ATTRIBUTION_OFFER_TYPE ] ?? $placement ),
+					'_ub_discount_type' => (string) ( $values[ Constants::ATTRIBUTION_DISCOUNT_TYPE ] ?? 'none' ),
+				),
+			);
+		}
+
+		$this->container->get( AttributionWriter::class )->write_order_item( $item, $offer, $placement, $discount, $context );
+
+		$source_order_id = (int) ( $values[ Constants::ATTRIBUTION_SOURCE_ORDER_ID ] ?? 0 );
+		if ( $source_order_id > 0 && null !== $order ) {
+			$this->container->get( AttributionWriter::class )->write_follow_on_order( $order, $source_order_id, $offer_id );
+		}
+	}
+
+	/**
+	 * Record order-level offer analytics once per order.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int          $order_id    Order ID.
+	 * @param array<mixed> $posted_data Posted checkout data.
+	 * @param object|null  $order       WooCommerce order.
+	 */
+	public function record_order_offer_analytics( int $order_id, array $posted_data = array(), ?object $order = null ): void {
+		unset( $posted_data );
+
+		if ( null === $order && function_exists( 'wc_get_order' ) ) {
+			$order = wc_get_order( $order_id );
+		}
+
+		if ( ! is_object( $order ) || ! method_exists( $order, 'get_items' ) ) {
+			return;
+		}
+
+		if ( method_exists( $order, 'get_meta' ) && $order->get_meta( '_ub_order_analytics_recorded' ) ) {
+			return;
+		}
+
+		$date = function_exists( 'current_time' ) ? current_time( 'Y-m-d' ) : gmdate( 'Y-m-d' );
+		foreach ( $order->get_items() as $item ) {
+			if ( ! is_object( $item ) || ! method_exists( $item, 'get_meta' ) ) {
+				continue;
+			}
+
+			$offer_id = (int) $item->get_meta( Constants::ATTRIBUTION_OFFER_ID );
+			if ( $offer_id <= 0 ) {
+				continue;
+			}
+
+			$placement = (string) $item->get_meta( Constants::ATTRIBUTION_OFFER_PLACEMENT );
+			$discount  = (string) $item->get_meta( Constants::ATTRIBUTION_DISCOUNT_AMOUNT );
+			$revenue   = method_exists( $item, 'get_total' ) ? (string) $item->get_total() : '0.000000';
+
+			$this->container->get( AnalyticsService::class )->record_event( 'order', $offer_id, $placement, $date, $revenue, $discount );
+		}
+
+		if ( method_exists( $order, 'update_meta_data' ) ) {
+			$order->update_meta_data( '_ub_order_analytics_recorded', true );
+		}
+
+		if ( method_exists( $order, 'save' ) ) {
+			$order->save();
+		}
+	}
+
+	/**
 	 * Declare WooCommerce feature compatibility at the documented lifecycle point.
 	 *
 	 * @since 1.0.0
@@ -346,6 +441,12 @@ final class Plugin {
 
 		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
 			'custom_order_tables',
+			Constants::plugin_file(),
+			true
+		);
+
+		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
+			'cart_checkout_blocks',
 			Constants::plugin_file(),
 			true
 		);

@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 use WPAnchorBay\UpsellBay\Api\Routes\PublicOfferRoutes;
 use WPAnchorBay\UpsellBay\Core\Constants;
+use WPAnchorBay\UpsellBay\Core\Settings;
 use WPAnchorBay\UpsellBay\Data\CartSession;
 use WPAnchorBay\UpsellBay\Data\OfferRepository;
 use WPAnchorBay\UpsellBay\Data\StatsRepository;
@@ -31,6 +32,7 @@ use WPAnchorBay\UpsellBay\Domain\Storefront\CartCrossSellRenderer;
 use WPAnchorBay\UpsellBay\Domain\Storefront\ClassicCheckoutBump;
 use WPAnchorBay\UpsellBay\Domain\Storefront\PlacementRenderer;
 use WPAnchorBay\UpsellBay\Domain\Storefront\ProductPageRenderer;
+use WPAnchorBay\UpsellBay\Domain\Storefront\StorefrontController;
 use WPAnchorBay\UpsellBay\Domain\Storefront\ThankYouOfferRenderer;
 
 /**
@@ -53,6 +55,8 @@ function upsellbay_core_business_logic_tests(): array {
 					'meta'  => array(
 						'_ub_offer_type'       => 'checkout_bump',
 						'_ub_offer_product_id' => 44,
+						'_ub_headline'         => 'Add warranty',
+						'_ub_button_text'      => 'Add to order',
 					),
 				)
 			);
@@ -140,6 +144,73 @@ function upsellbay_core_business_logic_tests(): array {
 			assert_same( 2, $selected[0]['id'] );
 			assert_same( 1, count( $selected ) );
 		},
+		'rule aliases and trigger ids are applied to storefront eligibility' => static function (): void {
+			$page  = new \WPAnchorBay\UpsellBay\Admin\Offers\OfferEditPage(
+				new OfferService( upsellbay_test_offer_repository( array() ), new OfferValidator( new OfferSchema(), static fn (): bool => true ) ),
+				new OfferValidator( new OfferSchema(), static fn (): bool => true )
+			);
+			$rules = $page->normalize_rules(
+				array(
+					array( 'type' => 'lifetime_spend', 'operator' => 'gte', 'value' => '100' ),
+					array( 'type' => 'exclude_product_in_cart', 'operator' => 'in', 'value' => array( 99 ) ),
+				)
+			);
+
+			assert_same( 'customer_lifetime_spend', $rules[0]['type'] );
+			assert_same( 'exclude_if_product_in_cart', $rules[1]['type'] );
+			assert_true( ( new RuleEvaluator( new RuleParser() ) )->matches( $rules, 'all', array( 'customer_lifetime_spend' => '125.00', 'cart_product_ids' => array( 10 ) ) ) );
+
+			$prioritizer = new OfferPrioritizer( new RuleEvaluator( new RuleParser() ), static fn (): bool => true, static fn (): int => 100 );
+			$offer       = upsellbay_phase4_offer( 77, 'product_upsell', 50, 1 );
+			$offer['meta']['_ub_trigger_product_ids'] = array( 15 );
+
+			assert_same( array(), $prioritizer->select( array( $offer ), 'product_upsell', array( 'viewed_product_id' => 10 ), 1 ) );
+			assert_same( 77, $prioritizer->select( array( $offer ), 'product_upsell', array( 'viewed_product_id' => 15 ), 1 )[0]['id'] );
+		},
+		'storefront controller respects settings placement toggles and dismissed offers' => static function (): void {
+			$GLOBALS['upsellbay_test_current_user_can'] = array( 'manage_woocommerce' => false );
+			$GLOBALS['upsellbay_test_products'][50]     = new UpsellBay_Test_Storefront_Product( 50, 'Warranty', '20.00', 12 );
+
+			$repository = upsellbay_test_offer_repository( array( 1 => upsellbay_phase4_offer( 1, 'checkout_bump', 50, 1 ) ) );
+			$renderer   = new PlacementRenderer(
+				new OfferPrioritizer( new RuleEvaluator( new RuleParser() ), static fn (): bool => true, static fn (): int => 100 ),
+				new AnalyticsRecorder( new StatsRepository( static function (): void {}, static fn (): array => array() ) ),
+				array( 'checkout_bump' => new ClassicCheckoutBump() ),
+				static fn (): string => '2026-05-30'
+			);
+			$session    = upsellbay_array_cart_session();
+
+			$disabled = new StorefrontController(
+				$repository,
+				$renderer,
+				$session,
+				new Settings( static fn (): array => array( 'enabled' => false ), static fn (): bool => true )
+			);
+			ob_start();
+			$disabled->render_checkout_bump();
+			assert_same( '', (string) ob_get_clean() );
+
+			$test_mode = new StorefrontController(
+				$repository,
+				$renderer,
+				$session,
+				new Settings( static fn (): array => array( 'test_mode' => true ), static fn (): bool => true )
+			);
+			ob_start();
+			$test_mode->render_checkout_bump();
+			assert_same( '', (string) ob_get_clean() );
+
+			$session->dismiss_offer( 1, 'checkout_bump' );
+			$enabled = new StorefrontController(
+				$repository,
+				$renderer,
+				$session,
+				new Settings( static fn (): array => array(), static fn (): bool => true )
+			);
+			ob_start();
+			$enabled->render_checkout_bump();
+			assert_same( '', (string) ob_get_clean() );
+		},
 		'cart validator mutator and discount applier preserve server controlled state' => static function (): void {
 			$cart_items = array();
 			$session    = upsellbay_array_cart_session();
@@ -198,6 +269,7 @@ function upsellbay_core_business_logic_tests(): array {
 			assert_same( 0, count( $cart_items ) );
 		},
 		'placement renderers record views and keep placement logic separate' => static function (): void {
+			$GLOBALS['upsellbay_test_products'][50] = new UpsellBay_Test_Storefront_Product( 50, 'Warranty', '25.00', 12 );
 			$events      = array();
 			$stats       = new StatsRepository( static function ( string $key, array $delta ) use ( &$events ): void { $events[] = array( $key, $delta ); }, static fn (): array => array() );
 			$renderer    = new PlacementRenderer(
@@ -216,6 +288,9 @@ function upsellbay_core_business_logic_tests(): array {
 
 			assert_contains( 'upsellbay-offer', $html );
 			assert_contains( 'type="checkbox"', $html );
+			assert_contains( 'Warranty', $html );
+			assert_contains( '<img', $html );
+			assert_contains( '$25.00', $html );
 			assert_same( array( 'views' => 1 ), $events[0][1] );
 		},
 		'public routes validate token rate limit and ignore client supplied price' => static function (): void {
@@ -264,6 +339,13 @@ function upsellbay_core_business_logic_tests(): array {
 			assert_same( 99, $reader->read_order( $order )[ Constants::ATTRIBUTION_SOURCE_ORDER_ID ] );
 			assert_true( $reader->read_order( $order )[ Constants::ATTRIBUTION_FOLLOW_ON_ORDER ] );
 			assert_true( $order->saved );
+		},
+		'plugin wires checkout line item attribution and order analytics hooks' => static function (): void {
+			$plugin = (string) file_get_contents( __DIR__ . '/../app/Core/Plugin.php' );
+
+			assert_contains( 'woocommerce_checkout_create_order_line_item', $plugin );
+			assert_contains( 'write_offer_line_item_attribution', $plugin );
+			assert_contains( 'record_order_offer_analytics', $plugin );
 		},
 		'analytics service records accepted offer order lifecycle aggregates' => static function (): void {
 			$events  = array();
@@ -399,6 +481,57 @@ final class UpsellBay_Test_Product {
 	 */
 	public function set_price( string $price ): void {
 		$this->price = $price;
+	}
+}
+
+/**
+ * Storefront product test double.
+ *
+ * @since 1.0.0
+ */
+final class UpsellBay_Test_Storefront_Product {
+	private int $id;
+	private string $name;
+	private string $price;
+	private int $image_id;
+
+	public function __construct( int $id, string $name, string $price, int $image_id = 0 ) {
+		$this->id       = $id;
+		$this->name     = $name;
+		$this->price    = $price;
+		$this->image_id = $image_id;
+	}
+
+	public function get_id(): int {
+		return $this->id;
+	}
+
+	public function get_name(): string {
+		return $this->name;
+	}
+
+	public function get_price(): string {
+		return $this->price;
+	}
+
+	public function get_image_id(): int {
+		return $this->image_id;
+	}
+
+	public function is_purchasable(): bool {
+		return true;
+	}
+
+	public function is_visible(): bool {
+		return true;
+	}
+
+	public function is_in_stock(): bool {
+		return true;
+	}
+
+	public function get_type(): string {
+		return 'simple';
 	}
 }
 

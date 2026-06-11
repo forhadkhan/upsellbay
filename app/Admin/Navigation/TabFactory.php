@@ -141,19 +141,20 @@ final class TabFactory {
 						if ( 'POST' === $method && 'edit' === $this->request_key( $request['action'] ?? '' ) ) {
 							// phpcs:ignore WordPress.Security.NonceVerification.Missing
 							$result = $this->offer_editor->save( $_POST );
+							// phpcs:ignore WordPress.Security.NonceVerification.Missing
+							$posted_offer_id = isset( $_POST['offer_id'] ) ? (int) $_POST['offer_id'] : 0;
 
 							$redirect_url = admin_url( 'admin.php?page=upsellbay&tab=offers&action=edit' );
 							if ( isset( $result['offer_id'] ) ) {
 								$redirect_url = add_query_arg( 'offer_id', $result['offer_id'], $redirect_url );
-							} elseif ( isset( $_POST['offer_id'] ) ) {
-								// phpcs:ignore WordPress.Security.NonceVerification.Missing
-								$redirect_url = add_query_arg( 'offer_id', (int) $_POST['offer_id'], $redirect_url );
+							} elseif ( $posted_offer_id > 0 ) {
+								$redirect_url = add_query_arg( 'offer_id', $posted_offer_id, $redirect_url );
 							}
 
-							if ( ! empty( $result['success'] ) ) {
+							if ( true === $result['success'] ) {
 								$redirect_url = add_query_arg( 'wc_message', rawurlencode( __( 'Offer saved successfully.', 'upsellbay' ) ), $redirect_url );
 							} else {
-								$redirect_url = add_query_arg( 'wc_error', rawurlencode( $result['message'] ?? __( 'Failed to save offer.', 'upsellbay' ) ), $redirect_url );
+								$redirect_url = add_query_arg( 'wc_error', rawurlencode( $result['message'] ), $redirect_url );
 							}
 
 							wp_safe_redirect( $redirect_url );

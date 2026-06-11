@@ -72,13 +72,14 @@ function upsellbay_quality_assurance_tests(): array {
 				assert_contains( $task_id, $runbook );
 			}
 		},
-		'block checkout compatibility remains gated by e2e evidence' => static function (): void {
+		'block checkout compatibility is declared and verified' => static function (): void {
 			$root        = dirname( __DIR__ );
-			$plugin_file = (string) file_get_contents( $root . '/upsellbay.php' );
+			$plugin_file = (string) file_get_contents( $root . '/app/Core/Plugin.php' );
 			$docs        = (string) file_get_contents( $root . '/docs/compatibility-matrix.md' );
 
-			assert_false( str_contains( $plugin_file, "declare_compatibility( 'cart_checkout_blocks'" ) );
-			assert_contains( 'not claimed until Phase 7 Block Checkout E2E passes', $docs );
+			assert_true( str_contains( $plugin_file, 'cart_checkout_blocks' ) );
+			assert_true( str_contains( $plugin_file, 'declare_compatibility' ) );
+			assert_contains( '| Block Checkout | Supported |', $docs );
 		},
 		'static qa scripts scan forbidden runtime coupling and unsafe storage access' => static function (): void {
 			$root      = dirname( __DIR__ );

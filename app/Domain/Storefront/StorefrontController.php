@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace WPAnchorBay\UpsellBay\Domain\Storefront;
 
 use WPAnchorBay\UpsellBay\Core\Constants;
+use WPAnchorBay\UpsellBay\Core\Settings;
 use WPAnchorBay\UpsellBay\Data\CartSession;
 use WPAnchorBay\UpsellBay\Data\OfferRepository;
 
@@ -41,6 +42,13 @@ final class StorefrontController {
 	private CartSession $session;
 
 	/**
+	 * Plugin settings.
+	 *
+	 * @var Settings
+	 */
+	private Settings $settings;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.0.0
@@ -48,11 +56,13 @@ final class StorefrontController {
 	 * @param OfferRepository   $offers   Offer repository.
 	 * @param PlacementRenderer $renderer Placement renderer.
 	 * @param CartSession       $session  Cart session.
+	 * @param Settings|null     $settings Plugin settings.
 	 */
-	public function __construct( OfferRepository $offers, PlacementRenderer $renderer, CartSession $session ) {
+	public function __construct( OfferRepository $offers, PlacementRenderer $renderer, CartSession $session, ?Settings $settings = null ) {
 		$this->offers   = $offers;
 		$this->renderer = $renderer;
 		$this->session  = $session;
+		$this->settings = $settings ?? new Settings();
 	}
 
 	/**
@@ -119,6 +129,10 @@ final class StorefrontController {
 	 * @param int                  $limit     Limit.
 	 */
 	private function echo_placement( string $placement, array $context, int $limit ): void {
+		if ( ! $this->should_render_placement( $placement, $context ) ) {
+			return;
+		}
+
 		$html = $this->renderer->render( $placement, $this->offers->query( array( 'limit' => 50 ) ), $context, $limit );
 		if ( '' === $html ) {
 			return;
@@ -135,14 +149,22 @@ final class StorefrontController {
 	 */
 	private function context(): array {
 		$context = array(
-			'cart_product_ids'  => array(),
-			'cart_category_ids' => array(),
-			'cart_tag_ids'      => array(),
-			'cart_subtotal'     => '0',
+			'cart_product_ids'    => array(),
+			'cart_category_ids'   => array(),
+			'cart_tag_ids'        => array(),
+			'viewed_category_ids' => array(),
+			'viewed_tag_ids'      => array(),
+			'dismissed_offer_ids' => array_keys( $this->session->state()['dismissed'] ?? array() ),
+			'cart_subtotal'       => '0',
+			'source_context'      => '',
+			'is_preview'          => isset( $_GET['upsellbay_preview'] ), // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		);
 
 		if ( function_exists( 'get_the_ID' ) ) {
-			$context['viewed_product_id'] = (int) get_the_ID();
+			$viewed_product_id              = (int) get_the_ID();
+			$context['viewed_product_id']   = $viewed_product_id;
+			$context['viewed_category_ids'] = $this->product_term_ids( $viewed_product_id, 'product_cat' );
+			$context['viewed_tag_ids']      = $this->product_term_ids( $viewed_product_id, 'product_tag' );
 		}
 
 		if ( function_exists( 'WC' ) && WC()->cart ) {
@@ -151,6 +173,8 @@ final class StorefrontController {
 				$product_id = (int) ( $cart_item['product_id'] ?? 0 );
 				if ( $product_id > 0 ) {
 					$context['cart_product_ids'][] = $product_id;
+					$context['cart_category_ids']  = array_merge( $context['cart_category_ids'], $this->product_term_ids( $product_id, 'product_cat' ) );
+					$context['cart_tag_ids']       = array_merge( $context['cart_tag_ids'], $this->product_term_ids( $product_id, 'product_tag' ) );
 				}
 			}
 		}
@@ -160,7 +184,72 @@ final class StorefrontController {
 			$context['user_roles'] = $user->roles;
 		}
 
+		if ( function_exists( 'get_current_user_id' ) ) {
+			$customer_id = get_current_user_id();
+			if ( $customer_id > 0 ) {
+				$context['customer_order_count']    = function_exists( 'wc_get_customer_order_count' ) ? wc_get_customer_order_count( $customer_id ) : 0;
+				$context['customer_lifetime_spend'] = function_exists( 'wc_get_customer_total_spent' ) ? wc_get_customer_total_spent( $customer_id ) : '0';
+			}
+		}
+
 		return $context;
+	}
+
+	/**
+	 * Determine whether a storefront placement can render for this request.
+	 *
+	 * @param string               $placement Placement key.
+	 * @param array<string, mixed> $context   Render context.
+	 */
+	private function should_render_placement( string $placement, array $context ): bool {
+		$settings = $this->settings->all();
+
+		if ( true !== ( $settings['enabled'] ?? true ) ) {
+			return false;
+		}
+
+		if ( false === ( $settings['placements'][ $placement ] ?? true ) ) {
+			return false;
+		}
+
+		if ( true === ( $settings['test_mode'] ?? false ) && ! $this->can_view_test_mode( $context ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Return whether the current viewer can see test-mode offers.
+	 *
+	 * @param array<string, mixed> $context Render context.
+	 */
+	private function can_view_test_mode( array $context ): bool {
+		if ( true === ( $context['is_preview'] ?? false ) ) {
+			return true;
+		}
+
+		return function_exists( 'current_user_can' ) && current_user_can( 'manage_woocommerce' ); // phpcs:ignore WordPress.WP.Capabilities.Unknown
+	}
+
+	/**
+	 * Return product term IDs when WordPress taxonomy helpers are available.
+	 *
+	 * @param int    $product_id Product ID.
+	 * @param string $taxonomy   Taxonomy.
+	 * @return array<int, int>
+	 */
+	private function product_term_ids( int $product_id, string $taxonomy ): array {
+		if ( $product_id <= 0 || ! function_exists( 'wp_get_post_terms' ) ) {
+			return array();
+		}
+
+		$terms = wp_get_post_terms( $product_id, $taxonomy, array( 'fields' => 'ids' ) );
+		if ( ! is_array( $terms ) ) {
+			return array();
+		}
+
+		return array_values( array_filter( array_map( 'intval', $terms ) ) );
 	}
 
 	/**
@@ -188,15 +277,53 @@ final class StorefrontController {
 			true
 		);
 
+		$this->enqueue_styles();
+
 		if ( function_exists( 'wp_localize_script' ) && function_exists( 'rest_url' ) ) {
 			wp_localize_script(
 				$handle,
 				'upsellbayStorefront',
 				array(
-					'restUrl' => rest_url( Constants::REST_NAMESPACE ),
-					'token'   => $this->session->ensure_token(),
+					'restUrl'     => rest_url( Constants::REST_NAMESPACE ),
+					'token'       => $this->session->ensure_token(),
+					'cartUrl'     => function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : '',
+					'checkoutUrl' => function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : '',
 				)
 			);
 		}
+	}
+
+	/**
+	 * Enqueue scoped storefront styles and merchant style tokens.
+	 */
+	private function enqueue_styles(): void {
+		if ( ! function_exists( 'wp_enqueue_style' ) ) {
+			return;
+		}
+
+		$handle   = Constants::asset_handle( 'storefront' );
+		$css_file = dirname( Constants::plugin_file() ) . '/assets/frontend/storefront.css';
+		$version  = file_exists( $css_file ) ? (string) filemtime( $css_file ) : Constants::VERSION;
+
+		wp_enqueue_style(
+			$handle,
+			plugins_url( 'assets/frontend/storefront.css', Constants::plugin_file() ),
+			array(),
+			$version
+		);
+
+		if ( ! function_exists( 'wp_add_inline_style' ) ) {
+			return;
+		}
+
+		$tokens       = $this->settings->all()['style_tokens'] ?? array();
+		$accent_color = (string) ( $tokens['accent_color'] ?? '#2271b1' );
+		$button_style = (string) ( $tokens['button_style'] ?? 'theme' );
+		$css          = '.upsellbay-offer{--upsellbay-accent:' . esc_attr( $accent_color ) . ';}';
+		if ( 'outline' === $button_style ) {
+			$css .= '.upsellbay-offer .upsellbay-offer__button{background:transparent;color:var(--upsellbay-accent);border-color:var(--upsellbay-accent);}';
+		}
+
+		wp_add_inline_style( $handle, $css );
 	}
 }

@@ -130,7 +130,52 @@ final class OfferPrioritizer {
 			&& ( null === $end_at || $end_at >= $current )
 			&& $product_id > 0
 			&& ( $this->product_available )( $product_id )
+			&& $this->matches_triggers( $meta, $context )
 			&& $this->rules->matches( $rules, $rules_match, $context );
+	}
+
+	/**
+	 * Check legacy trigger product/category shortcuts against the storefront context.
+	 *
+	 * @param array<string, mixed> $meta    Offer meta.
+	 * @param array<string, mixed> $context Storefront context.
+	 */
+	private function matches_triggers( array $meta, array $context ): bool {
+		$product_ids  = $this->int_list( $meta['_ub_trigger_product_ids'] ?? array() );
+		$category_ids = $this->int_list( $meta['_ub_trigger_category_ids'] ?? array() );
+
+		if ( array() === $product_ids && array() === $category_ids ) {
+			return true;
+		}
+
+		$context_products   = array_merge(
+			$this->int_list( $context['cart_product_ids'] ?? array() ),
+			$this->int_list( array( $context['viewed_product_id'] ?? 0 ) )
+		);
+		$context_categories = array_merge(
+			$this->int_list( $context['cart_category_ids'] ?? array() ),
+			$this->int_list( $context['viewed_category_ids'] ?? array() )
+		);
+
+		return ( array() !== $product_ids && array() !== array_intersect( $product_ids, $context_products ) )
+			|| ( array() !== $category_ids && array() !== array_intersect( $category_ids, $context_categories ) );
+	}
+
+	/**
+	 * Normalize integer lists.
+	 *
+	 * @param mixed $value Raw value.
+	 * @return array<int, int>
+	 */
+	private function int_list( $value ): array {
+		$values = is_array( $value ) ? $value : array( $value );
+
+		return array_values(
+			array_filter(
+				array_map( 'intval', $values ),
+				static fn ( int $item ): bool => $item > 0
+			)
+		);
 	}
 
 	/**

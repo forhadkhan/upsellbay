@@ -241,8 +241,8 @@ function upsellbay_developer_extensibility_tests(): array {
 				upsellbay_test_offer_repository( array(), $saved ),
 				new OfferValidator( new OfferSchema(), static fn (): bool => true )
 			);
-			$service->create( array( 'title' => 'Created', 'meta' => array( '_ub_offer_product_id' => 50 ) ) );
-			$service->update( 1, array( 'title' => 'Updated', 'meta' => array( '_ub_offer_product_id' => 50 ) ) );
+			$service->create( array( 'title' => 'Created', 'meta' => array( '_ub_offer_product_id' => 50, '_ub_headline' => 'Add warranty', '_ub_button_text' => 'Add to order' ) ) );
+			$service->update( 1, array( 'title' => 'Updated', 'meta' => array( '_ub_offer_product_id' => 50, '_ub_headline' => 'Add warranty', '_ub_button_text' => 'Add to order' ) ) );
 			( new StatsReconciler( new StatsRepository( static function (): void {}, static fn (): array => array() ) ) )->repair_missing_row( '2026-05-30', 6, 'checkout_bump' );
 
 			assert_true( in_array( 'offer_created', $observed, true ) );

@@ -120,10 +120,10 @@ final class CartMutator {
 			);
 		}
 
-		$meta          = is_array( $offer['meta'] ?? null ) ? $offer['meta'] : array();
-		$product_id    = (int) $meta['_ub_offer_product_id'];
-		$discount      = is_array( $validation['discount'] ?? null ) ? $validation['discount'] : $this->discounts->calculate( '0', $meta );
-		$item_data     = array(
+		$meta       = is_array( $offer['meta'] ?? null ) ? $offer['meta'] : array();
+		$product_id = (int) $meta['_ub_offer_product_id'];
+		$discount   = is_array( $validation['discount'] ?? null ) ? $validation['discount'] : $this->discounts->calculate( '0', $meta );
+		$item_data  = array(
 			Constants::ATTRIBUTION_OFFER_ID        => $offer_id,
 			Constants::ATTRIBUTION_OFFER_TYPE      => $meta['_ub_offer_type'],
 			Constants::ATTRIBUTION_OFFER_PLACEMENT => $placement,
@@ -133,14 +133,18 @@ final class CartMutator {
 			'_ub_offer_price'                      => $discount['offer_price'],
 			'_ub_source_context'                   => (string) ( $context['source_context'] ?? $placement ),
 		);
+		if ( isset( $context['source_order_id'] ) && (int) $context['source_order_id'] > 0 ) {
+			$item_data[ Constants::ATTRIBUTION_SOURCE_ORDER_ID ] = (int) $context['source_order_id'];
+		}
 		$cart_item_key = ( $this->add_to_cart )( $product_id, 1, $item_data );
 
-		$this->session->accept_offer( $offer_id, $placement, $cart_item_key );
+		$this->session->accept_offer( $offer_id, $placement, $cart_item_key, array( 'source_order_id' => (int) ( $context['source_order_id'] ?? 0 ) ) );
 
 		return array(
-			'success'       => true,
-			'cart_item_key' => $cart_item_key,
-			'offer_price'   => $discount['offer_price'],
+			'success'         => true,
+			'cart_item_key'   => $cart_item_key,
+			'offer_price'     => $discount['offer_price'],
+			'discount_amount' => $discount['discount_amount'],
 		);
 	}
 

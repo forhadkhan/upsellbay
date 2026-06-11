@@ -35,13 +35,6 @@ $checks = array(
 			'gzinflate(',
 		),
 	),
-	'premature block checkout compatibility claim' => array(
-		'paths'  => array( 'app', 'upsellbay.php' ),
-		'tokens' => array(
-			"declare_compatibility( 'cart_checkout_blocks'",
-			'declare_compatibility("cart_checkout_blocks"',
-		),
-	),
 );
 
 /**

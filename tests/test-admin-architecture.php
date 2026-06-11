@@ -409,6 +409,8 @@ function upsellbay_admin_architecture_tests(): array {
 							'_ub_offer_type'       => 'checkout_bump',
 							'_ub_status'           => 'active',
 							'_ub_offer_product_id' => 25,
+							'_ub_headline'         => 'Add warranty',
+							'_ub_button_text'      => 'Add to order',
 							'_ub_priority'         => 4,
 						),
 					),
