@@ -294,8 +294,6 @@ final class OfferEditPage {
 	 * @since 1.0.0
 	 */
 	public function render_content(): void {
-		$this->section_navigation->render( 'add_offer' );
-
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$offer_id = isset( $_GET['offer_id'] ) ? (int) $_GET['offer_id'] : ( isset( $_GET['id'] ) ? (int) $_GET['id'] : 0 );
 		$offer    = null;
@@ -304,10 +302,17 @@ final class OfferEditPage {
 			$offer = $this->service->get( $offer_id );
 		}
 
+		$this->section_navigation->render( $offer ? '' : 'add_offer' );
+
 		$meta  = $offer ? $offer['meta'] : $this->defaults->for_type( 'checkout_bump' );
 		$title = $offer ? $offer['title'] : '';
 
-		echo '<h2 class="wp-heading-inline">' . esc_html( $offer ? __( 'Edit UpsellBay Offer', 'upsellbay' ) : __( 'Add UpsellBay Offer', 'upsellbay' ) ) . '</h2>';
+		if ( $offer ) {
+			echo '<h2 class="wp-heading-inline">' . esc_html( sprintf( __( 'UpsellBay Offer: ID - %d', 'upsellbay' ), $offer_id ) ) . '</h2>';
+			echo '<p class="description" style="margin-bottom: 8px;">' . esc_html__( 'You can modify and save data', 'upsellbay' ) . '</p>';
+		} else {
+			echo '<h2 class="wp-heading-inline">' . esc_html__( 'Add UpsellBay Offer', 'upsellbay' ) . '</h2>';
+		}
 		echo '<hr class="wp-header-end">';
 		echo '<form method="post">';
 		if ( function_exists( 'wp_nonce_field' ) ) {
