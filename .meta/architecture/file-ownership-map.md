@@ -19,6 +19,9 @@ The implementation layout follows PRD v4, the folder structure plan, and the pha
 | `app/Core/Plugin.php` | Initialization order and hook registration. | Phase 1 | Container and services. |
 | `app/Core/Installer.php` | Activation, deactivation, upgrade shell, stats table migration, scheduled action setup. | Phase 1 and Phase 2 | Constants, stats schema, Action Scheduler. |
 | `app/Core/Settings.php` | Settings defaults, normalization, option access. | Phase 1 and Phase 2 | Single `upsellbay_settings` option. |
+| `app/Core/Platform.php` | Minimum runtime dependency checks (PHP, WP, Woo). | Phase 1 | - |
+| `app/Core/Hooks.php` | Wrapper for WordPress hooks. | Phase 1 | - |
+| `app/Core/Scheduler.php` | Action Scheduler wrapper. | Phase 2 | Action Scheduler. |
 | `app/Admin/Offers/*` | WP list table and offer editor surfaces. | Phase 3 | Offer repository and validator. |
 | `app/Admin/Settings/*` | Woo-native settings sections, section navigation (`SettingsSectionNavigation`), and tools. `BasicSection` replaces the former `GeneralSection`. | Phase 3 | Settings service, capability and nonce checks. |
 | `app/Admin/Wizard/*` | First-run wizard. | Phase 5 | Offer service and test mode. |
@@ -28,7 +31,9 @@ The implementation layout follows PRD v4, the folder structure plan, and the pha
 | `app/Admin/AdminBar.php` | Admin-only test mode indicator. | Phase 3 and Phase 5 | Settings service. |
 | `app/Admin/AdminPage.php` | Unified WooCommerce submenu page shell with tab routing. Renders the layout header with `Get Started` and `Add Offer` action buttons, page notices, tab navigation, and active tab content. Owns the `admin_title` filter. | Phase 1 | Tab registry, tab router, tab navigation. |
 | `app/Admin/Navigation/TabFactory.php` | Registers all tabs. The setup tab is marked `is_visible = false` and labeled `Get started`. | Phase 1 | Dashboard, Offers, Settings, Tools, Wizard, Help page renderers. |
+| `app/Admin/PreviewLinks.php` | Shared preview link generator for frontend placements. | Phase 4 | WooCommerce products. |
 | `app/Api/Routes/*` | REST route registration, permissions, validation, safe responses. | Phase 4 | Domain services, rate limiter, nonces. |
+| `app/Api/ProductsController.php` | AJAX product/category search for the admin offer editor. | Phase 3 | WooCommerce product/term APIs. |
 | `app/Data/OfferRepository.php` | Private `upsellbay_offer` CPT and `_ub_` offer meta access. | Phase 2 | Constants and schema. |
 | `app/Data/StatsRepository.php` | Aggregate stats table reads/writes. | Phase 2 and Phase 4 | Installer migration. |
 | `app/Data/CartSession.php` | Woo session-backed offer state. | Phase 2 and Phase 4 | WooCommerce session APIs. |

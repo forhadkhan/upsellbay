@@ -6,7 +6,7 @@ Tasks: `UB-P4-001` through `UB-P4-018`.
 
 ## Offer Engine
 
-`Domain\Offers\OfferService` is the lifecycle boundary for create, update, duplicate, pause, activate, delete, and preview payloads. Admin save and list-table mutations now go through this service rather than directly mutating repository state.
+`Domain\Offers\OfferService` is the lifecycle boundary for create, update, duplicate, pause, activate, delete, and preview payloads. Admin save and list-table mutations now go through this service rather than directly mutating repository state. Uses `ValidationResult` to safely pass back input validation errors.
 
 `Domain\Offers\OfferPrioritizer` selects eligible offers by placement, active status, schedule, dismissal state, product availability, rules, and priority. Core checkout rendering remains limited to one checkout bump; cart rendering can request up to three offers.
 
@@ -20,7 +20,7 @@ Tasks: `UB-P4-001` through `UB-P4-018`.
 
 `Domain\Storefront\PlacementRenderer` delegates escaped offer-card markup to placement renderers for classic checkout, product page, cart, and thank-you offers. `StorefrontController` connects those renderers to WooCommerce hooks and scopes frontend assets to rendered placements.
 
-`Api\Routes\PublicOfferRoutes` provides shopper-safe `/bump-toggle`, `/cart-offer-add`, and `/dismiss` handlers with session token validation, rate limiting, server-side offer loading, and analytics recording. `Api\Routes\OfferPreviewRoute` provides the admin preview payload through `OfferService`.
+`Api\Routes\PublicOfferRoutes` provides shopper-safe `/bump-toggle`, `/cart-offer-add`, and `/dismiss` handlers with session token validation, rate limiting, server-side offer loading, and analytics recording. `Api\Routes\OfferPreviewRoute` provides the admin preview payload through `OfferService`. `Api\Routes\ProductsRoute` and `Api\ProductsController` provide AJAX product search endpoints for the admin offer editor.
 
 Block Checkout support is wired through `Integrations\WooCommerce\CheckoutFields`, `BlockCheckoutIntegration`, and the compiled `src/block-checkout` entry. The runtime does not declare Cart/Checkout Blocks compatibility here; the launch claim remains gated by Phase 7 E2E proof.
 

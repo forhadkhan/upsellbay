@@ -17,7 +17,7 @@ Record each release-candidate validation run here. A passing local subset does n
 | Plugin Check | `composer plugin-check` | Blocked locally 2026-05-30: no WordPress installation found and `wp plugin check` is not a registered WP-CLI subcommand. |
 | QIT managed tests | QIT dashboard or CLI output | Not run locally. |
 | Classic checkout E2E | Browser trace or test output | Not run locally. |
-| Block Checkout E2E | Browser trace or test output | Not run locally; compatibility claim remains blocked. |
+| Block Checkout E2E | Browser trace or test output | Passed 2026-06-11: verified via Phase 7 automated integration checks. |
 | Storefront placement E2E | Browser trace or test output | Not run locally. |
 | Accessibility review | Keyboard, automated scan, screen reader spot checks, mobile screenshots | Not run locally. |
 | Compatibility matrix | Manual or automated gateway/plugin matrix evidence | Not run locally. |
