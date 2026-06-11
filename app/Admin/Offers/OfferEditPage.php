@@ -115,6 +115,14 @@ final class OfferEditPage {
 		}
 
 		$title = $this->sanitize_text( (string) ( $request['title'] ?? '' ) );
+
+		if ( '' === $title ) {
+			return array(
+				'success' => false,
+				'message' => __( 'Offer name is required.', 'upsellbay' ),
+			);
+		}
+
 		$meta  = $this->submitted_meta( $request );
 		$valid = $this->validator->validate( $meta );
 
@@ -453,7 +461,8 @@ final class OfferEditPage {
 		} elseif ( '_ub_start_at' === $field || '_ub_end_at' === $field ) {
 			echo '<input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="datetime-local" class="regular-text" value="' . esc_attr( (string) $value ) . '">';
 		} else {
-			echo '<input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="text" class="regular-text" value="' . esc_attr( (string) $value ) . '">';
+			$is_required = in_array( $field, array( 'title', '_ub_headline', '_ub_button_text' ), true );
+			echo '<input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="text" class="regular-text" value="' . esc_attr( (string) $value ) . '"' . ( $is_required ? ' required' : '' ) . '>';
 		}
 
 		echo '</td></tr>';

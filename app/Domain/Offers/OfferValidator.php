@@ -81,6 +81,14 @@ final class OfferValidator {
 			$errors['_ub_discount_value'] = 'Discount value cannot be negative.';
 		}
 
+		if ( '' === $normalized['_ub_headline'] ) {
+			$errors['_ub_headline'] = 'Headline is required.';
+		}
+
+		if ( '' === $normalized['_ub_button_text'] ) {
+			$errors['_ub_button_text'] = 'Button text is required.';
+		}
+
 		if ( null !== $normalized['_ub_start_at'] && null !== $normalized['_ub_end_at'] && $normalized['_ub_start_at'] > $normalized['_ub_end_at'] ) {
 			$errors['_ub_end_at'] = 'End date must be after start date.';
 		}
