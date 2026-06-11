@@ -231,3 +231,143 @@ window.jQuery(function ($) {
     }
   });
 });
+
+/**
+ * UpsellBay Offer Editor Form Validation & Persistence
+ */
+window.jQuery(function ($) {
+  const $form = $('#upsellbay-offer-editor-form');
+  if (!$form.length) {
+    return;
+  }
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const offerId = urlParams.get('offer_id') || 'new';
+  const cacheKey = `upsellbay_offer_draft_${offerId}`;
+
+  let isDirty = false;
+  let isSubmitting = false;
+
+  const requiredFields = ['title', '_ub_headline', '_ub_button_text', '_ub_offer_product_id'];
+  const jsonFields = ['_ub_rules', '_ub_placement_config'];
+
+  // Restore cache if exists
+  const cachedData = localStorage.getItem(cacheKey);
+  if (cachedData) {
+    try {
+      const parsedCache = JSON.parse(cachedData);
+      Object.keys(parsedCache).forEach(key => {
+        const $input = $form.find(`[name="${key}"]`);
+        if ($input.length) {
+          if ($input.is(':checkbox') || $input.is(':radio')) {
+            $form.find(`[name="${key}"][value="${parsedCache[key]}"]`).prop('checked', true);
+          } else {
+            $input.val(parsedCache[key]);
+          }
+        }
+      });
+      // Update UI for product selector
+      const productId = parsedCache['_ub_offer_product_id'];
+      if (productId) {
+         // To make it look selected, at least hide the search wrapper
+         $form.find('.upsellbay-product-selector__input-wrapper').hide();
+         $form.find('[data-upsellbay-selection]').html(`
+            <div class="upsellbay-product-selector__result-info">
+              <span class="upsellbay-product-selector__result-name">Product ID: ${productId}</span>
+              <span class="upsellbay-product-selector__result-meta">(Restored from draft)</span>
+            </div>
+            <span class="upsellbay-product-selector__selection-remove">&times;</span>
+         `).addClass("is-active");
+         
+         $form.find('.upsellbay-product-selector__selection-remove').on("click", () => {
+            $form.find('input[name="_ub_offer_product_id"]').val("");
+            $form.find('[data-upsellbay-selection]').empty().removeClass("is-active");
+            $form.find('.upsellbay-product-selector__input-wrapper').show();
+         });
+      }
+    } catch (e) {
+      console.error('Failed to parse cached offer data', e);
+    }
+  }
+
+  // Update cache on input
+  function saveCache() {
+    isDirty = true;
+    const formData = new FormData($form[0]);
+    const cacheObj = {};
+    for (let [key, value] of formData.entries()) {
+      cacheObj[key] = value;
+    }
+    localStorage.setItem(cacheKey, JSON.stringify(cacheObj));
+  }
+
+  $form.on('input change', 'input, select, textarea', function() {
+    saveCache();
+  });
+
+  // Handle Clear Button
+  $('#upsellbay-clear-offer-form').on('click', function(e) {
+    e.preventDefault();
+    if (confirm(wp.i18n ? wp.i18n.__('Are you sure you want to clear all fields?', 'upsellbay') : 'Are you sure you want to clear all fields?')) {
+      $form[0].reset();
+      
+      $form.find('[data-upsellbay-selection]').empty().removeClass('is-active');
+      $form.find('.upsellbay-product-selector__input-wrapper').show();
+      $form.find('input[type="hidden"]').val('');
+      
+      localStorage.removeItem(cacheKey);
+      isDirty = false;
+    }
+  });
+
+  // Form Submission Validation
+  $form.on('submit', function(e) {
+    isSubmitting = true;
+    let isValid = true;
+    let errorMessages = [];
+
+    // Required fields check
+    requiredFields.forEach(fieldName => {
+      const $field = $form.find(`[name="${fieldName}"]`);
+      if ($field.length && !$field.val().trim()) {
+        isValid = false;
+        errorMessages.push(`Please fill out the required field: ${fieldName.replace('_ub_', '').replace(/_/g, ' ')}`);
+        $field.css('border-color', 'red');
+      } else if ($field.length) {
+        $field.css('border-color', '');
+      }
+    });
+
+    // JSON parsing check
+    jsonFields.forEach(fieldName => {
+      const $field = $form.find(`[name="${fieldName}"]`);
+      if ($field.length && $field.val().trim()) {
+        try {
+          JSON.parse($field.val().trim());
+          $field.css('border-color', '');
+        } catch (err) {
+          isValid = false;
+          errorMessages.push(`Invalid JSON format in field: ${fieldName.replace('_ub_', '').replace(/_/g, ' ')}`);
+          $field.css('border-color', 'red');
+        }
+      }
+    });
+
+    if (!isValid) {
+      e.preventDefault();
+      isSubmitting = false;
+      alert("Please fix the following errors:\n\n- " + errorMessages.join("\n- "));
+      return false;
+    }
+
+    localStorage.removeItem(cacheKey);
+  });
+
+  // Unsaved changes warning
+  window.addEventListener('beforeunload', function(e) {
+    if (isDirty && !isSubmitting) {
+      e.preventDefault();
+      e.returnValue = ''; 
+    }
+  });
+});
