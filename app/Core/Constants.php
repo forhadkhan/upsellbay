@@ -30,6 +30,7 @@ final class Constants {
 	public const NONCE_PREFIX                    = 'upsellbay_';
 	public const OFFER_POST_TYPE                 = 'upsellbay_offer';
 	public const STATS_TABLE_SUFFIX              = 'upsellbay_offer_stats_daily';
+	public const LOGS_TABLE_SUFFIX               = 'upsellbay_logs';
 	public const ACTION_SCHEDULER_GROUP          = 'upsellbay';
 	public const ASSET_HANDLE_PREFIX             = 'upsellbay-';
 	public const LICENSE_PRODUCT_SLUG            = 'upsellbay';

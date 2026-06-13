@@ -145,14 +145,18 @@ final class Installer {
 			return;
 		}
 
-		$wpdb           = $GLOBALS['wpdb'];
-		$charset        = method_exists( $wpdb, 'get_charset_collate' ) ? $wpdb->get_charset_collate() : '';
-		$table_name     = $wpdb->prefix . Constants::STATS_TABLE_SUFFIX;
-		$table_name_sql = esc_sql( $table_name );
+		$wpdb    = $GLOBALS['wpdb'];
+		$charset = method_exists( $wpdb, 'get_charset_collate' ) ? $wpdb->get_charset_collate() : '';
 
-		$sql = self::stats_table_schema_sql( $table_name_sql, $charset );
+		$stats_table     = $wpdb->prefix . Constants::STATS_TABLE_SUFFIX;
+		$stats_table_sql = esc_sql( $stats_table );
+		$stats_sql       = self::stats_table_schema_sql( $stats_table_sql, $charset );
+		dbDelta( $stats_sql );
 
-		dbDelta( $sql );
+		$logs_table     = $wpdb->prefix . Constants::LOGS_TABLE_SUFFIX;
+		$logs_table_sql = esc_sql( $logs_table );
+		$logs_sql       = self::logs_table_schema_sql( $logs_table_sql, $charset );
+		dbDelta( $logs_sql );
 	}
 
 	/**
@@ -180,6 +184,39 @@ final class Installer {
 	}
 
 	/**
+	 * Build the logs table schema.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $table_name_sql Escaped table name.
+	 * @param string $charset        Charset clause.
+	 */
+	public static function logs_table_schema_sql( string $table_name_sql, string $charset ): string {
+		return "CREATE TABLE {$table_name_sql} (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			log_type varchar(64) NOT NULL DEFAULT '',
+			title varchar(255) NOT NULL DEFAULT '',
+			description text,
+			status varchar(32) NOT NULL DEFAULT 'info',
+			source varchar(128) DEFAULT NULL,
+			user_id bigint(20) unsigned NOT NULL DEFAULT 0,
+			object_type varchar(64) DEFAULT NULL,
+			object_id bigint(20) unsigned DEFAULT NULL,
+			request_data longtext,
+			response_data longtext,
+			metadata longtext,
+			ip_address varchar(45) DEFAULT NULL,
+			user_agent text,
+			created_at datetime NOT NULL,
+			PRIMARY KEY  (id),
+			KEY log_type (log_type),
+			KEY status (status),
+			KEY user_id (user_id),
+			KEY created_at (created_at)
+		) {$charset};";
+	}
+
+	/**
 	 * Opt-in uninstall cleanup. Data is preserved by default.
 	 *
 	 * @since 1.0.0
@@ -198,10 +235,13 @@ final class Installer {
 		}
 
 		if ( isset( $GLOBALS['wpdb'] ) ) {
-			$wpdb       = $GLOBALS['wpdb'];
-			$table_name = esc_sql( $wpdb->prefix . Constants::STATS_TABLE_SUFFIX );
+			$wpdb        = $GLOBALS['wpdb'];
+			$stats_table = esc_sql( $wpdb->prefix . Constants::STATS_TABLE_SUFFIX );
+			$logs_table  = esc_sql( $wpdb->prefix . Constants::LOGS_TABLE_SUFFIX );
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-			$wpdb->query( "DROP TABLE IF EXISTS {$table_name}" );
+			$wpdb->query( "DROP TABLE IF EXISTS {$stats_table}" );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->query( "DROP TABLE IF EXISTS {$logs_table}" );
 		}
 	}
 }
