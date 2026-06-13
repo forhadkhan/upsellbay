@@ -11,6 +11,7 @@ namespace WPAnchorBay\UpsellBay\Api;
 
 use WP_REST_Request;
 use WP_REST_Response;
+use WPAnchorBay\UpsellBay\Domain\Offers\ProductRecommendationAssistant;
 
 /**
  * Handles product and category searching for the admin UI.
@@ -18,6 +19,22 @@ use WP_REST_Response;
  * @since 1.0.0
  */
 final class ProductsController {
+
+	/**
+	 * Recommendation assistant.
+	 *
+	 * @var ProductRecommendationAssistant|null
+	 */
+	private ?ProductRecommendationAssistant $assistant;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param ProductRecommendationAssistant|null $assistant Recommendation assistant.
+	 */
+	public function __construct( ?ProductRecommendationAssistant $assistant = null ) {
+		$this->assistant = $assistant;
+	}
 
 	/**
 	 * Search products.
@@ -126,5 +143,50 @@ final class ProductsController {
 			'price' => $product->get_price_html(),
 			'image' => false !== $image_url ? $image_url : '',
 		);
+	}
+
+	/**
+	 * Get product recommendations.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response
+	 */
+	public function recommendations( WP_REST_Request $request ): WP_REST_Response {
+		if ( null === $this->assistant ) {
+			return new WP_REST_Response( array() );
+		}
+
+		$base_product_id = (int) $request->get_param( 'base_product_id' );
+		if ( $base_product_id <= 0 ) {
+			return new WP_REST_Response( array() );
+		}
+
+		$product = function_exists( 'wc_get_product' ) ? wc_get_product( $base_product_id ) : null;
+		if ( ! $product ) {
+			return new WP_REST_Response( array() );
+		}
+
+		$category_ids = $product->get_category_ids();
+
+		$suggestions = $this->assistant->suggest( array(
+			'base_product_id' => $base_product_id,
+			'category_ids'    => $category_ids,
+			'limit'           => 5,
+		) );
+
+		$data = array();
+		foreach ( $suggestions as $suggestion ) {
+			$sugg_product = function_exists( 'wc_get_product' ) ? wc_get_product( $suggestion['product_id'] ) : null;
+			if ( $sugg_product ) {
+				$formatted = $this->format_product( $sugg_product );
+				$formatted['source'] = $suggestion['source'];
+				$formatted['reason'] = $suggestion['reason'];
+				$data[] = $formatted;
+			}
+		}
+
+		return new WP_REST_Response( $data );
 	}
 }

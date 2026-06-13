@@ -68,6 +68,18 @@ final class ProductsRoute {
 				),
 			)
 		);
+
+		register_rest_route(
+			Constants::REST_NAMESPACE,
+			'/recommendations',
+			array(
+				array(
+					'methods'             => 'GET',
+					'callback'            => array( $this->controller, 'recommendations' ),
+					'permission_callback' => array( $this, 'can_manage' ),
+				),
+			)
+		);
 	}
 
 	/**
