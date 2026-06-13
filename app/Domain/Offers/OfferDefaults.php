@@ -31,20 +31,20 @@ final class OfferDefaults {
 		return array_replace(
 			$schema->defaults(),
 			array(
-				'_ub_offer_type'       => $offer_type,
-				'_ub_status'           => 'draft',
-				'_ub_discount_type'    => 'none',
-				'_ub_discount_value'   => '0.000000',
-				'_ub_offer_goal'       => $copy['offer_goal'],
-				'_ub_reason_label'     => $copy['reason_label'],
-				'_ub_conflict_override'=> false,
+				'_ub_offer_type'               => $offer_type,
+				'_ub_status'                   => 'draft',
+				'_ub_discount_type'            => 'none',
+				'_ub_discount_value'           => '0.000000',
+				'_ub_offer_goal'               => $copy['offer_goal'],
+				'_ub_reason_label'             => $copy['reason_label'],
+				'_ub_conflict_override'        => false,
 				'_ub_conflict_override_reason' => '',
-				'_ub_headline'         => $copy['headline'],
-				'_ub_body'             => $copy['body'],
-				'_ub_button_text'      => $copy['button_text'],
-				'_ub_placement_config' => $this->placement_config( $offer_type ),
-				'_ub_show_image'       => true,
-				'_ub_priority'         => 10,
+				'_ub_headline'                 => $copy['headline'],
+				'_ub_body'                     => $copy['body'],
+				'_ub_button_text'              => $copy['button_text'],
+				'_ub_placement_config'         => $this->placement_config( $offer_type ),
+				'_ub_show_image'               => true,
+				'_ub_priority'                 => 10,
 			)
 		);
 	}

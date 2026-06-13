@@ -25,7 +25,7 @@ final class CartCrossSellRenderer extends AbstractOfferRenderer {
 	 */
 	public function render_offer( array $offer, array $context = array() ): string {
 		static $heading_rendered = false;
-		
+
 		$meta         = is_array( $offer['meta'] ?? null ) ? $offer['meta'] : array();
 		$offer_id     = (int) ( $offer['id'] ?? 0 );
 		$product_id   = (int) ( $meta['_ub_offer_product_id'] ?? 0 );
@@ -39,11 +39,11 @@ final class CartCrossSellRenderer extends AbstractOfferRenderer {
 		$image_html   = $show_image ? $this->product_image_html( $product, $product_name ) : '';
 		$price_html   = $this->render_price_html( $product, $meta );
 		$reason_lbl   = $this->render_reason_label( $meta );
-		
-		$cart_product_ids = $context['cart_product_ids'] ?? array();
-		$in_cart = in_array( $product_id, $cart_product_ids, true );
 
-		$control = $in_cart 
+		$cart_product_ids = $context['cart_product_ids'] ?? array();
+		$in_cart          = in_array( $product_id, $cart_product_ids, true );
+
+		$control = $in_cart
 			? $this->render_already_in_cart_notice()
 			: '<button type="button" class="button upsellbay-offer__button" data-upsellbay-offer-id="' . $this->esc_attr( (string) $offer_id ) . '">' . $this->esc_html( $button_text ) . '</button>';
 

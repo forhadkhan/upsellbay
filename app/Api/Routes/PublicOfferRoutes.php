@@ -352,6 +352,7 @@ final class PublicOfferRoutes {
 	private function guard( string $endpoint, array $params ) {
 		$client_key = (string) ( $params['token'] ?? $params['_wpnonce'] ?? 'guest' );
 		if ( ! isset( $params['token'] ) || '' === (string) $params['token'] || ! $this->session->validate_token( (string) $params['token'] ) ) {
+			Hooks::action( 'api_request_failed', $endpoint, 'invalid_token', $params );
 			return $this->response(
 				403,
 				array(
@@ -362,6 +363,7 @@ final class PublicOfferRoutes {
 		}
 
 		if ( ! ( $this->rate_limit )( $endpoint, $client_key ) ) {
+			Hooks::action( 'api_request_failed', $endpoint, 'rate_limited', $params );
 			return $this->response(
 				429,
 				array(

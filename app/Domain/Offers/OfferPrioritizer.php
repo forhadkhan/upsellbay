@@ -116,11 +116,11 @@ final class OfferPrioritizer {
 			return false;
 		}
 
-		$offer_id    = (int) ( $offer['id'] ?? 0 );
-		$dismissed   = is_array( $context['dismissed_offer_ids'] ?? null ) ? array_map( 'intval', $context['dismissed_offer_ids'] ) : array();
-		$product_id  = (int) ( $meta['_ub_offer_product_id'] ?? 0 );
-		$cart_ids    = is_array( $context['cart_product_ids'] ?? null ) ? array_map( 'intval', $context['cart_product_ids'] ) : array();
-		$in_cart     = in_array( $product_id, $cart_ids, true );
+		$offer_id   = (int) ( $offer['id'] ?? 0 );
+		$dismissed  = is_array( $context['dismissed_offer_ids'] ?? null ) ? array_map( 'intval', $context['dismissed_offer_ids'] ) : array();
+		$product_id = (int) ( $meta['_ub_offer_product_id'] ?? 0 );
+		$cart_ids   = is_array( $context['cart_product_ids'] ?? null ) ? array_map( 'intval', $context['cart_product_ids'] ) : array();
+		$in_cart    = in_array( $product_id, $cart_ids, true );
 
 		if ( $in_cart && in_array( $placement, array( 'checkout_bump', 'thankyou_offer' ), true ) ) {
 			return false;

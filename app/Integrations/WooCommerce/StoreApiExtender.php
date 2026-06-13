@@ -159,9 +159,9 @@ final class StoreApiExtender {
 	 */
 	public function get_offers_schema(): array {
 		$offer_schema = array(
-			'type'                 => 'object',
-			'context'              => array( 'view' ),
-			'properties'           => array(
+			'type'       => 'object',
+			'context'    => array( 'view' ),
+			'properties' => array(
 				'id'           => array(
 					'type'    => 'integer',
 					'context' => array( 'view' ),
@@ -233,7 +233,7 @@ final class StoreApiExtender {
 	 */
 	private function get_offers_for_placement( string $placement ): array {
 		$context = $this->build_context();
-		
+
 		if ( ! $this->should_render_placement( $placement, $context ) ) {
 			return array();
 		}
@@ -241,16 +241,16 @@ final class StoreApiExtender {
 		$limit    = $this->settings->placement_max_display( $placement );
 		$all      = $this->offers->query( array( 'limit' => 50 ) );
 		$selected = $this->prioritizer->select( $all, $placement, $context, $limit );
-		
+
 		$formatted_offers = array();
 		$date             = function_exists( 'current_time' ) ? current_time( 'Y-m-d' ) : gmdate( 'Y-m-d' );
-		
+
 		foreach ( $selected as $offer ) {
 			$offer_id = (int) ( $offer['id'] ?? 0 );
-			
+
 			// Record view analytics when exposed to the frontend via Store API
 			$this->analytics->record_view( $offer_id, $placement, $date );
-			
+
 			$formatted_offers[] = $this->format_offer_for_api( $offer, $context );
 		}
 
@@ -269,7 +269,7 @@ final class StoreApiExtender {
 		$product_id   = (int) ( $meta['_ub_offer_product_id'] ?? 0 );
 		$product      = function_exists( 'wc_get_product' ) ? wc_get_product( $product_id ) : null;
 		$product_name = is_object( $product ) && method_exists( $product, 'get_name' ) ? (string) $product->get_name() : '';
-		
+
 		// Determine image
 		$show_image = true === (bool) ( $meta['_ub_show_image'] ?? true );
 		$image_url  = '';
@@ -319,7 +319,7 @@ final class StoreApiExtender {
 
 		$discount_type = (string) ( $meta['_ub_discount_type'] ?? 'none' );
 		$original_html = $product->get_price_html();
-		
+
 		if ( 'none' === $discount_type || ! function_exists( 'wc_price' ) ) {
 			return $original_html;
 		}
@@ -343,7 +343,7 @@ final class StoreApiExtender {
 		} elseif ( 'fixed_price' === $discount_type ) {
 			$discounted_price = $amount;
 		}
-		
+
 		$discounted_price = max( 0.0, $discounted_price );
 
 		return '<del aria-hidden="true">' . wc_price( $price ) . '</del> <ins>' . wc_price( $discounted_price ) . '</ins>';

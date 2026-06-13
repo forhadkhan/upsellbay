@@ -53,14 +53,19 @@ final class OfferConflictDetector {
 			return array(); // Only active offers cause live conflicts.
 		}
 
-		$warnings   = array();
-		$placement  = $meta['_ub_offer_type'] ?? '';
-		$goal       = $meta['_ub_offer_goal'] ?? '';
-		$product_ids = $meta['_ub_trigger_product_ids'] ?? array();
+		$warnings     = array();
+		$placement    = $meta['_ub_offer_type'] ?? '';
+		$goal         = $meta['_ub_offer_goal'] ?? '';
+		$product_ids  = $meta['_ub_trigger_product_ids'] ?? array();
 		$category_ids = $meta['_ub_trigger_category_ids'] ?? array();
 
 		// Fetch all other active offers for comparison
-		$active_offers = $this->repository->query( array( 'status' => 'active', 'limit' => 100 ) );
+		$active_offers = $this->repository->query(
+			array(
+				'status' => 'active',
+				'limit'  => 100,
+			)
+		);
 
 		$placement_count = 1; // Count self
 		$funnel_overlaps = array();
@@ -71,14 +76,14 @@ final class OfferConflictDetector {
 				continue;
 			}
 
-			$other_meta = $other_offer['meta'] ?? array();
+			$other_meta      = $other_offer['meta'] ?? array();
 			$other_placement = $other_meta['_ub_offer_type'] ?? '';
 
 			if ( $placement === $other_placement ) {
-				$placement_count++;
+				++$placement_count;
 
-				$other_goal = $other_meta['_ub_offer_goal'] ?? '';
-				$other_product_ids = $other_meta['_ub_trigger_product_ids'] ?? array();
+				$other_goal         = $other_meta['_ub_offer_goal'] ?? '';
+				$other_product_ids  = $other_meta['_ub_trigger_product_ids'] ?? array();
 				$other_category_ids = $other_meta['_ub_trigger_category_ids'] ?? array();
 
 				// Funnel overlap: Same placement AND same goal AND overlapping triggers

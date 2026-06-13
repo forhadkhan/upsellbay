@@ -109,27 +109,27 @@ final class OfferValidator {
 	public function normalize( array $meta ): array {
 		$normalized = array_replace( $this->schema->defaults(), $meta );
 
-		$normalized['_ub_offer_type']           = $this->sanitize_key( $normalized['_ub_offer_type'] );
-		$normalized['_ub_status']               = $this->sanitize_key( $normalized['_ub_status'] );
-		$normalized['_ub_offer_product_id']     = max( 0, (int) $normalized['_ub_offer_product_id'] );
-		$normalized['_ub_trigger_product_ids']  = $this->int_list( $normalized['_ub_trigger_product_ids'] );
-		$normalized['_ub_trigger_category_ids'] = $this->int_list( $normalized['_ub_trigger_category_ids'] );
-		$normalized['_ub_discount_type']        = $this->sanitize_key( $normalized['_ub_discount_type'] );
-		$normalized['_ub_discount_value']       = number_format( max( 0, (float) $normalized['_ub_discount_value'] ), 6, '.', '' );
-		$normalized['_ub_offer_goal']           = in_array( $normalized['_ub_offer_goal'], array( 'add_on', 'upgrade', 'protection', 'threshold_helper', 'follow_on' ), true ) ? $normalized['_ub_offer_goal'] : 'add_on';
-		$normalized['_ub_reason_label']         = substr( $this->sanitize_text( $normalized['_ub_reason_label'] ), 0, 80 );
-		$normalized['_ub_conflict_override']    = $this->to_bool( $normalized['_ub_conflict_override'] );
+		$normalized['_ub_offer_type']               = $this->sanitize_key( $normalized['_ub_offer_type'] );
+		$normalized['_ub_status']                   = $this->sanitize_key( $normalized['_ub_status'] );
+		$normalized['_ub_offer_product_id']         = max( 0, (int) $normalized['_ub_offer_product_id'] );
+		$normalized['_ub_trigger_product_ids']      = $this->int_list( $normalized['_ub_trigger_product_ids'] );
+		$normalized['_ub_trigger_category_ids']     = $this->int_list( $normalized['_ub_trigger_category_ids'] );
+		$normalized['_ub_discount_type']            = $this->sanitize_key( $normalized['_ub_discount_type'] );
+		$normalized['_ub_discount_value']           = number_format( max( 0, (float) $normalized['_ub_discount_value'] ), 6, '.', '' );
+		$normalized['_ub_offer_goal']               = in_array( $normalized['_ub_offer_goal'], array( 'add_on', 'upgrade', 'protection', 'threshold_helper', 'follow_on' ), true ) ? $normalized['_ub_offer_goal'] : 'add_on';
+		$normalized['_ub_reason_label']             = substr( $this->sanitize_text( $normalized['_ub_reason_label'] ), 0, 80 );
+		$normalized['_ub_conflict_override']        = $this->to_bool( $normalized['_ub_conflict_override'] );
 		$normalized['_ub_conflict_override_reason'] = substr( $this->sanitize_text( $normalized['_ub_conflict_override_reason'] ), 0, 240 );
-		$normalized['_ub_headline']             = substr( $this->sanitize_text( $normalized['_ub_headline'] ), 0, 80 );
-		$normalized['_ub_body']                 = substr( $this->sanitize_html( $normalized['_ub_body'] ), 0, 240 );
-		$normalized['_ub_button_text']          = substr( $this->sanitize_text( $normalized['_ub_button_text'] ), 0, 40 );
-		$normalized['_ub_rules']                = is_array( $normalized['_ub_rules'] ) ? $normalized['_ub_rules'] : array();
-		$normalized['_ub_rules_match']          = in_array( $normalized['_ub_rules_match'], array( 'all', 'any' ), true ) ? $normalized['_ub_rules_match'] : 'all';
-		$normalized['_ub_placement_config']     = is_array( $normalized['_ub_placement_config'] ) ? $normalized['_ub_placement_config'] : array();
-		$normalized['_ub_show_image']           = $this->to_bool( $normalized['_ub_show_image'] );
-		$normalized['_ub_start_at']             = $this->normalize_datetime( $normalized['_ub_start_at'] );
-		$normalized['_ub_end_at']               = $this->normalize_datetime( $normalized['_ub_end_at'] );
-		$normalized['_ub_priority']             = (int) $normalized['_ub_priority'];
+		$normalized['_ub_headline']                 = substr( $this->sanitize_text( $normalized['_ub_headline'] ), 0, 80 );
+		$normalized['_ub_body']                     = substr( $this->sanitize_html( $normalized['_ub_body'] ), 0, 240 );
+		$normalized['_ub_button_text']              = substr( $this->sanitize_text( $normalized['_ub_button_text'] ), 0, 40 );
+		$normalized['_ub_rules']                    = is_array( $normalized['_ub_rules'] ) ? $normalized['_ub_rules'] : array();
+		$normalized['_ub_rules_match']              = in_array( $normalized['_ub_rules_match'], array( 'all', 'any' ), true ) ? $normalized['_ub_rules_match'] : 'all';
+		$normalized['_ub_placement_config']         = is_array( $normalized['_ub_placement_config'] ) ? $normalized['_ub_placement_config'] : array();
+		$normalized['_ub_show_image']               = $this->to_bool( $normalized['_ub_show_image'] );
+		$normalized['_ub_start_at']                 = $this->normalize_datetime( $normalized['_ub_start_at'] );
+		$normalized['_ub_end_at']                   = $this->normalize_datetime( $normalized['_ub_end_at'] );
+		$normalized['_ub_priority']                 = (int) $normalized['_ub_priority'];
 
 		return $normalized;
 	}

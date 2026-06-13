@@ -170,20 +170,22 @@ final class ProductsController {
 
 		$category_ids = $product->get_category_ids();
 
-		$suggestions = $this->assistant->suggest( array(
-			'base_product_id' => $base_product_id,
-			'category_ids'    => $category_ids,
-			'limit'           => 5,
-		) );
+		$suggestions = $this->assistant->suggest(
+			array(
+				'base_product_id' => $base_product_id,
+				'category_ids'    => $category_ids,
+				'limit'           => 5,
+			)
+		);
 
 		$data = array();
 		foreach ( $suggestions as $suggestion ) {
 			$sugg_product = function_exists( 'wc_get_product' ) ? wc_get_product( $suggestion['product_id'] ) : null;
 			if ( $sugg_product ) {
-				$formatted = $this->format_product( $sugg_product );
+				$formatted           = $this->format_product( $sugg_product );
 				$formatted['source'] = $suggestion['source'];
 				$formatted['reason'] = $suggestion['reason'];
-				$data[] = $formatted;
+				$data[]              = $formatted;
 			}
 		}
 
