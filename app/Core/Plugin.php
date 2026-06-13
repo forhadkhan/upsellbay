@@ -63,6 +63,7 @@ use WPAnchorBay\UpsellBay\Domain\Storefront\StorefrontController;
 use WPAnchorBay\UpsellBay\Domain\Storefront\ThankYouOfferRenderer;
 use WPAnchorBay\UpsellBay\Integrations\WooCommerce\BlockCheckoutIntegration;
 use WPAnchorBay\UpsellBay\Integrations\WooCommerce\CheckoutFields;
+use WPAnchorBay\UpsellBay\Integrations\WooCommerce\StoreApiExtender;
 use WPAnchorBay\UpsellBay\Integrations\Licensing\LicenseClient;
 use WPAnchorBay\UpsellBay\Utils\ImportExporter;
 use WPAnchorBay\UpsellBay\Utils\Logger;
@@ -223,6 +224,7 @@ final class Plugin {
 		$this->container->set( ProductsRoute::class, static fn ( Container $container ): ProductsRoute => new ProductsRoute( $container->get( ProductsController::class ) ) );
 		$this->container->set( OfferPreviewRoute::class, static fn ( Container $container ): OfferPreviewRoute => new OfferPreviewRoute( $container->get( OfferService::class ) ) );
 		$this->container->set( CheckoutFields::class, static fn (): CheckoutFields => new CheckoutFields() );
+		$this->container->set( StoreApiExtender::class, static fn ( Container $container ): StoreApiExtender => new StoreApiExtender( $container->get( OfferRepository::class ), $container->get( OfferPrioritizer::class ), $container->get( CartSession::class ), $container->get( AnalyticsRecorder::class ), $container->get( Settings::class ) ) );
 		$this->container->set( BlockCheckoutIntegration::class, static fn (): BlockCheckoutIntegration => new BlockCheckoutIntegration() );
 		$this->container->set( StorefrontController::class, static fn ( Container $container ): StorefrontController => new StorefrontController( $container->get( OfferRepository::class ), $container->get( PlacementRenderer::class ), $container->get( CartSession::class ), $container->get( Settings::class ) ) );
 		$this->container->set( ImportExporter::class, static fn ( Container $container ): ImportExporter => new ImportExporter( $container->get( OfferValidator::class ) ) );
@@ -315,6 +317,7 @@ final class Plugin {
 		$this->container->get( AdminAssets::class )->register_hooks();
 		$this->container->get( AdminBar::class )->register_hooks();
 		$this->container->get( CompatibilityNotice::class )->register_hooks();
+		$this->container->get( StoreApiExtender::class )->register_hooks();
 		$this->container->get( BlockCheckoutIntegration::class )->register_hooks();
 		$this->container->get( StorefrontController::class )->register_hooks();
 
@@ -469,7 +472,7 @@ final class Plugin {
 		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
 			'cart_checkout_blocks',
 			Constants::plugin_file(),
-			false
+			true
 		);
 	}
 

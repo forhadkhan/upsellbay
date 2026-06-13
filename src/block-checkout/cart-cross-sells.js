@@ -1,0 +1,137 @@
+import { registerPlugin } from '@wordpress/plugins';
+const { ExperimentalOrderMeta, extensionCartUpdate } = window.wc.blocksCheckout;
+import { useState } from '@wordpress/element';
+import apiFetch from '@wordpress/api-fetch';
+
+const CartCrossSellOffer = ( { offer } ) => {
+	const [ isLoading, setIsLoading ] = useState( false );
+
+	const handleAdd = async () => {
+		setIsLoading( true );
+
+		try {
+			// Call our custom REST API to add the offer to the cart.
+			// The REST API handles rule validation, discounts, and adding the product.
+			await apiFetch( {
+				path: '/upsellbay/v1/cart-offer-add',
+				method: 'POST',
+				data: {
+					offer_id: offer.id,
+					placement: 'cart_crosssell',
+					token: window.upsellbayStorefront?.token || '',
+				},
+			} );
+
+			// Inform the Cart Block to invalidate and refetch its data.
+			extensionCartUpdate( { namespace: 'upsellbay' } );
+		} catch ( error ) {
+			console.error( 'UpsellBay Add Error:', error );
+		} finally {
+			setIsLoading( false );
+		}
+	};
+
+	const handleDismiss = async () => {
+		setIsLoading( true );
+
+		try {
+			await apiFetch( {
+				path: '/upsellbay/v1/dismiss',
+				method: 'POST',
+				data: {
+					offer_id: offer.id,
+					token: window.upsellbayStorefront?.token || '',
+				},
+			} );
+
+			extensionCartUpdate( { namespace: 'upsellbay' } );
+		} catch ( error ) {
+			console.error( 'UpsellBay Dismiss Error:', error );
+		} finally {
+			setIsLoading( false );
+		}
+	};
+
+	let classes = 'upsellbay-offer upsellbay-offer--cart_crosssell upsellbay-offer--cart-crosssell';
+	if ( offer.image_url ) {
+		classes += ' upsellbay-offer--has-image';
+	}
+	if ( offer.in_cart || isLoading ) {
+		classes += ' is-disabled';
+	}
+
+	return (
+		<div className={ classes } data-upsellbay-placement="cart_crosssell" data-upsellbay-offer-id={ offer.id }>
+			{ offer.image_url && (
+				<img src={ offer.image_url } className="upsellbay-offer__image" alt={ offer.product_name } />
+			) }
+			<div className="upsellbay-offer__content">
+				<div className="upsellbay-offer__text">
+					{ offer.reason_label && (
+						<span className="upsellbay-offer__reason">{ offer.reason_label }</span>
+					) }
+					<strong className="upsellbay-offer__headline">{ offer.headline }</strong>
+					{ offer.product_name && (
+						<span className="upsellbay-offer__product-name">{ offer.product_name }</span>
+					) }
+					{ offer.body && (
+						<div className="upsellbay-offer__body" dangerouslySetInnerHTML={ { __html: offer.body } } />
+					) }
+				</div>
+				{ offer.price_html && (
+					<div className="upsellbay-offer__price" dangerouslySetInnerHTML={ { __html: offer.price_html } } />
+				) }
+			</div>
+			<div className="upsellbay-offer__action">
+				{ offer.in_cart ? (
+					<span className="upsellbay-offer__notice">Added to cart</span>
+				) : (
+					<button 
+						type="button" 
+						className="button upsellbay-offer__button" 
+						onClick={ handleAdd }
+						disabled={ isLoading }
+					>
+						{ isLoading ? 'Adding...' : offer.button_text }
+					</button>
+				) }
+				<button 
+					type="button" 
+					className="upsellbay-offer__dismiss" 
+					onClick={ handleDismiss }
+					aria-label="Dismiss"
+				>
+					&times;
+				</button>
+			</div>
+		</div>
+	);
+};
+
+const CartCrossSellsList = ( { extensions } ) => {
+	const offers = extensions?.upsellbay?.cart_crosssell || [];
+
+	if ( ! offers || offers.length === 0 ) {
+		return null;
+	}
+
+	return (
+		<div className="upsellbay-block-offers upsellbay-block-offers--cart">
+			<h3 className="upsellbay-offer-section__heading">Still missing?</h3>
+			{ offers.map( ( offer ) => (
+				<CartCrossSellOffer key={ offer.id } offer={ offer } />
+			) ) }
+		</div>
+	);
+};
+
+export const registerCartCrossSells = () => {
+	registerPlugin( 'upsellbay-cart-cross-sells', {
+		render: ( { extensions } ) => (
+			<ExperimentalOrderMeta>
+				<CartCrossSellsList extensions={ extensions } />
+			</ExperimentalOrderMeta>
+		),
+		scope: 'woocommerce-checkout',
+	} );
+};

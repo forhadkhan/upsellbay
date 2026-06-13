@@ -1,7 +1,14 @@
 /**
- * UpsellBay block checkout entry.
+ * UpsellBay
+ * Block Checkout integration.
  *
- * Compatibility is not claimed until Block Checkout E2E coverage passes.
+ * @package UpsellBay\Frontend
  */
 
-import '../classic-checkout';
+import { registerCartCrossSells } from './cart-cross-sells';
+import { registerCheckoutBumps } from './checkout-bump';
+
+document.addEventListener('DOMContentLoaded', () => {
+    registerCartCrossSells();
+    registerCheckoutBumps();
+});
