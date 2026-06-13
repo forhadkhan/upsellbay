@@ -1,0 +1,136 @@
+.upsellbay-card-grid,
+.upsellbay-summary {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+	gap: 12px;
+	margin: 18px 0;
+}
+
+.upsellbay-card-grid--metrics {
+	grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+}
+
+.upsellbay-metric-card,
+.upsellbay-summary__item {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	box-sizing: border-box;
+	min-width: 0;
+	overflow: visible;
+	padding: 14px 40px 14px 16px;
+	position: relative;
+}
+
+.upsellbay-metric-card__value,
+.upsellbay-summary__item strong {
+	color: #1d2327;
+	display: block;
+	font-size: 22px;
+	font-weight: 600;
+	line-height: 1.25;
+	overflow-wrap: anywhere;
+}
+
+.upsellbay-metric-card__label,
+.upsellbay-summary__label {
+	color: #646970;
+	display: block;
+	font-size: 13px;
+	line-height: 1.4;
+	margin-top: 5px;
+}
+
+.upsellbay-metric-card__help {
+	position: absolute;
+	right: 10px;
+	top: 10px;
+	z-index: 99999;
+}
+
+.upsellbay-metric-card__help .woocommerce-help-tip {
+	margin: 0;
+}
+
+.upsellbay-offer-editor__section {
+	padding: 16px;
+}
+
+.upsellbay-overview-header {
+	align-items: center;
+	display: flex;
+	gap: 16px;
+	justify-content: space-between;
+	margin: 16px 0 4px;
+}
+
+.upsellbay-overview-title {
+	margin: 0;
+}
+
+.upsellbay-button-group {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0;
+}
+
+.upsellbay-button-group .button {
+	border-radius: 0;
+	margin-left: -1px;
+}
+
+.upsellbay-button-group .button:first-child {
+	border-bottom-left-radius: 3px;
+	border-top-left-radius: 3px;
+	margin-left: 0;
+}
+
+.upsellbay-button-group .button:last-child {
+	border-bottom-right-radius: 3px;
+	border-top-right-radius: 3px;
+}
+
+.upsellbay-settings-table th,
+.upsellbay-wizard .form-table th {
+	position: relative;
+	width: 220px !important;
+}
+
+.upsellbay-settings-table th .woocommerce-help-tip,
+.upsellbay-wizard .form-table th .woocommerce-help-tip {
+	position: absolute;
+	right: 0;
+	top: 36px;
+	margin: 0;
+}
+
+@media (max-width: 782px) {
+	.upsellbay-overview-header {
+		align-items: flex-start;
+		flex-direction: column;
+		gap: 10px;
+	}
+
+	.upsellbay-card-grid,
+	.upsellbay-card-grid--metrics,
+	.upsellbay-summary {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 600px) {
+	.upsellbay-card-grid,
+	.upsellbay-card-grid--metrics,
+	.upsellbay-summary {
+		grid-template-columns: 1fr;
+	}
+
+	.upsellbay-button-group {
+		width: 100%;
+	}
+
+	.upsellbay-button-group .button {
+		flex: 1;
+		text-align: center;
+	}
+}
