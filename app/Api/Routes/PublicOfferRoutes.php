@@ -101,6 +101,36 @@ final class PublicOfferRoutes {
 				'methods'             => 'POST',
 				'callback'            => array( $this, 'bump_toggle' ),
 				'permission_callback' => '__return_true',
+				'args'                => array(
+					'offer_id'  => array(
+						'required'          => true,
+						'type'              => 'integer',
+						'minimum'           => 1,
+						'sanitize_callback' => 'absint',
+						'validate_callback' => static fn( $value ) => absint( $value ) > 0,
+					),
+					'placement' => array(
+						'required'          => false,
+						'type'              => 'string',
+						'default'           => 'checkout_bump',
+						'sanitize_callback' => 'sanitize_key',
+						'validate_callback' => static fn( $value ) => in_array(
+							sanitize_key( $value ),
+							array( 'checkout_bump', 'cart_crosssell', 'product_upsell', 'thankyou_offer' ),
+							true
+						),
+					),
+					'accepted'  => array(
+						'required'          => true,
+						'type'              => 'boolean',
+						'sanitize_callback' => 'rest_sanitize_boolean',
+					),
+					'token'     => array(
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+				),
 			)
 		);
 		register_rest_route(
@@ -110,6 +140,37 @@ final class PublicOfferRoutes {
 				'methods'             => 'POST',
 				'callback'            => array( $this, 'cart_offer_add' ),
 				'permission_callback' => '__return_true',
+				'args'                => array(
+					'offer_id'        => array(
+						'required'          => true,
+						'type'              => 'integer',
+						'minimum'           => 1,
+						'sanitize_callback' => 'absint',
+						'validate_callback' => static fn( $value ) => absint( $value ) > 0,
+					),
+					'placement'       => array(
+						'required'          => false,
+						'type'              => 'string',
+						'default'           => 'cart_crosssell',
+						'sanitize_callback' => 'sanitize_key',
+						'validate_callback' => static fn( $value ) => in_array(
+							sanitize_key( $value ),
+							array( 'checkout_bump', 'cart_crosssell', 'product_upsell', 'thankyou_offer' ),
+							true
+						),
+					),
+					'source_order_id' => array(
+						'required'          => false,
+						'type'              => 'integer',
+						'default'           => 0,
+						'sanitize_callback' => 'absint',
+					),
+					'token'           => array(
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+				),
 			)
 		);
 		register_rest_route(
@@ -119,6 +180,26 @@ final class PublicOfferRoutes {
 				'methods'             => 'POST',
 				'callback'            => array( $this, 'dismiss' ),
 				'permission_callback' => '__return_true',
+				'args'                => array(
+					'offer_id'  => array(
+						'required'          => true,
+						'type'              => 'integer',
+						'minimum'           => 1,
+						'sanitize_callback' => 'absint',
+						'validate_callback' => static fn( $value ) => absint( $value ) > 0,
+					),
+					'placement' => array(
+						'required'          => false,
+						'type'              => 'string',
+						'default'           => '',
+						'sanitize_callback' => 'sanitize_key',
+					),
+					'token'     => array(
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+				),
 			)
 		);
 	}
@@ -286,16 +367,6 @@ final class PublicOfferRoutes {
 				array(
 					'success' => false,
 					'message' => __( 'Too many requests.', 'upsellbay' ),
-				)
-			);
-		}
-
-		if ( (int) ( $params['offer_id'] ?? 0 ) <= 0 ) {
-			return $this->response(
-				400,
-				array(
-					'success' => false,
-					'message' => __( 'Invalid offer.', 'upsellbay' ),
 				)
 			);
 		}
