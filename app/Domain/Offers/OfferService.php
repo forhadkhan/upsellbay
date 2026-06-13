@@ -147,7 +147,11 @@ final class OfferService {
 	 * @param int $offer_id Offer ID.
 	 */
 	public function delete( int $offer_id ): bool {
-		return $offer_id > 0 && $this->repository->trash( $offer_id );
+		$deleted = $offer_id > 0 && $this->repository->trash( $offer_id );
+		if ( $deleted ) {
+			Hooks::action( 'offer_deleted', $offer_id );
+		}
+		return $deleted;
 	}
 
 	/**

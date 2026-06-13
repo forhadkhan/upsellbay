@@ -13,6 +13,7 @@ use WPAnchorBay\UpsellBay\Domain\Offers\OfferService;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferDefaults;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferValidator;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferConflictDetector;
+use WPAnchorBay\UpsellBay\Domain\Logging\LoggerInterface;
 use Throwable;
 
 /**
@@ -81,6 +82,15 @@ final class OfferEditPage {
 	private $verify_nonce;
 
 	/**
+	 * Logger instance.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var LoggerInterface|null
+	 */
+	private ?LoggerInterface $logger;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.0.0
@@ -92,13 +102,15 @@ final class OfferEditPage {
 	 * @param OfferDefaults|null          $defaults           Offer defaults.
 	 * @param OfferSectionNavigation|null $section_navigation Offers section navigation.
 	 * @param OfferConflictDetector|null  $conflict_detector  Offer conflict detector.
+	 * @param LoggerInterface|null        $logger             Logger instance.
 	 */
-	public function __construct( OfferService $service, OfferValidator $validator, ?callable $can_manage = null, ?callable $verify_nonce = null, ?OfferDefaults $defaults = null, ?OfferSectionNavigation $section_navigation = null, ?OfferConflictDetector $conflict_detector = null ) {
+	public function __construct( OfferService $service, OfferValidator $validator, ?callable $can_manage = null, ?callable $verify_nonce = null, ?OfferDefaults $defaults = null, ?OfferSectionNavigation $section_navigation = null, ?OfferConflictDetector $conflict_detector = null, ?LoggerInterface $logger = null ) {
 		$this->service            = $service;
 		$this->validator          = $validator;
 		$this->defaults           = $defaults ?? new OfferDefaults();
 		$this->section_navigation = $section_navigation ?? new OfferSectionNavigation();
 		$this->conflict_detector  = $conflict_detector;
+		$this->logger             = $logger;
 		$this->can_manage         = $can_manage ?? static fn (): bool => function_exists( 'current_user_can' ) && current_user_can( 'manage_woocommerce' ); // phpcs:ignore WordPress.WP.Capabilities.Unknown
 		$this->verify_nonce       = $verify_nonce ?? static fn ( string $nonce ): bool => function_exists( 'wp_verify_nonce' ) && (bool) wp_verify_nonce( $nonce, 'upsellbay_save_offer' );
 	}
@@ -164,6 +176,23 @@ final class OfferEditPage {
 				);
 			}
 		} catch ( Throwable $throwable ) {
+			if ( null !== $this->logger ) {
+				$this->logger->error(
+					/* translators: %s: error message */
+					sprintf( __( 'Failed to save offer: %s', 'upsellbay' ), $throwable->getMessage() ),
+					array(
+						'source'       => 'offer_edit',
+						'metadata'     => array(
+							'exception' => get_class( $throwable ),
+							'file'      => $throwable->getFile(),
+							'line'      => $throwable->getLine(),
+							'trace'     => $throwable->getTraceAsString(),
+						),
+						'request_data' => $request,
+					)
+				);
+			}
+
 			return array(
 				'success' => false,
 				'message' => $throwable->getMessage(),
@@ -223,12 +252,12 @@ final class OfferEditPage {
 	 */
 	public function sections(): array {
 		return array(
-			'basics'    => array(
+			'basics'          => array(
 				'label'     => __( 'Required basics', 'upsellbay' ),
 				'collapsed' => false,
 				'fields'    => array( 'title', '_ub_status', '_ub_offer_type', '_ub_offer_goal', '_ub_offer_product_id', '_ub_reason_label', '_ub_headline', '_ub_body', '_ub_button_text' ),
 			),
-			'targeting' => array(
+			'targeting'       => array(
 				'label'     => __( 'Targeting rules', 'upsellbay' ),
 				'collapsed' => false,
 				'fields'    => array( '_ub_rules_match', '_ub_rules' ),
@@ -238,22 +267,22 @@ final class OfferEditPage {
 				'collapsed' => false,
 				'fields'    => array( '_ub_recommendations' ),
 			),
-			'discount'  => array(
+			'discount'        => array(
 				'label'     => __( 'Discount', 'upsellbay' ),
 				'collapsed' => false,
 				'fields'    => array( '_ub_discount_type', '_ub_discount_value' ),
 			),
-			'placement' => array(
+			'placement'       => array(
 				'label'     => __( 'Placement display', 'upsellbay' ),
 				'collapsed' => false,
 				'fields'    => array( '_ub_show_image', '_ub_placement_config' ),
 			),
-			'schedule'  => array(
+			'schedule'        => array(
 				'label'     => __( 'Schedule and priority', 'upsellbay' ),
 				'collapsed' => false,
 				'fields'    => array( '_ub_start_at', '_ub_end_at', '_ub_priority' ),
 			),
-			'advanced'  => array(
+			'advanced'        => array(
 				'label'     => __( 'Advanced metadata', 'upsellbay' ),
 				'collapsed' => false,
 				'fields'    => array( '_ub_stats_summary', '_ub_trigger_product_ids', '_ub_trigger_category_ids', '_ub_conflict_override', '_ub_conflict_override_reason' ),
@@ -387,29 +416,29 @@ final class OfferEditPage {
 	 */
 	private function render_field_row( string $field, $value = '' ): void {
 		$labels = array(
-			'title'                    => __( 'Offer name', 'upsellbay' ),
-			'_ub_status'               => __( 'Status', 'upsellbay' ),
-			'_ub_offer_type'           => __( 'Placement', 'upsellbay' ),
-			'_ub_offer_product_id'     => __( 'Offer product', 'upsellbay' ),
-			'_ub_headline'             => __( 'Headline', 'upsellbay' ),
-			'_ub_body'                 => __( 'Body text', 'upsellbay' ),
-			'_ub_button_text'          => __( 'Button text', 'upsellbay' ),
-			'_ub_rules_match'          => __( 'Rule matching', 'upsellbay' ),
-			'_ub_rules'                => __( 'Rules', 'upsellbay' ),
-			'_ub_discount_type'        => __( 'Discount type', 'upsellbay' ),
-			'_ub_discount_value'       => __( 'Discount value', 'upsellbay' ),
-			'_ub_show_image'           => __( 'Show product image', 'upsellbay' ),
-			'_ub_placement_config'     => __( 'Placement options', 'upsellbay' ),
-			'_ub_start_at'             => __( 'Start date', 'upsellbay' ),
-			'_ub_end_at'               => __( 'End date', 'upsellbay' ),
-			'_ub_priority'             => __( 'Priority', 'upsellbay' ),
-			'_ub_stats_summary'        => __( 'Performance', 'upsellbay' ),
-			'_ub_trigger_product_ids'  => __( 'Trigger product IDs', 'upsellbay' ),
-			'_ub_trigger_category_ids' => __( 'Trigger category IDs', 'upsellbay' ),
-			'_ub_offer_goal'           => __( 'Offer goal', 'upsellbay' ),
-			'_ub_reason_label'         => __( 'Reason label', 'upsellbay' ),
-			'_ub_recommendations'      => __( 'Assistant suggestions', 'upsellbay' ),
-			'_ub_conflict_override'    => __( 'Conflict override', 'upsellbay' ),
+			'title'                        => __( 'Offer name', 'upsellbay' ),
+			'_ub_status'                   => __( 'Status', 'upsellbay' ),
+			'_ub_offer_type'               => __( 'Placement', 'upsellbay' ),
+			'_ub_offer_product_id'         => __( 'Offer product', 'upsellbay' ),
+			'_ub_headline'                 => __( 'Headline', 'upsellbay' ),
+			'_ub_body'                     => __( 'Body text', 'upsellbay' ),
+			'_ub_button_text'              => __( 'Button text', 'upsellbay' ),
+			'_ub_rules_match'              => __( 'Rule matching', 'upsellbay' ),
+			'_ub_rules'                    => __( 'Rules', 'upsellbay' ),
+			'_ub_discount_type'            => __( 'Discount type', 'upsellbay' ),
+			'_ub_discount_value'           => __( 'Discount value', 'upsellbay' ),
+			'_ub_show_image'               => __( 'Show product image', 'upsellbay' ),
+			'_ub_placement_config'         => __( 'Placement options', 'upsellbay' ),
+			'_ub_start_at'                 => __( 'Start date', 'upsellbay' ),
+			'_ub_end_at'                   => __( 'End date', 'upsellbay' ),
+			'_ub_priority'                 => __( 'Priority', 'upsellbay' ),
+			'_ub_stats_summary'            => __( 'Performance', 'upsellbay' ),
+			'_ub_trigger_product_ids'      => __( 'Trigger product IDs', 'upsellbay' ),
+			'_ub_trigger_category_ids'     => __( 'Trigger category IDs', 'upsellbay' ),
+			'_ub_offer_goal'               => __( 'Offer goal', 'upsellbay' ),
+			'_ub_reason_label'             => __( 'Reason label', 'upsellbay' ),
+			'_ub_recommendations'          => __( 'Assistant suggestions', 'upsellbay' ),
+			'_ub_conflict_override'        => __( 'Conflict override', 'upsellbay' ),
 			'_ub_conflict_override_reason' => __( 'Conflict override reason', 'upsellbay' ),
 		);
 		$label  = $labels[ $field ] ?? $field;
@@ -573,27 +602,27 @@ final class OfferEditPage {
 		return array_replace(
 			$defaults,
 			array(
-				'_ub_offer_type'           => $offer_type,
-				'_ub_status'               => $this->sanitize_key( (string) ( $request['_ub_status'] ?? $defaults['_ub_status'] ) ),
-				'_ub_offer_product_id'     => (int) ( $request['_ub_offer_product_id'] ?? 0 ),
-				'_ub_trigger_product_ids'  => $parse_ids( $request['_ub_trigger_product_ids'] ?? null ),
-				'_ub_trigger_category_ids' => $parse_ids( $request['_ub_trigger_category_ids'] ?? null ),
-				'_ub_discount_type'        => $this->sanitize_key( (string) ( $request['_ub_discount_type'] ?? $defaults['_ub_discount_type'] ) ),
-				'_ub_discount_value'       => (string) ( $request['_ub_discount_value'] ?? $defaults['_ub_discount_value'] ),
-				'_ub_offer_goal'           => $this->sanitize_key( (string) ( $request['_ub_offer_goal'] ?? $defaults['_ub_offer_goal'] ) ),
-				'_ub_reason_label'         => $this->sanitize_text( (string) ( $request['_ub_reason_label'] ?? $defaults['_ub_reason_label'] ) ),
-				'_ub_headline'             => $this->sanitize_text( (string) ( $request['_ub_headline'] ?? $defaults['_ub_headline'] ) ),
-				'_ub_body'                 => $this->sanitize_html( (string) ( $request['_ub_body'] ?? $defaults['_ub_body'] ) ),
-				'_ub_button_text'          => $this->sanitize_text( (string) ( $request['_ub_button_text'] ?? $defaults['_ub_button_text'] ) ),
-				'_ub_conflict_override'    => array_key_exists( '_ub_conflict_override', $request ) && false !== $request['_ub_conflict_override'] && '' !== (string) $request['_ub_conflict_override'],
+				'_ub_offer_type'               => $offer_type,
+				'_ub_status'                   => $this->sanitize_key( (string) ( $request['_ub_status'] ?? $defaults['_ub_status'] ) ),
+				'_ub_offer_product_id'         => (int) ( $request['_ub_offer_product_id'] ?? 0 ),
+				'_ub_trigger_product_ids'      => $parse_ids( $request['_ub_trigger_product_ids'] ?? null ),
+				'_ub_trigger_category_ids'     => $parse_ids( $request['_ub_trigger_category_ids'] ?? null ),
+				'_ub_discount_type'            => $this->sanitize_key( (string) ( $request['_ub_discount_type'] ?? $defaults['_ub_discount_type'] ) ),
+				'_ub_discount_value'           => (string) ( $request['_ub_discount_value'] ?? $defaults['_ub_discount_value'] ),
+				'_ub_offer_goal'               => $this->sanitize_key( (string) ( $request['_ub_offer_goal'] ?? $defaults['_ub_offer_goal'] ) ),
+				'_ub_reason_label'             => $this->sanitize_text( (string) ( $request['_ub_reason_label'] ?? $defaults['_ub_reason_label'] ) ),
+				'_ub_headline'                 => $this->sanitize_text( (string) ( $request['_ub_headline'] ?? $defaults['_ub_headline'] ) ),
+				'_ub_body'                     => $this->sanitize_html( (string) ( $request['_ub_body'] ?? $defaults['_ub_body'] ) ),
+				'_ub_button_text'              => $this->sanitize_text( (string) ( $request['_ub_button_text'] ?? $defaults['_ub_button_text'] ) ),
+				'_ub_conflict_override'        => array_key_exists( '_ub_conflict_override', $request ) && false !== $request['_ub_conflict_override'] && '' !== (string) $request['_ub_conflict_override'],
 				'_ub_conflict_override_reason' => $this->sanitize_text( (string) ( $request['_ub_conflict_override_reason'] ?? $defaults['_ub_conflict_override_reason'] ) ),
-				'_ub_rules'                => $this->normalize_rules( $parse_json( $request['_ub_rules'] ?? null, array() ) ),
-				'_ub_rules_match'          => $this->sanitize_key( (string) ( $request['_ub_rules_match'] ?? 'all' ) ),
-				'_ub_placement_config'     => array_map( array( $this, 'sanitize_text' ), $parse_json( $request['_ub_placement_config'] ?? null, $defaults['_ub_placement_config'] ) ),
-				'_ub_show_image'           => $show_image,
-				'_ub_start_at'             => $this->sanitize_text( (string) ( $request['_ub_start_at'] ?? '' ) ),
-				'_ub_end_at'               => $this->sanitize_text( (string) ( $request['_ub_end_at'] ?? '' ) ),
-				'_ub_priority'             => (int) ( $request['_ub_priority'] ?? 0 ),
+				'_ub_rules'                    => $this->normalize_rules( $parse_json( $request['_ub_rules'] ?? null, array() ) ),
+				'_ub_rules_match'              => $this->sanitize_key( (string) ( $request['_ub_rules_match'] ?? 'all' ) ),
+				'_ub_placement_config'         => array_map( array( $this, 'sanitize_text' ), $parse_json( $request['_ub_placement_config'] ?? null, $defaults['_ub_placement_config'] ) ),
+				'_ub_show_image'               => $show_image,
+				'_ub_start_at'                 => $this->sanitize_text( (string) ( $request['_ub_start_at'] ?? '' ) ),
+				'_ub_end_at'                   => $this->sanitize_text( (string) ( $request['_ub_end_at'] ?? '' ) ),
+				'_ub_priority'                 => (int) ( $request['_ub_priority'] ?? 0 ),
 			)
 		);
 	}

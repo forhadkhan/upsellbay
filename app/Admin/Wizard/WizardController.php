@@ -13,6 +13,7 @@ use Throwable;
 use WPAnchorBay\UpsellBay\Core\Settings;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferDefaults;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferService;
+use WPAnchorBay\UpsellBay\Domain\Logging\LoggerInterface;
 
 /**
  * Creates the first draft offer and stores onboarding completion.
@@ -56,20 +57,29 @@ final class WizardController {
 	private $verify_nonce;
 
 	/**
+	 * Logger instance.
+	 *
+	 * @var LoggerInterface|null
+	 */
+	private ?LoggerInterface $logger;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param OfferService  $service      Offer service.
-	 * @param Settings      $settings     Settings service.
-	 * @param OfferDefaults $defaults     Offer defaults.
-	 * @param callable|null $can_manage   Capability callback.
-	 * @param callable|null $verify_nonce Nonce callback.
+	 * @param OfferService         $service      Offer service.
+	 * @param Settings             $settings     Settings service.
+	 * @param OfferDefaults|null   $defaults     Offer defaults.
+	 * @param callable|null        $can_manage   Capability callback.
+	 * @param callable|null        $verify_nonce Nonce callback.
+	 * @param LoggerInterface|null $logger       Logger instance.
 	 */
-	public function __construct( OfferService $service, Settings $settings, OfferDefaults $defaults, ?callable $can_manage = null, ?callable $verify_nonce = null ) {
+	public function __construct( OfferService $service, Settings $settings, ?OfferDefaults $defaults = null, ?callable $can_manage = null, ?callable $verify_nonce = null, ?LoggerInterface $logger = null ) {
 		$this->service      = $service;
 		$this->settings     = $settings;
-		$this->defaults     = $defaults;
+		$this->defaults     = $defaults ?? new OfferDefaults();
+		$this->logger       = $logger;
 		$this->can_manage   = $can_manage ?? static fn (): bool => function_exists( 'current_user_can' ) && current_user_can( 'manage_woocommerce' ); // phpcs:ignore WordPress.WP.Capabilities.Unknown
 		$this->verify_nonce = $verify_nonce ?? static fn ( string $nonce ): bool => function_exists( 'wp_verify_nonce' ) && (bool) wp_verify_nonce( $nonce, 'upsellbay_wizard' );
 	}
@@ -118,6 +128,23 @@ final class WizardController {
 				)
 			);
 		} catch ( Throwable $throwable ) {
+			if ( null !== $this->logger ) {
+				$this->logger->error(
+					/* translators: %s: error message */
+					sprintf( __( 'Failed to save offer via wizard: %s', 'upsellbay' ), $throwable->getMessage() ),
+					array(
+						'source'       => 'wizard',
+						'metadata'     => array(
+							'exception' => get_class( $throwable ),
+							'file'      => $throwable->getFile(),
+							'line'      => $throwable->getLine(),
+							'trace'     => $throwable->getTraceAsString(),
+						),
+						'request_data' => $request,
+					)
+				);
+			}
+
 			return array(
 				'success' => false,
 				'message' => $throwable->getMessage(),

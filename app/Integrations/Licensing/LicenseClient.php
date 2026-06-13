@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace WPAnchorBay\UpsellBay\Integrations\Licensing;
 
 use WPAnchorBay\UpsellBay\Core\Constants;
+use WPAnchorBay\UpsellBay\Core\Hooks;
 use WP_Error;
 
 /**
@@ -148,6 +149,7 @@ final class LicenseClient {
 
 		if ( is_wp_error( $response ) ) {
 			$this->update_status_flag( 'server_error' );
+			Hooks::action( 'license_activation_failed', $sanitized_key, 'server_error', $response );
 
 			return new WP_Error(
 				'upsellbay_license_server_error',
@@ -198,6 +200,7 @@ final class LicenseClient {
 
 		if ( is_wp_error( $response ) ) {
 			$this->update_status_flag( 'server_error' );
+			Hooks::action( 'license_check_failed', 'server_error', $response );
 			return true;
 		}
 
@@ -206,6 +209,7 @@ final class LicenseClient {
 		if ( is_wp_error( $result ) ) {
 			$this->update_status_flag( 'inactive' );
 			set_transient( self::TRANSIENT_KEY, false, 12 * HOUR_IN_SECONDS );
+			Hooks::action( 'license_check_failed', $result->get_error_code(), $result );
 			return false;
 		}
 
@@ -373,10 +377,12 @@ final class LicenseClient {
 
 		if ( is_wp_error( $result ) ) {
 			$this->maybe_mark_matching_key_invalid( $license_key );
+			Hooks::action( 'license_activation_failed', $license_key, $result->get_error_code(), $result );
 			return $result;
 		}
 
 		set_transient( self::TRANSIENT_KEY, true, 12 * HOUR_IN_SECONDS );
+		Hooks::action( 'license_activated', $license_key );
 		return true;
 	}
 

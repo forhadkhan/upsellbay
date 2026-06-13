@@ -82,6 +82,10 @@ final class Scheduler {
 				'hook'       => Constants::hook_name( 'check_license' ),
 				'recurrence' => 'twicedaily',
 			),
+			array(
+				'hook'       => Constants::hook_name( 'prune_logs' ),
+				'recurrence' => 'daily',
+			),
 		);
 	}
 

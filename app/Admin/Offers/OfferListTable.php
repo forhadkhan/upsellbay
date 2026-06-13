@@ -51,9 +51,9 @@ final class OfferListTable {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param OfferRepository             $repository        Offer repository.
-	 * @param OfferService                $service           Offer service.
-	 * @param OfferConflictDetector|null  $conflict_detector Offer conflict detector.
+	 * @param OfferRepository            $repository        Offer repository.
+	 * @param OfferService               $service           Offer service.
+	 * @param OfferConflictDetector|null $conflict_detector Offer conflict detector.
 	 */
 	public function __construct( OfferRepository $repository, OfferService $service, ?OfferConflictDetector $conflict_detector = null ) {
 		$this->repository        = $repository;
