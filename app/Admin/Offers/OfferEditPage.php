@@ -552,7 +552,8 @@ final class OfferEditPage {
 			}
 		} elseif ( '_ub_rules' === $field || '_ub_placement_config' === $field ) {
 			$val_str = is_array( $value ) ? wp_json_encode( $value ) : $value;
-			echo '<textarea id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" class="large-text code" rows="3">' . esc_textarea( (string) $val_str ) . '</textarea>';
+			echo '<textarea id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" style="display:none;" data-upsellbay-json-field="' . esc_attr( $field ) . '">' . esc_textarea( (string) $val_str ) . '</textarea>';
+			echo '<div id="upsellbay-builder-' . esc_attr( $field ) . '" class="upsellbay-visual-builder"></div>';
 		} elseif ( '_ub_start_at' === $field || '_ub_end_at' === $field ) {
 			echo '<input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="datetime-local" class="regular-text" value="' . esc_attr( (string) $value ) . '">';
 		} else {

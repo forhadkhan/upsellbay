@@ -57,6 +57,14 @@ final class DashboardPage {
 	public function render(): void {
 		$data = $this->summary->data();
 
+		if ( 0 === (int) $data['active_offers'] ) {
+			echo '<div class="upsellbay-onboarding-panel" style="background: #fff; border: 1px solid #c3c4c7; padding: 30px; text-align: center; margin-bottom: 20px; border-radius: 4px;">';
+			echo '<h2 style="margin-top: 0;">' . esc_html__( 'Welcome to UpsellBay!', 'upsellbay' ) . '</h2>';
+			echo '<p style="font-size: 16px; color: #50575e; max-width: 600px; margin: 0 auto 20px;">' . esc_html__( 'Increase your average order value instantly by creating your first highly-targeted upsell offer.', 'upsellbay' ) . '</p>';
+			echo '<a href="' . esc_url( 'admin.php?page=upsellbay&tab=offers&action=add' ) . '" class="button button-primary button-hero">' . esc_html__( 'Create your first offer', 'upsellbay' ) . '</a>';
+			echo '</div>';
+		}
+
 		echo '<div class="upsellbay-overview-header">';
 		echo '<h3 class="upsellbay-overview-title">' . esc_html__( 'Store offer status', 'upsellbay' ) . '</h3>';
 		echo '</div>';
@@ -64,7 +72,7 @@ final class DashboardPage {
 		$this->summary_item( __( 'Offers enabled', 'upsellbay' ), true === $data['enabled'] ? __( 'Yes', 'upsellbay' ) : __( 'No', 'upsellbay' ), __( 'Whether live eligible offers are allowed to render on enabled placements.', 'upsellbay' ) );
 		$this->summary_item( __( 'Test mode', 'upsellbay' ), true === $data['test_mode'] ? __( 'On', 'upsellbay' ) : __( 'Off', 'upsellbay' ), __( 'Admin-only preview mode for checking offers before shoppers see them.', 'upsellbay' ) );
 		$this->summary_item( __( 'Active offers', 'upsellbay' ), (string) $data['active_offers'], __( 'Published offers currently marked active in UpsellBay.', 'upsellbay' ) );
-		$this->summary_item( __( 'Recent revenue', 'upsellbay' ), (string) $data['recent_revenue'], __( 'Attributed offer revenue from the recent aggregate stats window.', 'upsellbay' ) );
+		$this->summary_item( __( 'Recent revenue', 'upsellbay' ), $this->format_currency( $data['recent_revenue'] ), __( 'Attributed offer revenue from the recent aggregate stats window.', 'upsellbay' ) );
 		echo '</div>';
 
 		$this->render_analytics();
@@ -84,7 +92,7 @@ final class DashboardPage {
 		$this->summary_item( __( 'Views', 'upsellbay' ), (string) $summary['views'], __( 'Offer render events recorded in aggregate stats.', 'upsellbay' ) );
 		$this->summary_item( __( 'Accepts', 'upsellbay' ), (string) $summary['accepts'], __( 'Accepted offers recorded in aggregate stats.', 'upsellbay' ) );
 		$this->summary_item( __( 'Accept rate', 'upsellbay' ), (string) $summary['accept_rate'] . '%', __( 'Accepted offers divided by offer views for this period.', 'upsellbay' ) );
-		$this->summary_item( __( 'Attributed revenue', 'upsellbay' ), (string) $summary['revenue'], __( 'Revenue attributed to accepted offers in aggregate stats.', 'upsellbay' ) );
+		$this->summary_item( __( 'Attributed revenue', 'upsellbay' ), $this->format_currency( $summary['revenue'] ), __( 'Revenue attributed to accepted offers in aggregate stats.', 'upsellbay' ) );
 		echo '</div>';
 		echo '<table class="widefat striped upsellbay-analytics-table"><tbody>';
 		foreach (
@@ -95,7 +103,8 @@ final class DashboardPage {
 				'aov_lift'       => __( 'Revenue per attributed order', 'upsellbay' ),
 			) as $key => $label
 		) {
-			echo '<tr><th scope="row">' . esc_html( $label ) . '</th><td>' . esc_html( (string) $summary[ $key ] ) . '</td></tr>';
+			$val = in_array( $key, array( 'discount_total', 'aov_lift' ), true ) ? $this->format_currency( $summary[ $key ] ) : (string) $summary[ $key ];
+			echo '<tr><th scope="row">' . esc_html( $label ) . '</th><td>' . esc_html( $val ) . '</td></tr>';
 		}
 		echo '</tbody></table>';
 	}
@@ -113,7 +122,7 @@ final class DashboardPage {
 	private function analytics_summary( string $start_date, string $end_date, array $filters = array() ): array {
 		$summary                = $this->stats->summary( $start_date, $end_date, $filters );
 		$summary['accept_rate'] = $summary['views'] > 0 ? number_format( ( (int) $summary['accepts'] / (int) $summary['views'] ) * 100, 2, '.', '' ) : '0.00';
-		$summary['aov_lift']    = (int) $summary['orders'] > 0 ? number_format( (float) $summary['revenue'] / (int) $summary['orders'], 6, '.', '' ) : '0.000000';
+		$summary['aov_lift']    = (int) $summary['orders'] > 0 ? (float) $summary['revenue'] / (int) $summary['orders'] : 0.00;
 
 		return $summary;
 	}
@@ -152,5 +161,17 @@ final class DashboardPage {
 		}
 
 		return '<span class="description">' . esc_html( $text ) . '</span>';
+	}
+
+	/**
+	 * Format currency value.
+	 *
+	 * @param mixed $value Value to format.
+	 * @return string
+	 */
+	private function format_currency( $value ): string {
+		$float_val = (float) $value;
+		$symbol    = function_exists( 'get_woocommerce_currency_symbol' ) ? get_woocommerce_currency_symbol() : '$';
+		return $symbol . number_format_i18n( $float_val, 2 );
 	}
 }

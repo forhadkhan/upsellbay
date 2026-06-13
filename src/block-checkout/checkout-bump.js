@@ -58,7 +58,10 @@ const CheckoutBumpOffer = ( { offer } ) => {
 							checked={ offer.in_cart }
 							aria-describedby={ offer.body ? descId : undefined }
 						/>
-						<strong className="upsellbay-offer__headline">{ offer.headline }</strong>
+						<strong className="upsellbay-offer__headline">
+							{ offer.headline }
+							<span className="upsellbay-offer__badge" style={{ marginLeft: '8px', backgroundColor: '#e2401c', color: '#fff', fontSize: '11px', padding: '2px 6px', borderRadius: '3px', textTransform: 'uppercase', fontWeight: 'bold' }}>One-Time Offer</span>
+						</strong>
 					</label>
 					{ offer.price_html && (
 						<div className="upsellbay-offer__price" dangerouslySetInnerHTML={ { __html: offer.price_html } } />

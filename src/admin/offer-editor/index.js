@@ -481,3 +481,137 @@ window.jQuery(function ($) {
     fetchRecommendations();
   }
 });
+
+/**
+ * UpsellBay Visual JSON Builder
+ */
+window.jQuery(function ($) {
+  function initVisualBuilder(fieldId, isRules) {
+    const $textarea = $(`#upsellbay-${fieldId}`);
+    const $builder = $(`#upsellbay-builder-${fieldId}`);
+    if (!$textarea.length || !$builder.length) {
+      return;
+    }
+
+    let items = [];
+    try {
+      const val = $textarea.val();
+      items = val ? JSON.parse(val) : (isRules ? [] : {});
+    } catch (e) {
+      items = isRules ? [] : {};
+    }
+
+    // Since placement config is an object, we convert it to an array for the builder temporarily
+    if (!isRules && !Array.isArray(items)) {
+      items = Object.keys(items).map(key => ({ key: key, value: items[key] }));
+    }
+
+    function render() {
+      $builder.empty();
+      const $table = $('<table class="widefat striped" style="margin-bottom: 10px;"></table>');
+      const $tbody = $('<tbody></tbody>');
+
+      if (items.length === 0) {
+        $tbody.append('<tr><td colspan="4" style="text-align:center;">No items configured. Leave empty for default behavior.</td></tr>');
+      } else {
+        items.forEach((item, index) => {
+          const $tr = $('<tr></tr>');
+          
+          if (isRules) {
+            $tr.append(`
+              <td>
+                <select class="upsellbay-vb-type" data-index="${index}">
+                  <option value="cart_product" ${item.type === 'cart_product' ? 'selected' : ''}>Cart contains product ID</option>
+                  <option value="cart_category" ${item.type === 'cart_category' ? 'selected' : ''}>Cart contains category ID</option>
+                  <option value="cart_subtotal" ${item.type === 'cart_subtotal' ? 'selected' : ''}>Cart subtotal is</option>
+                  <option value="customer_order_count" ${item.type === 'customer_order_count' ? 'selected' : ''}>Customer order count is</option>
+                </select>
+              </td>
+              <td>
+                <select class="upsellbay-vb-op" data-index="${index}">
+                  <option value="eq" ${item.operator === 'eq' ? 'selected' : ''}>Equals</option>
+                  <option value="neq" ${item.operator === 'neq' ? 'selected' : ''}>Does not equal</option>
+                  <option value="gt" ${item.operator === 'gt' ? 'selected' : ''}>Greater than</option>
+                  <option value="lt" ${item.operator === 'lt' ? 'selected' : ''}>Less than</option>
+                </select>
+              </td>
+              <td>
+                <input type="text" class="regular-text upsellbay-vb-val" data-index="${index}" value="${Array.isArray(item.value) ? item.value.join(',') : (item.value || '')}" placeholder="Value (comma separated for IDs)">
+              </td>
+            `);
+          } else {
+            $tr.append(`
+              <td>
+                <input type="text" class="regular-text upsellbay-vb-key" data-index="${index}" value="${item.key || ''}" placeholder="Setting Key (e.g. location)">
+              </td>
+              <td colspan="2">
+                <input type="text" class="regular-text upsellbay-vb-val" data-index="${index}" value="${item.value || ''}" placeholder="Value">
+              </td>
+            `);
+          }
+          
+          $tr.append(`<td><button type="button" class="button button-link-delete upsellbay-vb-remove" data-index="${index}">Remove</button></td>`);
+          $tbody.append($tr);
+        });
+      }
+
+      $table.append($tbody);
+      $builder.append($table);
+      $builder.append(`<button type="button" class="button upsellbay-vb-add">Add ${isRules ? 'Rule' : 'Setting'}</button>`);
+
+      $builder.find('.upsellbay-vb-remove').on('click', function() {
+        const idx = $(this).data('index');
+        items.splice(idx, 1);
+        updateTextarea();
+        render();
+      });
+
+      $builder.find('.upsellbay-vb-add').on('click', function() {
+        if (isRules) {
+          items.push({ type: 'cart_product', operator: 'eq', value: '' });
+        } else {
+          items.push({ key: '', value: '' });
+        }
+        updateTextarea();
+        render();
+      });
+
+      $builder.find('input, select').on('change input', function() {
+        const idx = $(this).data('index');
+        if (isRules) {
+          items[idx].type = $builder.find(`.upsellbay-vb-type[data-index="${idx}"]`).val();
+          items[idx].operator = $builder.find(`.upsellbay-vb-op[data-index="${idx}"]`).val();
+          let rawVal = $builder.find(`.upsellbay-vb-val[data-index="${idx}"]`).val();
+          if (rawVal.includes(',')) {
+             items[idx].value = rawVal.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+          } else {
+             items[idx].value = rawVal;
+          }
+        } else {
+          items[idx].key = $builder.find(`.upsellbay-vb-key[data-index="${idx}"]`).val();
+          items[idx].value = $builder.find(`.upsellbay-vb-val[data-index="${idx}"]`).val();
+        }
+        updateTextarea();
+      });
+    }
+
+    function updateTextarea() {
+      let finalData;
+      if (isRules) {
+        finalData = items;
+      } else {
+        finalData = {};
+        items.forEach(item => {
+          if (item.key) finalData[item.key] = item.value;
+        });
+      }
+      $textarea.val(JSON.stringify(finalData));
+      $textarea.trigger('change');
+    }
+
+    render();
+  }
+
+  initVisualBuilder('_ub_rules', true);
+  initVisualBuilder('_ub_placement_config', false);
+});

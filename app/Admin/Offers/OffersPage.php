@@ -148,7 +148,7 @@ final class OffersPage {
 			echo '<td>' . esc_html( (string) $row['priority'] ) . '</td>';
 			echo '<td>' . esc_html( (string) $row['views'] ) . '</td>';
 			echo '<td>' . esc_html( (string) $row['accepts'] ) . '</td>';
-			echo '<td>' . esc_html( (string) $row['attributed_revenue'] ) . '</td>';
+			echo '<td>' . esc_html( $this->format_currency( $row['attributed_revenue'] ) ) . '</td>';
 			echo '</tr>';
 		}
 
@@ -171,5 +171,17 @@ final class OffersPage {
 		);
 
 		return $labels[ $placement ] ?? $placement;
+	}
+
+	/**
+	 * Format currency value.
+	 *
+	 * @param mixed $value Value to format.
+	 * @return string
+	 */
+	private function format_currency( $value ): string {
+		$float_val = (float) $value;
+		$symbol    = function_exists( 'get_woocommerce_currency_symbol' ) ? get_woocommerce_currency_symbol() : '$';
+		return $symbol . number_format_i18n( $float_val, 2 );
 	}
 }

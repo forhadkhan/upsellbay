@@ -64,6 +64,7 @@ use WPAnchorBay\UpsellBay\Domain\Storefront\StorefrontController;
 use WPAnchorBay\UpsellBay\Domain\Storefront\ThankYouOfferRenderer;
 use WPAnchorBay\UpsellBay\Integrations\WooCommerce\BlockCheckoutIntegration;
 use WPAnchorBay\UpsellBay\Integrations\WooCommerce\CheckoutFields;
+use WPAnchorBay\UpsellBay\Integrations\WooCommerce\CouponLimiter;
 use WPAnchorBay\UpsellBay\Integrations\WooCommerce\StoreApiExtender;
 use WPAnchorBay\UpsellBay\Integrations\Licensing\LicenseClient;
 use WPAnchorBay\UpsellBay\Utils\ImportExporter;
@@ -230,6 +231,7 @@ final class Plugin {
 		$this->container->set( StoreApiExtender::class, static fn ( Container $container ): StoreApiExtender => new StoreApiExtender( $container->get( OfferRepository::class ), $container->get( OfferPrioritizer::class ), $container->get( CartSession::class ), $container->get( AnalyticsRecorder::class ), $container->get( Settings::class ) ) );
 		$this->container->set( BlockCheckoutIntegration::class, static fn (): BlockCheckoutIntegration => new BlockCheckoutIntegration() );
 		$this->container->set( StorefrontController::class, static fn ( Container $container ): StorefrontController => new StorefrontController( $container->get( OfferRepository::class ), $container->get( PlacementRenderer::class ), $container->get( CartSession::class ), $container->get( Settings::class ) ) );
+		$this->container->set( CouponLimiter::class, static fn (): CouponLimiter => new CouponLimiter() );
 		$this->container->set( ImportExporter::class, static fn ( Container $container ): ImportExporter => new ImportExporter( $container->get( OfferValidator::class ) ) );
 		$this->container->set( LogRepository::class, static fn (): LogRepository => new LogRepository() );
 		$this->container->set( LoggerInterface::class, static fn ( Container $container ): DatabaseLogger => new DatabaseLogger( $container->get( LogRepository::class ) ) );
@@ -327,6 +329,7 @@ final class Plugin {
 		$this->container->get( StoreApiExtender::class )->register_hooks();
 		$this->container->get( BlockCheckoutIntegration::class )->register_hooks();
 		$this->container->get( StorefrontController::class )->register_hooks();
+		$this->container->get( CouponLimiter::class )->register();
 
 		add_action( 'update_option_' . Constants::SETTINGS_OPTION, array( $this, 'log_settings_update' ), 10, 3 );
 		add_action( Constants::hook_name( 'offer_created' ), array( $this, 'log_offer_created' ), 10, 2 );
