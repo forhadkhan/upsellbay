@@ -47,6 +47,7 @@ use WPAnchorBay\UpsellBay\Domain\Discounts\DiscountCalculator;
 use WPAnchorBay\UpsellBay\Domain\Attribution\AttributionReader;
 use WPAnchorBay\UpsellBay\Domain\Attribution\AttributionWriter;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferPrioritizer;
+use WPAnchorBay\UpsellBay\Domain\Offers\OfferConflictDetector;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferDefaults;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferSchema;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferService;
@@ -177,6 +178,7 @@ final class Plugin {
 		$this->container->set( OfferDefaults::class, static fn (): OfferDefaults => new OfferDefaults() );
 		$this->container->set( OfferValidator::class, static fn ( Container $container ): OfferValidator => new OfferValidator( $container->get( OfferSchema::class ) ) );
 		$this->container->set( OfferRepository::class, static fn ( Container $container ): OfferRepository => new OfferRepository( $container->get( OfferValidator::class ) ) );
+		$this->container->set( OfferConflictDetector::class, static fn ( Container $container ): OfferConflictDetector => new OfferConflictDetector( $container->get( OfferRepository::class ) ) );
 		$this->container->set( OfferService::class, static fn ( Container $container ): OfferService => new OfferService( $container->get( OfferRepository::class ), $container->get( OfferValidator::class ) ) );
 		$this->container->set( RuleParser::class, static fn (): RuleParser => new RuleParser() );
 		$this->container->set( RuleEvaluator::class, static fn ( Container $container ): RuleEvaluator => new RuleEvaluator( $container->get( RuleParser::class ) ) );
@@ -196,10 +198,10 @@ final class Plugin {
 				$container->get( OfferPrioritizer::class ),
 				$container->get( AnalyticsRecorder::class ),
 				array(
-					'checkout_bump'  => new ClassicCheckoutBump(),
-					'product_upsell' => new ProductPageRenderer(),
-					'cart_crosssell' => new CartCrossSellRenderer(),
-					'thankyou_offer' => new ThankYouOfferRenderer(),
+					'checkout_bump'  => new ClassicCheckoutBump( $container->get( DiscountCalculator::class ) ),
+					'product_upsell' => new ProductPageRenderer( $container->get( DiscountCalculator::class ) ),
+					'cart_crosssell' => new CartCrossSellRenderer( $container->get( DiscountCalculator::class ) ),
+					'thankyou_offer' => new ThankYouOfferRenderer( $container->get( DiscountCalculator::class ) ),
 				)
 			)
 		);
@@ -217,7 +219,7 @@ final class Plugin {
 				$container->get( AnalyticsService::class )
 			)
 		);
-		$this->container->set( ProductsController::class, static fn (): ProductsController => new ProductsController() );
+		$this->container->set( ProductsController::class, static fn ( Container $container ): ProductsController => new ProductsController( $container->get( ProductRecommendationAssistant::class ) ) );
 		$this->container->set( ProductsRoute::class, static fn ( Container $container ): ProductsRoute => new ProductsRoute( $container->get( ProductsController::class ) ) );
 		$this->container->set( OfferPreviewRoute::class, static fn ( Container $container ): OfferPreviewRoute => new OfferPreviewRoute( $container->get( OfferService::class ) ) );
 		$this->container->set( CheckoutFields::class, static fn (): CheckoutFields => new CheckoutFields() );
@@ -227,12 +229,31 @@ final class Plugin {
 		$this->container->set( Logger::class, static fn ( Container $container ): Logger => new Logger( null, (bool) $container->get( Settings::class )->all()['debug_logging'] ) );
 		$this->container->set( TokenHelper::class, static fn (): TokenHelper => new TokenHelper() );
 		$this->container->set( RateLimiter::class, static fn (): RateLimiter => new RateLimiter() );
-		$this->container->set( OfferListTable::class, static fn ( Container $container ): OfferListTable => new OfferListTable( $container->get( OfferRepository::class ), $container->get( OfferService::class ) ) );
+		$this->container->set( OfferListTable::class, static fn ( Container $container ): OfferListTable => new OfferListTable( $container->get( OfferRepository::class ), $container->get( OfferService::class ), $container->get( OfferConflictDetector::class ) ) );
 		$this->container->set( OffersPage::class, static fn ( Container $container ): OffersPage => new OffersPage( $container->get( OfferListTable::class ) ) );
-		$this->container->set( OfferEditPage::class, static fn ( Container $container ): OfferEditPage => new OfferEditPage( $container->get( OfferService::class ), $container->get( OfferValidator::class ), null, null, $container->get( OfferDefaults::class ) ) );
+		$this->container->set( OfferEditPage::class, static fn ( Container $container ): OfferEditPage => new OfferEditPage( $container->get( OfferService::class ), $container->get( OfferValidator::class ), null, null, $container->get( OfferDefaults::class ), null, $container->get( OfferConflictDetector::class ) ) );
 		$this->container->set( WizardController::class, static fn ( Container $container ): WizardController => new WizardController( $container->get( OfferService::class ), $container->get( Settings::class ), $container->get( OfferDefaults::class ) ) );
 		$this->container->set( PreviewLinks::class, static fn (): PreviewLinks => new PreviewLinks() );
-		$this->container->set( ProductRecommendationAssistant::class, static fn (): ProductRecommendationAssistant => new ProductRecommendationAssistant() );
+		$this->container->set(
+			ProductRecommendationAssistant::class,
+			static fn (): ProductRecommendationAssistant => new ProductRecommendationAssistant(
+				static function ( int $product_id ): array {
+					$product = function_exists( 'wc_get_product' ) ? wc_get_product( $product_id ) : null;
+					return $product ? $product->get_upsell_ids() : array();
+				},
+				static function ( int $product_id ): array {
+					$product = function_exists( 'wc_get_product' ) ? wc_get_product( $product_id ) : null;
+					return $product ? $product->get_cross_sell_ids() : array();
+				},
+				static function ( int $category_id ): array {
+					return function_exists( 'wc_get_products' ) ? wc_get_products( array(
+						'category' => array( get_term_by( 'id', $category_id, 'product_cat' )->slug ?? '' ),
+						'return'   => 'ids',
+						'limit'    => 5,
+					) ) : array();
+				}
+			)
+		);
 		$this->container->set( SettingsPage::class, static fn ( Container $container ): SettingsPage => new SettingsPage( $container->get( Settings::class ) ) );
 		$this->container->set( ToolsPage::class, static fn ( Container $container ): ToolsPage => new ToolsPage( $container->get( ImportExporter::class ), $container->get( Settings::class ) ) );
 		$this->container->set( HelpPage::class, static fn (): HelpPage => new HelpPage() );
@@ -448,7 +469,7 @@ final class Plugin {
 		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
 			'cart_checkout_blocks',
 			Constants::plugin_file(),
-			true
+			false
 		);
 	}
 

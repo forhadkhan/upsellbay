@@ -81,6 +81,21 @@ final class Settings {
 	}
 
 	/**
+	 * Get max display count for a placement.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $placement Placement key.
+	 * @return int
+	 */
+	public function placement_max_display( string $placement ): int {
+		$all     = $this->all();
+		$default = $this->defaults()['placement_max_display'][ $placement ] ?? 1;
+
+		return isset( $all['placement_max_display'][ $placement ] ) ? max( 1, (int) $all['placement_max_display'][ $placement ] ) : $default;
+	}
+
+	/**
 	 * Update settings after normalization.
 	 *
 	 * @since 1.0.0
@@ -107,6 +122,12 @@ final class Settings {
 				'cart_crosssell' => true,
 				'checkout_bump'  => true,
 				'thankyou_offer' => true,
+			),
+			'placement_max_display' => array(
+				'product_upsell' => 1,
+				'cart_crosssell' => 3,
+				'checkout_bump'  => 1,
+				'thankyou_offer' => 1,
 			),
 			'style_tokens'        => array(
 				'accent_color' => '#2271b1',
@@ -158,6 +179,17 @@ final class Settings {
 			$placements[ $key ] = $this->to_bool( $settings['placements'][ $key ] ?? $default );
 		}
 		$settings['placements'] = $placements;
+
+		if ( ! is_array( $settings['placement_max_display'] ) ) {
+			$settings['placement_max_display'] = array();
+		}
+
+		$max_display = array();
+		foreach ( $defaults['placement_max_display'] as $key => $default ) {
+			$val = isset( $settings['placement_max_display'][ $key ] ) ? (int) $settings['placement_max_display'][ $key ] : $default;
+			$max_display[ $key ] = max( 1, $val );
+		}
+		$settings['placement_max_display'] = $max_display;
 
 		$retention = (int) $settings['retention_days'];
 		if ( $retention < 1 ) {
