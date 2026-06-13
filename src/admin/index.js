@@ -10,7 +10,7 @@ window.jQuery( function ( $ ) {
 
 	$( document.body ).on(
 		'click',
-		'.upsellbay-license-remove-trigger',
+		'.upsellbay-license-remove-trigger, .upsellbay-modal-trigger',
 		function ( event ) {
 			event.preventDefault();
 
@@ -62,4 +62,32 @@ window.jQuery( function ( $ ) {
 				.trigger( 'click' );
 		}
 	);
+
+	$( document.body ).on( 'click', '.upsellbay-copy-log', function ( event ) {
+		event.preventDefault();
+		const $btn = $( this );
+		const text = $btn.data( 'clipboardText' );
+
+		if ( navigator.clipboard && navigator.clipboard.writeText ) {
+			navigator.clipboard.writeText( text ).then( function () {
+				const originalText = $btn.text();
+				$btn.text( 'Copied!' );
+				setTimeout( function () {
+					$btn.text( originalText );
+				}, 2000 );
+			} );
+		} else {
+			const $temp = $( '<textarea>' );
+			$( 'body' ).append( $temp );
+			$temp.val( text ).select();
+			document.execCommand( 'copy' );
+			$temp.remove();
+
+			const originalText = $btn.text();
+			$btn.text( 'Copied!' );
+			setTimeout( function () {
+				$btn.text( originalText );
+			}, 2000 );
+		}
+	} );
 } );
