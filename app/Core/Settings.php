@@ -115,9 +115,9 @@ final class Settings {
 	 */
 	public function defaults(): array {
 		return array(
-			'enabled'             => true,
-			'test_mode'           => false,
-			'placements'          => array(
+			'enabled'               => true,
+			'test_mode'             => false,
+			'placements'            => array(
 				'product_upsell' => true,
 				'cart_crosssell' => true,
 				'checkout_bump'  => true,
@@ -129,28 +129,28 @@ final class Settings {
 				'checkout_bump'  => 1,
 				'thankyou_offer' => 1,
 			),
-			'style_tokens'        => array(
+			'style_tokens'          => array(
 				'accent_color' => '#2271b1',
 				'button_style' => 'theme',
 			),
-			'license'             => array(
+			'license'               => array(
 				'status'     => 'unknown',
 				'masked_key' => '',
 				'checked_at' => 0,
 			),
-			'retention_days'      => 365,
-			'data_retention'      => array(
+			'retention_days'        => 365,
+			'data_retention'        => array(
 				'stats_days'              => 365,
 				'session_days'            => 30,
 				'log_days'                => 30,
 				'prune_order_attribution' => false,
 			),
-			'cleanup_on_delete'   => false,
-			'notice_dismissals'   => array(),
-			'debug_logging'       => false,
-			'wizard_completed'    => false,
-			'wizard_completed_at' => 0,
-			'first_offer_id'      => 0,
+			'cleanup_on_delete'     => false,
+			'notice_dismissals'     => array(),
+			'debug_logging'         => false,
+			'wizard_completed'      => false,
+			'wizard_completed_at'   => 0,
+			'first_offer_id'        => 0,
 		);
 	}
 
@@ -186,7 +186,7 @@ final class Settings {
 
 		$max_display = array();
 		foreach ( $defaults['placement_max_display'] as $key => $default ) {
-			$val = isset( $settings['placement_max_display'][ $key ] ) ? (int) $settings['placement_max_display'][ $key ] : $default;
+			$val                 = isset( $settings['placement_max_display'][ $key ] ) ? (int) $settings['placement_max_display'][ $key ] : $default;
 			$max_display[ $key ] = max( 1, $val );
 		}
 		$settings['placement_max_display'] = $max_display;

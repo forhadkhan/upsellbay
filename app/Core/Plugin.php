@@ -25,6 +25,7 @@ use WPAnchorBay\UpsellBay\Admin\Offers\OfferListTable;
 use WPAnchorBay\UpsellBay\Admin\Offers\OffersPage;
 use WPAnchorBay\UpsellBay\Admin\OverviewSummary;
 use WPAnchorBay\UpsellBay\Admin\PreviewLinks;
+use WPAnchorBay\UpsellBay\Admin\Settings\LogsSectionRenderer;
 use WPAnchorBay\UpsellBay\Admin\Settings\SettingsPage;
 use WPAnchorBay\UpsellBay\Admin\Tools\ToolsPage;
 use WPAnchorBay\UpsellBay\Admin\Wizard\WizardController;
@@ -66,9 +67,11 @@ use WPAnchorBay\UpsellBay\Integrations\WooCommerce\CheckoutFields;
 use WPAnchorBay\UpsellBay\Integrations\WooCommerce\StoreApiExtender;
 use WPAnchorBay\UpsellBay\Integrations\Licensing\LicenseClient;
 use WPAnchorBay\UpsellBay\Utils\ImportExporter;
-use WPAnchorBay\UpsellBay\Utils\Logger;
 use WPAnchorBay\UpsellBay\Utils\RateLimiter;
 use WPAnchorBay\UpsellBay\Utils\TokenHelper;
+use WPAnchorBay\UpsellBay\Data\LogRepository;
+use WPAnchorBay\UpsellBay\Domain\Logging\LoggerInterface;
+use WPAnchorBay\UpsellBay\Domain\Logging\DatabaseLogger;
 
 /**
  * Owns service registration, hook topology, and startup order.
@@ -228,13 +231,14 @@ final class Plugin {
 		$this->container->set( BlockCheckoutIntegration::class, static fn (): BlockCheckoutIntegration => new BlockCheckoutIntegration() );
 		$this->container->set( StorefrontController::class, static fn ( Container $container ): StorefrontController => new StorefrontController( $container->get( OfferRepository::class ), $container->get( PlacementRenderer::class ), $container->get( CartSession::class ), $container->get( Settings::class ) ) );
 		$this->container->set( ImportExporter::class, static fn ( Container $container ): ImportExporter => new ImportExporter( $container->get( OfferValidator::class ) ) );
-		$this->container->set( Logger::class, static fn ( Container $container ): Logger => new Logger( null, (bool) $container->get( Settings::class )->all()['debug_logging'] ) );
+		$this->container->set( LogRepository::class, static fn (): LogRepository => new LogRepository() );
+		$this->container->set( LoggerInterface::class, static fn ( Container $container ): DatabaseLogger => new DatabaseLogger( $container->get( LogRepository::class ) ) );
 		$this->container->set( TokenHelper::class, static fn (): TokenHelper => new TokenHelper() );
 		$this->container->set( RateLimiter::class, static fn (): RateLimiter => new RateLimiter() );
 		$this->container->set( OfferListTable::class, static fn ( Container $container ): OfferListTable => new OfferListTable( $container->get( OfferRepository::class ), $container->get( OfferService::class ), $container->get( OfferConflictDetector::class ) ) );
 		$this->container->set( OffersPage::class, static fn ( Container $container ): OffersPage => new OffersPage( $container->get( OfferListTable::class ) ) );
-		$this->container->set( OfferEditPage::class, static fn ( Container $container ): OfferEditPage => new OfferEditPage( $container->get( OfferService::class ), $container->get( OfferValidator::class ), null, null, $container->get( OfferDefaults::class ), null, $container->get( OfferConflictDetector::class ) ) );
-		$this->container->set( WizardController::class, static fn ( Container $container ): WizardController => new WizardController( $container->get( OfferService::class ), $container->get( Settings::class ), $container->get( OfferDefaults::class ) ) );
+		$this->container->set( OfferEditPage::class, static fn ( Container $container ): OfferEditPage => new OfferEditPage( $container->get( OfferService::class ), $container->get( OfferValidator::class ), null, null, $container->get( OfferDefaults::class ), null, $container->get( OfferConflictDetector::class ), $container->get( LoggerInterface::class ) ) );
+		$this->container->set( WizardController::class, static fn ( Container $container ): WizardController => new WizardController( $container->get( OfferService::class ), $container->get( Settings::class ), $container->get( OfferDefaults::class ), null, null, $container->get( LoggerInterface::class ) ) );
 		$this->container->set( PreviewLinks::class, static fn (): PreviewLinks => new PreviewLinks() );
 		$this->container->set(
 			ProductRecommendationAssistant::class,
@@ -248,15 +252,18 @@ final class Plugin {
 					return $product ? $product->get_cross_sell_ids() : array();
 				},
 				static function ( int $category_id ): array {
-					return function_exists( 'wc_get_products' ) ? wc_get_products( array(
-						'category' => array( get_term_by( 'id', $category_id, 'product_cat' )->slug ?? '' ),
-						'return'   => 'ids',
-						'limit'    => 5,
-					) ) : array();
+					return function_exists( 'wc_get_products' ) ? wc_get_products(
+						array(
+							'category' => array( get_term_by( 'id', $category_id, 'product_cat' )->slug ?? '' ),
+							'return'   => 'ids',
+							'limit'    => 5,
+						)
+					) : array();
 				}
 			)
 		);
-		$this->container->set( SettingsPage::class, static fn ( Container $container ): SettingsPage => new SettingsPage( $container->get( Settings::class ) ) );
+		$this->container->set( LogsSectionRenderer::class, static fn ( Container $container ): LogsSectionRenderer => new LogsSectionRenderer( $container->get( LogRepository::class ) ) );
+		$this->container->set( SettingsPage::class, static fn ( Container $container ): SettingsPage => new SettingsPage( $container->get( Settings::class ), null, null, null, null, null, $container->get( LogsSectionRenderer::class ) ) );
 		$this->container->set( ToolsPage::class, static fn ( Container $container ): ToolsPage => new ToolsPage( $container->get( ImportExporter::class ), $container->get( Settings::class ) ) );
 		$this->container->set( HelpPage::class, static fn (): HelpPage => new HelpPage() );
 		$this->container->set( OverviewSummary::class, static fn ( Container $container ): OverviewSummary => new OverviewSummary( $container->get( OfferRepository::class ), $container->get( StatsRepository::class ), $container->get( Settings::class ) ) );
@@ -320,6 +327,22 @@ final class Plugin {
 		$this->container->get( StoreApiExtender::class )->register_hooks();
 		$this->container->get( BlockCheckoutIntegration::class )->register_hooks();
 		$this->container->get( StorefrontController::class )->register_hooks();
+
+		add_action( 'update_option_' . Constants::SETTINGS_OPTION, array( $this, 'log_settings_update' ), 10, 3 );
+		add_action( Constants::hook_name( 'offer_created' ), array( $this, 'log_offer_created' ), 10, 2 );
+		add_action( Constants::hook_name( 'offer_updated' ), array( $this, 'log_offer_updated' ), 10, 2 );
+		add_action( Constants::hook_name( 'offer_deleted' ), array( $this, 'log_offer_deleted' ) );
+		add_action( Constants::hook_name( 'offer_accepted' ), array( $this, 'log_offer_accepted' ), 10, 3 );
+		add_action( Constants::hook_name( 'offer_dismissed' ), array( $this, 'log_offer_dismissed' ), 10, 2 );
+		add_action( Constants::hook_name( 'offer_rendered' ), array( $this, 'log_offer_rendered' ), 10, 4 );
+		add_action( Constants::hook_name( 'api_request_failed' ), array( $this, 'log_api_request_failed' ), 10, 3 );
+		add_action( Constants::hook_name( 'license_activated' ), array( $this, 'log_license_activated' ) );
+		add_action( Constants::hook_name( 'license_activation_failed' ), array( $this, 'log_license_activation_failed' ), 10, 3 );
+		add_action( Constants::hook_name( 'license_check_failed' ), array( $this, 'log_license_check_failed' ), 10, 2 );
+		add_action( Constants::hook_name( 'attribution_written' ), array( $this, 'log_attribution_written' ), 10, 4 );
+		add_action( Constants::hook_name( 'follow_on_order_created' ), array( $this, 'log_follow_on_order_created' ), 10, 3 );
+		add_action( Constants::hook_name( 'daily_stats_reconciled' ), array( $this, 'log_daily_stats_reconciled' ), 10, 3 );
+		add_action( Constants::hook_name( 'prune_logs' ), array( $this, 'prune_logs' ) );
 
 		add_action( 'rest_api_init', array( $this->container->get( PublicOfferRoutes::class ), 'register_routes' ) );
 		add_action( 'rest_api_init', array( $this->container->get( ProductsRoute::class ), 'register' ) );
@@ -559,6 +582,14 @@ final class Plugin {
 
 		check_admin_referer( 'upsellbay_remove_license' );
 
+		$this->container->get( LoggerInterface::class )->info(
+			__( 'License removed by user', 'upsellbay' ),
+			array(
+				'source'  => 'license_management',
+				'user_id' => get_current_user_id(),
+			)
+		);
+
 		$this->container->get( LicenseClient::class )->remove_local();
 
 		$redirect_url = add_query_arg(
@@ -587,6 +618,15 @@ final class Plugin {
 
 		$is_valid     = $this->container->get( LicenseClient::class )->is_valid();
 		$redirect_url = admin_url( Constants::SETTINGS_LICENSE_ACTIVATION_URL );
+
+		$this->container->get( LoggerInterface::class )->info(
+			/* translators: %s: validity status */
+			sprintf( __( 'Manual license check performed. Status: %s', 'upsellbay' ), $is_valid ? 'valid' : 'invalid' ),
+			array(
+				'source'  => 'license_management',
+				'user_id' => get_current_user_id(),
+			)
+		);
 
 		if ( $is_valid ) {
 			$redirect_url = add_query_arg( 'wc_message', __( 'License check complete: valid.', 'upsellbay' ), $redirect_url );
@@ -726,5 +766,354 @@ final class Plugin {
 		foreach ( $result['errors'] as $message ) {
 			echo '<div class="notice notice-error"><p>' . esc_html( $message ) . '</p></div>';
 		}
+	}
+
+	/**
+	 * Log when settings are updated.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param mixed  $old_value Old value.
+	 * @param mixed  $new_value New value.
+	 * @param string $option    Option name.
+	 */
+	public function log_settings_update( $old_value, $new_value, string $option ): void {
+		unset( $old_value, $option );
+
+		if ( ! is_array( $new_value ) ) {
+			return;
+		}
+
+		$this->container->get( LoggerInterface::class )->info(
+			__( 'UpsellBay settings updated', 'upsellbay' ),
+			array(
+				'source'  => 'settings_save',
+				'user_id' => get_current_user_id(),
+			)
+		);
+	}
+
+	/**
+	 * Log when an offer is created.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int                  $offer_id Offer ID.
+	 * @param array<string, mixed> $offer    Offer payload.
+	 */
+	public function log_offer_created( int $offer_id, array $offer ): void {
+		$this->container->get( LoggerInterface::class )->info(
+			/* translators: %d: offer ID */
+			sprintf( __( 'Offer #%d created', 'upsellbay' ), $offer_id ),
+			array(
+				'source'      => 'offer_create',
+				'object_type' => 'offer',
+				'object_id'   => $offer_id,
+				'user_id'     => get_current_user_id(),
+				'metadata'    => array( 'title' => $offer['title'] ?? '' ),
+			)
+		);
+	}
+
+	/**
+	 * Log when an offer is updated.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int                  $offer_id Offer ID.
+	 * @param array<string, mixed> $offer    Offer payload.
+	 */
+	public function log_offer_updated( int $offer_id, array $offer ): void {
+		$this->container->get( LoggerInterface::class )->info(
+			/* translators: %d: offer ID */
+			sprintf( __( 'Offer #%d updated', 'upsellbay' ), $offer_id ),
+			array(
+				'source'      => 'offer_update',
+				'object_type' => 'offer',
+				'object_id'   => $offer_id,
+				'user_id'     => get_current_user_id(),
+				'metadata'    => array( 'title' => $offer['title'] ?? '' ),
+			)
+		);
+	}
+
+	/**
+	 * Log when an offer is deleted.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int $offer_id Offer ID.
+	 */
+	public function log_offer_deleted( int $offer_id ): void {
+		$this->container->get( LoggerInterface::class )->info(
+			/* translators: %d: offer ID */
+			sprintf( __( 'Offer #%d deleted', 'upsellbay' ), $offer_id ),
+			array(
+				'source'      => 'offer_delete',
+				'object_type' => 'offer',
+				'object_id'   => $offer_id,
+				'user_id'     => get_current_user_id(),
+			)
+		);
+	}
+
+	/**
+	 * Log when an offer is accepted.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int                  $offer_id  Offer ID.
+	 * @param string               $placement Offer placement.
+	 * @param array<string, mixed> $result    Add to cart result.
+	 */
+	public function log_offer_accepted( int $offer_id, string $placement, array $result ): void {
+		$this->container->get( LoggerInterface::class )->info(
+			/* translators: 1: offer ID, 2: placement */
+			sprintf( __( 'Offer #%1$d accepted at %2$s', 'upsellbay' ), $offer_id, $placement ),
+			array(
+				'source'      => 'offer_accept',
+				'object_type' => 'offer',
+				'object_id'   => $offer_id,
+				'metadata'    => array(
+					'placement' => $placement,
+					'result'    => $result,
+				),
+			)
+		);
+	}
+
+	/**
+	 * Log when an offer is dismissed.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int    $offer_id  Offer ID.
+	 * @param string $placement Offer placement.
+	 */
+	public function log_offer_dismissed( int $offer_id, string $placement ): void {
+		$this->container->get( LoggerInterface::class )->info(
+			/* translators: 1: offer ID, 2: placement */
+			sprintf( __( 'Offer #%1$d dismissed at %2$s', 'upsellbay' ), $offer_id, $placement ),
+			array(
+				'source'      => 'offer_dismiss',
+				'object_type' => 'offer',
+				'object_id'   => $offer_id,
+				'metadata'    => array(
+					'placement' => $placement,
+				),
+			)
+		);
+	}
+
+	/**
+	 * Log when a public API request is blocked.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string               $endpoint Endpoint requested.
+	 * @param string               $reason   Reason for failure.
+	 * @param array<string, mixed> $params   Request parameters.
+	 */
+	public function log_api_request_failed( string $endpoint, string $reason, array $params ): void {
+		$this->container->get( LoggerInterface::class )->warning(
+			/* translators: 1: endpoint, 2: reason */
+			sprintf( __( 'API request to %1$s failed (%2$s)', 'upsellbay' ), $endpoint, $reason ),
+			array(
+				'source'       => 'api_guard',
+				'request_data' => $params,
+			)
+		);
+	}
+
+	/**
+	 * Log successful license activation.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $license_key Activated license key.
+	 */
+	public function log_license_activated( string $license_key ): void {
+		$this->container->get( LoggerInterface::class )->info(
+			/* translators: %s: license key suffix */
+			sprintf( __( 'License activated successfully: %s', 'upsellbay' ), str_repeat( '*', max( 0, strlen( $license_key ) - 4 ) ) . substr( $license_key, -4 ) ),
+			array(
+				'source'  => 'license_activation',
+				'user_id' => get_current_user_id(),
+			)
+		);
+	}
+
+	/**
+	 * Log failed license activation.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $license_key Failed license key.
+	 * @param string $error_code  Error code.
+	 * @param mixed  $error_obj   Optional. The WP_Error object.
+	 */
+	public function log_license_activation_failed( string $license_key, string $error_code, mixed $error_obj = null ): void {
+		$context = array(
+			'source'  => 'license_activation',
+			'user_id' => get_current_user_id(),
+		);
+
+		if ( is_wp_error( $error_obj ) ) {
+			$context['metadata'] = array(
+				'error_messages' => $error_obj->get_error_messages(),
+				'error_data'     => $error_obj->get_error_data(),
+			);
+		}
+
+		$this->container->get( LoggerInterface::class )->warning(
+			/* translators: %s: error code */
+			sprintf( __( 'License activation failed: %s', 'upsellbay' ), $error_code ),
+			$context
+		);
+	}
+
+	/**
+	 * Log failed background license check.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $error_code Error code.
+	 * @param mixed  $error_obj  Optional. The WP_Error object.
+	 */
+	public function log_license_check_failed( string $error_code, mixed $error_obj = null ): void {
+		$context = array(
+			'source'  => 'license_check',
+			'user_id' => 0,
+		);
+
+		if ( is_wp_error( $error_obj ) ) {
+			$context['metadata'] = array(
+				'error_messages' => $error_obj->get_error_messages(),
+				'error_data'     => $error_obj->get_error_data(),
+			);
+		}
+
+		$this->container->get( LoggerInterface::class )->warning(
+			/* translators: %s: error code */
+			sprintf( __( 'Background license check failed: %s', 'upsellbay' ), $error_code ),
+			$context
+		);
+	}
+
+	/**
+	 * Log when an offer is rendered.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int                  $offer_id  Offer ID.
+	 * @param string               $placement Offer placement.
+	 * @param array<string, mixed> $offer     Offer data.
+	 * @param array<string, mixed> $context   Context payload.
+	 */
+	public function log_offer_rendered( int $offer_id, string $placement, array $offer, array $context ): void {
+		// Log as debug, since rendering happens often.
+		$this->container->get( LoggerInterface::class )->debug(
+			/* translators: 1: offer ID, 2: placement */
+			sprintf( __( 'Offer #%1$d rendered at %2$s', 'upsellbay' ), $offer_id, $placement ),
+			array(
+				'source'      => 'offer_render',
+				'object_type' => 'offer',
+				'object_id'   => $offer_id,
+				'metadata'    => array(
+					'placement'   => $placement,
+					'offer_title' => $offer['title'] ?? '',
+					'context'     => $context,
+				),
+			)
+		);
+	}
+
+	/**
+	 * Log when attribution is written to a cart item.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param object               $item             WC_Order_Item_Product or WC_Order_Item.
+	 * @param array<string, mixed> $attribution_meta Attribution meta payload.
+	 * @param array<string, mixed> $offer            Offer data.
+	 * @param string               $placement        Offer placement.
+	 */
+	public function log_attribution_written( $item, array $attribution_meta, array $offer, string $placement ): void {
+		$offer_id = (int) ( $offer['id'] ?? 0 );
+		$this->container->get( LoggerInterface::class )->info(
+			/* translators: 1: offer ID, 2: placement */
+			sprintf( __( 'Attribution written for Offer #%1$d at %2$s', 'upsellbay' ), $offer_id, $placement ),
+			array(
+				'source'      => 'attribution',
+				'object_type' => 'offer',
+				'object_id'   => $offer_id,
+				'metadata'    => array(
+					'placement' => $placement,
+					'meta'      => $attribution_meta,
+				),
+			)
+		);
+	}
+
+	/**
+	 * Log when a follow-on order is created.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param object $order           WC_Order.
+	 * @param int    $source_order_id Source order ID.
+	 * @param int    $source_offer_id Source offer ID.
+	 */
+	public function log_follow_on_order_created( $order, int $source_order_id, int $source_offer_id ): void {
+		$order_id = method_exists( $order, 'get_id' ) ? $order->get_id() : 0;
+		$this->container->get( LoggerInterface::class )->info(
+			/* translators: 1: order ID, 2: source order ID */
+			sprintf( __( 'Follow-on order #%1$d created from order #%2$d', 'upsellbay' ), $order_id, $source_order_id ),
+			array(
+				'source'      => 'follow_on_order',
+				'object_type' => 'offer',
+				'object_id'   => $source_offer_id,
+				'metadata'    => array(
+					'follow_on_order_id' => $order_id,
+					'source_order_id'    => $source_order_id,
+				),
+			)
+		);
+	}
+
+	/**
+	 * Log when daily stats are reconciled.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $date      Date YYYY-MM-DD.
+	 * @param int    $offer_id  Offer ID.
+	 * @param string $placement Offer placement.
+	 */
+	public function log_daily_stats_reconciled( string $date, int $offer_id, string $placement ): void {
+		$this->container->get( LoggerInterface::class )->debug(
+			/* translators: 1: offer ID, 2: date */
+			sprintf( __( 'Stats reconciled for Offer #%1$d on %2$s', 'upsellbay' ), $offer_id, $date ),
+			array(
+				'source'      => 'stats_reconcile',
+				'object_type' => 'offer',
+				'object_id'   => $offer_id,
+				'metadata'    => array(
+					'placement' => $placement,
+					'date'      => $date,
+				),
+			)
+		);
+	}
+
+	/**
+	 * Prune old log entries.
+	 *
+	 * @since 1.0.0
+	 */
+	public function prune_logs(): void {
+		$settings = $this->container->get( Settings::class )->all();
+		$days     = isset( $settings['data_retention']['log_days'] ) ? (int) $settings['data_retention']['log_days'] : 30;
+		$this->container->get( LogRepository::class )->cleanup_old_logs( $days );
 	}
 }
