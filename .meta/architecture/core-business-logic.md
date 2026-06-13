@@ -10,6 +10,8 @@ Tasks: `UB-P4-001` through `UB-P4-018`.
 
 `Domain\Offers\OfferPrioritizer` selects eligible offers by placement, active status, schedule, dismissal state, product availability, rules, and priority. Core checkout rendering remains limited to one checkout bump; cart rendering can request up to three offers.
 
+`Domain\Offers\OfferConflictDetector` evaluates new or existing offers against active offers to identify warnings, such as placement crowding, duplicate triggers, and self-offers. Merchants can choose to override these warnings manually.
+
 ## Rules, Cart, and Discounts
 
 `Domain\Rules\RuleParser` and `RuleEvaluator` support the P0 rule families from PRD v4: cart product, category, tag, subtotal, viewed product, user role, customer order count, lifetime spend, stock status, and exclude-if-product-in-cart. Empty rules are eligible; malformed rules fail closed.

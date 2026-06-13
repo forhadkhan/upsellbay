@@ -16,6 +16,10 @@ No runtime application architecture is implemented yet. Phase 0 records the bind
 - [File ownership map](./file-ownership-map.md)
 - [Documentation and decision logging standards](./documentation-standards.md)
 
+## Feature Architecture
+
+- [Logging System Architecture](./logging-system.md)
+
 ## Git Architecture: Orphan Overlay
 This project uses an **Orphan Overlay** strategy to manage dot-prefixed directories independently from the main application codebase. Here is the [detailed explanation](./git-orphan-overlay.md)
 

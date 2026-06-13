@@ -8,7 +8,7 @@ Tasks: `UB-P2-001` through `UB-P2-012`.
 
 Offers use the private `upsellbay_offer` CPT registered by `Core\Installer`. The CPT remains hidden from public archives, REST exposure, and top-level admin menus.
 
-`Domain\Offers\OfferSchema` and `Domain\Offers\OfferValidator` define and normalize the `_ub_` offer meta contract. `Data\OfferRepository` is the only runtime layer that directly adapts WordPress post and post-meta functions for offer configuration.
+`Domain\Offers\OfferSchema` and `Domain\Offers\OfferValidator` define and normalize the `_ub_` offer meta contract, which now includes `_ub_offer_goal`, `_ub_reason_label`, `_ub_conflict_override`, and `_ub_conflict_override_reason` fields to enhance offer governance. `Data\OfferRepository` is the only runtime layer that directly adapts WordPress post and post-meta functions for offer configuration.
 
 ## Stats Storage
 
