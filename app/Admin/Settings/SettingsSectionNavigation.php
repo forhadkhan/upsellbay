@@ -63,6 +63,10 @@ final class SettingsSectionNavigation {
 				'label' => __( 'License', 'upsellbay' ),
 				'url'   => 'admin.php?page=upsellbay&tab=settings&section=license',
 			),
+			'logs'    => array(
+				'label' => __( 'Logs', 'upsellbay' ),
+				'url'   => 'admin.php?page=upsellbay&tab=settings&section=logs',
+			),
 		);
 	}
 }

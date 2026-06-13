@@ -67,6 +67,15 @@ final class SettingsPage {
 	private SettingsSectionNavigation $section_navigation;
 
 	/**
+	 * Logs section renderer.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var LogsSectionRenderer|null
+	 */
+	private ?LogsSectionRenderer $logs_renderer;
+
+	/**
 	 * Settings save result prepared for the current render.
 	 *
 	 * @since 1.0.0
@@ -113,8 +122,9 @@ final class SettingsPage {
 	 * @param callable|array<SettingsSectionInterface>|null $verify_nonce Nonce callback, or legacy sections.
 	 * @param array<SettingsSectionInterface>|null          $sections       Sections.
 	 * @param SettingsSectionNavigation|null                $section_navigation Settings section navigation.
+	 * @param LogsSectionRenderer|null                      $logs_renderer      Logs section renderer.
 	 */
-	public function __construct( Settings $settings, LicenseClient|callable|null $license_client = null, ?callable $can_manage = null, callable|array|null $verify_nonce = null, ?array $sections = null, ?SettingsSectionNavigation $section_navigation = null ) {
+	public function __construct( Settings $settings, LicenseClient|callable|null $license_client = null, ?callable $can_manage = null, callable|array|null $verify_nonce = null, ?array $sections = null, ?SettingsSectionNavigation $section_navigation = null, ?LogsSectionRenderer $logs_renderer = null ) {
 		if ( is_callable( $license_client ) ) {
 			$sections       = is_array( $verify_nonce ) ? $verify_nonce : $sections;
 			$verify_nonce   = $can_manage;
@@ -128,6 +138,7 @@ final class SettingsPage {
 		$this->verify_nonce       = is_callable( $verify_nonce ) ? $verify_nonce : static fn ( string $nonce ): bool => function_exists( 'wp_verify_nonce' ) && (bool) wp_verify_nonce( $nonce, 'upsellbay_save_settings' );
 		$this->sections           = array();
 		$this->section_navigation = $section_navigation ?? new SettingsSectionNavigation();
+		$this->logs_renderer      = $logs_renderer;
 
 		foreach ( $sections ?? array( new BasicSection(), new StyleSection(), new DataSection() ) as $section ) {
 			$this->sections[ $section->id() ] = $section;
@@ -246,28 +257,32 @@ final class SettingsPage {
 
 		$settings           = $this->settings->all();
 		$active_section     = $this->current_section( $request );
-		$show_license_modal = 'license' === $active_section;
 
-		echo '<form method="post">';
-		if ( function_exists( 'wp_nonce_field' ) ) {
-			wp_nonce_field( 'upsellbay_save_settings', 'nonce' );
+		if ( 'logs' !== $active_section ) {
+			echo '<form method="post">';
+			if ( function_exists( 'wp_nonce_field' ) ) {
+				wp_nonce_field( 'upsellbay_save_settings', 'nonce' );
+			}
 		}
+
 		$this->section_navigation->render( $active_section );
 
 		if ( 'data' === $active_section ) {
 			$this->render_data_section( $settings );
 		} elseif ( 'license' === $active_section ) {
 			$this->render_license_settings_section();
+		} elseif ( 'logs' === $active_section && null !== $this->logs_renderer ) {
+			$this->logs_renderer->render();
 		} else {
 			$this->render_general_settings_section( $settings );
 		}
 
-		echo '<p class="submit"><button type="submit" class="button button-primary">' . esc_html__( 'Save changes', 'upsellbay' ) . '</button></p>';
-		echo '</form>';
-
-		if ( $show_license_modal ) {
-			$this->render_license_remove_confirmation_template();
+		if ( 'logs' !== $active_section ) {
+			echo '<p class="submit"><button type="submit" class="button button-primary">' . esc_html__( 'Save changes', 'upsellbay' ) . '</button></p>';
+			echo '</form>';
 		}
+
+		$this->render_confirmation_modal_template();
 	}
 
 	/**
@@ -373,7 +388,7 @@ final class SettingsPage {
 	private function current_section( array $request ): string {
 		$section = $this->request_key( $request['section'] ?? '' );
 
-		if ( in_array( $section, array( 'general', 'data', 'license' ), true ) ) {
+		if ( in_array( $section, array( 'general', 'data', 'license', 'logs' ), true ) ) {
 			return $section;
 		}
 
@@ -407,7 +422,16 @@ final class SettingsPage {
 			return $this->prepared_save_result;
 		}
 
-		$this->prepared_save_result    = $this->maybe_handle_posted_settings();
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$request = wp_unslash( $_REQUEST );
+		$section = $this->current_section( $request );
+
+		if ( 'logs' === $section && null !== $this->logs_renderer ) {
+			$this->prepared_save_result = $this->logs_renderer->process_actions();
+		} else {
+			$this->prepared_save_result = $this->maybe_handle_posted_settings();
+		}
+
 		$this->posted_settings_handled = true;
 		if ( null !== $this->prepared_save_result && ! $this->prepared_notice_registered ) {
 			add_action( 'upsellbay_admin_page_heading_before', array( $this, 'render_prepared_save_notice' ) );
@@ -528,11 +552,11 @@ final class SettingsPage {
 	}
 
 	/**
-	 * Render the WooCommerce Backbone confirmation template for license removal.
+	 * Render the WooCommerce Backbone confirmation template.
 	 *
 	 * @since 1.0.0
 	 */
-	private function render_license_remove_confirmation_template(): void {
+	private function render_confirmation_modal_template(): void {
 		echo '<script type="text/template" id="tmpl-upsellbay-confirmation-modal">';
 		echo '<div class="wc-backbone-modal upsellbay-confirmation-modal">';
 		echo '<div class="wc-backbone-modal-content">';
