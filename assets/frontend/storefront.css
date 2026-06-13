@@ -65,3 +65,79 @@
 		width: 100%;
 	}
 }
+
+.upsellbay-offer-section {
+	margin: 24px 0;
+}
+
+.upsellbay-offer-section__heading {
+	font-size: 1.1em;
+	margin-bottom: 12px;
+}
+
+.upsellbay-offer--checkout-compact {
+	background: #fcfcfc;
+	border: 1px dashed #ccc;
+	border-left: 3px solid var(--upsellbay-accent);
+	padding: 12px;
+}
+
+.upsellbay-offer--checkout-compact .upsellbay-offer__header {
+	align-items: center;
+	display: flex;
+	gap: 12px;
+	justify-content: space-between;
+}
+
+.upsellbay-offer--checkout-compact .upsellbay-offer__body {
+	font-size: 0.9em;
+	margin-left: 28px;
+}
+
+.upsellbay-offer__reason {
+	background: var(--upsellbay-accent);
+	border-radius: 2px;
+	color: #fff;
+	display: inline-block;
+	font-size: 0.75em;
+	margin-bottom: 6px;
+	padding: 2px 6px;
+	text-transform: uppercase;
+}
+
+.upsellbay-offer__explainer {
+	font-size: 0.85em;
+	font-style: italic;
+	margin-top: 8px;
+	opacity: 0.8;
+}
+
+.upsellbay-offer__action {
+	align-items: center;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.upsellbay-offer__dismiss {
+	background: transparent;
+	border: none;
+	color: inherit;
+	cursor: pointer;
+	font-size: 0.85em;
+	opacity: 0.7;
+	padding: 0;
+	text-decoration: underline;
+}
+
+.upsellbay-offer__dismiss:hover {
+	opacity: 1;
+}
+
+.upsellbay-offer.is-disabled {
+	opacity: 0.6;
+}
+
+.upsellbay-offer.is-disabled .upsellbay-offer__button {
+	cursor: not-allowed;
+}

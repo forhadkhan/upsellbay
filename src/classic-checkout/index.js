@@ -44,6 +44,29 @@ function showNotice(message) {
 	target.prepend(notice);
 }
 
+document.addEventListener('click', async (event) => {
+	const dismiss = event.target.closest('[data-upsellbay-dismiss]');
+	if (dismiss) {
+		const card = dismiss.closest('.upsellbay-offer');
+		if (!card) return;
+
+		dismiss.disabled = true;
+		const result = await postOffer('dismiss', {
+			offer_id: Number(card.dataset.upsellbayOfferId || 0),
+			placement: card.dataset.upsellbayPlacement || 'checkout_bump',
+		});
+
+		if (result?.ok) {
+			card.remove();
+			if (window.jQuery) {
+				window.jQuery(document.body).trigger('update_checkout');
+			}
+		} else {
+			dismiss.disabled = false;
+		}
+	}
+});
+
 document.addEventListener('change', async (event) => {
 	const checkbox = event.target.closest('.upsellbay-offer__checkbox');
 	if (!checkbox) {

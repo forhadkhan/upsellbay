@@ -79,7 +79,7 @@ function upsellbay_quality_assurance_tests(): array {
 
 			assert_true( str_contains( $plugin_file, 'cart_checkout_blocks' ) );
 			assert_true( str_contains( $plugin_file, 'declare_compatibility' ) );
-			assert_contains( '| Block Checkout | Supported |', $docs );
+			assert_contains( '| Block Checkout | Integration path implemented', $docs );
 		},
 		'static qa scripts scan forbidden runtime coupling and unsafe storage access' => static function (): void {
 			$root      = dirname( __DIR__ );

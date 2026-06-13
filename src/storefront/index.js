@@ -45,6 +45,29 @@ function showNotice(message, type = 'error') {
 }
 
 document.addEventListener('click', async (event) => {
+	const dismiss = event.target.closest('[data-upsellbay-dismiss]');
+	if (dismiss) {
+		const card = dismiss.closest('.upsellbay-offer');
+		if (!card) return;
+
+		dismiss.disabled = true;
+		const result = await postOffer('dismiss', {
+			offer_id: Number(card.dataset.upsellbayOfferId || 0),
+			placement: card.dataset.upsellbayPlacement || 'product_upsell',
+		});
+
+		if (result?.ok) {
+			const section = card.closest('.upsellbay-offer-section');
+			card.remove();
+			if (section && !section.querySelector('.upsellbay-offer')) {
+				section.remove();
+			}
+		} else {
+			dismiss.disabled = false;
+		}
+		return;
+	}
+
 	const button = event.target.closest('.upsellbay-offer__button');
 	if (!button) {
 		return;
@@ -56,24 +79,40 @@ document.addEventListener('click', async (event) => {
 	}
 
 	button.disabled = true;
+	button.setAttribute('aria-busy', 'true');
+	card.classList.add('is-loading');
+
+	const isThankYou = card.dataset.upsellbayPlacement === 'thankyou_offer';
+	const originalText = button.textContent;
+	if (isThankYou) {
+		button.textContent = __('Adding...', 'upsellbay');
+	}
+
 	const result = await postOffer('cart-offer-add', {
 		offer_id: Number(card.dataset.upsellbayOfferId || 0),
 		placement: card.dataset.upsellbayPlacement || 'cart_crosssell',
 		source_order_id: Number(card.dataset.upsellbaySourceOrderId || 0),
 	});
+
 	button.disabled = false;
+	button.removeAttribute('aria-busy');
+	card.classList.remove('is-loading');
+	if (isThankYou) {
+		button.textContent = originalText;
+	}
 
 	if (!result?.ok) {
 		showNotice(result?.body?.message || __('Unable to add this offer. Please try again.', 'upsellbay'));
 		return;
 	}
 
-	showNotice(result?.body?.message || __('Offer added to your cart.', 'upsellbay'), 'message');
-
-	if (card.dataset.upsellbayPlacement === 'thankyou_offer' && (config.checkoutUrl || config.cartUrl)) {
+	if (isThankYou && (config.checkoutUrl || config.cartUrl)) {
+		showNotice(__('Adding to new checkout…', 'upsellbay'), 'message');
 		window.location.href = config.checkoutUrl || config.cartUrl;
 		return;
 	}
+
+	showNotice(result?.body?.message || __('Offer added to your cart.', 'upsellbay'), 'message');
 
 	if (window.jQuery) {
 		window.jQuery(document.body).trigger('wc_fragment_refresh');

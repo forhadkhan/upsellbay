@@ -87,7 +87,8 @@ final class StorefrontController {
 	 * @since 1.0.0
 	 */
 	public function render_checkout_bump(): void {
-		$this->echo_placement( 'checkout_bump', $this->context(), 1 );
+		$limit = $this->settings->placement_max_display( 'checkout_bump' );
+		$this->echo_placement( 'checkout_bump', $this->context(), $limit );
 	}
 
 	/**
@@ -96,7 +97,8 @@ final class StorefrontController {
 	 * @since 1.0.0
 	 */
 	public function render_product_offer(): void {
-		$this->echo_placement( 'product_upsell', $this->context(), 1 );
+		$limit = $this->settings->placement_max_display( 'product_upsell' );
+		$this->echo_placement( 'product_upsell', $this->context(), $limit );
 	}
 
 	/**
@@ -105,7 +107,8 @@ final class StorefrontController {
 	 * @since 1.0.0
 	 */
 	public function render_cart_offers(): void {
-		$this->echo_placement( 'cart_crosssell', $this->context(), 3 );
+		$limit = $this->settings->placement_max_display( 'cart_crosssell' );
+		$this->echo_placement( 'cart_crosssell', $this->context(), $limit );
 	}
 
 	/**
@@ -116,9 +119,34 @@ final class StorefrontController {
 	 * @param int|string $order_id Source order ID.
 	 */
 	public function render_thankyou_offer( $order_id = 0 ): void {
+		$order_id = (int) $order_id;
+		if ( $order_id <= 0 || ! function_exists( 'wc_get_order' ) ) {
+			return;
+		}
+
+		$order = wc_get_order( $order_id );
+		if ( ! $order || in_array( $order->get_status(), array( 'failed', 'cancelled', 'refunded' ), true ) ) {
+			return;
+		}
+
+		$user_id       = function_exists( 'get_current_user_id' ) ? get_current_user_id() : 0;
+		$order_user_id = (int) $order->get_user_id();
+
+		if ( $order_user_id > 0 ) {
+			if ( $order_user_id !== $user_id ) {
+				return;
+			}
+		} else {
+			$request_key = isset( $_GET['key'] ) ? sanitize_text_field( wp_unslash( $_GET['key'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( '' === $request_key || $order->get_order_key() !== $request_key ) {
+				return;
+			}
+		}
+
 		$context                    = $this->context();
-		$context['source_order_id'] = (int) $order_id;
-		$this->echo_placement( 'thankyou_offer', $context, 1 );
+		$context['source_order_id'] = $order_id;
+		$limit                      = $this->settings->placement_max_display( 'thankyou_offer' );
+		$this->echo_placement( 'thankyou_offer', $context, $limit );
 	}
 
 	/**
