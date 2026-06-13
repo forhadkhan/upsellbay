@@ -28,7 +28,7 @@ final class OfferPrioritizer {
 	/**
 	 * Product availability callback.
 	 *
-	 * @var callable(int): bool
+	 * @var callable(int, string): bool
 	 */
 	private $product_available;
 
@@ -119,6 +119,13 @@ final class OfferPrioritizer {
 		$offer_id    = (int) ( $offer['id'] ?? 0 );
 		$dismissed   = is_array( $context['dismissed_offer_ids'] ?? null ) ? array_map( 'intval', $context['dismissed_offer_ids'] ) : array();
 		$product_id  = (int) ( $meta['_ub_offer_product_id'] ?? 0 );
+		$cart_ids    = is_array( $context['cart_product_ids'] ?? null ) ? array_map( 'intval', $context['cart_product_ids'] ) : array();
+		$in_cart     = in_array( $product_id, $cart_ids, true );
+
+		if ( $in_cart && in_array( $placement, array( 'checkout_bump', 'thankyou_offer' ), true ) ) {
+			return false;
+		}
+
 		$start_at    = $this->datetime_to_timestamp( $meta['_ub_start_at'] ?? null );
 		$end_at      = $this->datetime_to_timestamp( $meta['_ub_end_at'] ?? null );
 		$current     = ( $this->clock )();
@@ -129,7 +136,7 @@ final class OfferPrioritizer {
 			&& ( null === $start_at || $start_at <= $current )
 			&& ( null === $end_at || $end_at >= $current )
 			&& $product_id > 0
-			&& ( $this->product_available )( $product_id )
+			&& ( $this->product_available )( $product_id, $placement )
 			&& $this->matches_triggers( $meta, $context )
 			&& $this->rules->matches( $rules, $rules_match, $context );
 	}
@@ -195,9 +202,10 @@ final class OfferPrioritizer {
 	/**
 	 * Default product availability adapter.
 	 *
-	 * @param int $product_id Product ID.
+	 * @param int    $product_id Product ID.
+	 * @param string $placement  Placement key.
 	 */
-	private function is_product_available( int $product_id ): bool {
+	private function is_product_available( int $product_id, string $placement = '' ): bool {
 		if ( ! function_exists( 'wc_get_product' ) ) {
 			return true;
 		}
@@ -205,6 +213,13 @@ final class OfferPrioritizer {
 		$product = wc_get_product( $product_id );
 		if ( ! $product ) {
 			return false;
+		}
+
+		if ( in_array( $placement, array( 'checkout_bump', 'thankyou_offer' ), true ) ) {
+			$type = $product->get_type();
+			if ( ! in_array( $type, array( 'simple', 'variation' ), true ) ) {
+				return false;
+			}
 		}
 
 		return ( ! method_exists( $product, 'is_purchasable' ) || $product->is_purchasable() )

@@ -116,6 +116,10 @@ final class OfferValidator {
 		$normalized['_ub_trigger_category_ids'] = $this->int_list( $normalized['_ub_trigger_category_ids'] );
 		$normalized['_ub_discount_type']        = $this->sanitize_key( $normalized['_ub_discount_type'] );
 		$normalized['_ub_discount_value']       = number_format( max( 0, (float) $normalized['_ub_discount_value'] ), 6, '.', '' );
+		$normalized['_ub_offer_goal']           = in_array( $normalized['_ub_offer_goal'], array( 'add_on', 'upgrade', 'protection', 'threshold_helper', 'follow_on' ), true ) ? $normalized['_ub_offer_goal'] : 'add_on';
+		$normalized['_ub_reason_label']         = substr( $this->sanitize_text( $normalized['_ub_reason_label'] ), 0, 80 );
+		$normalized['_ub_conflict_override']    = $this->to_bool( $normalized['_ub_conflict_override'] );
+		$normalized['_ub_conflict_override_reason'] = substr( $this->sanitize_text( $normalized['_ub_conflict_override_reason'] ), 0, 240 );
 		$normalized['_ub_headline']             = substr( $this->sanitize_text( $normalized['_ub_headline'] ), 0, 80 );
 		$normalized['_ub_body']                 = substr( $this->sanitize_html( $normalized['_ub_body'] ), 0, 240 );
 		$normalized['_ub_button_text']          = substr( $this->sanitize_text( $normalized['_ub_button_text'] ), 0, 40 );
