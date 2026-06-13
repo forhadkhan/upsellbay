@@ -11,6 +11,7 @@ namespace WPAnchorBay\UpsellBay\Admin\Offers;
 
 use WPAnchorBay\UpsellBay\Data\OfferRepository;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferService;
+use WPAnchorBay\UpsellBay\Domain\Offers\OfferConflictDetector;
 
 /**
  * Provides native list-table compatible offer rows and actions.
@@ -37,16 +38,27 @@ final class OfferListTable {
 	private OfferService $service;
 
 	/**
+	 * Offer conflict detector.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var OfferConflictDetector|null
+	 */
+	private ?OfferConflictDetector $conflict_detector;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param OfferRepository $repository Offer repository.
-	 * @param OfferService    $service    Offer service.
+	 * @param OfferRepository             $repository        Offer repository.
+	 * @param OfferService                $service           Offer service.
+	 * @param OfferConflictDetector|null  $conflict_detector Offer conflict detector.
 	 */
-	public function __construct( OfferRepository $repository, OfferService $service ) {
-		$this->repository = $repository;
-		$this->service    = $service;
+	public function __construct( OfferRepository $repository, OfferService $service, ?OfferConflictDetector $conflict_detector = null ) {
+		$this->repository        = $repository;
+		$this->service           = $service;
+		$this->conflict_detector = $conflict_detector;
 	}
 
 	/**
@@ -73,11 +85,22 @@ final class OfferListTable {
 				continue;
 			}
 
+			$id = (int) ( $offer['id'] ?? $offer['ID'] ?? 0 );
+
+			$health = 'ok';
+			if ( 'active' === $status && null !== $this->conflict_detector ) {
+				$warnings = $this->conflict_detector->detect( $id, $meta );
+				if ( count( $warnings ) > 0 ) {
+					$health = 'warning';
+				}
+			}
+
 			$rows[] = array(
-				'id'                 => (int) ( $offer['id'] ?? $offer['ID'] ?? 0 ),
+				'id'                 => $id,
 				'title'              => (string) ( $offer['title'] ?? $offer['post_title'] ?? '' ),
 				'placement'          => $placement,
 				'status'             => $status,
+				'health'             => $health,
 				'priority'           => (int) ( $meta['_ub_priority'] ?? 0 ),
 				'views'              => (int) ( $offer['views'] ?? 0 ),
 				'accepts'            => (int) ( $offer['accepts'] ?? 0 ),

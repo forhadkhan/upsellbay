@@ -288,12 +288,19 @@ final class SettingsPage {
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- help_tip() returns escaped WooCommerce help tip markup.
 		echo '<tr><th scope="row">' . esc_html__( 'Placements', 'upsellbay' ) . ' ' . $this->help_tip( __( 'Choose where UpsellBay is allowed to render active, eligible offers. Individual offers still need matching placement settings.', 'upsellbay' ) ) . '</th><td>';
 		foreach ( $this->placement_labels() as $key => $label ) {
-			$is_checked = true === (bool) ( $placements[ $key ] ?? false );
+			$is_checked  = true === (bool) ( $placements[ $key ] ?? false );
+			$max_display = (int) ( $settings['placement_max_display'][ $key ] ?? 1 );
+
+			echo '<div style="margin-bottom: 8px; display: flex; align-items: center; gap: 12px;">';
 			echo '<label class="upsellbay-checkbox-row"><input type="checkbox" name="placements[' . esc_attr( $key ) . ']" value="1"';
 			if ( $is_checked ) {
 				echo ' checked="checked"';
 			}
-			echo '> ' . esc_html( $label ) . '</label><br>';
+			echo '> ' . esc_html( $label ) . '</label>';
+
+			echo '<label><span class="screen-reader-text">' . esc_html__( 'Max display for', 'upsellbay' ) . ' ' . esc_html( $label ) . '</span>';
+			echo esc_html__( 'Max offers:', 'upsellbay' ) . ' <input type="number" name="placement_max_display[' . esc_attr( $key ) . ']" value="' . esc_attr( (string) $max_display ) . '" min="1" max="5" class="small-text"></label>';
+			echo '</div>';
 		}
 		echo '</td></tr></tbody></table>';
 

@@ -51,6 +51,13 @@ final class BasicSection extends AbstractSettingsSection {
 			$settings['placements'][ $placement ] = $this->bool_value( $submitted[ $placement ] ?? false );
 		}
 
+		$submitted_max_display = is_array( $request['placement_max_display'] ?? null ) ? $request['placement_max_display'] : array();
+		foreach ( array_keys( $settings['placement_max_display'] ?? array() ) as $placement ) {
+			if ( isset( $submitted_max_display[ $placement ] ) ) {
+				$settings['placement_max_display'][ $placement ] = max( 1, (int) $submitted_max_display[ $placement ] );
+			}
+		}
+
 		return $settings;
 	}
 }

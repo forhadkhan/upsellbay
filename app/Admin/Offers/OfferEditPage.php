@@ -12,6 +12,7 @@ namespace WPAnchorBay\UpsellBay\Admin\Offers;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferService;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferDefaults;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferValidator;
+use WPAnchorBay\UpsellBay\Domain\Offers\OfferConflictDetector;
 use Throwable;
 
 /**
@@ -57,6 +58,15 @@ final class OfferEditPage {
 	private OfferSectionNavigation $section_navigation;
 
 	/**
+	 * Offer conflict detector.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var OfferConflictDetector|null
+	 */
+	private ?OfferConflictDetector $conflict_detector;
+
+	/**
 	 * Capability callback.
 	 *
 	 * @var callable(): bool
@@ -81,12 +91,14 @@ final class OfferEditPage {
 	 * @param callable|null               $verify_nonce       Nonce callback.
 	 * @param OfferDefaults|null          $defaults           Offer defaults.
 	 * @param OfferSectionNavigation|null $section_navigation Offers section navigation.
+	 * @param OfferConflictDetector|null  $conflict_detector  Offer conflict detector.
 	 */
-	public function __construct( OfferService $service, OfferValidator $validator, ?callable $can_manage = null, ?callable $verify_nonce = null, ?OfferDefaults $defaults = null, ?OfferSectionNavigation $section_navigation = null ) {
+	public function __construct( OfferService $service, OfferValidator $validator, ?callable $can_manage = null, ?callable $verify_nonce = null, ?OfferDefaults $defaults = null, ?OfferSectionNavigation $section_navigation = null, ?OfferConflictDetector $conflict_detector = null ) {
 		$this->service            = $service;
 		$this->validator          = $validator;
 		$this->defaults           = $defaults ?? new OfferDefaults();
 		$this->section_navigation = $section_navigation ?? new OfferSectionNavigation();
+		$this->conflict_detector  = $conflict_detector;
 		$this->can_manage         = $can_manage ?? static fn (): bool => function_exists( 'current_user_can' ) && current_user_can( 'manage_woocommerce' ); // phpcs:ignore WordPress.WP.Capabilities.Unknown
 		$this->verify_nonce       = $verify_nonce ?? static fn ( string $nonce ): bool => function_exists( 'wp_verify_nonce' ) && (bool) wp_verify_nonce( $nonce, 'upsellbay_save_offer' );
 	}
@@ -158,9 +170,18 @@ final class OfferEditPage {
 			);
 		}
 
+		$message = __( 'Offer saved.', 'upsellbay' );
+
+		if ( null !== $this->conflict_detector ) {
+			$warnings = $this->conflict_detector->detect( $offer_id, $valid->data() );
+			if ( count( $warnings ) > 0 ) {
+				$message .= ' ' . implode( ' ', $warnings );
+			}
+		}
+
 		return array(
 			'success'  => true,
-			'message'  => __( 'Offer saved.', 'upsellbay' ),
+			'message'  => $message,
 			'offer_id' => $offer_id,
 		);
 	}
@@ -205,12 +226,17 @@ final class OfferEditPage {
 			'basics'    => array(
 				'label'     => __( 'Required basics', 'upsellbay' ),
 				'collapsed' => false,
-				'fields'    => array( 'title', '_ub_status', '_ub_offer_type', '_ub_offer_product_id', '_ub_headline', '_ub_body', '_ub_button_text' ),
+				'fields'    => array( 'title', '_ub_status', '_ub_offer_type', '_ub_offer_goal', '_ub_offer_product_id', '_ub_reason_label', '_ub_headline', '_ub_body', '_ub_button_text' ),
 			),
 			'targeting' => array(
 				'label'     => __( 'Targeting rules', 'upsellbay' ),
 				'collapsed' => false,
 				'fields'    => array( '_ub_rules_match', '_ub_rules' ),
+			),
+			'recommendations' => array(
+				'label'     => __( 'Recommendations', 'upsellbay' ),
+				'collapsed' => false,
+				'fields'    => array( '_ub_recommendations' ),
 			),
 			'discount'  => array(
 				'label'     => __( 'Discount', 'upsellbay' ),
@@ -230,7 +256,7 @@ final class OfferEditPage {
 			'advanced'  => array(
 				'label'     => __( 'Advanced metadata', 'upsellbay' ),
 				'collapsed' => false,
-				'fields'    => array( '_ub_stats_summary', '_ub_trigger_product_ids', '_ub_trigger_category_ids' ),
+				'fields'    => array( '_ub_stats_summary', '_ub_trigger_product_ids', '_ub_trigger_category_ids', '_ub_conflict_override', '_ub_conflict_override_reason' ),
 			),
 		);
 	}
@@ -311,6 +337,13 @@ final class OfferEditPage {
 			/* translators: %d: offer ID */
 			echo '<h2 class="wp-heading-inline">' . esc_html( sprintf( __( 'UpsellBay Offer: ID - %d', 'upsellbay' ), $offer_id ) ) . '</h2>';
 			echo '<p class="description" style="margin-bottom: 8px;">' . esc_html__( 'You can modify and save data', 'upsellbay' ) . '</p>';
+
+			if ( null !== $this->conflict_detector ) {
+				$warnings = $this->conflict_detector->detect( $offer_id, $meta );
+				foreach ( $warnings as $warning ) {
+					echo '<div class="notice notice-warning inline"><p>' . esc_html( $warning ) . '</p></div>';
+				}
+			}
 		} else {
 			echo '<h2 class="wp-heading-inline">' . esc_html__( 'Add UpsellBay Offer', 'upsellbay' ) . '</h2>';
 		}
@@ -373,12 +406,21 @@ final class OfferEditPage {
 			'_ub_stats_summary'        => __( 'Performance', 'upsellbay' ),
 			'_ub_trigger_product_ids'  => __( 'Trigger product IDs', 'upsellbay' ),
 			'_ub_trigger_category_ids' => __( 'Trigger category IDs', 'upsellbay' ),
+			'_ub_offer_goal'           => __( 'Offer goal', 'upsellbay' ),
+			'_ub_reason_label'         => __( 'Reason label', 'upsellbay' ),
+			'_ub_recommendations'      => __( 'Assistant suggestions', 'upsellbay' ),
+			'_ub_conflict_override'    => __( 'Conflict override', 'upsellbay' ),
+			'_ub_conflict_override_reason' => __( 'Conflict override reason', 'upsellbay' ),
 		);
 		$label  = $labels[ $field ] ?? $field;
 
 		echo '<tr><th scope="row"><label for="upsellbay-' . esc_attr( $field ) . '">' . esc_html( $label ) . '</label></th><td>';
 
-		if ( '_ub_stats_summary' === $field ) {
+		if ( '_ub_recommendations' === $field ) {
+			echo '<div id="upsellbay-recommendations-container" data-nonce="' . esc_attr( wp_create_nonce( 'wp_rest' ) ) . '">';
+			echo '<p class="description">' . esc_html__( 'Select a primary target product above to see AI/WooCommerce product recommendations here.', 'upsellbay' ) . '</p>';
+			echo '</div>';
+		} elseif ( '_ub_stats_summary' === $field ) {
 			$this->render_stats_summary();
 		} elseif ( '_ub_offer_type' === $field ) {
 			echo '<select id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '">';
@@ -411,6 +453,21 @@ final class OfferEditPage {
 			}
 			echo '</select>';
 			echo '<p class="description">' . esc_html__( 'Draft offers are only visible in the admin. Active offers are shown to shoppers. Paused offers are temporarily hidden.', 'upsellbay' ) . '</p>';
+		} elseif ( '_ub_offer_goal' === $field ) {
+			echo '<select id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '">';
+			foreach (
+				array(
+					'add_on'           => __( 'Add-on (Complementary item)', 'upsellbay' ),
+					'upgrade'          => __( 'Upgrade (Better version)', 'upsellbay' ),
+					'protection'       => __( 'Protection (Warranty/Insurance)', 'upsellbay' ),
+					'threshold_helper' => __( 'Threshold Helper (Free shipping/discount)', 'upsellbay' ),
+					'follow_on'        => __( 'Follow-on (Post-purchase)', 'upsellbay' ),
+				) as $option_val => $option_label
+			) {
+				echo '<option value="' . esc_attr( $option_val ) . '" ' . selected( $value, $option_val, false ) . '>' . esc_html( $option_label ) . '</option>';
+			}
+			echo '</select>';
+			echo '<p class="description">' . esc_html__( 'Defines the primary intent of this offer. Used for conflict resolution and performance tracking.', 'upsellbay' ) . '</p>';
 		} elseif ( '_ub_discount_type' === $field ) {
 			echo '<select id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '">';
 			echo '<option value="none" ' . selected( $value, 'none', false ) . '>' . esc_html__( 'No discount', 'upsellbay' ) . '</option>';
@@ -423,6 +480,9 @@ final class OfferEditPage {
 			echo '<p class="description">' . esc_html__( 'Optional short description shown below the headline. Max 240 characters. Supports limited HTML: links, line breaks, bold, italic.', 'upsellbay' ) . '</p>';
 		} elseif ( '_ub_show_image' === $field ) {
 			echo '<label><input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="checkbox" value="1" ' . checked( $value, true, false ) . '> ' . esc_html__( 'Show the WooCommerce product image when available.', 'upsellbay' ) . '</label>';
+		} elseif ( '_ub_conflict_override' === $field ) {
+			echo '<label><input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="checkbox" value="1" ' . checked( $value, true, false ) . '> ' . esc_html__( 'Override conflict prevention (advanced)', 'upsellbay' ) . '</label>';
+			echo '<p class="description">' . esc_html__( 'If checked, this offer may show even if it conflicts with another offer or the current cart state. Use with caution.', 'upsellbay' ) . '</p>';
 		} elseif ( '_ub_offer_product_id' === $field ) {
 			echo '<div class="upsellbay-product-selector" data-upsellbay-product-selector>';
 			echo '<div class="upsellbay-product-selector__input-wrapper" ' . ( 0 !== (int) $value ? 'style="display:none;"' : '' ) . '>';
@@ -520,9 +580,13 @@ final class OfferEditPage {
 				'_ub_trigger_category_ids' => $parse_ids( $request['_ub_trigger_category_ids'] ?? null ),
 				'_ub_discount_type'        => $this->sanitize_key( (string) ( $request['_ub_discount_type'] ?? $defaults['_ub_discount_type'] ) ),
 				'_ub_discount_value'       => (string) ( $request['_ub_discount_value'] ?? $defaults['_ub_discount_value'] ),
+				'_ub_offer_goal'           => $this->sanitize_key( (string) ( $request['_ub_offer_goal'] ?? $defaults['_ub_offer_goal'] ) ),
+				'_ub_reason_label'         => $this->sanitize_text( (string) ( $request['_ub_reason_label'] ?? $defaults['_ub_reason_label'] ) ),
 				'_ub_headline'             => $this->sanitize_text( (string) ( $request['_ub_headline'] ?? $defaults['_ub_headline'] ) ),
 				'_ub_body'                 => $this->sanitize_html( (string) ( $request['_ub_body'] ?? $defaults['_ub_body'] ) ),
 				'_ub_button_text'          => $this->sanitize_text( (string) ( $request['_ub_button_text'] ?? $defaults['_ub_button_text'] ) ),
+				'_ub_conflict_override'    => array_key_exists( '_ub_conflict_override', $request ) && false !== $request['_ub_conflict_override'] && '' !== (string) $request['_ub_conflict_override'],
+				'_ub_conflict_override_reason' => $this->sanitize_text( (string) ( $request['_ub_conflict_override_reason'] ?? $defaults['_ub_conflict_override_reason'] ) ),
 				'_ub_rules'                => $this->normalize_rules( $parse_json( $request['_ub_rules'] ?? null, array() ) ),
 				'_ub_rules_match'          => $this->sanitize_key( (string) ( $request['_ub_rules_match'] ?? 'all' ) ),
 				'_ub_placement_config'     => array_map( array( $this, 'sanitize_text' ), $parse_json( $request['_ub_placement_config'] ?? null, $defaults['_ub_placement_config'] ) ),
