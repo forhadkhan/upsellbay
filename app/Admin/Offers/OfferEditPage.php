@@ -11,6 +11,7 @@ namespace WPAnchorBay\UpsellBay\Admin\Offers;
 
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferService;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferDefaults;
+use WPAnchorBay\UpsellBay\Domain\Offers\OfferSchema;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferValidator;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferConflictDetector;
 use WPAnchorBay\UpsellBay\Domain\Logging\LoggerInterface;
@@ -552,8 +553,12 @@ final class OfferEditPage {
 			}
 		} elseif ( '_ub_rules' === $field || '_ub_placement_config' === $field ) {
 			$val_str = is_array( $value ) ? wp_json_encode( $value ) : $value;
-			echo '<textarea id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" style="display:none;" data-upsellbay-json-field="' . esc_attr( $field ) . '">' . esc_textarea( (string) $val_str ) . '</textarea>';
-			echo '<div id="upsellbay-builder-' . esc_attr( $field ) . '" class="upsellbay-visual-builder"></div>';
+			if ( '_ub_placement_config' === $field ) {
+				$this->render_placement_config_field( is_array( $value ) ? $value : array(), (string) $val_str );
+			} else {
+				echo '<textarea id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" style="display:none;" data-upsellbay-json-field="' . esc_attr( $field ) . '">' . esc_textarea( (string) $val_str ) . '</textarea>';
+				echo '<div id="upsellbay-builder-' . esc_attr( $field ) . '" class="upsellbay-visual-builder"></div>';
+			}
 		} elseif ( '_ub_start_at' === $field || '_ub_end_at' === $field ) {
 			echo '<input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="datetime-local" class="regular-text" value="' . esc_attr( (string) $value ) . '">';
 		} else {
@@ -562,6 +567,35 @@ final class OfferEditPage {
 		}
 
 		echo '</td></tr>';
+	}
+
+	/**
+	 * Render placement config controls with advanced JSON fallback.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<string, mixed> $value   Placement config value.
+	 * @param string               $json    Encoded placement config.
+	 */
+	private function render_placement_config_field( array $value, string $json ): void {
+		$schema    = new OfferSchema();
+		$positions = $schema->placement_config_positions();
+		$position  = (string) ( $value['position'] ?? 'before_submit' );
+
+		echo '<select id="upsellbay-_ub_placement_config-position" class="regular-text" data-upsellbay-placement-position data-target="upsellbay-_ub_placement_config">';
+		if ( '' !== $position && ! isset( $positions[ $position ] ) ) {
+			echo '<option value="' . esc_attr( $position ) . '" selected="selected">' . esc_html__( 'Custom saved position', 'upsellbay' ) . '</option>';
+		}
+		foreach ( $positions as $option_val => $option_label ) {
+			echo '<option value="' . esc_attr( $option_val ) . '" ' . selected( $position, $option_val, false ) . '>' . esc_html( $option_label ) . '</option>';
+		}
+		echo '</select>';
+		echo '<p class="description">' . esc_html__( 'Choose from the predefined display positions. This updates the saved placement config without changing WooCommerce hook registration.', 'upsellbay' ) . '</p>';
+		echo '<details class="upsellbay-placement-config-advanced">';
+		echo '<summary>' . esc_html__( 'Advanced JSON', 'upsellbay' ) . '</summary>';
+		echo '<textarea id="upsellbay-_ub_placement_config" name="_ub_placement_config" class="large-text code" rows="4" data-upsellbay-json-field="_ub_placement_config">' . esc_textarea( $json ) . '</textarea>';
+		echo '<p class="description">' . esc_html__( 'Advanced users can add extra placement config keys here. The position selector preserves unknown keys when possible.', 'upsellbay' ) . '</p>';
+		echo '</details>';
 	}
 
 	/**

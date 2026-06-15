@@ -518,6 +518,67 @@ function upsellbay_admin_architecture_tests(): array {
 
 			assert_false( $page->save( array( 'nonce' => 'bad' ) )['success'] );
 		},
+		'offer editor renders placement position choices with advanced json fallback' => static function (): void {
+			$page = new OfferEditPage(
+				new OfferService( upsellbay_test_offer_repository( array() ), new OfferValidator( new OfferSchema(), static fn (): bool => true ) ),
+				new OfferValidator( new OfferSchema(), static fn (): bool => true )
+			);
+
+			ob_start();
+			$page->render_content();
+			$html = (string) ob_get_clean();
+
+			assert_contains( 'id="upsellbay-_ub_placement_config-position"', $html );
+			assert_contains( 'data-upsellbay-placement-position', $html );
+			assert_contains( 'value="before_submit"', $html );
+			assert_contains( 'selected="selected">Checkout bump, before Place order', $html );
+			assert_contains( 'Checkout bump, before Place order', $html );
+			assert_contains( 'upsellbay-placement-config-advanced', $html );
+			assert_contains( 'data-upsellbay-json-field="_ub_placement_config"', $html );
+		},
+		'offer editor preserves advanced placement config keys and defaults invalid config' => static function (): void {
+			$saved      = array();
+			$repository = upsellbay_test_offer_repository( array(), $saved );
+			$page       = new OfferEditPage(
+				new OfferService( $repository, new OfferValidator( new OfferSchema(), static fn ( int $product_id ): bool => 25 === $product_id ) ),
+				new OfferValidator( new OfferSchema(), static fn ( int $product_id ): bool => 25 === $product_id ),
+				static fn (): bool => true,
+				static fn ( string $nonce ): bool => 'good' === $nonce
+			);
+
+			$result = $page->save(
+				array(
+					'nonce'                => 'good',
+					'title'                => 'Cart offer',
+					'_ub_offer_type'       => 'cart_crosssell',
+					'_ub_status'           => 'draft',
+					'_ub_offer_product_id' => '25',
+					'_ub_headline'         => 'Add this too',
+					'_ub_button_text'      => 'Add item',
+					'_ub_placement_config' => '{"position":"after_cart_table","custom_flag":" agency slot "}',
+				)
+			);
+
+			assert_true( $result['success'] );
+			assert_same( 'after_cart_table', $saved['meta']['_ub_placement_config']['position'] );
+			assert_same( 'agency slot', $saved['meta']['_ub_placement_config']['custom_flag'] );
+
+			$result = $page->save(
+				array(
+					'nonce'                => 'good',
+					'title'                => 'Cart offer',
+					'_ub_offer_type'       => 'cart_crosssell',
+					'_ub_status'           => 'draft',
+					'_ub_offer_product_id' => '25',
+					'_ub_headline'         => 'Add this too',
+					'_ub_button_text'      => 'Add item',
+					'_ub_placement_config' => 'not-json',
+				)
+			);
+
+			assert_true( $result['success'] );
+			assert_same( 'after_cart_table', $saved['meta']['_ub_placement_config']['position'] );
+		},
 		'settings page persists normalized sections with nonce and capability checks' => static function (): void {
 			$stored   = array();
 			$settings = new Settings(

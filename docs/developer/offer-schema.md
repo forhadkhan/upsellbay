@@ -16,7 +16,7 @@ Offer configuration is stored as private `upsellbay_offer` CPT meta using `_ub_`
 | `_ub_button_text` | string | empty | Max 40 characters |
 | `_ub_rules` | array | `[]` | Normalized rule objects |
 | `_ub_rules_match` | string | `all` | `all`, `any` |
-| `_ub_placement_config` | array | `[]` | Placement-specific options |
+| `_ub_placement_config` | array | `[]` | Placement-specific options. The built-in editor exposes predefined `position` choices: `before_submit`, `after_add_to_cart`, `after_cart_table`, and `order_received_actions`. The saved `position` currently affects display metadata/classes and editor defaults; it does not dynamically move WooCommerce hook registration. Advanced JSON keys are preserved for developer integrations. |
 | `_ub_show_image` | bool | `true` | Boolean |
 | `_ub_start_at` | datetime or null | `null` | `Y-m-d H:i:s` |
 | `_ub_end_at` | datetime or null | `null` | `Y-m-d H:i:s` |

@@ -101,6 +101,31 @@ final class OfferSchema {
 	}
 
 	/**
+	 * Return predefined placement display position labels.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return array<string, string>
+	 */
+	public function placement_config_positions(): array {
+		$positions = array(
+			'before_submit'          => function_exists( '__' ) ? __( 'Checkout bump, before Place order', 'upsellbay' ) : 'Checkout bump, before Place order',
+			'after_add_to_cart'      => function_exists( '__' ) ? __( 'Product page, after add-to-cart form', 'upsellbay' ) : 'Product page, after add-to-cart form',
+			'after_cart_table'       => function_exists( '__' ) ? __( 'Cart offer area', 'upsellbay' ) : 'Cart offer area',
+			'order_received_actions' => function_exists( '__' ) ? __( 'Thank-you follow-on area', 'upsellbay' ) : 'Thank-you follow-on area',
+		);
+
+		/**
+		 * Filter the predefined placement display position map.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param array<string, string> $positions Position key to label map.
+		 */
+		return Hooks::filter( 'placement_config_positions', $positions );
+	}
+
+	/**
 	 * Valid statuses.
 	 *
 	 * @since 1.0.0
