@@ -572,9 +572,9 @@ window.jQuery(function ($) {
 
       if (items.length > 0) {
         if (isRules) {
-          $table.append('<thead><tr><th>Rule Type</th><th>Operator</th><th>Value</th><th></th></tr></thead>');
+          $table.append('<thead><tr><th style="padding: 15px 10px;">Rule Type</th><th style="padding: 15px 10px;">Operator</th><th style="padding: 15px 10px;">Value</th><th style="padding: 15px 10px;"></th></tr></thead>');
         } else {
-          $table.append('<thead><tr><th>Setting Key</th><th colspan="2">Value</th><th></th></tr></thead>');
+          $table.append('<thead><tr><th style="padding: 15px 10px;">Setting Key</th><th colspan="2" style="padding: 15px 10px;">Value</th><th style="padding: 15px 10px;"></th></tr></thead>');
         }
       }
 
