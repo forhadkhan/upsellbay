@@ -310,11 +310,11 @@ window.jQuery(function ($) {
     e.preventDefault();
     if (confirm(wp.i18n ? wp.i18n.__('Are you sure you want to clear all fields?', 'upsellbay') : 'Are you sure you want to clear all fields?')) {
       $form[0].reset();
-      
+
       $form.find('[data-upsellbay-selection]').empty().removeClass('is-active');
       $form.find('.upsellbay-product-selector__input-wrapper').show();
       $form.find('input[type="hidden"]').val('');
-      
+
       localStorage.removeItem(cacheKey);
       isDirty = false;
     }
@@ -441,14 +441,14 @@ window.jQuery(function ($) {
           const id = $(this).data('id');
           const name = $(this).data('name');
           const price = $(this).data('price');
-          
+
           $('#upsellbay-_ub_offer_product_id').val(id);
-          
+
           // Update the visual product selector
           const $selector = $('#upsellbay-_ub_offer_product_id').closest('.upsellbay-product-selector');
           const $inputWrapper = $selector.find('.upsellbay-product-selector__input-wrapper');
           const $selection = $selector.find('[data-upsellbay-selection]');
-          
+
           $inputWrapper.hide();
           $selection.html(`
             <div class="upsellbay-product-selector__result-info">
@@ -457,7 +457,7 @@ window.jQuery(function ($) {
             </div>
             <span class="upsellbay-product-selector__selection-remove">&times;</span>
           `).addClass("is-active");
-          
+
           $selection.find('.upsellbay-product-selector__selection-remove').on("click", () => {
             $('#upsellbay-_ub_offer_product_id').val("");
             $selection.empty().removeClass("is-active");
@@ -486,6 +486,66 @@ window.jQuery(function ($) {
  * UpsellBay Visual JSON Builder
  */
 window.jQuery(function ($) {
+  function initPlacementConfig() {
+    const $textarea = $('#upsellbay-_ub_placement_config');
+    const $position = $('[data-upsellbay-placement-position]');
+    if (!$textarea.length || !$position.length) {
+      return;
+    }
+
+    function parseConfig() {
+      try {
+        const parsed = $textarea.val().trim()
+          ? JSON.parse($textarea.val().trim())
+          : {};
+        return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+          ? parsed
+          : {};
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function ensurePositionOption(position) {
+      const hasOption = $position.find('option').filter(function () {
+        return $(this).val() === position;
+      }).length;
+
+      if (!position || hasOption) {
+        return;
+      }
+
+      $position.prepend(
+        $('<option></option>')
+          .val(position)
+          .text('Custom saved position'),
+      );
+    }
+
+    function syncSelectFromTextarea() {
+      const config = parseConfig();
+      if (!config || !config.position) {
+        return;
+      }
+
+      ensurePositionOption(config.position);
+      $position.val(config.position);
+    }
+
+    $position.on('change', function () {
+      const config = parseConfig() || {};
+      config.position = $(this).val();
+      $textarea.val(JSON.stringify(config));
+      $textarea.trigger('change');
+    });
+
+    $textarea.on('input change', function () {
+      syncSelectFromTextarea();
+    });
+
+    syncSelectFromTextarea();
+  }
+
   function initVisualBuilder(fieldId, isRules) {
     const $textarea = $(`#upsellbay-${fieldId}`);
     const $builder = $(`#upsellbay-builder-${fieldId}`);
@@ -509,7 +569,7 @@ window.jQuery(function ($) {
     function render() {
       $builder.empty();
       const $table = $('<table class="widefat striped" style="margin-bottom: 10px;"></table>');
-      
+
       if (items.length > 0) {
         if (isRules) {
           $table.append('<thead><tr><th>Rule Type</th><th>Operator</th><th>Value</th><th></th></tr></thead>');
@@ -525,11 +585,11 @@ window.jQuery(function ($) {
       } else {
         items.forEach((item, index) => {
           const $tr = $('<tr></tr>');
-          
-if (isRules) {
+
+          if (isRules) {
             let valueHtml = '';
             let valArray = Array.isArray(item.value) ? item.value : (item.value ? String(item.value).split(',') : []);
-            
+
             if (['cart_product', 'exclude_if_product_in_cart', 'viewed_product'].includes(item.type)) {
               let options = valArray.map(id => `<option value="${id}" selected>#${id}</option>`).join('');
               valueHtml = `<select class="wc-product-search upsellbay-vb-val" data-index="${index}" multiple="multiple" data-placeholder="Search for a product..." aria-label="Rule value">${options}</select>`;
@@ -590,7 +650,7 @@ if (isRules) {
               </td>
             `);
           }
-          
+
           $tr.append(`<td><button type="button" class="button button-link-delete upsellbay-vb-remove" data-index="${index}">Remove</button></td>`);
           $tbody.append($tr);
         });
@@ -600,14 +660,14 @@ if (isRules) {
       $builder.append($table);
       $builder.append(`<button type="button" class="button upsellbay-vb-add">Add ${isRules ? 'Rule' : 'Setting'}</button>`);
 
-      $builder.find('.upsellbay-vb-remove').on('click', function() {
+      $builder.find('.upsellbay-vb-remove').on('click', function () {
         const idx = $(this).data('index');
         items.splice(idx, 1);
         updateTextarea();
         render();
       });
 
-      $builder.find('.upsellbay-vb-add').on('click', function() {
+      $builder.find('.upsellbay-vb-add').on('click', function () {
         if (isRules) {
           items.push({ type: 'cart_product', operator: 'eq', value: '' });
         } else {
@@ -621,7 +681,7 @@ if (isRules) {
         $(document.body).trigger('wc-enhanced-select-init');
       }
 
-      $builder.find('input, select').on('change input', function() {
+      $builder.find('input, select').on('change input', function () {
         const idx = $(this).data('index');
         if (isRules) {
           items[idx].type = $builder.find(`.upsellbay-vb-type[data-index="${idx}"]`).val();
@@ -629,11 +689,11 @@ if (isRules) {
           let rawVal = $builder.find(`.upsellbay-vb-val[data-index="${idx}"]`).val();
           if (rawVal === null) rawVal = [];
           if (Array.isArray(rawVal)) {
-             items[idx].value = rawVal.map(s => parseInt(s, 10)).filter(n => !isNaN(n));
+            items[idx].value = rawVal.map(s => parseInt(s, 10)).filter(n => !isNaN(n));
           } else if (typeof rawVal === 'string' && rawVal.includes(',')) {
-             items[idx].value = rawVal.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+            items[idx].value = rawVal.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
           } else {
-             items[idx].value = rawVal;
+            items[idx].value = rawVal;
           }
         } else {
           items[idx].key = $builder.find(`.upsellbay-vb-key[data-index="${idx}"]`).val();
@@ -660,6 +720,6 @@ if (isRules) {
     render();
   }
 
+  initPlacementConfig();
   initVisualBuilder('_ub_rules', true);
-  initVisualBuilder('_ub_placement_config', false);
 });
