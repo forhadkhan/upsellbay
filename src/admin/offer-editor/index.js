@@ -509,6 +509,15 @@ window.jQuery(function ($) {
     function render() {
       $builder.empty();
       const $table = $('<table class="widefat striped" style="margin-bottom: 10px;"></table>');
+      
+      if (items.length > 0) {
+        if (isRules) {
+          $table.append('<thead><tr><th>Rule Type</th><th>Operator</th><th>Value</th><th></th></tr></thead>');
+        } else {
+          $table.append('<thead><tr><th>Setting Key</th><th colspan="2">Value</th><th></th></tr></thead>');
+        }
+      }
+
       const $tbody = $('<tbody></tbody>');
 
       if (items.length === 0) {
@@ -523,13 +532,13 @@ if (isRules) {
             
             if (['cart_product', 'exclude_if_product_in_cart', 'viewed_product'].includes(item.type)) {
               let options = valArray.map(id => `<option value="${id}" selected>#${id}</option>`).join('');
-              valueHtml = `<select class="wc-product-search upsellbay-vb-val" data-index="${index}" multiple="multiple" data-placeholder="Search for a product...">${options}</select>`;
+              valueHtml = `<select class="wc-product-search upsellbay-vb-val" data-index="${index}" multiple="multiple" data-placeholder="Search for a product..." aria-label="Rule value">${options}</select>`;
             } else if (item.type === 'cart_category') {
               let options = valArray.map(id => `<option value="${id}" selected>#${id}</option>`).join('');
-              valueHtml = `<select class="wc-category-search upsellbay-vb-val" data-index="${index}" multiple="multiple" data-placeholder="Search for a category...">${options}</select>`;
+              valueHtml = `<select class="wc-category-search upsellbay-vb-val" data-index="${index}" multiple="multiple" data-placeholder="Search for a category..." aria-label="Rule value">${options}</select>`;
             } else if (item.type === 'stock_status') {
               valueHtml = `
-                <select class="upsellbay-vb-val" data-index="${index}">
+                <select class="upsellbay-vb-val" data-index="${index}" aria-label="Rule value">
                   <option value="" ${!item.value ? 'selected' : ''}>Any</option>
                   <option value="instock" ${item.value === 'instock' ? 'selected' : ''}>In stock</option>
                   <option value="outofstock" ${item.value === 'outofstock' ? 'selected' : ''}>Out of stock</option>
@@ -537,16 +546,16 @@ if (isRules) {
                 </select>
               `;
             } else if (item.type === 'user_role') {
-              valueHtml = `<input type="text" class="regular-text upsellbay-vb-val" data-index="${index}" value="${valArray.join(',')}" placeholder="User roles (comma separated, e.g. customer, subscriber)">`;
+              valueHtml = `<input type="text" class="regular-text upsellbay-vb-val" data-index="${index}" value="${valArray.join(',')}" placeholder="User roles (comma separated, e.g. customer, subscriber)" aria-label="Rule value">`;
             } else if (['cart_subtotal', 'customer_order_count', 'customer_lifetime_spend'].includes(item.type)) {
-              valueHtml = `<input type="number" step="any" class="regular-text upsellbay-vb-val" data-index="${index}" value="${item.value || ''}" placeholder="Number">`;
+              valueHtml = `<input type="number" step="any" class="regular-text upsellbay-vb-val" data-index="${index}" value="${item.value || ''}" placeholder="Number" aria-label="Rule value">`;
             } else {
-              valueHtml = `<input type="text" class="regular-text upsellbay-vb-val" data-index="${index}" value="${valArray.join(',')}" placeholder="Value (comma separated for IDs)">`;
+              valueHtml = `<input type="text" class="regular-text upsellbay-vb-val" data-index="${index}" value="${valArray.join(',')}" placeholder="Value (comma separated for IDs)" aria-label="Rule value">`;
             }
 
             $tr.append(`
               <td>
-                <select class="upsellbay-vb-type" data-index="${index}">
+                <select class="upsellbay-vb-type" data-index="${index}" aria-label="Rule type">
                   <option value="cart_product" ${item.type === 'cart_product' ? 'selected' : ''}>Cart contains product</option>
                   <option value="cart_category" ${item.type === 'cart_category' ? 'selected' : ''}>Cart contains category</option>
                   <option value="cart_tag" ${item.type === 'cart_tag' ? 'selected' : ''}>Cart contains tag</option>
@@ -560,7 +569,7 @@ if (isRules) {
                 </select>
               </td>
               <td>
-                <select class="upsellbay-vb-op" data-index="${index}">
+                <select class="upsellbay-vb-op" data-index="${index}" aria-label="Rule operator">
                   <option value="eq" ${item.operator === 'eq' ? 'selected' : ''}>Equals</option>
                   <option value="neq" ${item.operator === 'neq' ? 'selected' : ''}>Does not equal</option>
                   <option value="gt" ${item.operator === 'gt' ? 'selected' : ''}>Greater than</option>
@@ -574,10 +583,10 @@ if (isRules) {
           } else {
             $tr.append(`
               <td>
-                <input type="text" class="regular-text upsellbay-vb-key" data-index="${index}" value="${item.key || ''}" placeholder="Setting Key (e.g. location)">
+                <input type="text" class="regular-text upsellbay-vb-key" data-index="${index}" value="${item.key || ''}" placeholder="Setting Key (e.g. location)" aria-label="Setting key">
               </td>
               <td colspan="2">
-                <input type="text" class="regular-text upsellbay-vb-val" data-index="${index}" value="${item.value || ''}" placeholder="Value">
+                <input type="text" class="regular-text upsellbay-vb-val" data-index="${index}" value="${item.value || ''}" placeholder="Value" aria-label="Setting value">
               </td>
             `);
           }
