@@ -517,14 +517,46 @@ window.jQuery(function ($) {
         items.forEach((item, index) => {
           const $tr = $('<tr></tr>');
           
-          if (isRules) {
+if (isRules) {
+            let valueHtml = '';
+            let valArray = Array.isArray(item.value) ? item.value : (item.value ? String(item.value).split(',') : []);
+            
+            if (['cart_product', 'exclude_if_product_in_cart', 'viewed_product'].includes(item.type)) {
+              let options = valArray.map(id => `<option value="${id}" selected>#${id}</option>`).join('');
+              valueHtml = `<select class="wc-product-search upsellbay-vb-val" data-index="${index}" multiple="multiple" data-placeholder="Search for a product...">${options}</select>`;
+            } else if (item.type === 'cart_category') {
+              let options = valArray.map(id => `<option value="${id}" selected>#${id}</option>`).join('');
+              valueHtml = `<select class="wc-category-search upsellbay-vb-val" data-index="${index}" multiple="multiple" data-placeholder="Search for a category...">${options}</select>`;
+            } else if (item.type === 'stock_status') {
+              valueHtml = `
+                <select class="upsellbay-vb-val" data-index="${index}">
+                  <option value="" ${!item.value ? 'selected' : ''}>Any</option>
+                  <option value="instock" ${item.value === 'instock' ? 'selected' : ''}>In stock</option>
+                  <option value="outofstock" ${item.value === 'outofstock' ? 'selected' : ''}>Out of stock</option>
+                  <option value="onbackorder" ${item.value === 'onbackorder' ? 'selected' : ''}>On backorder</option>
+                </select>
+              `;
+            } else if (item.type === 'user_role') {
+              valueHtml = `<input type="text" class="regular-text upsellbay-vb-val" data-index="${index}" value="${valArray.join(',')}" placeholder="User roles (comma separated, e.g. customer, subscriber)">`;
+            } else if (['cart_subtotal', 'customer_order_count', 'customer_lifetime_spend'].includes(item.type)) {
+              valueHtml = `<input type="number" step="any" class="regular-text upsellbay-vb-val" data-index="${index}" value="${item.value || ''}" placeholder="Number">`;
+            } else {
+              valueHtml = `<input type="text" class="regular-text upsellbay-vb-val" data-index="${index}" value="${valArray.join(',')}" placeholder="Value (comma separated for IDs)">`;
+            }
+
             $tr.append(`
               <td>
                 <select class="upsellbay-vb-type" data-index="${index}">
-                  <option value="cart_product" ${item.type === 'cart_product' ? 'selected' : ''}>Cart contains product ID</option>
-                  <option value="cart_category" ${item.type === 'cart_category' ? 'selected' : ''}>Cart contains category ID</option>
+                  <option value="cart_product" ${item.type === 'cart_product' ? 'selected' : ''}>Cart contains product</option>
+                  <option value="cart_category" ${item.type === 'cart_category' ? 'selected' : ''}>Cart contains category</option>
+                  <option value="cart_tag" ${item.type === 'cart_tag' ? 'selected' : ''}>Cart contains tag</option>
                   <option value="cart_subtotal" ${item.type === 'cart_subtotal' ? 'selected' : ''}>Cart subtotal is</option>
+                  <option value="viewed_product" ${item.type === 'viewed_product' ? 'selected' : ''}>Currently viewing product</option>
+                  <option value="user_role" ${item.type === 'user_role' ? 'selected' : ''}>User role is</option>
                   <option value="customer_order_count" ${item.type === 'customer_order_count' ? 'selected' : ''}>Customer order count is</option>
+                  <option value="customer_lifetime_spend" ${item.type === 'customer_lifetime_spend' ? 'selected' : ''}>Customer lifetime spend is</option>
+                  <option value="stock_status" ${item.type === 'stock_status' ? 'selected' : ''}>Stock status is</option>
+                  <option value="exclude_if_product_in_cart" ${item.type === 'exclude_if_product_in_cart' ? 'selected' : ''}>Exclude if cart contains product</option>
                 </select>
               </td>
               <td>
@@ -536,7 +568,7 @@ window.jQuery(function ($) {
                 </select>
               </td>
               <td>
-                <input type="text" class="regular-text upsellbay-vb-val" data-index="${index}" value="${Array.isArray(item.value) ? item.value.join(',') : (item.value || '')}" placeholder="Value (comma separated for IDs)">
+                ${valueHtml}
               </td>
             `);
           } else {
@@ -576,13 +608,20 @@ window.jQuery(function ($) {
         render();
       });
 
+      if (isRules) {
+        $(document.body).trigger('wc-enhanced-select-init');
+      }
+
       $builder.find('input, select').on('change input', function() {
         const idx = $(this).data('index');
         if (isRules) {
           items[idx].type = $builder.find(`.upsellbay-vb-type[data-index="${idx}"]`).val();
           items[idx].operator = $builder.find(`.upsellbay-vb-op[data-index="${idx}"]`).val();
           let rawVal = $builder.find(`.upsellbay-vb-val[data-index="${idx}"]`).val();
-          if (rawVal.includes(',')) {
+          if (rawVal === null) rawVal = [];
+          if (Array.isArray(rawVal)) {
+             items[idx].value = rawVal.map(s => parseInt(s, 10)).filter(n => !isNaN(n));
+          } else if (typeof rawVal === 'string' && rawVal.includes(',')) {
              items[idx].value = rawVal.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
           } else {
              items[idx].value = rawVal;

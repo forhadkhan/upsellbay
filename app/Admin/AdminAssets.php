@@ -62,7 +62,7 @@ final class AdminAssets {
 			$assets['upsellbay-offer-editor'] = array(
 				'type' => 'script',
 				'js'   => 'assets/admin/js/upsellbay-offer-editor.js',
-				'deps' => array( 'jquery', Constants::asset_handle( 'admin' ) ),
+				'deps' => array( 'jquery', Constants::asset_handle( 'admin' ), 'wc-admin-meta-boxes', 'wc-enhanced-select' ),
 			);
 		}
 
