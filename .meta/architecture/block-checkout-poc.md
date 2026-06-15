@@ -1,8 +1,8 @@
 # Block Checkout Proof Plan
 
-Status: accepted for Phase 0.
+Status: implemented in Phase 4/Integrations.
 
-Task: `UB-P0-003`.
+Task: `UB-P0-003`, `UB-P4-001`
 
 ## Decision
 

@@ -33,6 +33,10 @@ The unique key is `(stat_date, offer_id, placement)`.
 
 `Data\CartSession` stores accepted offers, dismissed offers, cart item keys, placement, and hashed REST validation tokens in the WooCommerce session. It strips obvious PII keys before persistence.
 
+## Log Storage
+
+`{$wpdb->prefix}upsellbay_logs` table stores structured system events, api activity, and errors. The `Data\LogRepository` performs database access to insert, read, and delete logs. A scheduled job prunes logs older than the defined retention period (30 days).
+
 ## Attribution Contract
 
 Attribution key constants live in `Core\Constants`. Phase 4 attribution writers must use WooCommerce order and order-item CRUD APIs only.
