@@ -378,7 +378,7 @@ final class OfferEditPage {
 			echo '<h2 class="wp-heading-inline">' . esc_html__( 'Add UpsellBay Offer', 'upsellbay' ) . '</h2>';
 		}
 		echo '<hr class="wp-header-end">';
-		echo '<form method="post">';
+		echo '<form method="post" id="upsellbay-offer-editor-form">';
 		if ( function_exists( 'wp_nonce_field' ) ) {
 			wp_nonce_field( 'upsellbay_save_offer', 'nonce' );
 		}
@@ -402,6 +402,7 @@ final class OfferEditPage {
 			echo '</tbody></table></div></div>';
 		}
 
+		echo '<div id="upsellbay-offer-summary" class="notice notice-info inline" style="margin-bottom: 15px; display: none; border-left-color: #007cba;"></div>';
 		echo '<p class="submit" style="display: flex; gap: 8px; align-items: center;">';
 		echo '<button type="submit" class="button button-primary">' . esc_html__( 'Save offer', 'upsellbay' ) . '</button>';
 		echo '<a class="button" href="' . esc_url( 'admin.php?page=upsellbay&tab=offers' ) . '">' . esc_html__( 'Back to offers', 'upsellbay' ) . '</a>';

@@ -723,3 +723,65 @@ window.jQuery(function ($) {
   initPlacementConfig();
   initVisualBuilder('_ub_rules', true);
 });
+
+/**
+ * UpsellBay Dynamic Offer Summary
+ */
+window.jQuery(function ($) {
+  const $form = $('#upsellbay-offer-editor-form');
+  const $summaryContainer = $('#upsellbay-offer-summary');
+
+  if (!$form.length || !$summaryContainer.length) {
+    return;
+  }
+
+  function updateSummary() {
+    const status = $('#upsellbay-_ub_status').val() || 'draft';
+    const placement = $('#upsellbay-_ub_offer_type option:selected').text();
+    const discountType = $('#upsellbay-_ub_discount_type').val();
+    const discountVal = parseFloat($('#upsellbay-_ub_discount_value').val()) || 0;
+    
+    let discountText = 'None';
+    let isHighRisk = false;
+
+    if (discountType === 'percent') {
+      discountText = discountVal + '% OFF';
+      if (discountVal > 50) isHighRisk = true;
+    } else if (discountType === 'fixed_amount') {
+      discountText = window.upsellbay_data && window.upsellbay_data.currency_symbol 
+        ? window.upsellbay_data.currency_symbol + discountVal + ' OFF'
+        : discountVal + ' OFF (Fixed)';
+    } else if (discountType === 'fixed_price') {
+      discountText = window.upsellbay_data && window.upsellbay_data.currency_symbol 
+        ? 'Fixed Price: ' + window.upsellbay_data.currency_symbol + discountVal
+        : 'Fixed Price: ' + discountVal;
+    }
+
+    let html = '<p style="margin: 0.5em 0;">';
+    html += `<strong>Status:</strong> ${status.charAt(0).toUpperCase() + status.slice(1)} | `;
+    html += `<strong>Placement:</strong> ${placement} | `;
+    
+    if (isHighRisk) {
+      html += `<strong>Discount:</strong> <span style="color: #d63638; font-weight: bold;">⚠️ ${discountText} (High)</span>`;
+    } else {
+      html += `<strong>Discount:</strong> ${discountText}`;
+    }
+    
+    html += '</p>';
+
+    $summaryContainer.html(html).show();
+    
+    if (isHighRisk) {
+      $summaryContainer.css('border-left-color', '#d63638');
+    } else {
+      $summaryContainer.css('border-left-color', '#007cba');
+    }
+  }
+
+  $form.on('input change', 'input, select, textarea', function() {
+    updateSummary();
+  });
+
+  // Initial render
+  updateSummary();
+});
