@@ -8,6 +8,11 @@
 declare(strict_types=1);
 
 namespace WPAnchorBay\UpsellBay\Admin\Settings;
+// Exit if accessed directly.
+if (!defined('ABSPATH')) {
+	exit;
+}
+
 
 use WPAnchorBay\UpsellBay\Core\Constants;
 use WPAnchorBay\UpsellBay\Data\LogRepository;

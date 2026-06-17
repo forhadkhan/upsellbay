@@ -6,6 +6,11 @@
  */
 
 declare(strict_types=1);
+// Exit if accessed directly.
+if (!defined('ABSPATH')) {
+	exit;
+}
+
 
 use WPAnchorBay\UpsellBay\Admin\Help\HelpPage;
 use WPAnchorBay\UpsellBay\Admin\Offers\OfferEditPage;

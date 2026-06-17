@@ -8,6 +8,11 @@
 declare(strict_types=1);
 
 namespace WPAnchorBay\UpsellBay\Core;
+// Exit if accessed directly.
+if (!defined('ABSPATH')) {
+	exit;
+}
+
 
 /**
  * Defines product identifiers and shared runtime values.

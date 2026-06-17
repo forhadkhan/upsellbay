@@ -8,6 +8,11 @@
 declare(strict_types=1);
 
 namespace WPAnchorBay\UpsellBay\Domain\Offers;
+// Exit if accessed directly.
+if (!defined('ABSPATH')) {
+	exit;
+}
+
 
 /**
  * Sanitizes, normalizes, and validates offer configuration metadata.

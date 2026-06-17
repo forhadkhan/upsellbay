@@ -8,6 +8,11 @@
 declare(strict_types=1);
 
 namespace WPAnchorBay\UpsellBay\Admin\Settings;
+// Exit if accessed directly.
+if (!defined('ABSPATH')) {
+	exit;
+}
+
 
 /**
  * Renders WooCommerce-style section links inside the Settings tab.

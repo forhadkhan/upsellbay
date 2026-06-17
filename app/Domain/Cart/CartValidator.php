@@ -8,6 +8,11 @@
 declare(strict_types=1);
 
 namespace WPAnchorBay\UpsellBay\Domain\Cart;
+// Exit if accessed directly.
+if (!defined('ABSPATH')) {
+	exit;
+}
+
 
 use WPAnchorBay\UpsellBay\Domain\Discounts\DiscountCalculator;
 use WPAnchorBay\UpsellBay\Domain\Rules\RuleEvaluator;

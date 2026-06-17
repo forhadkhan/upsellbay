@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace WPAnchorBay\UpsellBay\Admin\Offers;
 
+defined( 'ABSPATH' ) || exit;
+
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferService;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferDefaults;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferSchema;
@@ -351,7 +353,7 @@ final class OfferEditPage {
 	 */
 	public function render_content(): void {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$offer_id = isset( $_GET['offer_id'] ) ? (int) $_GET['offer_id'] : ( isset( $_GET['id'] ) ? (int) $_GET['id'] : 0 );
+		$offer_id = isset( $_GET['offer_id'] ) ? (int) sanitize_text_field( wp_unslash( $_GET['offer_id'] ) ) : ( isset( $_GET['id'] ) ? (int) sanitize_text_field( wp_unslash( $_GET['id'] ) ) : 0 );
 		$offer    = null;
 
 		if ( $offer_id > 0 ) {
@@ -408,7 +410,7 @@ final class OfferEditPage {
 		echo '<a class="button" href="' . esc_url( 'admin.php?page=upsellbay&tab=offers' ) . '">' . esc_html__( 'Back to offers', 'upsellbay' ) . '</a>';
 
 		if ( $offer_id > 0 ) {
-			$delete_url = wp_nonce_url( admin_url( 'admin-post.php?action=upsellbay_delete_offer&offer_id=' . (int) $offer_id ), 'upsellbay_delete_offer' );
+			$delete_url = wp_nonce_url( admin_url( 'admin-post.php?action=upsellbay_delete_offer&offer_id=' . $offer_id ), 'upsellbay_delete_offer' );
 			echo '<a href="' . esc_url( $delete_url ) . '" class="button button-link-delete upsellbay-button-danger upsellbay-modal-trigger" style="margin-left: auto; color: #b32d2e;" data-modal-title="' . esc_attr__( 'Delete Offer', 'upsellbay' ) . '" data-modal-message="' . esc_attr__( 'Are you sure you want to permanently delete this offer? This cannot be undone.', 'upsellbay' ) . '" data-modal-confirm="' . esc_attr__( 'Delete', 'upsellbay' ) . '" data-modal-cancel="' . esc_attr__( 'Cancel', 'upsellbay' ) . '">' . esc_html__( 'Delete offer', 'upsellbay' ) . '</a>';
 		}
 
@@ -752,7 +754,7 @@ final class OfferEditPage {
 	 */
 	private function render_stats_summary(): void {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$offer_id = isset( $_GET['offer_id'] ) ? (int) $_GET['offer_id'] : ( isset( $_GET['id'] ) ? (int) $_GET['id'] : 0 );
+		$offer_id = isset( $_GET['offer_id'] ) ? (int) sanitize_text_field( wp_unslash( $_GET['offer_id'] ) ) : ( isset( $_GET['id'] ) ? (int) sanitize_text_field( wp_unslash( $_GET['id'] ) ) : 0 );
 
 		if ( $offer_id <= 0 ) {
 			echo '<p class="description">' . esc_html__( 'Performance stats will appear here after the offer is saved and starts receiving traffic.', 'upsellbay' ) . '</p>';

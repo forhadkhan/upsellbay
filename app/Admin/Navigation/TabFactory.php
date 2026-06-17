@@ -8,6 +8,11 @@
 declare(strict_types=1);
 
 namespace WPAnchorBay\UpsellBay\Admin\Navigation;
+// Exit if accessed directly.
+if (!defined('ABSPATH')) {
+	exit;
+}
+
 
 use WPAnchorBay\UpsellBay\Admin\Dashboard\DashboardPage;
 use WPAnchorBay\UpsellBay\Admin\Help\HelpPage;

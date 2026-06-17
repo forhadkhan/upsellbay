@@ -6,6 +6,11 @@
  */
 
 declare(strict_types=1);
+// Exit if accessed directly.
+if (!defined('ABSPATH')) {
+	exit;
+}
+
 
 use PHPUnit\Framework\TestCase;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferConflictDetector;

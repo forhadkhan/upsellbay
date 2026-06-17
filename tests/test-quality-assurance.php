@@ -6,6 +6,11 @@
  */
 
 declare(strict_types=1);
+// Exit if accessed directly.
+if (!defined('ABSPATH')) {
+	exit;
+}
+
 
 /**
  * Returns Phase 7 test cases.
