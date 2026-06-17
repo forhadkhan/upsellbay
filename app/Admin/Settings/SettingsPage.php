@@ -255,8 +255,8 @@ final class SettingsPage {
 			$this->render_prepared_save_notice( true );
 		}
 
-		$settings           = $this->settings->all();
-		$active_section     = $this->current_section( $request );
+		$settings       = $this->settings->all();
+		$active_section = $this->current_section( $request );
 
 		if ( 'logs' !== $active_section ) {
 			echo '<form method="post">';
@@ -281,8 +281,6 @@ final class SettingsPage {
 			echo '<p class="submit"><button type="submit" class="button button-primary">' . esc_html__( 'Save changes', 'upsellbay' ) . '</button></p>';
 			echo '</form>';
 		}
-
-		$this->render_confirmation_modal_template();
 	}
 
 	/**
@@ -551,35 +549,7 @@ final class SettingsPage {
 		echo '</td></tr>';
 	}
 
-	/**
-	 * Render the WooCommerce Backbone confirmation template.
-	 *
-	 * @since 1.0.0
-	 */
-	private function render_confirmation_modal_template(): void {
-		echo '<script type="text/template" id="tmpl-upsellbay-confirmation-modal">';
-		echo '<div class="wc-backbone-modal upsellbay-confirmation-modal">';
-		echo '<div class="wc-backbone-modal-content">';
-		echo '<section class="wc-backbone-modal-main" role="main">';
-		echo '<header class="wc-backbone-modal-header">';
-		echo '<h1>{{ data.title }}</h1>';
-		echo '<button type="button" class="modal-close modal-close-link dashicons dashicons-no-alt">';
-		echo '<span class="screen-reader-text">' . esc_html__( 'Close modal panel', 'upsellbay' ) . '</span>';
-		echo '</button>';
-		echo '</header>';
-		echo '<form>';
-		echo '<article><p>{{ data.message }}</p></article>';
-		echo '<footer><div class="inner">';
-		echo '<button type="button" class="button button-large upsellbay-confirmation-cancel">{{ data.cancel }}</button>';
-		echo '<button type="button" class="button button-large button-primary upsellbay-button-danger upsellbay-confirmation-confirm" data-url="{{ data.url }}">{{ data.confirm }}</button>';
-		echo '</div></footer>';
-		echo '</form>';
-		echo '</section>';
-		echo '</div>';
-		echo '</div>';
-		echo '<div class="wc-backbone-modal-backdrop modal-close"></div>';
-		echo '</script>';
-	}
+
 
 	/**
 	 * Render a license status badge.

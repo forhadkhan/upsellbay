@@ -402,8 +402,16 @@ final class OfferEditPage {
 			echo '</tbody></table></div></div>';
 		}
 
-		echo '<p class="submit"><button type="submit" class="button button-primary">' . esc_html__( 'Save offer', 'upsellbay' ) . '</button> ';
-		echo '<a class="button" href="' . esc_url( 'admin.php?page=upsellbay&tab=offers' ) . '">' . esc_html__( 'Back to offers', 'upsellbay' ) . '</a></p>';
+		echo '<p class="submit" style="display: flex; gap: 8px; align-items: center;">';
+		echo '<button type="submit" class="button button-primary">' . esc_html__( 'Save offer', 'upsellbay' ) . '</button>';
+		echo '<a class="button" href="' . esc_url( 'admin.php?page=upsellbay&tab=offers' ) . '">' . esc_html__( 'Back to offers', 'upsellbay' ) . '</a>';
+
+		if ( $offer_id > 0 ) {
+			$delete_url = wp_nonce_url( admin_url( 'admin-post.php?action=upsellbay_delete_offer&offer_id=' . (int) $offer_id ), 'upsellbay_delete_offer' );
+			echo '<a href="' . esc_url( $delete_url ) . '" class="button button-link-delete upsellbay-button-danger upsellbay-modal-trigger" style="margin-left: auto; color: #b32d2e;" data-modal-title="' . esc_attr__( 'Delete Offer', 'upsellbay' ) . '" data-modal-message="' . esc_attr__( 'Are you sure you want to permanently delete this offer? This cannot be undone.', 'upsellbay' ) . '" data-modal-confirm="' . esc_attr__( 'Delete', 'upsellbay' ) . '" data-modal-cancel="' . esc_attr__( 'Cancel', 'upsellbay' ) . '">' . esc_html__( 'Delete offer', 'upsellbay' ) . '</a>';
+		}
+
+		echo '</p>';
 		echo '</form>';
 	}
 

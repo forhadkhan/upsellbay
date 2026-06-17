@@ -198,7 +198,7 @@ final class LogsSectionRenderer {
 		echo '<h3>' . esc_html__( 'Export', 'upsellbay' ) . '</h3>';
 		echo '<p>' . esc_html__( 'Copy this text to provide to support:', 'upsellbay' ) . '</p>';
 		echo '<p>';
-		echo sprintf(
+		printf(
 			'<button type="button" class="button upsellbay-copy-log" style="min-width: 148px; text-align: center; margin-bottom: 10px;" data-clipboard-text="%s" title="%s">%s</button>',
 			esc_attr( $report ),
 			esc_attr__( 'Copy details to clipboard', 'upsellbay' ),

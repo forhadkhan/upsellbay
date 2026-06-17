@@ -51,7 +51,7 @@ final class AdminAssets {
 				'type' => 'style-script',
 				'css'  => 'assets/admin/css/upsellbay-admin.css',
 				'js'   => 'assets/admin/js/upsellbay-admin.js',
-				'deps' => array( 'jquery' ),
+				'deps' => array( 'jquery', 'wp-util', 'wc-backbone-modal' ),
 			),
 		);
 
@@ -78,7 +78,7 @@ final class AdminAssets {
 				'type' => 'native-color-picker',
 			);
 
-			$assets['upsellbay-admin']['deps'] = array( 'jquery', 'wp-color-picker', 'wp-util', 'wc-backbone-modal' );
+			$assets['upsellbay-admin']['deps'] = array( 'jquery', 'wp-util', 'wc-backbone-modal', 'wp-color-picker' );
 		}
 
 		return $assets;

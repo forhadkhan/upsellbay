@@ -322,6 +322,7 @@ final class Plugin {
 		add_action( 'admin_post_upsellbay_activate_license', array( $this, 'handle_activate_license' ) );
 		add_action( 'admin_post_upsellbay_remove_license', array( $this, 'handle_remove_license' ) );
 		add_action( 'admin_post_upsellbay_check_license', array( $this, 'handle_check_license' ) );
+		add_action( 'admin_post_upsellbay_delete_offer', array( $this, 'handle_delete_offer' ) );
 
 		$this->container->get( AdminAssets::class )->register_hooks();
 		$this->container->get( AdminBar::class )->register_hooks();
@@ -636,6 +637,32 @@ final class Plugin {
 		} else {
 			$redirect_url = add_query_arg( 'wc_error', __( 'License check failed: inactive.', 'upsellbay' ), $redirect_url );
 		}
+
+		wp_safe_redirect( $redirect_url );
+		exit;
+	}
+
+	/**
+	 * Handle deleting an offer from the admin-post action.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return void
+	 */
+	public function handle_delete_offer(): void {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) { // phpcs:ignore WordPress.WP.Capabilities.Unknown
+			wp_die( esc_html__( 'You do not have permission to manage offers.', 'upsellbay' ) );
+		}
+
+		check_admin_referer( 'upsellbay_delete_offer' );
+
+		$offer_id = isset( $_GET['offer_id'] ) ? (int) $_GET['offer_id'] : 0;
+		if ( $offer_id > 0 ) {
+			$this->container->get( OfferService::class )->delete( $offer_id );
+		}
+
+		$redirect_url = admin_url( 'admin.php?page=upsellbay&tab=offers' );
+		$redirect_url = add_query_arg( 'wc_message', rawurlencode( __( 'Offer deleted.', 'upsellbay' ) ), $redirect_url );
 
 		wp_safe_redirect( $redirect_url );
 		exit;

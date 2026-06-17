@@ -140,11 +140,17 @@ final class OffersPage {
 
 		foreach ( $rows as $row ) {
 			echo '<tr>';
-			echo '<td><strong>' . esc_html( (string) $row['title'] ) . '</strong><div class="row-actions"><span><a href="' . esc_url( 'admin.php?page=upsellbay&tab=offers&action=edit&offer_id=' . (int) $row['id'] ) . '">' . esc_html__( 'Edit', 'upsellbay' ) . '</a></span></div></td>';
+			$edit_url   = 'admin.php?page=upsellbay&tab=offers&action=edit&offer_id=' . (int) $row['id'];
+			$delete_url = wp_nonce_url( admin_url( 'admin-post.php?action=upsellbay_delete_offer&offer_id=' . (int) $row['id'] ), 'upsellbay_delete_offer' );
+
+			echo '<td><strong>' . esc_html( (string) $row['title'] ) . '</strong><div class="row-actions">';
+			echo '<span><a href="' . esc_url( $edit_url ) . '">' . esc_html__( 'Edit', 'upsellbay' ) . '</a> | </span>';
+			echo '<span class="trash"><a href="' . esc_url( $delete_url ) . '" class="submitdelete upsellbay-modal-trigger" data-modal-title="' . esc_attr__( 'Delete Offer', 'upsellbay' ) . '" data-modal-message="' . esc_attr__( 'Are you sure you want to permanently delete this offer? This cannot be undone.', 'upsellbay' ) . '" data-modal-confirm="' . esc_attr__( 'Delete', 'upsellbay' ) . '" data-modal-cancel="' . esc_attr__( 'Cancel', 'upsellbay' ) . '">' . esc_html__( 'Delete', 'upsellbay' ) . '</a></span>';
+			echo '</div></td>';
 			echo '<td>' . esc_html( $this->placement_label( (string) $row['placement'] ) ) . '</td>';
 			echo '<td>' . esc_html( ucfirst( (string) $row['status'] ) ) . '</td>';
 			$health_html = 'ok' === ( $row['health'] ?? 'ok' ) ? '<span class="dashicons dashicons-yes-alt" style="color: #46b450;" title="' . esc_attr__( 'No conflicts', 'upsellbay' ) . '"></span>' : '<span class="dashicons dashicons-warning" style="color: #dba617;" title="' . esc_attr__( 'Placement crowding or funnel overlap detected', 'upsellbay' ) . '"></span>';
-			echo '<td>' . $health_html . '</td>';
+			echo '<td>' . wp_kses_post( $health_html ) . '</td>';
 			echo '<td>' . esc_html( (string) $row['priority'] ) . '</td>';
 			echo '<td>' . esc_html( (string) $row['views'] ) . '</td>';
 			echo '<td>' . esc_html( (string) $row['accepts'] ) . '</td>';
