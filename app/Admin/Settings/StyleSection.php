@@ -8,11 +8,14 @@
 declare(strict_types=1);
 
 namespace WPAnchorBay\UpsellBay\Admin\Settings;
+
 // Exit if accessed directly.
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+
+use WPAnchorBay\UpsellBay\Core\Settings;
 
 /**
  * Normalizes theme-friendly presentation settings.
@@ -51,7 +54,7 @@ final class StyleSection extends AbstractSettingsSection {
 		$tokens = is_array( $settings['style_tokens'] ?? null ) ? $settings['style_tokens'] : array();
 
 		$button_style           = (string) ( $request['button_style'] ?? 'theme' );
-		$tokens['accent_color'] = $this->color_value( (string) ( $request['accent_color'] ?? '#2271b1' ), '#2271b1' );
+		$tokens['accent_color'] = $this->color_value( (string) ( $request['accent_color'] ?? Settings::DEFAULT_ACCENT_COLOR ), Settings::DEFAULT_ACCENT_COLOR );
 		$tokens['button_style'] = in_array( $button_style, array( 'theme', 'outline' ), true ) ? $button_style : 'theme';
 
 		$settings['style_tokens'] = $tokens;

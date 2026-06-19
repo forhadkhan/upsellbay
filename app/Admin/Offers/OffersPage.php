@@ -8,8 +8,9 @@
 declare(strict_types=1);
 
 namespace WPAnchorBay\UpsellBay\Admin\Offers;
+
 // Exit if accessed directly.
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
@@ -102,9 +103,12 @@ final class OffersPage {
 	 * Render offers tab content.
 	 *
 	 * @since 1.0.0
+	 *
+	 * @param array<string, mixed> $request Request data.
 	 */
-	public function render_content(): void {
-		$rows = $this->rows();
+	public function render_content( array $request = array() ): void {
+		$filters = $this->filters_from_request( $request );
+		$rows    = $this->rows( $filters );
 
 		/**
 		 * Fires before the Offers section navigation and list-table content.
@@ -114,6 +118,7 @@ final class OffersPage {
 		do_action( 'upsellbay_offers_header_after' );
 
 		$this->section_navigation->render( 'general' );
+		$this->render_table_controls( $filters );
 
 		if ( array() === $rows ) {
 			$empty = $this->empty_state();
@@ -129,17 +134,17 @@ final class OffersPage {
 		echo '<thead><tr>';
 		foreach (
 			array(
-				__( 'Offer', 'upsellbay' ),
-				__( 'Placement', 'upsellbay' ),
-				__( 'Status', 'upsellbay' ),
-				__( 'Health', 'upsellbay' ),
-				__( 'Priority', 'upsellbay' ),
-				__( 'Views', 'upsellbay' ),
-				__( 'Accepts', 'upsellbay' ),
-				__( 'Revenue', 'upsellbay' ),
-			) as $heading
+				'title'              => __( 'Offer', 'upsellbay' ),
+				'placement'          => __( 'Placement', 'upsellbay' ),
+				'status'             => __( 'Status', 'upsellbay' ),
+				'health'             => __( 'Health', 'upsellbay' ),
+				'priority'           => __( 'Priority', 'upsellbay' ),
+				'views'              => __( 'Views', 'upsellbay' ),
+				'accepts'            => __( 'Accepts', 'upsellbay' ),
+				'attributed_revenue' => __( 'Revenue', 'upsellbay' ),
+			) as $column => $heading
 		) {
-			echo '<th scope="col">' . esc_html( $heading ) . '</th>';
+				echo '<th scope="col">' . wp_kses_post( $this->sortable_heading( $column, $heading, $filters ) ) . '</th>';
 		}
 		echo '</tr></thead><tbody>';
 
@@ -164,6 +169,154 @@ final class OffersPage {
 		}
 
 		echo '</tbody></table>';
+		$this->render_pagination( $filters );
+	}
+
+	/**
+	 * Normalize table controls from the current request.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<string, mixed> $request Request data.
+	 * @return array<string, mixed>
+	 */
+	private function filters_from_request( array $request ): array {
+		return array(
+			'search'    => $this->sanitize_text( (string) ( $request['s'] ?? $request['search'] ?? '' ) ),
+			'placement' => $this->sanitize_key( (string) ( $request['placement'] ?? '' ) ),
+			'status'    => $this->sanitize_key( (string) ( $request['status'] ?? '' ) ),
+			'health'    => $this->sanitize_key( (string) ( $request['health'] ?? '' ) ),
+			'orderby'   => $this->sanitize_key( (string) ( $request['orderby'] ?? 'priority' ) ),
+			'order'     => 'desc' === strtolower( (string) ( $request['order'] ?? 'asc' ) ) ? 'desc' : 'asc',
+			'paged'     => max( 1, (int) ( $request['paged'] ?? 1 ) ),
+			'per_page'  => 20,
+		);
+	}
+
+	/**
+	 * Render search and filter controls.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<string, mixed> $filters Filters.
+	 */
+	private function render_table_controls( array $filters ): void {
+		echo '<form method="get" class="upsellbay-offers-table-controls">';
+		echo '<input type="hidden" name="page" value="upsellbay">';
+		echo '<input type="hidden" name="tab" value="offers">';
+		echo '<p class="search-box">';
+		echo '<label class="screen-reader-text" for="upsellbay-offer-search-input">' . esc_html__( 'Search offers', 'upsellbay' ) . '</label>';
+		echo '<input type="search" id="upsellbay-offer-search-input" name="s" value="' . esc_attr( (string) $filters['search'] ) . '">';
+		echo '<button type="submit" class="button">' . esc_html__( 'Search offers', 'upsellbay' ) . '</button>';
+		echo '</p>';
+		echo '<div class="tablenav top"><div class="alignleft actions">';
+		$this->select_filter( 'placement', __( 'All placements', 'upsellbay' ), $this->placement_options(), (string) $filters['placement'] );
+		$this->select_filter( 'status', __( 'All statuses', 'upsellbay' ), $this->status_options(), (string) $filters['status'] );
+		$this->select_filter( 'health', __( 'All health states', 'upsellbay' ), $this->health_options(), (string) $filters['health'] );
+		echo '<button type="submit" class="button">' . esc_html__( 'Filter', 'upsellbay' ) . '</button>';
+		echo '</div>';
+		$this->render_pagination( $filters );
+		echo '<br class="clear"></div>';
+		echo '</form>';
+	}
+
+	/**
+	 * Render one select filter.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string                $name    Field name.
+	 * @param string                $all     Empty option label.
+	 * @param array<string, string> $options Options.
+	 * @param string                $current Current value.
+	 */
+	private function select_filter( string $name, string $all, array $options, string $current ): void {
+		echo '<label class="screen-reader-text" for="upsellbay-filter-' . esc_attr( $name ) . '">' . esc_html( $all ) . '</label>';
+		echo '<select id="upsellbay-filter-' . esc_attr( $name ) . '" name="' . esc_attr( $name ) . '">';
+		echo '<option value="">' . esc_html( $all ) . '</option>';
+		foreach ( $options as $value => $label ) {
+			echo '<option value="' . esc_attr( $value ) . '"' . selected( $current, $value, false ) . '>' . esc_html( $label ) . '</option>';
+		}
+		echo '</select> ';
+	}
+
+	/**
+	 * Render a sortable heading link.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string               $column  Column key.
+	 * @param string               $label   Column label.
+	 * @param array<string, mixed> $filters Filters.
+	 */
+	private function sortable_heading( string $column, string $label, array $filters ): string {
+		$is_current = $column === (string) $filters['orderby'];
+		$next_order = $is_current && 'asc' === $filters['order'] ? 'desc' : 'asc';
+		$url        = $this->table_url(
+			array_merge(
+				$filters,
+				array(
+					'orderby' => $column,
+					'order'   => $next_order,
+					'paged'   => 1,
+				)
+			)
+		);
+
+		return '<a href="' . esc_url( $url ) . '"><span>' . esc_html( $label ) . '</span></a>';
+	}
+
+	/**
+	 * Render pagination controls.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<string, mixed> $filters Filters.
+	 */
+	private function render_pagination( array $filters ): void {
+		$total_items = $this->table->last_total_items();
+		$per_page    = max( 1, (int) ( $filters['per_page'] ?? 20 ) );
+		$total_pages = max( 1, (int) ceil( $total_items / $per_page ) );
+		$current     = min( max( 1, (int) ( $filters['paged'] ?? 1 ) ), $total_pages );
+
+		echo '<div class="tablenav-pages">';
+		/* translators: %s: number of offers. */
+		$item_label = 1 === $total_items ? __( '%s item', 'upsellbay' ) : __( '%s items', 'upsellbay' );
+		echo '<span class="displaying-num">' . esc_html( sprintf( $item_label, number_format_i18n( $total_items ) ) ) . '</span> ';
+		echo '<span class="pagination-links">';
+		echo '<a class="first-page button' . ( 1 === $current ? ' disabled' : '' ) . '" href="' . esc_url( $this->table_url( array_merge( $filters, array( 'paged' => 1 ) ) ) ) . '"><span class="screen-reader-text">' . esc_html__( 'First page', 'upsellbay' ) . '</span><span aria-hidden="true">&laquo;</span></a> ';
+		echo '<a class="prev-page button' . ( 1 === $current ? ' disabled' : '' ) . '" href="' . esc_url( $this->table_url( array_merge( $filters, array( 'paged' => max( 1, $current - 1 ) ) ) ) ) . '"><span class="screen-reader-text">' . esc_html__( 'Previous page', 'upsellbay' ) . '</span><span aria-hidden="true">&lsaquo;</span></a> ';
+		echo '<span class="paging-input">' . esc_html( (string) $current ) . ' ' . esc_html__( 'of', 'upsellbay' ) . ' <span class="total-pages">' . esc_html( (string) $total_pages ) . '</span></span> ';
+		echo '<a class="next-page button' . ( $current >= $total_pages ? ' disabled' : '' ) . '" href="' . esc_url( $this->table_url( array_merge( $filters, array( 'paged' => min( $total_pages, $current + 1 ) ) ) ) ) . '"><span class="screen-reader-text">' . esc_html__( 'Next page', 'upsellbay' ) . '</span><span aria-hidden="true">&rsaquo;</span></a> ';
+		echo '<a class="last-page button' . ( $current >= $total_pages ? ' disabled' : '' ) . '" href="' . esc_url( $this->table_url( array_merge( $filters, array( 'paged' => $total_pages ) ) ) ) . '"><span class="screen-reader-text">' . esc_html__( 'Last page', 'upsellbay' ) . '</span><span aria-hidden="true">&raquo;</span></a>';
+		echo '</span></div>';
+	}
+
+	/**
+	 * Build a table-control URL.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<string, mixed> $filters Filters.
+	 */
+	private function table_url( array $filters ): string {
+		$params = array(
+			'page'      => 'upsellbay',
+			'tab'       => 'offers',
+			's'         => $filters['search'] ?? '',
+			'placement' => $filters['placement'] ?? '',
+			'status'    => $filters['status'] ?? '',
+			'health'    => $filters['health'] ?? '',
+			'orderby'   => $filters['orderby'] ?? 'priority',
+			'order'     => $filters['order'] ?? 'asc',
+			'paged'     => $filters['paged'] ?? 1,
+		);
+		$params = array_filter(
+			$params,
+			static fn ( $value ): bool => '' !== (string) $value
+		);
+
+		return 'admin.php?' . http_build_query( $params, '', '&' );
 	}
 
 	/**
@@ -185,6 +338,51 @@ final class OffersPage {
 	}
 
 	/**
+	 * Return placement filter options.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return array<string, string>
+	 */
+	private function placement_options(): array {
+		return array(
+			'checkout_bump'  => __( 'Checkout bump', 'upsellbay' ),
+			'product_upsell' => __( 'Product page offer', 'upsellbay' ),
+			'cart_crosssell' => __( 'Cart offer', 'upsellbay' ),
+			'thankyou_offer' => __( 'Thank-you offer', 'upsellbay' ),
+		);
+	}
+
+	/**
+	 * Return status filter options.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return array<string, string>
+	 */
+	private function status_options(): array {
+		return array(
+			'active' => __( 'Active', 'upsellbay' ),
+			'paused' => __( 'Paused', 'upsellbay' ),
+			'draft'  => __( 'Draft', 'upsellbay' ),
+		);
+	}
+
+	/**
+	 * Return health filter options.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return array<string, string>
+	 */
+	private function health_options(): array {
+		return array(
+			'ok'      => __( 'Healthy', 'upsellbay' ),
+			'warning' => __( 'Warnings', 'upsellbay' ),
+		);
+	}
+
+	/**
 	 * Format currency value.
 	 *
 	 * @param mixed $value Value to format.
@@ -194,5 +392,35 @@ final class OffersPage {
 		$float_val = (float) $value;
 		$symbol    = function_exists( 'get_woocommerce_currency_symbol' ) ? get_woocommerce_currency_symbol() : '$';
 		return $symbol . number_format_i18n( $float_val, 2 );
+	}
+
+	/**
+	 * Sanitize a text field with a test-safe fallback.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $value Raw value.
+	 */
+	private function sanitize_text( string $value ): string {
+		if ( function_exists( 'sanitize_text_field' ) ) {
+			return sanitize_text_field( $value );
+		}
+
+		return trim( preg_replace( '/<[^>]*>/', '', $value ) ?? '' );
+	}
+
+	/**
+	 * Sanitize a key with a test-safe fallback.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $value Raw value.
+	 */
+	private function sanitize_key( string $value ): string {
+		if ( function_exists( 'sanitize_key' ) ) {
+			return sanitize_key( $value );
+		}
+
+		return strtolower( preg_replace( '/[^a-z0-9_\-]/', '', $value ) ?? '' );
 	}
 }

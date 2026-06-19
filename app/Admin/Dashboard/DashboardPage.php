@@ -8,8 +8,9 @@
 declare(strict_types=1);
 
 namespace WPAnchorBay\UpsellBay\Admin\Dashboard;
+
 // Exit if accessed directly.
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
@@ -58,8 +59,10 @@ final class DashboardPage {
 	 * Render dashboard content.
 	 *
 	 * @since 1.0.0
+	 *
+	 * @param array<string, mixed> $request Request data.
 	 */
-	public function render(): void {
+	public function render( array $request = array() ): void {
 		$data = $this->summary->data();
 
 		if ( 0 === (int) $data['active_offers'] ) {
@@ -80,19 +83,36 @@ final class DashboardPage {
 		$this->summary_item( __( 'Recent revenue', 'upsellbay' ), $this->format_currency( $data['recent_revenue'] ), __( 'Attributed offer revenue from the recent aggregate stats window.', 'upsellbay' ) );
 		echo '</div>';
 
-		$this->render_analytics();
+		$this->render_analytics( $request );
 	}
 
 	/**
 	 * Render the analytics performance section.
 	 *
 	 * @since 1.0.0
+	 *
+	 * @param array<string, mixed> $request Request data.
 	 */
-	private function render_analytics(): void {
+	private function render_analytics( array $request = array() ): void {
 		$day_seconds = defined( 'DAY_IN_SECONDS' ) ? DAY_IN_SECONDS : 86400;
-		$summary     = $this->analytics_summary( gmdate( 'Y-m-d', time() - $day_seconds * 30 ), gmdate( 'Y-m-d' ) );
+		$range       = $this->selected_range( $request );
+		$summary     = $this->analytics_summary( gmdate( 'Y-m-d', time() - $day_seconds * $range ), gmdate( 'Y-m-d' ) );
 
-		echo '<h3>' . esc_html__( 'Performance (Last 30 days)', 'upsellbay' ) . '</h3>';
+		echo '<div class="upsellbay-overview-header">';
+		/* translators: %d: number of days in the selected analytics range. */
+		echo '<h3 class="upsellbay-overview-title">' . esc_html( sprintf( __( 'Performance (Last %d days)', 'upsellbay' ), $range ) ) . '</h3>';
+		echo '<form method="get" class="upsellbay-dashboard-range-filter">';
+		echo '<input type="hidden" name="page" value="upsellbay">';
+		echo '<input type="hidden" name="tab" value="dashboard">';
+		echo '<label for="upsellbay-dashboard-range" class="screen-reader-text">' . esc_html__( 'Performance date range', 'upsellbay' ) . '</label>';
+		echo '<select id="upsellbay-dashboard-range" name="range">';
+		foreach ( $this->range_options() as $days => $label ) {
+			echo '<option value="' . esc_attr( (string) $days ) . '"' . selected( $range, $days, false ) . '>' . esc_html( $label ) . '</option>';
+		}
+		echo '</select> ';
+		echo '<button type="submit" class="button">' . esc_html__( 'Apply', 'upsellbay' ) . '</button>';
+		echo '</form>';
+		echo '</div>';
 		echo '<div class="upsellbay-card-grid upsellbay-card-grid--metrics">';
 		$this->summary_item( __( 'Views', 'upsellbay' ), (string) $summary['views'], __( 'Offer render events recorded in aggregate stats.', 'upsellbay' ) );
 		$this->summary_item( __( 'Accepts', 'upsellbay' ), (string) $summary['accepts'], __( 'Accepted offers recorded in aggregate stats.', 'upsellbay' ) );
@@ -130,6 +150,34 @@ final class DashboardPage {
 		$summary['aov_lift']    = (int) $summary['orders'] > 0 ? (float) $summary['revenue'] / (int) $summary['orders'] : 0.00;
 
 		return $summary;
+	}
+
+	/**
+	 * Return supported dashboard date ranges.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return array<int, string>
+	 */
+	private function range_options(): array {
+		return array(
+			7  => __( 'Last 7 days', 'upsellbay' ),
+			30 => __( 'Last 30 days', 'upsellbay' ),
+			90 => __( 'Last 90 days', 'upsellbay' ),
+		);
+	}
+
+	/**
+	 * Return the selected analytics range.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<string, mixed> $request Request data.
+	 */
+	private function selected_range( array $request ): int {
+		$range = (int) ( $request['range'] ?? 30 );
+
+		return array_key_exists( $range, $this->range_options() ) ? $range : 30;
 	}
 
 	/**

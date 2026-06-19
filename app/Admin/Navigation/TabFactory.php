@@ -8,8 +8,9 @@
 declare(strict_types=1);
 
 namespace WPAnchorBay\UpsellBay\Admin\Navigation;
+
 // Exit if accessed directly.
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
@@ -126,8 +127,7 @@ final class TabFactory {
 					'dashboard',
 					__( 'Dashboard', 'upsellbay' ),
 					function ( array $request ): void {
-						unset( $request );
-						$this->dashboard->render();
+						$this->dashboard->render( $request );
 					}
 				),
 				new AdminTab(
@@ -139,7 +139,7 @@ final class TabFactory {
 							return;
 						}
 
-						$this->offers->render_content();
+						$this->offers->render_content( $request );
 					},
 					function ( array $request ): void {
 						$method = isset( $_SERVER['REQUEST_METHOD'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) : '';

@@ -160,6 +160,16 @@ final class OfferEditPage {
 			);
 		}
 
+		if ( null !== $this->conflict_detector && 'active' === ( $valid->data()['_ub_status'] ?? '' ) && true !== ( $valid->data()['_ub_conflict_override'] ?? false ) ) {
+			$warnings = $this->conflict_detector->detect( isset( $request['offer_id'] ) ? (int) $request['offer_id'] : 0, $valid->data() );
+			if ( count( $warnings ) > 0 ) {
+				return array(
+					'success' => false,
+					'message' => implode( ' ', $warnings ),
+				);
+			}
+		}
+
 		try {
 			$offer_id = isset( $request['offer_id'] ) ? (int) $request['offer_id'] : 0;
 			if ( $offer_id > 0 ) {
@@ -427,7 +437,7 @@ final class OfferEditPage {
 	 * @param mixed  $value Field value.
 	 */
 	private function render_field_row( string $field, $value = '' ): void {
-		$labels = array(
+		$labels    = array(
 			'title'                        => __( 'Offer name', 'upsellbay' ),
 			'_ub_status'                   => __( 'Status', 'upsellbay' ),
 			'_ub_offer_type'               => __( 'Placement', 'upsellbay' ),
@@ -453,9 +463,10 @@ final class OfferEditPage {
 			'_ub_conflict_override'        => __( 'Conflict override', 'upsellbay' ),
 			'_ub_conflict_override_reason' => __( 'Conflict override reason', 'upsellbay' ),
 		);
-		$label  = $labels[ $field ] ?? $field;
+		$label     = $labels[ $field ] ?? $field;
+		$label_for = '_ub_placement_config' === $field ? 'upsellbay-_ub_placement_config-position' : 'upsellbay-' . $field;
 
-		echo '<tr><th scope="row"><label for="upsellbay-' . esc_attr( $field ) . '">' . esc_html( $label ) . '</label></th><td>';
+		echo '<tr><th scope="row"><label for="' . esc_attr( $label_for ) . '">' . esc_html( $label ) . '</label></th><td>';
 
 		if ( '_ub_recommendations' === $field ) {
 			echo '<div id="upsellbay-recommendations-container" data-nonce="' . esc_attr( wp_create_nonce( 'wp_rest' ) ) . '">';

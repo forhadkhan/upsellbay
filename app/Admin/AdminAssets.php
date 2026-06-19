@@ -8,8 +8,9 @@
 declare(strict_types=1);
 
 namespace WPAnchorBay\UpsellBay\Admin;
+
 // Exit if accessed directly.
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
@@ -83,7 +84,7 @@ final class AdminAssets {
 				'type' => 'native-color-picker',
 			);
 
-			$assets['upsellbay-admin']['deps'] = array( 'jquery', 'wp-util', 'wc-backbone-modal', 'wp-color-picker' );
+			$assets['upsellbay-admin']['deps'] = array( 'jquery', 'wp-color-picker', 'wp-util', 'wc-backbone-modal' );
 		}
 
 		return $assets;
