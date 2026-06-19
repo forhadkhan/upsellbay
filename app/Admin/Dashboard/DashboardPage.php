@@ -101,16 +101,17 @@ final class DashboardPage {
 		echo '<div class="upsellbay-overview-header">';
 		/* translators: %d: number of days in the selected analytics range. */
 		echo '<h3 class="upsellbay-overview-title">' . esc_html( sprintf( __( 'Performance (Last %d days)', 'upsellbay' ), $range ) ) . '</h3>';
-		echo '<form method="get" class="upsellbay-dashboard-range-filter">';
+		echo '<form method="get" class="upsellbay-dashboard-range-filter" aria-label="' . esc_attr__( 'Performance date range', 'upsellbay' ) . '">';
 		echo '<input type="hidden" name="page" value="upsellbay">';
 		echo '<input type="hidden" name="tab" value="dashboard">';
-		echo '<label for="upsellbay-dashboard-range" class="screen-reader-text">' . esc_html__( 'Performance date range', 'upsellbay' ) . '</label>';
-		echo '<select id="upsellbay-dashboard-range" name="range">';
+		echo '<div class="upsellbay-button-group upsellbay-button-group--toggle" role="group">';
 		foreach ( $this->range_options() as $days => $label ) {
-			echo '<option value="' . esc_attr( (string) $days ) . '"' . selected( $range, $days, false ) . '>' . esc_html( $label ) . '</option>';
+			$is_selected = $range === $days;
+			echo '<button type="submit" name="range" value="' . esc_attr( (string) $days ) . '" class="button' . ( $is_selected ? ' button-primary upsellbay-button-group__button--active' : '' ) . '"' . ( $is_selected ? ' aria-pressed="true"' : ' aria-pressed="false"' ) . '>';
+			echo esc_html( $label );
+			echo '</button>';
 		}
-		echo '</select> ';
-		echo '<button type="submit" class="button">' . esc_html__( 'Apply', 'upsellbay' ) . '</button>';
+		echo '</div>';
 		echo '</form>';
 		echo '</div>';
 		echo '<div class="upsellbay-card-grid upsellbay-card-grid--metrics">';
