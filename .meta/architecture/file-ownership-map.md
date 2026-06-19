@@ -44,7 +44,7 @@ The implementation layout follows PRD v4, the folder structure plan, and the pha
 | `app/Domain/Attribution/*` | Order/order-item attribution through Woo CRUD only. | Phase 4 | HPOS compliance plan. |
 | `app/Domain/Analytics/*` | Event recording, summaries, reconciliation. | Phase 4 | Stats repository and Action Scheduler. |
 | `app/Domain/Storefront/*` | Placement coordination and templates for product, cart, checkout, thank-you. | Phase 4 | Offer prioritizer, cart mutator, templates. |
-| `app/Integrations/WooCommerce/*` | Block Checkout and Woo-specific compatibility. | Phase 4 and Phase 7 | Block Checkout POC and E2E proof. |
+| `app/Integrations/WooCommerce/*` | Block Checkout and Woo-specific compatibility. | Phase 4 and Phase 7 | Block Checkout POC and E2E proof (passed 2026-06-19). `BlockCheckoutIntegration` receives `Settings` and `CartSession` from DI container. |
 | `app/Integrations/Licensing/*` | WP Anchor Bay license client and updater. | Phase 1 | License failure behavior. |
 | `app/Utils/*` | Logger, rate limiter, token helper, import/export helpers. | Phase 1 through Phase 6 | Security and public API needs. |
 | `src/*` | Authored JS entry points. | Phase 1 through Phase 5 | Build tooling and dependency extraction. |

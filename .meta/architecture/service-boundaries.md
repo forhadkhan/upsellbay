@@ -8,6 +8,7 @@ Phase 6 records the public and internal service boundaries that should remain st
 | `OfferPrioritizer` | Eligibility ordering after status, schedule, product, dismissal, and rule checks. | Storefront renderers and offer selection flows. | HTML, cart mutation, analytics persistence. |
 | `RuleEvaluator` | Server-side rule context evaluation. | Prioritizer, cart validation. | Client pricing or product loading. |
 | `CartMutator` | Accept/remove cart items and session accepted state. | Public routes and checkout integrations. | Trusting client prices or rendering notices. |
+| `BlockCheckoutIntegration` | Enqueue block checkout JS, localize storefront config (token, REST URL), and enqueue storefront CSS with style tokens. | `woocommerce_blocks_checkout_block_registration` hook. | Direct HTML rendering or trusting client prices. |
 | `DiscountApplier` | Apply stored offer price to Woo cart item objects. | Woo cart-total hook only. | Eligibility decisions or coupon creation. |
 | `AttributionWriter` | WooCommerce CRUD attribution writes. | Checkout/order lifecycle integrations. | Direct order tables or postmeta queries. |
 | `AnalyticsRecorder` and `AnalyticsService` | Aggregate non-PII event counters. | Storefront, routes, reconciliation. | Live order scans during dashboard load. |

@@ -16,7 +16,7 @@ The plugin now has a thin `upsellbay.php` entrypoint that loads Composer autoloa
 - Dependency admin notices on `admin_notices`.
 - `upsellbay_loaded` after bootstrap initialization.
 
-Block Checkout compatibility is intentionally not declared in Phase 1. That claim remains gated by the Phase 7 E2E task.
+Block Checkout compatibility is declared `true` as of Phase 7. The E2E proof passed on 2026-06-19, allowing `FeaturesUtil::declare_compatibility( 'cart_checkout_blocks', ... )` to be set to `true`.
 
 ## Foundation Services
 

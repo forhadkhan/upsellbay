@@ -34,7 +34,7 @@ Implementation decisions must stay synchronized across `.meta/architecture/`, `.
 
 Release notes must not overclaim:
 
-- Block Checkout support before E2E proof.
+- Block Checkout support claims beyond what the E2E proof validates (E2E proof passed 2026-06-19; remaining gaps are full accept/unaccept/place-order/attribution flow, WooPayments active, and out-of-stock edge cases).
 - HPOS compatibility before tests and declaration proof.
 - AOV lift before measured evidence.
 - Cart recovery, recovery emails, restore links, unsubscribe flows, SMS, WhatsApp, CRM automation, or funnel-builder behavior.

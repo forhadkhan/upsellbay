@@ -51,4 +51,4 @@ Any match must be reviewed. SQL may be acceptable only for the UpsellBay aggrega
 - Run order attribution tests with HPOS enabled.
 - Run order attribution tests with HPOS disabled.
 - Confirm HPOS compatibility declaration uses `FeaturesUtil::declare_compatibility( 'custom_order_tables', ... )` before WooCommerce initialization.
-- Confirm no Cart/Checkout Blocks compatibility declaration is made until Block Checkout E2E passes.
+- Confirm Cart/Checkout Blocks compatibility declaration is `true` now that Block Checkout E2E has passed (2026-06-19).

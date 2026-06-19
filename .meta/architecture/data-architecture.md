@@ -31,7 +31,7 @@ The unique key is `(stat_date, offer_id, placement)`.
 
 ## Session State
 
-`Data\CartSession` stores accepted offers, dismissed offers, cart item keys, placement, and hashed REST validation tokens in the WooCommerce session. It strips obvious PII keys before persistence.
+`Data\\CartSession` stores accepted offers, dismissed offers, cart item keys, placement, and hashed REST validation tokens in the WooCommerce session. It strips obvious PII keys before persistence. `CartSession::ensure_token()` is called by both `StorefrontController` (classic checkout) and `BlockCheckoutIntegration` (block checkout) to provide the session token for REST authentication.
 
 ## Log Storage
 

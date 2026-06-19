@@ -21,9 +21,9 @@ This audit satisfies `UB-P0-001`. It records the current repository state before
 | QA metadata | `.meta/qa/` did not exist before Phase 0 work. | Phase 0 creates launch gate, risk, and compatibility planning files. |
 | Main branch files | `scripts/sync-dots.sh` and `.gitignore` are application-branch concerns. | Do not mix overlay metadata commits with app code commits. |
 
-## Implementation Areas Not Yet Present
+## Implementation Areas
 
-The following PRD-backed implementation areas are planned but not yet present in runtime code:
+The following PRD-backed implementation areas are now present in runtime code (implemented through Phase 6.5):
 
 - `upsellbay.php` plugin entrypoint.
 - `uninstall.php` data retention and opt-in cleanup handler.
@@ -57,7 +57,7 @@ The current notes align with PRD v4 on the major architecture constraints:
 - Offer configuration must use private CPT `upsellbay_offer`.
 - Analytics must use one aggregate, non-PII table named `{$wpdb->prefix}upsellbay_offer_stats_daily`.
 - Order attribution must use WooCommerce order and order-item CRUD APIs only.
-- Block Checkout support is a launch gate, not a marketing claim before E2E proof.
+- Block Checkout support is a launch gate, not a marketing claim before E2E proof. E2E proof passed 2026-06-19; `cart_checkout_blocks` compatibility is now declared `true`.
 
 One note requires careful interpretation: `.meta/notes/folder-structure-plan.md` says the folder structure is based partly on CartBay implementation patterns. That means implementation may reuse lessons and design patterns, but must not reuse CartBay options, meta keys, tables, sessions, routes, scheduled jobs, recovery state, or recovery modules.
 

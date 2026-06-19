@@ -20,11 +20,13 @@ Tasks: `UB-P4-001` through `UB-P4-018`.
 
 ## Storefront and REST
 
-`Domain\Storefront\PlacementRenderer` delegates escaped offer-card markup to placement renderers for classic checkout, product page, cart, and thank-you offers. `StorefrontController` connects those renderers to WooCommerce hooks and scopes frontend assets to rendered placements.
+`Domain\\Storefront\\PlacementRenderer` delegates escaped offer-card markup to placement renderers for classic checkout, product page, cart, and thank-you offers. `StorefrontController` connects those renderers to WooCommerce classic hooks (`woocommerce_review_order_before_submit`, `woocommerce_after_add_to_cart_form`, `woocommerce_cart_collaterals`, `woocommerce_thankyou`) and scopes frontend assets to rendered placements. `StorefrontController` does not handle Block Checkout rendering — that is the responsibility of `BlockCheckoutIntegration` and the React components in `src/block-checkout/`.
 
 `Api\Routes\PublicOfferRoutes` provides shopper-safe `/bump-toggle`, `/cart-offer-add`, and `/dismiss` handlers with session token validation, schema validation, rate limiting, server-side offer loading, and analytics recording. `Api\Routes\OfferPreviewRoute` provides the admin preview payload through `OfferService`. `Api\Routes\ProductsRoute` and `Api\ProductsController` provide AJAX product search and recommendations endpoints for the admin offer editor.
 
-Block Checkout support is wired through `Integrations\WooCommerce\CheckoutFields`, `Integrations\WooCommerce\StoreApiExtender`, `BlockCheckoutIntegration`, and the compiled `src/block-checkout` entry. The Store API extender hooks into cart mutations to ensure seamless functionality within WooCommerce Blocks.
+Block Checkout support is wired through `Integrations\\WooCommerce\\CheckoutFields`, `Integrations\\WooCommerce\\StoreApiExtender`, `BlockCheckoutIntegration`, and the compiled `src/block-checkout` entry. The Store API extender hooks into cart mutations to ensure seamless functionality within WooCommerce Blocks.
+
+`BlockCheckoutIntegration` receives `Settings` and `CartSession` via the DI container. It localizes `window.upsellbayStorefront` (containing `token`, `restUrl`, `cartUrl`, `checkoutUrl`) for block checkout React components and enqueues storefront CSS with inline accent-color and button-style tokens. The `cart_checkout_blocks` compatibility declaration is `true` after E2E proof passed (2026-06-19).
 
 ## Attribution, Analytics, and Compatibility
 
