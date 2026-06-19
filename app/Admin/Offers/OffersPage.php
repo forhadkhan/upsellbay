@@ -214,6 +214,12 @@ final class OffersPage {
 		$this->select_filter( 'status', __( 'All statuses', 'upsellbay' ), $this->status_options(), (string) $filters['status'] );
 		$this->select_filter( 'health', __( 'All health states', 'upsellbay' ), $this->health_options(), (string) $filters['health'] );
 		echo '<button type="submit" class="button">' . esc_html__( 'Filter', 'upsellbay' ) . '</button>';
+
+		$has_active_filters = '' !== (string) $filters['placement'] || '' !== (string) $filters['status'] || '' !== (string) $filters['health'] || '' !== (string) $filters['search'];
+		if ( $has_active_filters ) {
+			echo ' <a href="' . esc_url( admin_url( 'admin.php?page=upsellbay&tab=offers' ) ) . '" class="button">' . esc_html__( 'Clear', 'upsellbay' ) . '</a>';
+		}
+
 		echo '</div>';
 		
 		echo '<div class="alignright actions">';
