@@ -316,32 +316,45 @@ final class SettingsPage {
 		echo '<tr><th scope="row">' . esc_html__( 'Placements', 'upsellbay' ) . ' ' . $this->help_tip( __( 'Choose where UpsellBay is allowed to render active, eligible offers. Individual offers still need matching placement settings.', 'upsellbay' ) ) . '</th><td>';
 		echo '<div class="upsellbay-placements-grid">';
 		foreach ( $this->placement_data() as $key => $data ) {
-			$is_checked  = true === (bool) ( $placements[ $key ] ?? false );
-			$max_display = (int) ( $settings['placement_max_display'][ $key ] ?? 1 );
+			$is_checked   = true === (bool) ( $placements[ $key ] ?? false );
+			$max_display  = (int) ( $settings['placement_max_display'][ $key ] ?? 1 );
+			$icon         = $data['icon'];
+			$card_classes = 'upsellbay-placement-card';
+			if ( $is_checked ) {
+				$card_classes .= ' upsellbay-placement-card--active';
+			} else {
+				$card_classes .= ' upsellbay-placement-card--inactive';
+			}
 
-			echo '<div class="upsellbay-placement-card">';
-			echo '<div class="upsellbay-placement-card__header">';
-			echo '<label class="upsellbay-placement-toggle">';
+			echo '<div class="' . esc_attr( $card_classes ) . '" data-placement="' . esc_attr( $key ) . '">';
+			echo '<div class="upsellbay-placement-card__top-row">';
+			echo '<div class="upsellbay-placement-card__icon-wrapper ' . esc_attr( 'upsellbay-placement-card__icon-wrapper--' . str_replace( '_', '-', $key ) ) . '">';
+			echo '<span class="dashicons ' . esc_attr( $icon ) . '" aria-hidden="true"></span>';
+			echo '</div>';
+
+			// translators: %s: placement label.
+			echo '<label class="upsellbay-placement-toggle" aria-label="' . esc_attr( sprintf( __( 'Enable %s', 'upsellbay' ), $data['label'] ) ) . '">';
 			echo '<input type="checkbox" name="placements[' . esc_attr( $key ) . ']" value="1"';
 			if ( $is_checked ) {
 				echo ' checked="checked"';
 			}
 			echo '>';
 			echo '<span class="upsellbay-placement-toggle__switch" aria-hidden="true"></span>';
-			echo '<span class="upsellbay-placement-toggle__label">' . esc_html( $data['label'] ) . '</span>';
 			echo '</label>';
-			echo '</div>';
+			echo '</div>'; // upsellbay-placement-card__top-row.
 
+			echo '<h3 class="upsellbay-placement-card__title">' . esc_html( $data['label'] ) . '</h3>';
 			echo '<p class="upsellbay-placement-card__description">' . esc_html( $data['description'] ) . '</p>';
 
+			echo '<hr class="upsellbay-placement-card__divider" />';
+
 			echo '<div class="upsellbay-placement-card__control">';
-			echo '<label for="upsellbay-max-display-' . esc_attr( $key ) . '" class="screen-reader-text">' . esc_html__( 'Maximum offers to display for', 'upsellbay' ) . ' ' . esc_html( $data['label'] ) . '</label>';
-			echo '<input type="number" id="upsellbay-max-display-' . esc_attr( $key ) . '" name="placement_max_display[' . esc_attr( $key ) . ']" value="' . esc_attr( (string) $max_display ) . '" min="1" max="5" class="small-text" ' . ( ! $is_checked ? 'disabled' : '' ) . '>';
-			echo '<span class="upsellbay-placement-card__control-label screen-reader-text">' . esc_html__( 'Max offers', 'upsellbay' ) . '</span>';
-				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- help_tip() returns escaped WooCommerce help tip markup.
-				echo $this->help_tip( __( 'Maximum number of offers to show simultaneously in this placement.', 'upsellbay' ) );
-			echo '</div>';
-			echo '</div>';
+			echo '<label for="upsellbay-max-display-' . esc_attr( $key ) . '" class="upsellbay-placement-card__control-label">' . esc_html__( 'Max active offers', 'upsellbay' ) . '</label>';
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- help_tip() returns escaped WooCommerce help tip markup.
+			echo $this->help_tip( __( 'Maximum number of offers to show simultaneously in this placement.', 'upsellbay' ) );
+			echo '<input type="number" id="upsellbay-max-display-' . esc_attr( $key ) . '" name="placement_max_display[' . esc_attr( $key ) . ']" value="' . esc_attr( (string) $max_display ) . '" min="1" max="5" class="small-text upsellbay-placement-card__number-input" ' . ( ! $is_checked ? 'disabled' : '' ) . '>';
+			echo '</div>'; // upsellbay-placement-card__control.
+			echo '</div>'; // upsellbay-placement-card.
 		}
 		echo '</div>';
 		echo '</td></tr></tbody></table>';
@@ -399,7 +412,7 @@ final class SettingsPage {
 		echo '<td>';
 		$clear_nonce = wp_create_nonce( 'upsellbay_clear_all_data' );
 		$clear_url   = admin_url( 'admin-post.php?action=upsellbay_clear_all_data&_wpnonce=' . $clear_nonce );
-		
+
 		echo '<a href="' . esc_url( $clear_url ) . '" class="button button-secondary upsellbay-button-danger upsellbay-modal-trigger" data-modal-title="' . esc_attr__( 'Clear All Data', 'upsellbay' ) . '" data-modal-message="' . esc_attr__( 'Are you sure you want to permanently delete all records, configurations, settings, generated data, analytics, offers and any other data stored by UpsellBay? This action is irreversible.', 'upsellbay' ) . '" data-modal-confirm="' . esc_attr__( 'Yes, Clear All Data', 'upsellbay' ) . '" data-modal-cancel="' . esc_attr__( 'Cancel', 'upsellbay' ) . '">' . esc_html__( 'Clear All Data', 'upsellbay' ) . '</a>';
 		echo '<p class="description">' . esc_html__( 'Warning: This action will permanently delete all offers, configurations, analytics, and session data. It cannot be undone.', 'upsellbay' ) . '</p>';
 		echo '</td></tr>';
@@ -686,31 +699,34 @@ final class SettingsPage {
 			default => __( 'How long UpsellBay operational logs are retained for troubleshooting.', 'upsellbay' ),
 		};
 	}
-
 	/**
 	 * Return placement data with labels and descriptions.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @return array<string, array{label: string, description: string}>
+	 * @return array<string, array{label: string, description: string, icon: string}>
 	 */
 	private function placement_data(): array {
 		return array(
 			'product_upsell' => array(
 				'label'       => __( 'Product page offer', 'upsellbay' ),
 				'description' => __( 'Show offers on product pages as add-ons or frequently bought together suggestions.', 'upsellbay' ),
+				'icon'        => 'dashicons-store',
 			),
 			'cart_crosssell' => array(
 				'label'       => __( 'Cart offer', 'upsellbay' ),
 				'description' => __( 'Display cross-sell and threshold offers in the cart and mini-cart.', 'upsellbay' ),
+				'icon'        => 'dashicons-cart',
 			),
 			'checkout_bump'  => array(
 				'label'       => __( 'Checkout bump', 'upsellbay' ),
 				'description' => __( 'Render order bumps on the checkout page before the place order button.', 'upsellbay' ),
+				'icon'        => 'dashicons-money-alt',
 			),
 			'thankyou_offer' => array(
 				'label'       => __( 'Thank-you offer', 'upsellbay' ),
 				'description' => __( 'Present follow-on offers on the order received page after purchase.', 'upsellbay' ),
+				'icon'        => 'dashicons-awards',
 			),
 		);
 	}

@@ -506,7 +506,7 @@ final class Plugin {
 		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
 			'cart_checkout_blocks',
 			Constants::plugin_file(),
-			true
+			false
 		);
 	}
 

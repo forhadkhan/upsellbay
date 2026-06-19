@@ -78,7 +78,7 @@ final class AdminPage {
 	 */
 	public function remove_third_party_notices(): void {
 		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
-		if ( $screen && str_starts_with( $screen->id, 'woocommerce_page_upsellbay' ) ) {
+		if ( null !== $screen && str_starts_with( $screen->id, 'woocommerce_page_upsellbay' ) ) {
 			remove_all_actions( 'admin_notices' );
 			remove_all_actions( 'all_admin_notices' );
 		}

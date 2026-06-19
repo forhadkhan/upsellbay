@@ -90,4 +90,19 @@ window.jQuery( function ( $ ) {
 			}, 2000 );
 		}
 	} );
+
+	// Toggle placement card active/inactive state and enable/disable max display inputs.
+	$( '.upsellbay-placements-grid' ).on( 'change', '.upsellbay-placement-toggle input[type="checkbox"]', function () {
+		const $checkbox = $( this );
+		const $card = $checkbox.closest( '.upsellbay-placement-card' );
+		const $numberInput = $card.find( '.upsellbay-placement-card__number-input' );
+
+		if ( $checkbox.is( ':checked' ) ) {
+			$card.addClass( 'upsellbay-placement-card--active' ).removeClass( 'upsellbay-placement-card--inactive' );
+			$numberInput.prop( 'disabled', false );
+		} else {
+			$card.removeClass( 'upsellbay-placement-card--active' ).addClass( 'upsellbay-placement-card--inactive' );
+			$numberInput.prop( 'disabled', true );
+		}
+	} );
 } );
