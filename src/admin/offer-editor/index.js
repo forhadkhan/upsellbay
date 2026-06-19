@@ -572,7 +572,7 @@ window.jQuery(function ($) {
 
       if (items.length > 0) {
         if (isRules) {
-          $table.append('<thead><tr><th style="padding: 15px 10px;">Rule Type</th><th style="padding: 15px 10px;">Operator</th><th style="padding: 15px 10px;">Value</th><th style="padding: 15px 10px;"></th></tr></thead>');
+          $table.append('<thead><tr><th style="padding: 15px 10px;">Rule Type <span class="woocommerce-help-tip" data-tip="The condition to check. For example, &quot;Cart contains product&quot; shows the offer only when the cart has that product."></span></th><th style="padding: 15px 10px;">Operator <span class="woocommerce-help-tip" data-tip="How to compare the rule value. &quot;Equals&quot; matches exactly, &quot;Greater than&quot; / &quot;Less than&quot; work for numbers like subtotal or order count."></span></th><th style="padding: 15px 10px;">Value <span class="woocommerce-help-tip" data-tip="The value to compare against. For product rules this is a product selection, for numeric rules this is a number, for roles this is a comma-separated list."></span></th><th style="padding: 15px 10px;"></th></tr></thead>');
         } else {
           $table.append('<thead><tr><th style="padding: 15px 10px;">Setting Key</th><th colspan="2" style="padding: 15px 10px;">Value</th><th style="padding: 15px 10px;"></th></tr></thead>');
         }
@@ -659,6 +659,12 @@ window.jQuery(function ($) {
       $table.append($tbody);
       $builder.append($table);
       $builder.append(`<button type="button" class="button upsellbay-vb-add">Add ${isRules ? 'Rule' : 'Setting'}</button>`);
+
+      $builder.find('.woocommerce-help-tip').each(function () {
+        if ($.fn.tipTip) {
+          $(this).tipTip({ attribute: 'data-tip', fadeIn: 50, fadeOut: 50, delay: 200 });
+        }
+      });
 
       $builder.find('.upsellbay-vb-remove').on('click', function () {
         const idx = $(this).data('index');
