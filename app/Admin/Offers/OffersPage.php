@@ -144,7 +144,10 @@ final class OffersPage {
 				'attributed_revenue' => __( 'Revenue', 'upsellbay' ),
 			) as $column => $heading
 		) {
-				echo '<th scope="col">' . wp_kses_post( $this->sortable_heading( $column, $heading, $filters ) ) . '</th>';
+				$is_current = $column === (string) $filters['orderby'];
+				$sort_dir   = $is_current ? $filters['order'] : 'desc';
+				$classes    = 'manage-column column-' . $column . ( $is_current ? ' sorted ' : ' sortable ' ) . $sort_dir;
+				echo '<th scope="col" id="' . esc_attr( $column ) . '" class="' . esc_attr( $classes ) . '">' . wp_kses_post( $this->sortable_heading( $column, $heading, $filters ) ) . '</th>';
 		}
 		echo '</tr></thead><tbody>';
 
@@ -275,7 +278,7 @@ final class OffersPage {
 			)
 		);
 
-		return '<a href="' . esc_url( $url ) . '"><span>' . esc_html( $label ) . '</span></a>';
+		return '<a href="' . esc_url( $url ) . '"><span>' . esc_html( $label ) . '</span><span class="sorting-indicator"></span></a>';
 	}
 
 	/**
