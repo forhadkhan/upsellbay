@@ -235,7 +235,7 @@ final class Plugin {
 		$this->container->set( OfferPreviewRoute::class, static fn ( Container $container ): OfferPreviewRoute => new OfferPreviewRoute( $container->get( OfferService::class ) ) );
 		$this->container->set( CheckoutFields::class, static fn (): CheckoutFields => new CheckoutFields() );
 		$this->container->set( StoreApiExtender::class, static fn ( Container $container ): StoreApiExtender => new StoreApiExtender( $container->get( OfferRepository::class ), $container->get( OfferPrioritizer::class ), $container->get( CartSession::class ), $container->get( AnalyticsRecorder::class ), $container->get( Settings::class ) ) );
-		$this->container->set( BlockCheckoutIntegration::class, static fn (): BlockCheckoutIntegration => new BlockCheckoutIntegration() );
+		$this->container->set( BlockCheckoutIntegration::class, static fn ( Container $container ): BlockCheckoutIntegration => new BlockCheckoutIntegration( $container->get( Settings::class ), $container->get( CartSession::class ) ) );
 		$this->container->set( StorefrontController::class, static fn ( Container $container ): StorefrontController => new StorefrontController( $container->get( OfferRepository::class ), $container->get( PlacementRenderer::class ), $container->get( CartSession::class ), $container->get( Settings::class ) ) );
 		$this->container->set( CouponLimiter::class, static fn (): CouponLimiter => new CouponLimiter() );
 		$this->container->set( ImportExporter::class, static fn ( Container $container ): ImportExporter => new ImportExporter( $container->get( OfferValidator::class ) ) );
@@ -505,7 +505,7 @@ final class Plugin {
 		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
 			'cart_checkout_blocks',
 			Constants::plugin_file(),
-			false
+			true
 		);
 	}
 
