@@ -644,3 +644,8 @@
 .upsellbay-notice {
 	display: block !important;
 }
+
+
+#wpfooter {
+	display: none;
+}
