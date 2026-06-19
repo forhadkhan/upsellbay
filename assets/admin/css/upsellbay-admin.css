@@ -12,7 +12,7 @@
 	gap: 16px;
 	justify-content: space-between;
 	min-height: 60px;
-	padding: 0px 30px;
+	padding: 0px 24px;
 }
 
 .upsellbay-layout-header__heading {
@@ -36,8 +36,9 @@
 }
 
 .wrap.upsellbay-admin {
-	margin-top: 0;
-	padding: 0px 10px;
+	margin: 0 0 0 -20px;
+	padding: 0px 24px;
+	width: calc(100% + 20px);
 }
 
 .upsellbay-license-banner-slot:empty,
@@ -84,11 +85,26 @@
 
 .upsellbay-tab-content {
 	padding-top: 14px;
+	margin-top: 10px;
+}
+
+.upsellbay-tab-content > .upsellbay-page-notices + *,
+.upsellbay-tab-content > .upsellbay-page-notices + form > *:first-child,
+.upsellbay-tab-content > *:first-child,
+.upsellbay-tab-content > form > *:first-child {
+	margin-top: 0 !important;
+}
+
+.upsellbay-page-notices .notice,
+.upsellbay-page-notice,
+.upsellbay-notice {
+	margin-bottom: 24px !important;
+	margin-top: 0 !important;
 }
 
 .upsellbay-offers-section-menu,
 .upsellbay-settings-section-menu {
-	margin-bottom: 16px !important;
+	margin-bottom: 24px !important;
 	margin-top: 0;
 }
 
@@ -100,7 +116,7 @@
 	gap: 24px;
 	margin: 0;
 	overflow-x: auto;
-	padding: 0 30px;
+	padding: 0 24px;
 	white-space: nowrap;
 	height: 41px;
 }
@@ -143,7 +159,7 @@
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 	gap: 12px;
-	margin: 18px 0;
+	margin: 24px 0;
 }
 
 .upsellbay-card-grid--metrics {
@@ -206,7 +222,7 @@
 	display: flex;
 	gap: 16px;
 	justify-content: space-between;
-	margin: 16px 0 4px;
+	margin: 24px 0 4px;
 }
 
 .upsellbay-overview-title {
@@ -328,8 +344,8 @@
 
 	.upsellbay-license-banner {
 		margin-left: -10px;
-		padding-left: 10px;
-		padding-right: 10px;
+		padding-left: 24px;
+		padding-right: 24px;
 		width: calc(100% + 10px);
 	}
 
@@ -337,7 +353,7 @@
 		align-items: flex-start;
 		flex-direction: column;
 		gap: 10px;
-		padding: 12px 10px;
+		padding: 12px 24px;
 	}
 
 	.upsellbay-layout-header__actions {
@@ -347,8 +363,15 @@
 
 	.upsellbay-admin .upsellbay-tabs {
 		gap: 18px;
-		padding-left: 10px;
-		padding-right: 10px;
+		padding-left: 24px;
+		padding-right: 24px;
+	}
+
+	.wrap.upsellbay-admin {
+		margin-left: -10px;
+		padding-left: 24px;
+		padding-right: 24px;
+		width: calc(100% + 10px);
 	}
 
 	.upsellbay-overview-header {
@@ -523,8 +546,8 @@
 .upsellbay-placements-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-	gap: 20px;
-	margin-top: 10px;
+	gap: 24px;
+	margin-top: 24px;
 }
 
 .upsellbay-placement-card {
