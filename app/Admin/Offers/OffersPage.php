@@ -169,7 +169,9 @@ final class OffersPage {
 		}
 
 		echo '</tbody></table>';
+		echo '<div class="tablenav bottom">';
 		$this->render_pagination( $filters );
+		echo '<br class="clear"></div>';
 	}
 
 	/**
@@ -215,7 +217,6 @@ final class OffersPage {
 		$this->select_filter( 'health', __( 'All health states', 'upsellbay' ), $this->health_options(), (string) $filters['health'] );
 		echo '<button type="submit" class="button">' . esc_html__( 'Filter', 'upsellbay' ) . '</button>';
 		echo '</div>';
-		$this->render_pagination( $filters );
 		echo '<br class="clear"></div>';
 		echo '</form>';
 	}
@@ -278,17 +279,32 @@ final class OffersPage {
 		$per_page    = max( 1, (int) ( $filters['per_page'] ?? 20 ) );
 		$total_pages = max( 1, (int) ceil( $total_items / $per_page ) );
 		$current     = min( max( 1, (int) ( $filters['paged'] ?? 1 ) ), $total_pages );
+		$one_page    = $total_pages <= 1 ? ' one-page' : '';
 
-		echo '<div class="tablenav-pages">';
+		echo '<div class="tablenav-pages' . $one_page . '">';
 		/* translators: %s: number of offers. */
 		$item_label = 1 === $total_items ? __( '%s item', 'upsellbay' ) : __( '%s items', 'upsellbay' );
 		echo '<span class="displaying-num">' . esc_html( sprintf( $item_label, number_format_i18n( $total_items ) ) ) . '</span> ';
 		echo '<span class="pagination-links">';
-		echo '<a class="first-page button' . ( 1 === $current ? ' disabled' : '' ) . '" href="' . esc_url( $this->table_url( array_merge( $filters, array( 'paged' => 1 ) ) ) ) . '"><span class="screen-reader-text">' . esc_html__( 'First page', 'upsellbay' ) . '</span><span aria-hidden="true">&laquo;</span></a> ';
-		echo '<a class="prev-page button' . ( 1 === $current ? ' disabled' : '' ) . '" href="' . esc_url( $this->table_url( array_merge( $filters, array( 'paged' => max( 1, $current - 1 ) ) ) ) ) . '"><span class="screen-reader-text">' . esc_html__( 'Previous page', 'upsellbay' ) . '</span><span aria-hidden="true">&lsaquo;</span></a> ';
+
+		if ( 1 === $current ) {
+			echo '<span class="tablenav-pages-navspan button disabled" aria-hidden="true">&laquo;</span> ';
+			echo '<span class="tablenav-pages-navspan button disabled" aria-hidden="true">&lsaquo;</span> ';
+		} else {
+			echo '<a class="first-page button" href="' . esc_url( $this->table_url( array_merge( $filters, array( 'paged' => 1 ) ) ) ) . '"><span class="screen-reader-text">' . esc_html__( 'First page', 'upsellbay' ) . '</span><span aria-hidden="true">&laquo;</span></a> ';
+			echo '<a class="prev-page button" href="' . esc_url( $this->table_url( array_merge( $filters, array( 'paged' => max( 1, $current - 1 ) ) ) ) ) . '"><span class="screen-reader-text">' . esc_html__( 'Previous page', 'upsellbay' ) . '</span><span aria-hidden="true">&lsaquo;</span></a> ';
+		}
+
 		echo '<span class="paging-input">' . esc_html( (string) $current ) . ' ' . esc_html__( 'of', 'upsellbay' ) . ' <span class="total-pages">' . esc_html( (string) $total_pages ) . '</span></span> ';
-		echo '<a class="next-page button' . ( $current >= $total_pages ? ' disabled' : '' ) . '" href="' . esc_url( $this->table_url( array_merge( $filters, array( 'paged' => min( $total_pages, $current + 1 ) ) ) ) ) . '"><span class="screen-reader-text">' . esc_html__( 'Next page', 'upsellbay' ) . '</span><span aria-hidden="true">&rsaquo;</span></a> ';
-		echo '<a class="last-page button' . ( $current >= $total_pages ? ' disabled' : '' ) . '" href="' . esc_url( $this->table_url( array_merge( $filters, array( 'paged' => $total_pages ) ) ) ) . '"><span class="screen-reader-text">' . esc_html__( 'Last page', 'upsellbay' ) . '</span><span aria-hidden="true">&raquo;</span></a>';
+
+		if ( $current >= $total_pages ) {
+			echo '<span class="tablenav-pages-navspan button disabled" aria-hidden="true">&rsaquo;</span> ';
+			echo '<span class="tablenav-pages-navspan button disabled" aria-hidden="true">&raquo;</span>';
+		} else {
+			echo '<a class="next-page button" href="' . esc_url( $this->table_url( array_merge( $filters, array( 'paged' => min( $total_pages, $current + 1 ) ) ) ) ) . '"><span class="screen-reader-text">' . esc_html__( 'Next page', 'upsellbay' ) . '</span><span aria-hidden="true">&rsaquo;</span></a> ';
+			echo '<a class="last-page button" href="' . esc_url( $this->table_url( array_merge( $filters, array( 'paged' => $total_pages ) ) ) ) . '"><span class="screen-reader-text">' . esc_html__( 'Last page', 'upsellbay' ) . '</span><span aria-hidden="true">&raquo;</span></a>';
+		}
+
 		echo '</span></div>';
 	}
 
