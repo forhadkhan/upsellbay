@@ -8,8 +8,9 @@
 declare(strict_types=1);
 
 namespace WPAnchorBay\UpsellBay\Data;
+
 // Exit if accessed directly.
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
@@ -36,7 +37,11 @@ final class LogRepository {
 			return false;
 		}
 
-		/** @var wpdb $wpdb WordPress database object. */
+		/**
+		 * WordPress database object.
+		 *
+		 * @var wpdb $wpdb
+		 */
 		$wpdb = $GLOBALS['wpdb'];
 
 		$table = $wpdb->prefix . Constants::LOGS_TABLE_SUFFIX;
@@ -67,6 +72,7 @@ final class LogRepository {
 			}
 		}
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 		$result = $wpdb->insert(
 			$table,
 			$data,
@@ -108,7 +114,11 @@ final class LogRepository {
 			return null;
 		}
 
-		/** @var wpdb $wpdb WordPress database object. */
+		/**
+		 * WordPress database object.
+		 *
+		 * @var wpdb $wpdb
+		 */
 		$wpdb  = $GLOBALS['wpdb'];
 		$table = $wpdb->prefix . Constants::LOGS_TABLE_SUFFIX;
 
@@ -134,7 +144,11 @@ final class LogRepository {
 			);
 		}
 
-		/** @var wpdb $wpdb WordPress database object. */
+		/**
+		 * WordPress database object.
+		 *
+		 * @var wpdb $wpdb
+		 */
 		$wpdb  = $GLOBALS['wpdb'];
 		$table = $wpdb->prefix . Constants::LOGS_TABLE_SUFFIX;
 
@@ -211,7 +225,11 @@ final class LogRepository {
 			return false;
 		}
 
-		/** @var wpdb $wpdb WordPress database object. */
+		/**
+		 * WordPress database object.
+		 *
+		 * @var wpdb $wpdb
+		 */
 		$wpdb  = $GLOBALS['wpdb'];
 		$table = $wpdb->prefix . Constants::LOGS_TABLE_SUFFIX;
 
@@ -232,7 +250,11 @@ final class LogRepository {
 			return false;
 		}
 
-		/** @var wpdb $wpdb WordPress database object. */
+		/**
+		 * WordPress database object.
+		 *
+		 * @var wpdb $wpdb
+		 */
 		$wpdb  = $GLOBALS['wpdb'];
 		$table = $wpdb->prefix . Constants::LOGS_TABLE_SUFFIX;
 
@@ -255,7 +277,11 @@ final class LogRepository {
 			return 0;
 		}
 
-		/** @var wpdb $wpdb WordPress database object. */
+		/**
+		 * WordPress database object.
+		 *
+		 * @var wpdb $wpdb
+		 */
 		$wpdb  = $GLOBALS['wpdb'];
 		$table = $wpdb->prefix . Constants::LOGS_TABLE_SUFFIX;
 
