@@ -65,7 +65,7 @@ final class CompatibilityNotice {
 	public function render(): void {
 		foreach ( $this->notices() as $notice ) {
 			printf(
-				'<div class="notice notice-%1$s is-dismissible"><p>%2$s <a href="%3$s">%4$s</a></p></div>',
+				'<div class="notice notice-%1$s is-dismissible upsellbay-notice"><p>%2$s <a href="%3$s">%4$s</a></p></div>',
 				esc_attr( $notice['type'] ),
 				esc_html( $notice['message'] ),
 				esc_url( $notice['url'] ),

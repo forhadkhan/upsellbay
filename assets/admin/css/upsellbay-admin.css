@@ -629,3 +629,18 @@
 		grid-template-columns: 1fr;
 	}
 }
+
+/* Hide third-party admin notices on UpsellBay pages */
+#wpbody-content > .notice:not(.upsellbay-notice):not(.upsellbay-page-notice),
+#wpbody-content > .update-nag:not(.upsellbay-notice):not(.upsellbay-page-notice),
+#wpbody-content > .error:not(.upsellbay-notice):not(.upsellbay-page-notice),
+#wpbody-content > .updated:not(.upsellbay-notice):not(.upsellbay-page-notice) {
+	display: none !important;
+}
+
+/* Ensure our own notices remain visible */
+.upsellbay-page-notice,
+.upsellbay-license-banner,
+.upsellbay-notice {
+	display: block !important;
+}

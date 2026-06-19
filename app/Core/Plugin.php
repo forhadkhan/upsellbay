@@ -800,7 +800,7 @@ final class Plugin {
 		}
 
 		foreach ( $result['errors'] as $message ) {
-			echo '<div class="notice notice-error"><p>' . esc_html( $message ) . '</p></div>';
+			echo '<div class="notice notice-error upsellbay-notice"><p>' . esc_html( $message ) . '</p></div>';
 		}
 	}
 
