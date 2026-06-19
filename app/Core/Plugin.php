@@ -8,8 +8,9 @@
 declare(strict_types=1);
 
 namespace WPAnchorBay\UpsellBay\Core;
+
 // Exit if accessed directly.
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
@@ -504,7 +505,7 @@ final class Plugin {
 		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
 			'cart_checkout_blocks',
 			Constants::plugin_file(),
-			true
+			false
 		);
 	}
 

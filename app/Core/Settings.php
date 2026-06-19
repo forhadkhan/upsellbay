@@ -8,8 +8,9 @@
 declare(strict_types=1);
 
 namespace WPAnchorBay\UpsellBay\Core;
+
 // Exit if accessed directly.
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
@@ -20,6 +21,8 @@ if (!defined('ABSPATH')) {
  * @since 1.0.0
  */
 final class Settings {
+	public const DEFAULT_ACCENT_COLOR = '#3858e9';
+
 	/**
 	 * Option reader callback.
 	 *
@@ -135,7 +138,7 @@ final class Settings {
 				'thankyou_offer' => 1,
 			),
 			'style_tokens'          => array(
-				'accent_color' => '#2271b1',
+				'accent_color' => self::DEFAULT_ACCENT_COLOR,
 				'button_style' => 'theme',
 			),
 			'license'               => array(
