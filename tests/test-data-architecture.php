@@ -70,10 +70,74 @@ function upsellbay_data_architecture_tests(): array {
 				$validator->validate(
 					array(
 						'_ub_offer_type'       => 'checkout_bump',
+						'_ub_status'           => 'active',
 						'_ub_offer_product_id' => 999,
+						'_ub_headline'         => 'Add this',
+						'_ub_button_text'      => 'Add',
 					)
 				)->is_valid()
 			);
+		},
+		'active offer validation blocks incomplete storefront critical configuration' => static function (): void {
+			$product_context = static function ( int $product_id ): ?array {
+				if ( 10 !== $product_id ) {
+					return null;
+				}
+
+				return array(
+					'exists'       => true,
+					'purchasable'  => false,
+					'visible'      => true,
+					'in_stock'     => true,
+					'type'         => 'simple',
+					'subscription' => false,
+				);
+			};
+			$validator       = new OfferValidator( new OfferSchema(), static fn ( int $product_id ): bool => 10 === $product_id, $product_context );
+
+			$result = $validator->validate(
+				array(
+					'_ub_status'                   => 'active',
+					'_ub_offer_type'               => 'checkout_bump',
+					'_ub_offer_product_id'         => 10,
+					'_ub_discount_type'            => 'percent',
+					'_ub_discount_value'           => '125',
+					'_ub_headline'                 => 'Add this',
+					'_ub_button_text'              => 'Add',
+					'_ub_rules'                    => array(
+						array(
+							'type'     => 'cart_subtotal',
+							'operator' => 'contains',
+							'value'    => '',
+						),
+					),
+					'_ub_placement_config'         => array( 'position' => 'after_cart_table' ),
+					'_ub_conflict_override'        => true,
+					'_ub_conflict_override_reason' => '',
+				)
+			);
+
+			assert_false( $result->is_valid() );
+			$errors = implode( ' ', $result->errors() );
+			assert_contains( 'Offer product is not currently purchasable.', $errors );
+			assert_contains( 'Percentage discount cannot be greater than 100.', $errors );
+			assert_contains( 'Cart subtotal rules require a numeric comparison operator.', $errors );
+			assert_contains( 'Checkout bump display position must use the checkout bump area.', $errors );
+			assert_contains( 'Conflict override requires a reason.', $errors );
+		},
+		'draft offer validation allows incomplete storefront setup' => static function (): void {
+			$validator = new OfferValidator( new OfferSchema(), static fn (): bool => false );
+			$result    = $validator->validate(
+				array(
+					'_ub_status'           => 'draft',
+					'_ub_offer_type'       => 'checkout_bump',
+					'_ub_offer_product_id' => 0,
+					'_ub_headline'         => '',
+					'_ub_button_text'      => '',
+				)
+			);
+
+			assert_true( $result->is_valid() );
 		},
 		'offer repository delegates cpt and meta access through callbacks' => static function (): void {
 			$posts      = array();

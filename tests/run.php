@@ -6,11 +6,8 @@
  */
 
 declare(strict_types=1);
-// Exit if accessed directly.
-if (!defined('ABSPATH')) {
-	exit;
-}
 
+defined( 'ABSPATH' ) || define( 'ABSPATH', dirname( __DIR__ ) . '/' );
 
 require_once __DIR__ . '/bootstrap.php';
 require_once __DIR__ . '/test-foundation.php';

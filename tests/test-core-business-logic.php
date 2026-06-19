@@ -39,6 +39,7 @@ use WPAnchorBay\UpsellBay\Domain\Storefront\PlacementRenderer;
 use WPAnchorBay\UpsellBay\Domain\Storefront\ProductPageRenderer;
 use WPAnchorBay\UpsellBay\Domain\Storefront\StorefrontController;
 use WPAnchorBay\UpsellBay\Domain\Storefront\ThankYouOfferRenderer;
+use WPAnchorBay\UpsellBay\Integrations\WooCommerce\StoreApiExtender;
 
 /**
  * Returns Phase 4 test cases.
@@ -180,7 +181,7 @@ function upsellbay_core_business_logic_tests(): array {
 			$renderer   = new PlacementRenderer(
 				new OfferPrioritizer( new RuleEvaluator( new RuleParser() ), static fn (): bool => true, static fn (): int => 100 ),
 				new AnalyticsRecorder( new StatsRepository( static function (): void {}, static fn (): array => array() ) ),
-				array( 'checkout_bump' => new ClassicCheckoutBump() ),
+				array( 'checkout_bump' => new ClassicCheckoutBump( new DiscountCalculator() ) ),
 				static fn (): string => '2026-05-30'
 			);
 			$session    = upsellbay_array_cart_session();
@@ -281,10 +282,10 @@ function upsellbay_core_business_logic_tests(): array {
 				new OfferPrioritizer( new RuleEvaluator( new RuleParser() ), static fn (): bool => true, static fn (): int => 100 ),
 				new AnalyticsRecorder( $stats ),
 				array(
-					'checkout_bump'  => new ClassicCheckoutBump(),
-					'product_upsell' => new ProductPageRenderer(),
-					'cart_crosssell' => new CartCrossSellRenderer(),
-					'thankyou_offer' => new ThankYouOfferRenderer(),
+					'checkout_bump'  => new ClassicCheckoutBump( new DiscountCalculator() ),
+					'product_upsell' => new ProductPageRenderer( new DiscountCalculator() ),
+					'cart_crosssell' => new CartCrossSellRenderer( new DiscountCalculator() ),
+					'thankyou_offer' => new ThankYouOfferRenderer( new DiscountCalculator() ),
 				),
 				static fn (): string => '2026-05-30'
 			);
@@ -330,6 +331,25 @@ function upsellbay_core_business_logic_tests(): array {
 			assert_same( '19.000000', $response['data']['offer_price'] );
 			assert_same( 429, $routes->dismiss( array( 'offer_id' => 22, 'placement' => 'checkout_bump', 'token' => $token ) )['status'] );
 			assert_same( 403, $routes->bump_toggle( array( 'offer_id' => 22, 'token' => 'bad' ) )['status'] );
+		},
+		'store api offer payload uses configured discount value for price html' => static function (): void {
+			$GLOBALS['upsellbay_test_products'][61] = new UpsellBay_Test_Storefront_Product( 61, 'Warranty', '100.00', 0 );
+			$offer                                  = upsellbay_phase4_offer( 61, 'checkout_bump', 61, 1 );
+			$offer['meta']['_ub_discount_type']     = 'percent';
+			$offer['meta']['_ub_discount_value']    = '25';
+			$repository                             = upsellbay_test_offer_repository( array( 61 => $offer ) );
+			$extender                               = new StoreApiExtender(
+				$repository,
+				new OfferPrioritizer( new RuleEvaluator( new RuleParser() ), static fn (): bool => true, static fn (): int => 100 ),
+				upsellbay_array_cart_session(),
+				new AnalyticsRecorder( new StatsRepository( static function (): void {}, static fn (): array => array() ) ),
+				new Settings( static fn (): array => array(), static fn (): bool => true )
+			);
+
+			$data = $extender->get_checkout_offers_data();
+
+			assert_contains( '$100.00', $data['checkout_bump'][0]['price_html'] );
+			assert_contains( '$75.00', $data['checkout_bump'][0]['price_html'] );
 		},
 		'attribution writer and reader use woo crud object methods only' => static function (): void {
 			$item   = new UpsellBay_Test_Meta_Object();

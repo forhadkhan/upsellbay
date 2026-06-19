@@ -1,0 +1,68 @@
+[
+  {
+    "id": "discount-none",
+    "description": "No discount",
+    "discountType": "none",
+    "discountValue": 0,
+    "couponState": "none",
+    "expectedTotalMatch": true
+  },
+  {
+    "id": "discount-percent-valid",
+    "description": "Valid percentage discount",
+    "discountType": "percent",
+    "discountValue": 10,
+    "couponState": "none",
+    "expectedTotalMatch": true
+  },
+  {
+    "id": "discount-fixed-amount",
+    "description": "Valid fixed amount discount",
+    "discountType": "fixed_amount",
+    "discountValue": 5,
+    "couponState": "none",
+    "expectedTotalMatch": true
+  },
+  {
+    "id": "discount-fixed-price",
+    "description": "Valid fixed price discount",
+    "discountType": "fixed_price",
+    "discountValue": 15,
+    "couponState": "none",
+    "expectedTotalMatch": true
+  },
+  {
+    "id": "discount-percent-over-max",
+    "description": "Invalid percentage discount > 100",
+    "discountType": "percent",
+    "discountValue": 150,
+    "couponState": "none",
+    "expectedValidation": "fail",
+    "expectedTotalMatch": false
+  },
+  {
+    "id": "discount-negative",
+    "description": "Invalid negative discount",
+    "discountType": "fixed_amount",
+    "discountValue": -10,
+    "couponState": "none",
+    "expectedValidation": "fail",
+    "expectedTotalMatch": false
+  },
+  {
+    "id": "coupon-compatible",
+    "description": "Discount applied with compatible store coupon",
+    "discountType": "percent",
+    "discountValue": 10,
+    "couponState": "compatible_present",
+    "expectedTotalMatch": true
+  },
+  {
+    "id": "coupon-conflict",
+    "description": "Discount applied with conflicting store coupon",
+    "discountType": "fixed_amount",
+    "discountValue": 10,
+    "couponState": "conflict_present",
+    "expectedTotalMatch": true
+  }
+]

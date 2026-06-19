@@ -1,0 +1,46 @@
+[
+  {
+    "id": "conflict-none",
+    "description": "Single offer, no conflict",
+    "offers": [
+      {"id": 1, "placement": "checkout", "target": "global", "priority": 10}
+    ],
+    "expectedWinnerId": 1
+  },
+  {
+    "id": "conflict-priority-win",
+    "description": "Two offers on same placement, different priority",
+    "offers": [
+      {"id": 1, "placement": "checkout", "target": "global", "priority": 10},
+      {"id": 2, "placement": "checkout", "target": "global", "priority": 20}
+    ],
+    "expectedWinnerId": 2
+  },
+  {
+    "id": "conflict-priority-tie",
+    "description": "Two offers on same placement, same priority",
+    "offers": [
+      {"id": 1, "placement": "checkout", "target": "global", "priority": 10},
+      {"id": 2, "placement": "checkout", "target": "global", "priority": 10}
+    ],
+    "expectedWinnerId": 1
+  },
+  {
+    "id": "conflict-override-on",
+    "description": "Override enabled wins over higher priority",
+    "offers": [
+      {"id": 1, "placement": "checkout", "target": "global", "priority": 10, "override": true, "overrideReason": "promoted"},
+      {"id": 2, "placement": "checkout", "target": "global", "priority": 20, "override": false}
+    ],
+    "expectedWinnerId": 1
+  },
+  {
+    "id": "conflict-different-placement",
+    "description": "Offers on different placements do not conflict directly",
+    "offers": [
+      {"id": 1, "placement": "cart", "target": "global", "priority": 10},
+      {"id": 2, "placement": "checkout", "target": "global", "priority": 10}
+    ],
+    "expectedWinnerId": "both"
+  }
+]

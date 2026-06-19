@@ -123,6 +123,18 @@ if ( ! function_exists( 'wp_json_encode' ) ) {
 	}
 }
 
+if ( ! function_exists( 'wp_kses_post' ) ) {
+	function wp_kses_post( string $value ): string {
+		return strip_tags( $value, '<a><br><em><strong><del><ins><span><div>' );
+	}
+}
+
+if ( ! function_exists( 'number_format_i18n' ) ) {
+	function number_format_i18n( $number, int $decimals = 0 ): string {
+		return number_format( (float) $number, $decimals, '.', ',' );
+	}
+}
+
 if ( ! function_exists( 'wp_remote_retrieve_response_code' ) ) {
 	function wp_remote_retrieve_response_code( array $response ): int {
 		return (int) ( $response['response']['code'] ?? 0 );
@@ -138,6 +150,12 @@ if ( ! function_exists( 'wp_remote_retrieve_body' ) ) {
 if ( ! function_exists( 'wp_create_nonce' ) ) {
 	function wp_create_nonce( string $action ): string {
 		return 'nonce-' . $action;
+	}
+}
+
+if ( ! function_exists( 'wp_nonce_url' ) ) {
+	function wp_nonce_url( string $actionurl, $action = -1, string $name = '_wpnonce' ): string {
+		return $actionurl . ( str_contains( $actionurl, '?' ) ? '&' : '?' ) . rawurlencode( $name ) . '=' . rawurlencode( wp_create_nonce( $action ) );
 	}
 }
 
@@ -335,6 +353,7 @@ foreach (
 		'app/Domain/Attribution/AttributionReader.php',
 		'app/Domain/Offers/OfferService.php',
 		'app/Domain/Offers/OfferPrioritizer.php',
+		'app/Domain/Offers/OfferConflictDetector.php',
 		'app/Domain/Storefront/OfferRendererInterface.php',
 		'app/Domain/Storefront/AbstractOfferRenderer.php',
 		'app/Domain/Storefront/ClassicCheckoutBump.php',
@@ -348,6 +367,7 @@ foreach (
 		'app/Api/Routes/PublicOfferRoutes.php',
 		'app/Integrations/WooCommerce/CheckoutFields.php',
 		'app/Integrations/WooCommerce/BlockCheckoutIntegration.php',
+		'app/Integrations/WooCommerce/StoreApiExtender.php',
 		'app/Integrations/Licensing/LicenseClient.php',
 		'app/Utils/ImportExporter.php',
 		'app/Utils/TokenHelper.php',

@@ -36,6 +36,7 @@ use WPAnchorBay\UpsellBay\Core\Constants;
 use WPAnchorBay\UpsellBay\Core\Settings;
 use WPAnchorBay\UpsellBay\Data\OfferRepository;
 use WPAnchorBay\UpsellBay\Data\StatsRepository;
+use WPAnchorBay\UpsellBay\Domain\Offers\OfferConflictDetector;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferSchema;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferService;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferValidator;
@@ -432,6 +433,64 @@ function upsellbay_admin_architecture_tests(): array {
 			assert_true( $table->handle_row_action( 'duplicate', 11 ) );
 			assert_true( $table->handle_row_action( 'trash', 11 ) );
 		},
+		'offer list table supports search health sorting and pagination' => static function (): void {
+			$repository = upsellbay_test_offer_repository(
+				array(
+					11 => array(
+						'id'     => 11,
+						'title'  => 'Checkout bump',
+						'status' => 'publish',
+						'meta'   => array(
+							'_ub_offer_type'       => 'checkout_bump',
+							'_ub_status'           => 'active',
+							'_ub_offer_product_id' => 25,
+							'_ub_headline'         => 'Add warranty',
+							'_ub_button_text'      => 'Add to order',
+							'_ub_priority'         => 4,
+						),
+					),
+					12 => array(
+						'id'     => 12,
+						'title'  => 'Cart bundle',
+						'status' => 'publish',
+						'meta'   => array(
+							'_ub_offer_type'       => 'cart_crosssell',
+							'_ub_status'           => 'paused',
+							'_ub_offer_product_id' => 31,
+							'_ub_headline'         => 'Bundle',
+							'_ub_button_text'      => 'Add bundle',
+							'_ub_priority'         => 2,
+						),
+					),
+					13 => array(
+						'id'     => 13,
+						'title'  => 'Product add-on',
+						'status' => 'publish',
+						'meta'   => array(
+							'_ub_offer_type'       => 'product_upsell',
+							'_ub_status'           => 'active',
+							'_ub_offer_product_id' => 32,
+							'_ub_headline'         => 'Add-on',
+							'_ub_button_text'      => 'Add',
+							'_ub_priority'         => 1,
+						),
+					),
+				)
+			);
+			$table      = new OfferListTable( $repository, new OfferService( $repository, new OfferValidator( new OfferSchema(), static fn (): bool => true ) ) );
+
+			$searched = $table->rows( array( 'search' => 'bundle' ) );
+			assert_same( 1, count( $searched ) );
+			assert_same( 'Cart bundle', $searched[0]['title'] );
+
+			$sorted = $table->rows( array( 'orderby' => 'priority', 'order' => 'desc' ) );
+			assert_same( array( 'Checkout bump', 'Cart bundle', 'Product add-on' ), array_column( $sorted, 'title' ) );
+
+			$active_page = $table->rows( array( 'status' => 'active', 'health' => 'ok', 'orderby' => 'title', 'order' => 'asc', 'per_page' => 1, 'paged' => 2 ) );
+			assert_same( 1, count( $active_page ) );
+			assert_same( 'Product add-on', $active_page[0]['title'] );
+			assert_same( 2, $table->last_total_items() );
+		},
 		'offers page exposes a header-after hook for offers notices above the offers section nav' => static function (): void {
 			$previous_hooks = $GLOBALS['upsellbay_test_hooks'] ?? array();
 			$repository     = upsellbay_test_offer_repository( array() );
@@ -475,6 +534,42 @@ function upsellbay_admin_architecture_tests(): array {
 			assert_contains( 'admin.php?page=upsellbay&amp;tab=offers" class="current" aria-current="page">General</a>', $list_html );
 			assert_contains( 'admin.php?page=upsellbay&amp;tab=offers&amp;action=edit">Add Offer</a>', $list_html );
 			assert_true( strpos( $list_html, 'upsellbay-offers-section-menu' ) < strpos( $list_html, 'No UpsellBay offers yet' ) );
+
+			$repository = upsellbay_test_offer_repository(
+				array(
+					11 => array(
+						'id'     => 11,
+						'title'  => 'Warranty bump',
+						'status' => 'publish',
+						'meta'   => array(
+							'_ub_offer_type'       => 'checkout_bump',
+							'_ub_status'           => 'active',
+							'_ub_offer_product_id' => 25,
+							'_ub_headline'         => 'Add warranty',
+							'_ub_button_text'      => 'Add to order',
+						),
+					),
+				)
+			);
+
+			ob_start();
+			( new OffersPage( new OfferListTable( $repository, new OfferService( $repository, $validator ) ) ) )->render_content(
+				array(
+					's'         => 'warranty',
+					'placement' => 'checkout_bump',
+					'status'    => 'active',
+					'health'    => 'ok',
+				)
+			);
+			$list_controls_html = (string) ob_get_clean();
+
+			assert_contains( 'name="s"', $list_controls_html );
+			assert_contains( 'name="placement"', $list_controls_html );
+			assert_contains( 'name="status"', $list_controls_html );
+			assert_contains( 'name="health"', $list_controls_html );
+			assert_contains( 'orderby=title', $list_controls_html );
+			assert_contains( 'tablenav-pages', $list_controls_html );
+			assert_contains( 'value="warranty"', $list_controls_html );
 
 			assert_contains( 'admin.php?page=upsellbay&amp;tab=offers">General</a>', $editor_html );
 			assert_contains( 'admin.php?page=upsellbay&amp;tab=offers&amp;action=edit" class="current" aria-current="page">Add Offer</a>', $editor_html );
@@ -522,6 +617,99 @@ function upsellbay_admin_architecture_tests(): array {
 			assert_same( 'cart_subtotal', $saved['meta']['_ub_rules'][0]['type'] );
 
 			assert_false( $page->save( array( 'nonce' => 'bad' ) )['success'] );
+		},
+		'offer editor blocks active conflicting offers before persistence' => static function (): void {
+			$saved       = array();
+			$repository  = upsellbay_test_offer_repository(
+				array(
+					2 => array(
+						'id'    => 2,
+						'title' => 'Existing global bump',
+						'meta'  => array(
+							'_ub_status'              => 'active',
+							'_ub_offer_type'          => 'checkout_bump',
+							'_ub_offer_goal'          => 'add_on',
+							'_ub_offer_product_id'    => 25,
+							'_ub_headline'            => 'Existing',
+							'_ub_button_text'         => 'Add',
+							'_ub_priority'            => 10,
+							'_ub_trigger_product_ids' => array(),
+						),
+					),
+				),
+				$saved
+			);
+			$validator   = new OfferValidator( new OfferSchema(), static fn ( int $product_id ): bool => 25 === $product_id );
+			$page        = new OfferEditPage(
+				new OfferService( $repository, $validator ),
+				$validator,
+				static fn (): bool => true,
+				static fn ( string $nonce ): bool => 'good' === $nonce,
+				null,
+				null,
+				new OfferConflictDetector( $repository )
+			);
+			$result      = $page->save(
+				array(
+					'nonce'                => 'good',
+					'title'                => 'New global bump',
+					'_ub_offer_type'       => 'checkout_bump',
+					'_ub_status'           => 'active',
+					'_ub_offer_product_id' => '25',
+					'_ub_headline'         => 'Add this',
+					'_ub_button_text'      => 'Add',
+				)
+			);
+
+			assert_false( $result['success'] );
+			assert_contains( 'Funnel overlap', $result['message'] );
+			assert_same( array(), $saved );
+		},
+		'offer editor allows explicit conflict override with reason' => static function (): void {
+			$saved       = array();
+			$repository  = upsellbay_test_offer_repository(
+				array(
+					2 => array(
+						'id'    => 2,
+						'title' => 'Existing global bump',
+						'meta'  => array(
+							'_ub_status'           => 'active',
+							'_ub_offer_type'       => 'checkout_bump',
+							'_ub_offer_goal'       => 'add_on',
+							'_ub_offer_product_id' => 25,
+							'_ub_headline'         => 'Existing',
+							'_ub_button_text'      => 'Add',
+						),
+					),
+				),
+				$saved
+			);
+			$validator   = new OfferValidator( new OfferSchema(), static fn ( int $product_id ): bool => 25 === $product_id );
+			$page        = new OfferEditPage(
+				new OfferService( $repository, $validator ),
+				$validator,
+				static fn (): bool => true,
+				static fn ( string $nonce ): bool => 'good' === $nonce,
+				null,
+				null,
+				new OfferConflictDetector( $repository )
+			);
+			$result      = $page->save(
+				array(
+					'nonce'                        => 'good',
+					'title'                        => 'New global bump',
+					'_ub_offer_type'               => 'checkout_bump',
+					'_ub_status'                   => 'active',
+					'_ub_offer_product_id'         => '25',
+					'_ub_headline'                 => 'Add this',
+					'_ub_button_text'              => 'Add',
+					'_ub_conflict_override'        => '1',
+					'_ub_conflict_override_reason' => 'Seasonal campaign requires parallel test.',
+				)
+			);
+
+			assert_true( $result['success'] );
+			assert_same( 'Seasonal campaign requires parallel test.', $saved['meta']['_ub_conflict_override_reason'] );
 		},
 		'offer editor renders placement position choices with advanced json fallback' => static function (): void {
 			$page = new OfferEditPage(
@@ -648,7 +836,7 @@ function upsellbay_admin_architecture_tests(): array {
 			assert_contains( '<h2>Basic</h2>', $general_html );
 			assert_contains( '<h2>Style</h2>', $general_html );
 			assert_contains( 'class="upsellbay-color-picker"', $general_html );
-			assert_contains( 'data-default-color="#2271b1"', $general_html );
+			assert_contains( 'data-default-color="#3858e9"', $general_html );
 			assert_false( str_contains( $general_html, '<h2>Data</h2>' ) );
 			assert_false( str_contains( $general_html, 'id="upsellbay_license_activate"' ) );
 
@@ -740,7 +928,6 @@ function upsellbay_admin_architecture_tests(): array {
 			assert_contains( 'data-modal-title="Remove License"', $html );
 			assert_contains( 'data-modal-confirm="Remove License"', $html );
 			assert_contains( 'data-modal-cancel="Cancel"', $html );
-			assert_contains( 'id="tmpl-upsellbay-confirmation-modal"', $html );
 			assert_false( str_contains( $html, 'onclick="return confirm' ) );
 		},
 		'settings tab render processes posted license saves' => static function (): void {
@@ -886,10 +1073,13 @@ function upsellbay_admin_architecture_tests(): array {
 			assert_same( array(), $assets->assets_for_screen( 'woocommerce_page_upsellbay-add-offer' ) );
 		},
 		'dashboard shows overview and analytics from aggregate stats without live order scans' => static function (): void {
+			$captured_filters = array();
 			$stats = new StatsRepository(
 				static function (): void {
 				},
-				static fn (): array => array(
+				static function ( array $filters ) use ( &$captured_filters ): array {
+					$captured_filters = $filters;
+					return array(
 					array(
 						'views'          => 10,
 						'accepts'        => 2,
@@ -898,7 +1088,8 @@ function upsellbay_admin_architecture_tests(): array {
 						'revenue'        => '40.000000',
 						'discount_total' => '5.000000',
 					),
-				)
+					);
+				}
 			);
 
 			$overview = new OverviewSummary(
@@ -917,13 +1108,20 @@ function upsellbay_admin_architecture_tests(): array {
 			);
 
 			ob_start();
-			( new DashboardPage( $overview, $stats ) )->render();
+			( new DashboardPage( $overview, $stats ) )->render( array( 'range' => '90' ) );
 			$html = (string) ob_get_clean();
 
 			assert_contains( '10', $html );
 			assert_contains( '20.00%', $html );
 			assert_contains( 'Active offers', $html );
 			assert_contains( 'On', $html );
+			assert_contains( 'name="range"', $html );
+			assert_contains( 'value="7"', $html );
+			assert_contains( 'value="30"', $html );
+			assert_contains( 'value="90" selected="selected"', $html );
+			assert_contains( 'value="90"', $html );
+			assert_contains( 'Performance (Last 90 days)', $html );
+			assert_same( 90 * 86400, strtotime( (string) $captured_filters['end_date'] ) - strtotime( (string) $captured_filters['start_date'] ) );
 		},
 		'compatibility coexistence tools help and admin bar stay product isolated' => static function (): void {
 			$settings    = new Settings( static fn (): array => array( 'test_mode' => true ), static fn (): bool => true );

@@ -1,0 +1,74 @@
+[
+  {
+    "id": "rules-none",
+    "description": "No rules configured, match mode any",
+    "matchMode": "any",
+    "rules": [],
+    "expectedMatch": true
+  },
+  {
+    "id": "rules-cart-product-match",
+    "description": "Rule: cart_product matches",
+    "matchMode": "any",
+    "rules": [{"type": "cart_product", "value": "trigger-product-123"}],
+    "context": {"cartProducts": ["trigger-product-123"]},
+    "expectedMatch": true
+  },
+  {
+    "id": "rules-cart-product-no-match",
+    "description": "Rule: cart_product does not match",
+    "matchMode": "any",
+    "rules": [{"type": "cart_product", "value": "trigger-product-123"}],
+    "context": {"cartProducts": ["other-product-456"]},
+    "expectedMatch": false
+  },
+  {
+    "id": "rules-all-match",
+    "description": "Match mode ALL: both rules match",
+    "matchMode": "all",
+    "rules": [
+      {"type": "cart_category", "value": "clothing"},
+      {"type": "user_role", "value": "customer"}
+    ],
+    "context": {"cartCategories": ["clothing"], "userRole": "customer"},
+    "expectedMatch": true
+  },
+  {
+    "id": "rules-all-partial-match",
+    "description": "Match mode ALL: only one rule matches",
+    "matchMode": "all",
+    "rules": [
+      {"type": "cart_category", "value": "clothing"},
+      {"type": "user_role", "value": "customer"}
+    ],
+    "context": {"cartCategories": ["clothing"], "userRole": "guest"},
+    "expectedMatch": false
+  },
+  {
+    "id": "rules-any-partial-match",
+    "description": "Match mode ANY: only one rule matches",
+    "matchMode": "any",
+    "rules": [
+      {"type": "cart_category", "value": "clothing"},
+      {"type": "user_role", "value": "customer"}
+    ],
+    "context": {"cartCategories": ["clothing"], "userRole": "guest"},
+    "expectedMatch": true
+  },
+  {
+    "id": "rules-cart-subtotal",
+    "description": "Rule: cart_subtotal >= 100",
+    "matchMode": "any",
+    "rules": [{"type": "cart_subtotal", "operator": ">=", "value": 100}],
+    "context": {"cartSubtotal": 120},
+    "expectedMatch": true
+  },
+  {
+    "id": "rules-exclude-product",
+    "description": "Rule: exclude if product in cart",
+    "matchMode": "all",
+    "rules": [{"type": "exclude_if_product_in_cart", "value": "avoid-me-123"}],
+    "context": {"cartProducts": ["avoid-me-123", "other-product-456"]},
+    "expectedMatch": false
+  }
+]

@@ -1,0 +1,46 @@
+[
+  {
+    "id": "context-product-page-mobile",
+    "description": "Product page on mobile viewport",
+    "placement": "product",
+    "viewport": "mobile",
+    "sessionState": "first_view",
+    "expectedRender": true
+  },
+  {
+    "id": "context-cart-dismissed",
+    "description": "Cart offer previously dismissed in session",
+    "placement": "cart",
+    "viewport": "desktop",
+    "sessionState": "dismissed",
+    "expectedRender": false
+  },
+  {
+    "id": "context-checkout-accepted",
+    "description": "Checkout offer already accepted",
+    "placement": "checkout",
+    "viewport": "desktop",
+    "sessionState": "accepted",
+    "expectedRender": false
+  },
+  {
+    "id": "context-thankyou-guest",
+    "description": "Thank you offer for guest user with valid order key",
+    "placement": "thankyou",
+    "viewport": "desktop",
+    "sessionState": "first_view",
+    "userType": "guest",
+    "orderState": "completed",
+    "expectedRender": true
+  },
+  {
+    "id": "context-thankyou-invalid-order",
+    "description": "Thank you offer on failed order",
+    "placement": "thankyou",
+    "viewport": "desktop",
+    "sessionState": "first_view",
+    "userType": "customer",
+    "orderState": "failed",
+    "expectedRender": false
+  }
+]

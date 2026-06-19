@@ -97,6 +97,7 @@ function upsellbay_foundation_tests(): array {
 			assert_true( $normalized['placements']['checkout_bump'] );
 			assert_false( isset( $normalized['placements']['unknown'] ) );
 			assert_true( $normalized['debug_logging'] );
+			assert_same( '#3858e9', $normalized['style_tokens']['accent_color'] );
 			assert_same( 'unknown', $normalized['license']['status'] );
 		},
 		'platform dependency checks return actionable failures' => static function (): void {
@@ -133,8 +134,9 @@ function upsellbay_foundation_tests(): array {
 			$scheduler->ensure_recurring_jobs();
 			$scheduler->ensure_recurring_jobs();
 
-			assert_same( 3, count( $scheduled ) );
+			assert_same( 4, count( $scheduled ) );
 			assert_true( isset( $scheduled[ Constants::ACTION_SCHEDULER_GROUP . ':upsellbay_refresh_analytics' ] ) );
+			assert_true( isset( $scheduled[ Constants::ACTION_SCHEDULER_GROUP . ':upsellbay_prune_logs' ] ) );
 
 			$scheduler->unschedule_all();
 			assert_same( 0, count( $scheduled ) );
@@ -170,7 +172,7 @@ function upsellbay_foundation_tests(): array {
 
 			assert_same( 1, $schema_runs );
 			assert_same( 1, $defaults );
-			assert_same( 3, $schedules );
+			assert_same( 4, $schedules );
 		},
 		'license client masks keys and fails open on cached valid status' => static function (): void {
 			$client = new LicenseClient(

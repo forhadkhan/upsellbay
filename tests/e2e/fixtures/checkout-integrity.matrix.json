@@ -1,0 +1,48 @@
+[
+  {
+    "id": "integrity-checkout-percent-discount",
+    "description": "Checkout with 10% discount on $50 add-on, verifies totals",
+    "checkoutMode": "classic",
+    "baseCartTotal": 100,
+    "offerProductPrice": 50,
+    "discountType": "percent",
+    "discountValue": 10,
+    "expectedOfferPrice": 45,
+    "expectedNewCartTotal": 145
+  },
+  {
+    "id": "integrity-checkout-fixed-amount-discount",
+    "description": "Checkout with $10 off on $50 add-on, verifies totals",
+    "checkoutMode": "classic",
+    "baseCartTotal": 100,
+    "offerProductPrice": 50,
+    "discountType": "fixed_amount",
+    "discountValue": 10,
+    "expectedOfferPrice": 40,
+    "expectedNewCartTotal": 140
+  },
+  {
+    "id": "integrity-block-checkout-parity",
+    "description": "Block checkout parity for $15 fixed price offer",
+    "checkoutMode": "block",
+    "baseCartTotal": 100,
+    "offerProductPrice": 50,
+    "discountType": "fixed_price",
+    "discountValue": 15,
+    "expectedOfferPrice": 15,
+    "expectedNewCartTotal": 115
+  },
+  {
+    "id": "integrity-coupon-stacking",
+    "description": "Checkout with 10% store coupon AND 10% offer discount",
+    "checkoutMode": "classic",
+    "baseCartTotal": 100,
+    "offerProductPrice": 50,
+    "storeCoupon": {"type": "percent", "value": 10},
+    "discountType": "percent",
+    "discountValue": 10,
+    "expectedBaseDiscounted": 90,
+    "expectedOfferPrice": 40.5,
+    "expectedNewCartTotal": 130.5
+  }
+]

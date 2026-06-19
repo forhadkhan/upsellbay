@@ -1,0 +1,82 @@
+[
+  {
+    "id": "tier1-baseline-active",
+    "description": "Baseline active product page offer with simple in-stock product",
+    "status": "active",
+    "placement": "product",
+    "goal": "add_on",
+    "productState": "simple_in_stock",
+    "expectedValidation": "pass",
+    "expectedVisibility": true
+  },
+  {
+    "id": "tier1-baseline-draft",
+    "description": "Draft product page offer",
+    "status": "draft",
+    "placement": "product",
+    "goal": "add_on",
+    "productState": "simple_in_stock",
+    "expectedValidation": "pass",
+    "expectedVisibility": false
+  },
+  {
+    "id": "tier1-baseline-paused",
+    "description": "Paused product page offer",
+    "status": "paused",
+    "placement": "product",
+    "goal": "add_on",
+    "productState": "simple_in_stock",
+    "expectedValidation": "pass",
+    "expectedVisibility": false
+  },
+  {
+    "id": "tier1-cart-placement",
+    "description": "Active cart offer",
+    "status": "active",
+    "placement": "cart",
+    "goal": "upgrade",
+    "productState": "simple_in_stock",
+    "expectedValidation": "pass",
+    "expectedVisibility": true
+  },
+  {
+    "id": "tier1-checkout-placement",
+    "description": "Active checkout bump",
+    "status": "active",
+    "placement": "checkout",
+    "goal": "protection",
+    "productState": "simple_in_stock",
+    "expectedValidation": "pass",
+    "expectedVisibility": true
+  },
+  {
+    "id": "tier1-thankyou-placement",
+    "description": "Active thank you offer",
+    "status": "active",
+    "placement": "thankyou",
+    "goal": "follow_on",
+    "productState": "simple_in_stock",
+    "expectedValidation": "pass",
+    "expectedVisibility": true
+  },
+  {
+    "id": "tier2-product-out-of-stock",
+    "description": "Product out of stock on active offer should not show",
+    "status": "active",
+    "placement": "product",
+    "goal": "add_on",
+    "productState": "out_of_stock",
+    "expectedValidation": "pass",
+    "expectedVisibility": false
+  },
+  {
+    "id": "tier2-product-invalid",
+    "description": "Invalid product ID",
+    "status": "active",
+    "placement": "cart",
+    "goal": "upgrade",
+    "productState": "invalid",
+    "expectedValidation": "fail",
+    "expectedVisibility": false
+  }
+]

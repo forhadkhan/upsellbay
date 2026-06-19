@@ -218,7 +218,7 @@ function upsellbay_developer_extensibility_tests(): array {
 			$renderer = new PlacementRenderer(
 				new OfferPrioritizer( new RuleEvaluator( new RuleParser() ), static fn (): bool => true, static fn (): int => 100 ),
 				new AnalyticsRecorder( new StatsRepository( static function (): void {}, static fn (): array => array() ) ),
-				array( 'checkout_bump' => new ClassicCheckoutBump() ),
+				array( 'checkout_bump' => new ClassicCheckoutBump( new DiscountCalculator() ) ),
 				static fn (): string => '2026-05-30'
 			);
 			assert_contains( '<!-- agency -->', $renderer->render( 'checkout_bump', array( upsellbay_phase4_offer( 3, 'checkout_bump', 50, 1 ) ) ) );

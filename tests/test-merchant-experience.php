@@ -120,7 +120,7 @@ function upsellbay_merchant_experience_tests(): array {
 				new OfferDefaults()
 			);
 
-			assert_same( array( 'basics', 'targeting', 'discount', 'placement', 'schedule', 'advanced' ), array_keys( $page->sections() ) );
+			assert_same( array( 'basics', 'targeting', 'recommendations', 'discount', 'placement', 'schedule', 'advanced' ), array_keys( $page->sections() ) );
 			assert_false( $page->sections()['advanced']['collapsed'] );
 			assert_contains( 'server-side', $page->help_tips()['discount'] );
 			assert_same( 'upsellbay-offer-product-id', $page->accessibility()['offer_product_id']['label_for'] );
