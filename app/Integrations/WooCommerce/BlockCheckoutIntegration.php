@@ -8,8 +8,9 @@
 declare(strict_types=1);
 
 namespace WPAnchorBay\UpsellBay\Integrations\WooCommerce;
+
 // Exit if accessed directly.
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
@@ -43,16 +44,21 @@ final class BlockCheckoutIntegration {
 			return;
 		}
 
-		$asset_file = dirname( Constants::plugin_file() ) . '/assets/frontend/block-checkout.asset.php';
-		$asset      = file_exists( $asset_file ) ? require $asset_file : array(
+		$asset_file   = dirname( Constants::plugin_file() ) . '/assets/frontend/block-checkout.asset.php';
+		$asset        = file_exists( $asset_file ) ? require $asset_file : array(
 			'dependencies' => array(),
 			'version'      => Constants::VERSION,
 		);
+		$dependencies = is_array( $asset['dependencies'] ?? null ) ? $asset['dependencies'] : array();
+
+		if ( ! in_array( 'wc-blocks-checkout', $dependencies, true ) ) {
+			$dependencies[] = 'wc-blocks-checkout';
+		}
 
 		wp_enqueue_script(
 			Constants::asset_handle( 'block-checkout' ),
 			plugins_url( 'assets/frontend/block-checkout.js', Constants::plugin_file() ),
-			$asset['dependencies'] ?? array(),
+			$dependencies,
 			$asset['version'] ?? Constants::VERSION,
 			true
 		);

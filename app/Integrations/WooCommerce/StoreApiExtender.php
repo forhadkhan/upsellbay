@@ -8,8 +8,9 @@
 declare(strict_types=1);
 
 namespace WPAnchorBay\UpsellBay\Integrations\WooCommerce;
+
 // Exit if accessed directly.
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
@@ -19,6 +20,7 @@ use WPAnchorBay\UpsellBay\Core\Settings;
 use WPAnchorBay\UpsellBay\Data\CartSession;
 use WPAnchorBay\UpsellBay\Data\OfferRepository;
 use WPAnchorBay\UpsellBay\Domain\Analytics\AnalyticsRecorder;
+use WPAnchorBay\UpsellBay\Domain\Discounts\DiscountCalculator;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferPrioritizer;
 use Automattic\WooCommerce\StoreApi\Schemas\V1\CartSchema;
 use Automattic\WooCommerce\StoreApi\Schemas\V1\CheckoutSchema;
@@ -65,22 +67,31 @@ final class StoreApiExtender {
 	private Settings $settings;
 
 	/**
+	 * Discount calculator.
+	 *
+	 * @var DiscountCalculator
+	 */
+	private DiscountCalculator $discounts;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param OfferRepository   $offers      Offer repository.
-	 * @param OfferPrioritizer  $prioritizer Offer prioritizer.
-	 * @param CartSession       $session     Cart session.
-	 * @param AnalyticsRecorder $analytics   Analytics recorder.
-	 * @param Settings|null     $settings    Plugin settings.
+	 * @param OfferRepository         $offers      Offer repository.
+	 * @param OfferPrioritizer        $prioritizer Offer prioritizer.
+	 * @param CartSession             $session     Cart session.
+	 * @param AnalyticsRecorder       $analytics   Analytics recorder.
+	 * @param Settings|null           $settings    Plugin settings.
+	 * @param DiscountCalculator|null $discounts Discount calculator.
 	 */
-	public function __construct( OfferRepository $offers, OfferPrioritizer $prioritizer, CartSession $session, AnalyticsRecorder $analytics, ?Settings $settings = null ) {
+	public function __construct( OfferRepository $offers, OfferPrioritizer $prioritizer, CartSession $session, AnalyticsRecorder $analytics, ?Settings $settings = null, ?DiscountCalculator $discounts = null ) {
 		$this->offers      = $offers;
 		$this->prioritizer = $prioritizer;
 		$this->session     = $session;
 		$this->analytics   = $analytics;
 		$this->settings    = $settings ?? new Settings();
+		$this->discounts   = $discounts ?? new DiscountCalculator();
 	}
 
 	/**
@@ -106,7 +117,7 @@ final class StoreApiExtender {
 			return;
 		}
 
-		// Cart Endpoint Extender
+		// Cart Endpoint Extender.
 		woocommerce_store_api_register_endpoint_data(
 			array(
 				'endpoint'        => CartSchema::IDENTIFIER,
@@ -117,7 +128,7 @@ final class StoreApiExtender {
 			)
 		);
 
-		// Checkout Endpoint Extender
+		// Checkout Endpoint Extender.
 		woocommerce_store_api_register_endpoint_data(
 			array(
 				'endpoint'        => CheckoutSchema::IDENTIFIER,
@@ -253,7 +264,7 @@ final class StoreApiExtender {
 		foreach ( $selected as $offer ) {
 			$offer_id = (int) ( $offer['id'] ?? 0 );
 
-			// Record view analytics when exposed to the frontend via Store API
+			// Record view analytics when exposed to the frontend via Store API.
 			$this->analytics->record_view( $offer_id, $placement, $date );
 
 			$formatted_offers[] = $this->format_offer_for_api( $offer, $context );
@@ -275,7 +286,7 @@ final class StoreApiExtender {
 		$product      = function_exists( 'wc_get_product' ) ? wc_get_product( $product_id ) : null;
 		$product_name = is_object( $product ) && method_exists( $product, 'get_name' ) ? (string) $product->get_name() : '';
 
-		// Determine image
+		// Determine image.
 		$show_image = true === (bool) ( $meta['_ub_show_image'] ?? true );
 		$image_url  = '';
 		if ( $show_image && is_object( $product ) ) {
@@ -288,10 +299,10 @@ final class StoreApiExtender {
 			}
 		}
 
-		// Render reason label (e.g. "Special Offer")
+		// Render reason label, for example "Special Offer".
 		$reason_lbl_text = (string) ( $meta['_ub_reason_label'] ?? '' );
 
-		// Check if already in cart
+		// Check if already in cart.
 		$cart_product_ids = $context['cart_product_ids'] ?? array();
 		$in_cart          = in_array( $product_id, $cart_product_ids, true );
 
@@ -299,7 +310,7 @@ final class StoreApiExtender {
 			'id'           => (int) ( $offer['id'] ?? 0 ),
 			'title'        => (string) ( $offer['title'] ?? '' ),
 			'headline'     => (string) ( $meta['_ub_headline'] ?? ( $offer['title'] ?? '' ) ),
-			'body'         => wp_kses_post( (string) ( $meta['_ub_body'] ?? '' ) ),
+			'body'         => function_exists( 'wp_kses_post' ) ? wp_kses_post( (string) ( $meta['_ub_body'] ?? '' ) ) : strip_tags( (string) ( $meta['_ub_body'] ?? '' ), '<a><br><em><strong>' ),
 			'button_text'  => (string) ( $meta['_ub_button_text'] ?? __( 'Add', 'upsellbay' ) ),
 			'product_id'   => $product_id,
 			'product_name' => $product_name,
@@ -318,40 +329,28 @@ final class StoreApiExtender {
 	 * @return string
 	 */
 	private function get_offer_price_html( ?object $product, array $meta ): string {
-		if ( ! is_object( $product ) || ! method_exists( $product, 'get_price_html' ) ) {
+		if ( ! is_object( $product ) || ! method_exists( $product, 'get_price' ) ) {
 			return '';
 		}
 
-		$discount_type = (string) ( $meta['_ub_discount_type'] ?? 'none' );
-		$original_html = $product->get_price_html();
+		$original_price = (string) $product->get_price();
+		$original_html  = method_exists( $product, 'get_price_html' ) ? (string) $product->get_price_html() : $this->format_price( $original_price );
+		$discount       = $this->discounts->calculate( $original_price, $meta );
 
-		if ( 'none' === $discount_type || ! function_exists( 'wc_price' ) ) {
+		if ( null === $discount || $discount['offer_price'] === $discount['original_price'] ) {
 			return $original_html;
 		}
 
-		// Fallback to simple HTML generation mimicking PlacementRenderer
-		$price = (float) $product->get_price();
-		if ( $price <= 0 ) {
-			return $original_html;
-		}
+		return '<del aria-hidden="true">' . $this->format_price( $discount['original_price'] ) . '</del> <ins>' . $this->format_price( $discount['offer_price'] ) . '</ins>';
+	}
 
-		$amount = (float) ( $meta['_ub_discount_amount'] ?? 0.0 );
-		if ( $amount <= 0 ) {
-			return $original_html;
-		}
-
-		$discounted_price = $price;
-		if ( 'percent' === $discount_type ) {
-			$discounted_price = $price - ( $price * ( $amount / 100 ) );
-		} elseif ( 'fixed_amount' === $discount_type ) {
-			$discounted_price = $price - $amount;
-		} elseif ( 'fixed_price' === $discount_type ) {
-			$discounted_price = $amount;
-		}
-
-		$discounted_price = max( 0.0, $discounted_price );
-
-		return '<del aria-hidden="true">' . wc_price( $price ) . '</del> <ins>' . wc_price( $discounted_price ) . '</ins>';
+	/**
+	 * Format a price for Store API offer payloads.
+	 *
+	 * @param string $price Price.
+	 */
+	private function format_price( string $price ): string {
+		return function_exists( 'wc_price' ) ? wc_price( $price ) : '$' . number_format( (float) $price, 2, '.', '' );
 	}
 
 	/**
@@ -373,7 +372,7 @@ final class StoreApiExtender {
 		);
 
 		if ( function_exists( 'get_the_ID' ) && get_the_ID() ) {
-			$viewed_product_id              = (int) get_the_ID();
+			$viewed_product_id              = get_the_ID();
 			$context['viewed_product_id']   = $viewed_product_id;
 			$context['viewed_category_ids'] = $this->product_term_ids( $viewed_product_id, 'product_cat' );
 			$context['viewed_tag_ids']      = $this->product_term_ids( $viewed_product_id, 'product_tag' );
