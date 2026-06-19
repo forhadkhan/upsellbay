@@ -12,7 +12,7 @@
 	gap: 16px;
 	justify-content: space-between;
 	min-height: 60px;
-	padding: 0 20px;
+	padding: 0px 30px;
 }
 
 .upsellbay-layout-header__heading {
@@ -37,6 +37,7 @@
 
 .wrap.upsellbay-admin {
 	margin-top: 0;
+	padding: 0px 10px;
 }
 
 .upsellbay-license-banner-slot:empty,
@@ -99,8 +100,9 @@
 	gap: 24px;
 	margin: 0;
 	overflow-x: auto;
-	padding: 0 20px;
+	padding: 0 30px;
 	white-space: nowrap;
+	height: 41px;
 }
 
 .upsellbay-admin .upsellbay-tabs .nav-tab {
@@ -113,7 +115,7 @@
 	font-weight: 500;
 	line-height: 1.4;
 	margin: 0;
-	padding: 16px 0 13px;
+	padding: 10px 0px 10px;
 	text-decoration: none;
 }
 
@@ -393,7 +395,7 @@
 	background: #fff;
 	border: 1px solid #c3c4c7;
 	border-top: 0;
-	box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 	display: none;
 	left: 0;
 	max-height: 250px;
@@ -582,15 +584,15 @@
 	transition: transform 0.15s ease;
 }
 
-.upsellbay-placement-toggle input:checked + .upsellbay-placement-toggle__switch {
+.upsellbay-placement-toggle input:checked+.upsellbay-placement-toggle__switch {
 	background: #3858e9;
 }
 
-.upsellbay-placement-toggle input:checked + .upsellbay-placement-toggle__switch::after {
+.upsellbay-placement-toggle input:checked+.upsellbay-placement-toggle__switch::after {
 	transform: translateX(18px);
 }
 
-.upsellbay-placement-toggle input:focus + .upsellbay-placement-toggle__switch {
+.upsellbay-placement-toggle input:focus+.upsellbay-placement-toggle__switch {
 	box-shadow: 0 0 0 2px #fff, 0 0 0 4px #3858e9;
 }
 
@@ -619,7 +621,7 @@
 }
 
 .upsellbay-placement-card input:disabled,
-.upsellbay-placement-card input:disabled + .upsellbay-placement-card__control-label {
+.upsellbay-placement-card input:disabled+.upsellbay-placement-card__control-label {
 	opacity: 0.5;
 	cursor: not-allowed;
 }
@@ -631,10 +633,10 @@
 }
 
 /* Hide third-party admin notices on UpsellBay pages */
-#wpbody-content > .notice:not(.upsellbay-notice):not(.upsellbay-page-notice),
-#wpbody-content > .update-nag:not(.upsellbay-notice):not(.upsellbay-page-notice),
-#wpbody-content > .error:not(.upsellbay-notice):not(.upsellbay-page-notice),
-#wpbody-content > .updated:not(.upsellbay-notice):not(.upsellbay-page-notice) {
+#wpbody-content>.notice:not(.upsellbay-notice):not(.upsellbay-page-notice),
+#wpbody-content>.update-nag:not(.upsellbay-notice):not(.upsellbay-page-notice),
+#wpbody-content>.error:not(.upsellbay-notice):not(.upsellbay-page-notice),
+#wpbody-content>.updated:not(.upsellbay-notice):not(.upsellbay-page-notice) {
 	display: none !important;
 }
 
