@@ -489,9 +489,18 @@ window.jQuery(function ($) {
   function initPlacementConfig() {
     const $textarea = $('#upsellbay-_ub_placement_config');
     const $position = $('[data-upsellbay-placement-position]');
-    if (!$textarea.length || !$position.length) {
+    const $offerType = $('#upsellbay-_ub_offer_type');
+
+    if (!$textarea.length || !$position.length || !$offerType.length) {
       return;
     }
+
+    const offerTypeToPositions = {
+      'checkout_bump': ['before_submit'],
+      'product_upsell': ['after_add_to_cart'],
+      'cart_crosssell': ['after_cart_table'],
+      'thankyou_offer': ['order_received_actions']
+    };
 
     function parseConfig() {
       try {
@@ -522,6 +531,31 @@ window.jQuery(function ($) {
       );
     }
 
+    function filterPositions() {
+      const selectedType = $offerType.val();
+      const allowedPositions = offerTypeToPositions[selectedType] || [];
+      const currentPos = $position.val();
+      let hasValidSelection = false;
+
+      $position.find('option').each(function() {
+        const val = $(this).val();
+        const isStandard = Object.values(offerTypeToPositions).flat().includes(val);
+        
+        if (isStandard && !allowedPositions.includes(val)) {
+          $(this).prop('disabled', true).hide();
+        } else {
+          $(this).prop('disabled', false).show();
+          if (val === currentPos) {
+             hasValidSelection = true;
+          }
+        }
+      });
+      
+      if (!hasValidSelection && allowedPositions.length > 0) {
+         $position.val(allowedPositions[0]).trigger('change');
+      }
+    }
+
     function syncSelectFromTextarea() {
       const config = parseConfig();
       if (!config || !config.position) {
@@ -530,6 +564,7 @@ window.jQuery(function ($) {
 
       ensurePositionOption(config.position);
       $position.val(config.position);
+      filterPositions();
     }
 
     $position.on('change', function () {
@@ -543,7 +578,12 @@ window.jQuery(function ($) {
       syncSelectFromTextarea();
     });
 
+    $offerType.on('change', function() {
+      filterPositions();
+    });
+
     syncSelectFromTextarea();
+    filterPositions();
   }
 
   function initVisualBuilder(fieldId, isRules) {

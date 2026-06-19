@@ -21,6 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since 1.0.0
  */
 final class OffersPage {
+
 	/**
 	 * Offer list table.
 	 *
@@ -57,7 +58,7 @@ final class OffersPage {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param array<string, mixed> $filters Filters.
+	 * @param  array<string, mixed> $filters Filters.
 	 * @return array<int, array<string, mixed>>
 	 */
 	public function rows( array $filters = array() ): array {
@@ -133,16 +134,16 @@ final class OffersPage {
 		echo '<table class="wp-list-table widefat fixed striped table-view-list upsellbay-offers-table">';
 		echo '<thead><tr>';
 		foreach (
-			array(
-				'title'              => __( 'Offer', 'upsellbay' ),
-				'placement'          => __( 'Placement', 'upsellbay' ),
-				'status'             => __( 'Status', 'upsellbay' ),
-				'health'             => __( 'Health', 'upsellbay' ),
-				'priority'           => __( 'Priority', 'upsellbay' ),
-				'views'              => __( 'Views', 'upsellbay' ),
-				'accepts'            => __( 'Accepts', 'upsellbay' ),
-				'attributed_revenue' => __( 'Revenue', 'upsellbay' ),
-			) as $column => $heading
+		array(
+			'title'              => __( 'Offer', 'upsellbay' ),
+			'placement'          => __( 'Placement', 'upsellbay' ),
+			'status'             => __( 'Status', 'upsellbay' ),
+			'health'             => __( 'Health', 'upsellbay' ),
+			'priority'           => __( 'Priority', 'upsellbay' ),
+			'views'              => __( 'Views', 'upsellbay' ),
+			'accepts'            => __( 'Accepts', 'upsellbay' ),
+			'attributed_revenue' => __( 'Revenue', 'upsellbay' ),
+		) as $column => $heading
 		) {
 			$this->render_column_heading( $column, $heading, $filters );
 		}
@@ -179,7 +180,7 @@ final class OffersPage {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param array<string, mixed> $request Request data.
+	 * @param  array<string, mixed> $request Request data.
 	 * @return array<string, mixed>
 	 */
 	private function filters_from_request( array $request ): array {
@@ -206,9 +207,9 @@ final class OffersPage {
 		echo '<form method="get" class="upsellbay-offers-table-controls">';
 		echo '<input type="hidden" name="page" value="upsellbay">';
 		echo '<input type="hidden" name="tab" value="offers">';
-		
+
 		echo '<div class="tablenav top" style="padding-bottom: 10px;">';
-		
+
 		echo '<div class="alignleft actions">';
 		$this->select_filter( 'placement', __( 'All placements', 'upsellbay' ), $this->placement_options(), (string) $filters['placement'] );
 		$this->select_filter( 'status', __( 'All statuses', 'upsellbay' ), $this->status_options(), (string) $filters['status'] );
@@ -221,7 +222,7 @@ final class OffersPage {
 		}
 
 		echo '</div>';
-		
+
 		echo '<div class="alignright actions">';
 		echo '<label class="screen-reader-text" for="upsellbay-offer-search-input">' . esc_html__( 'Search offers', 'upsellbay' ) . '</label>';
 		echo '<input type="search" id="upsellbay-offer-search-input" name="s" value="' . esc_attr( (string) $filters['search'] ) . '"> ';
@@ -313,7 +314,7 @@ final class OffersPage {
 		$current     = min( max( 1, (int) ( $filters['paged'] ?? 1 ) ), $total_pages );
 		$one_page    = $total_pages <= 1 ? ' one-page' : '';
 
-		echo '<div class="tablenav-pages' . $one_page . '">';
+		echo '<div class="tablenav-pages' . esc_attr( $one_page ) . '">';
 		/* translators: %s: number of offers. */
 		$item_label = 1 === $total_items ? __( '%s item', 'upsellbay' ) : __( '%s items', 'upsellbay' );
 		echo '<span class="displaying-num">' . esc_html( sprintf( $item_label, number_format_i18n( $total_items ) ) ) . '</span> ';
@@ -433,7 +434,7 @@ final class OffersPage {
 	/**
 	 * Format currency value.
 	 *
-	 * @param mixed $value Value to format.
+	 * @param  mixed $value Value to format.
 	 * @return string
 	 */
 	private function format_currency( $value ): string {

@@ -286,7 +286,7 @@ final class OfferEditPage {
 				'fields'    => array( '_ub_discount_type', '_ub_discount_value' ),
 			),
 			'placement'       => array(
-				'label'     => __( 'Placement display', 'upsellbay' ),
+				'label'     => __( 'Display settings', 'upsellbay' ),
 				'collapsed' => false,
 				'fields'    => array( '_ub_show_image', '_ub_placement_config' ),
 			),
@@ -440,7 +440,7 @@ final class OfferEditPage {
 		$labels    = array(
 			'title'                        => __( 'Offer name', 'upsellbay' ),
 			'_ub_status'                   => __( 'Status', 'upsellbay' ),
-			'_ub_offer_type'               => __( 'Placement', 'upsellbay' ),
+			'_ub_offer_type'               => __( 'Offer type', 'upsellbay' ),
 			'_ub_offer_product_id'         => __( 'Offer product', 'upsellbay' ),
 			'_ub_headline'                 => __( 'Headline', 'upsellbay' ),
 			'_ub_body'                     => __( 'Body text', 'upsellbay' ),
@@ -450,7 +450,7 @@ final class OfferEditPage {
 			'_ub_discount_type'            => __( 'Discount type', 'upsellbay' ),
 			'_ub_discount_value'           => __( 'Discount value', 'upsellbay' ),
 			'_ub_show_image'               => __( 'Show product image', 'upsellbay' ),
-			'_ub_placement_config'         => __( 'Placement options', 'upsellbay' ),
+			'_ub_placement_config'         => __( 'Display position', 'upsellbay' ),
 			'_ub_start_at'                 => __( 'Start date', 'upsellbay' ),
 			'_ub_end_at'                   => __( 'End date', 'upsellbay' ),
 			'_ub_priority'                 => __( 'Priority', 'upsellbay' ),

@@ -9,15 +9,15 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-06-19T06:59:09+00:00\n"
+"POT-Creation-Date: 2026-06-19T23:04:17+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: upsellbay\n"
 
 #. Plugin Name of the plugin
 #: upsellbay.php
-#: app/Admin/AdminPage.php:154
-#: app/Admin/AdminPage.php:195
+#: app/Admin/AdminPage.php:168
+#: app/Admin/AdminPage.php:209
 #: app/Admin/AdminPageRegistrar.php:146
 #: app/Admin/AdminPageRegistrar.php:158
 #: app/Admin/AdminPageRegistrar.php:159
@@ -48,21 +48,21 @@ msgstr ""
 msgid "UpsellBay test mode"
 msgstr ""
 
-#: app/Admin/AdminPage.php:127
+#: app/Admin/AdminPage.php:141
 msgid "Close modal panel"
 msgstr ""
 
-#: app/Admin/AdminPage.php:156
+#: app/Admin/AdminPage.php:170
 msgid "Get Started"
 msgstr ""
 
-#: app/Admin/AdminPage.php:157
-#: app/Admin/AdminPage.php:203
+#: app/Admin/AdminPage.php:171
+#: app/Admin/AdminPage.php:217
 #: app/Admin/Offers/OfferSectionNavigation.php:65
 msgid "Add Offer"
 msgstr ""
 
-#: app/Admin/CompatibilityNotice.php:72
+#: app/Admin/CompatibilityNotice.php:73
 msgid "Compatibility guide"
 msgstr ""
 
@@ -71,7 +71,7 @@ msgid "Welcome to UpsellBay!"
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:71
-msgid "Increase your average order value instantly by creating your first highly-targeted upsell offer."
+msgid "Increase your average order value (AOV) instantly by creating your first highly-targeted upsell offer."
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:72
@@ -137,79 +137,75 @@ msgstr ""
 msgid "Performance (Last %d days)"
 msgstr ""
 
-#: app/Admin/Dashboard/DashboardPage.php:107
+#: app/Admin/Dashboard/DashboardPage.php:104
 msgid "Performance date range"
 msgstr ""
 
-#: app/Admin/Dashboard/DashboardPage.php:113
-msgid "Apply"
-msgstr ""
-
-#: app/Admin/Dashboard/DashboardPage.php:117
+#: app/Admin/Dashboard/DashboardPage.php:115
 #: app/Admin/Offers/OfferEditPage.php:787
-#: app/Admin/Offers/OffersPage.php:142
+#: app/Admin/Offers/OffersPage.php:143
 msgid "Views"
 msgstr ""
 
-#: app/Admin/Dashboard/DashboardPage.php:117
+#: app/Admin/Dashboard/DashboardPage.php:115
 msgid "Offer render events recorded in aggregate stats."
 msgstr ""
 
-#: app/Admin/Dashboard/DashboardPage.php:118
+#: app/Admin/Dashboard/DashboardPage.php:116
 #: app/Admin/Offers/OfferEditPage.php:788
-#: app/Admin/Offers/OffersPage.php:143
+#: app/Admin/Offers/OffersPage.php:144
 msgid "Accepts"
 msgstr ""
 
-#: app/Admin/Dashboard/DashboardPage.php:118
+#: app/Admin/Dashboard/DashboardPage.php:116
 msgid "Accepted offers recorded in aggregate stats."
 msgstr ""
 
-#: app/Admin/Dashboard/DashboardPage.php:119
+#: app/Admin/Dashboard/DashboardPage.php:117
 #: app/Admin/Offers/OfferEditPage.php:790
 msgid "Accept rate"
 msgstr ""
 
-#: app/Admin/Dashboard/DashboardPage.php:119
+#: app/Admin/Dashboard/DashboardPage.php:117
 msgid "Accepted offers divided by offer views for this period."
 msgstr ""
 
-#: app/Admin/Dashboard/DashboardPage.php:120
+#: app/Admin/Dashboard/DashboardPage.php:118
 #: app/Admin/Offers/OfferEditPage.php:793
 msgid "Attributed revenue"
 msgstr ""
 
-#: app/Admin/Dashboard/DashboardPage.php:120
+#: app/Admin/Dashboard/DashboardPage.php:118
 msgid "Revenue attributed to accepted offers in aggregate stats."
 msgstr ""
 
-#: app/Admin/Dashboard/DashboardPage.php:125
+#: app/Admin/Dashboard/DashboardPage.php:123
 #: app/Admin/Offers/OfferEditPage.php:789
 msgid "Dismissals"
 msgstr ""
 
-#: app/Admin/Dashboard/DashboardPage.php:126
+#: app/Admin/Dashboard/DashboardPage.php:124
 #: app/Admin/Offers/OfferEditPage.php:791
 msgid "Orders"
 msgstr ""
 
-#: app/Admin/Dashboard/DashboardPage.php:127
+#: app/Admin/Dashboard/DashboardPage.php:125
 msgid "Discount total"
 msgstr ""
 
-#: app/Admin/Dashboard/DashboardPage.php:128
+#: app/Admin/Dashboard/DashboardPage.php:126
 msgid "Revenue per attributed order"
 msgstr ""
 
-#: app/Admin/Dashboard/DashboardPage.php:164
+#: app/Admin/Dashboard/DashboardPage.php:162
 msgid "Last 7 days"
 msgstr ""
 
-#: app/Admin/Dashboard/DashboardPage.php:165
+#: app/Admin/Dashboard/DashboardPage.php:163
 msgid "Last 30 days"
 msgstr ""
 
-#: app/Admin/Dashboard/DashboardPage.php:166
+#: app/Admin/Dashboard/DashboardPage.php:164
 msgid "Last 90 days"
 msgstr ""
 
@@ -322,7 +318,7 @@ msgid "Discount"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:289
-msgid "Placement display"
+msgid "Display settings"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:294
@@ -384,17 +380,17 @@ msgid "Back to offers"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:424
-#: app/Admin/Offers/OffersPage.php:158
+#: app/Admin/Offers/OffersPage.php:159
 msgid "Delete Offer"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:424
-#: app/Admin/Offers/OffersPage.php:158
+#: app/Admin/Offers/OffersPage.php:159
 msgid "Are you sure you want to permanently delete this offer? This cannot be undone."
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:424
-#: app/Admin/Offers/OffersPage.php:158
+#: app/Admin/Offers/OffersPage.php:159
 #: app/Admin/Settings/LogsListTable.php:225
 #: app/Admin/Settings/LogsListTable.php:227
 #: app/Admin/Settings/LogsListTable.php:284
@@ -402,9 +398,10 @@ msgid "Delete"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:424
-#: app/Admin/Offers/OffersPage.php:158
+#: app/Admin/Offers/OffersPage.php:159
 #: app/Admin/Settings/LogsListTable.php:226
-#: app/Admin/Settings/SettingsPage.php:572
+#: app/Admin/Settings/SettingsPage.php:416
+#: app/Admin/Settings/SettingsPage.php:598
 msgid "Cancel"
 msgstr ""
 
@@ -417,17 +414,15 @@ msgid "Offer name"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:442
-#: app/Admin/Offers/OffersPage.php:139
+#: app/Admin/Offers/OffersPage.php:140
 #: app/Admin/Settings/LogsListTable.php:119
 #: app/Admin/Settings/LogsSectionRenderer.php:174
-#: app/Admin/Settings/SettingsPage.php:531
+#: app/Admin/Settings/SettingsPage.php:557
 msgid "Status"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:443
-#: app/Admin/Offers/OffersPage.php:138
-#: templates/admin/wizard.php:41
-msgid "Placement"
+msgid "Offer type"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:444
@@ -469,7 +464,7 @@ msgid "Show product image"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:453
-msgid "Placement options"
+msgid "Display position"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:454
@@ -481,7 +476,7 @@ msgid "End date"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:456
-#: app/Admin/Offers/OffersPage.php:141
+#: app/Admin/Offers/OffersPage.php:142
 msgid "Priority"
 msgstr ""
 
@@ -522,27 +517,27 @@ msgid "Select a primary target product above to see AI/WooCommerce product recom
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:481
-#: app/Admin/Offers/OffersPage.php:331
-#: app/Admin/Offers/OffersPage.php:349
-#: app/Admin/Settings/SettingsPage.php:695
+#: app/Admin/Offers/OffersPage.php:380
+#: app/Admin/Offers/OffersPage.php:398
+#: app/Admin/Settings/SettingsPage.php:722
 #: app/Domain/Offers/OfferSchema.php:93
 #: templates/admin/wizard.php:44
 msgid "Checkout bump"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:482
-#: app/Admin/Offers/OffersPage.php:332
-#: app/Admin/Offers/OffersPage.php:350
-#: app/Admin/Settings/SettingsPage.php:687
+#: app/Admin/Offers/OffersPage.php:381
+#: app/Admin/Offers/OffersPage.php:399
+#: app/Admin/Settings/SettingsPage.php:712
 #: app/Domain/Offers/OfferSchema.php:94
 #: templates/admin/wizard.php:45
 msgid "Product page offer"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:483
-#: app/Admin/Offers/OffersPage.php:333
-#: app/Admin/Offers/OffersPage.php:351
-#: app/Admin/Settings/SettingsPage.php:691
+#: app/Admin/Offers/OffersPage.php:382
+#: app/Admin/Offers/OffersPage.php:400
+#: app/Admin/Settings/SettingsPage.php:717
 #: templates/admin/wizard.php:46
 msgid "Cart offer"
 msgstr ""
@@ -561,18 +556,18 @@ msgid "Any rule"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:499
-#: app/Admin/Offers/OffersPage.php:367
+#: app/Admin/Offers/OffersPage.php:416
 msgid "Draft"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:500
-#: app/Admin/Offers/OffersPage.php:365
-#: app/Admin/Settings/SettingsPage.php:599
+#: app/Admin/Offers/OffersPage.php:414
+#: app/Admin/Settings/SettingsPage.php:625
 msgid "Active"
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:501
-#: app/Admin/Offers/OffersPage.php:366
+#: app/Admin/Offers/OffersPage.php:415
 msgid "Paused"
 msgstr ""
 
@@ -695,113 +690,122 @@ msgstr ""
 msgid "General"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:76
+#: app/Admin/Offers/OffersPage.php:77
 msgid "No UpsellBay offers yet"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:77
+#: app/Admin/Offers/OffersPage.php:78
 msgid "Create a checkout bump, product offer, cart offer, or thank-you follow-on offer when you are ready to test it."
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:80
+#: app/Admin/Offers/OffersPage.php:81
 msgid "Create offer"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:84
+#: app/Admin/Offers/OffersPage.php:85
 msgid "Open setup wizard"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:137
+#: app/Admin/Offers/OffersPage.php:138
 msgid "Offer"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:140
+#: app/Admin/Offers/OffersPage.php:139
+#: templates/admin/wizard.php:41
+msgid "Placement"
+msgstr ""
+
+#: app/Admin/Offers/OffersPage.php:141
 msgid "Health"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:144
+#: app/Admin/Offers/OffersPage.php:145
 msgid "Revenue"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:157
+#: app/Admin/Offers/OffersPage.php:158
 msgid "Edit"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:162
+#: app/Admin/Offers/OffersPage.php:163
 msgid "No conflicts"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:162
+#: app/Admin/Offers/OffersPage.php:163
 msgid "Placement crowding or funnel overlap detected"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:208
-#: app/Admin/Offers/OffersPage.php:210
-msgid "Search offers"
-msgstr ""
-
-#: app/Admin/Offers/OffersPage.php:213
+#: app/Admin/Offers/OffersPage.php:214
 msgid "All placements"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:214
+#: app/Admin/Offers/OffersPage.php:215
 #: app/Admin/Settings/LogsListTable.php:261
 msgid "All statuses"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:215
+#: app/Admin/Offers/OffersPage.php:216
 msgid "All health states"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:216
+#: app/Admin/Offers/OffersPage.php:217
 #: app/Admin/Settings/LogsListTable.php:271
 msgid "Filter"
 msgstr ""
 
+#: app/Admin/Offers/OffersPage.php:221
+msgid "Clear"
+msgstr ""
+
+#: app/Admin/Offers/OffersPage.php:227
+#: app/Admin/Offers/OffersPage.php:229
+msgid "Search offers"
+msgstr ""
+
 #. translators: %s: number of offers.
-#: app/Admin/Offers/OffersPage.php:284
+#: app/Admin/Offers/OffersPage.php:319
 #, php-format
 msgid "%s item"
 msgstr ""
 
 #. translators: %s: number of offers.
-#: app/Admin/Offers/OffersPage.php:284
+#: app/Admin/Offers/OffersPage.php:319
 #, php-format
 msgid "%s items"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:287
+#: app/Admin/Offers/OffersPage.php:327
 msgid "First page"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:288
+#: app/Admin/Offers/OffersPage.php:328
 msgid "Previous page"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:289
+#: app/Admin/Offers/OffersPage.php:331
 msgid "of"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:290
+#: app/Admin/Offers/OffersPage.php:337
 msgid "Next page"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:291
+#: app/Admin/Offers/OffersPage.php:338
 msgid "Last page"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:334
-#: app/Admin/Offers/OffersPage.php:352
-#: app/Admin/Settings/SettingsPage.php:699
+#: app/Admin/Offers/OffersPage.php:383
+#: app/Admin/Offers/OffersPage.php:401
+#: app/Admin/Settings/SettingsPage.php:727
 #: app/Domain/Offers/OfferSchema.php:96
 msgid "Thank-you offer"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:380
+#: app/Admin/Offers/OffersPage.php:429
 msgid "Healthy"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:381
+#: app/Admin/Offers/OffersPage.php:430
 msgid "Warnings"
 msgstr ""
 
@@ -819,7 +823,7 @@ msgid "Basic"
 msgstr ""
 
 #: app/Admin/Settings/DataSection.php:39
-#: app/Admin/Settings/SettingsPage.php:380
+#: app/Admin/Settings/SettingsPage.php:393
 #: app/Admin/Settings/SettingsSectionNavigation.php:65
 msgid "Data"
 msgstr ""
@@ -852,7 +856,7 @@ msgid "Date"
 msgstr ""
 
 #: app/Admin/Settings/LogsListTable.php:122
-#: app/Admin/Settings/SettingsPage.php:564
+#: app/Admin/Settings/SettingsPage.php:590
 msgid "Actions"
 msgstr ""
 
@@ -1039,190 +1043,217 @@ msgstr ""
 msgid "Choose where UpsellBay is allowed to render active, eligible offers. Individual offers still need matching placement settings."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:338
-msgid "Maximum offers to display for"
+#. translators: %s: placement label.
+#: app/Admin/Settings/SettingsPage.php:336
+#, php-format
+msgid "Enable %s"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:340
-msgid "Max offers"
+#: app/Admin/Settings/SettingsPage.php:352
+msgid "Max active offers"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:342
+#: app/Admin/Settings/SettingsPage.php:354
 msgid "Maximum number of offers to show simultaneously in this placement."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:349
+#: app/Admin/Settings/SettingsPage.php:362
 #: app/Admin/Settings/StyleSection.php:41
 msgid "Style"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:352
+#: app/Admin/Settings/SettingsPage.php:365
 msgid "Accent color"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:352
+#: app/Admin/Settings/SettingsPage.php:365
 msgid "Used for UpsellBay offer accents while preserving the theme and WooCommerce layout."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:354
+#: app/Admin/Settings/SettingsPage.php:367
 msgid "Button style"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:354
+#: app/Admin/Settings/SettingsPage.php:367
 msgid "Theme buttons inherit the storefront button styling. Outline keeps the offer action visually lighter."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:357
+#: app/Admin/Settings/SettingsPage.php:370
 msgid "Use theme buttons"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:358
+#: app/Admin/Settings/SettingsPage.php:371
 msgid "Outline"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:384
+#: app/Admin/Settings/SettingsPage.php:397
 msgid "Stats retention days"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:385
+#: app/Admin/Settings/SettingsPage.php:398
 msgid "Session retention days"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:386
+#: app/Admin/Settings/SettingsPage.php:399
 msgid "Log retention days"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:392
+#: app/Admin/Settings/SettingsPage.php:405
 msgid "Delete data on uninstall"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:392
+#: app/Admin/Settings/SettingsPage.php:405
 msgid "Keep this off unless the merchant explicitly wants plugin data removed during uninstall."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:392
+#: app/Admin/Settings/SettingsPage.php:405
 msgid "When enabled, uninstall cleanup can remove UpsellBay settings, offers, and aggregate stats instead of preserving them."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:402
+#: app/Admin/Settings/SettingsPage.php:408
+#: app/Admin/Settings/SettingsPage.php:416
+msgid "Clear All Data"
+msgstr ""
+
+#: app/Admin/Settings/SettingsPage.php:411
+msgid "Reset Application"
+msgstr ""
+
+#: app/Admin/Settings/SettingsPage.php:411
+msgid "This will permanently delete all UpsellBay data and reset the plugin to a fresh installation state."
+msgstr ""
+
+#: app/Admin/Settings/SettingsPage.php:416
+msgid "Are you sure you want to permanently delete all records, configurations, settings, generated data, analytics, offers and any other data stored by UpsellBay? This action is irreversible."
+msgstr ""
+
+#: app/Admin/Settings/SettingsPage.php:416
+msgid "Yes, Clear All Data"
+msgstr ""
+
+#: app/Admin/Settings/SettingsPage.php:417
+msgid "Warning: This action will permanently delete all offers, configurations, analytics, and session data. It cannot be undone."
+msgstr ""
+
+#: app/Admin/Settings/SettingsPage.php:428
 #: app/Admin/Settings/SettingsSectionNavigation.php:69
 msgid "License"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:531
+#: app/Admin/Settings/SettingsPage.php:557
 msgid "Shows the most recent license state returned by UpsellBay licensing."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:536
+#: app/Admin/Settings/SettingsPage.php:562
 msgid "Current Key"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:536
+#: app/Admin/Settings/SettingsPage.php:562
 msgid "Only a masked version is shown here. The full key stays stored in the protected license option."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:544
-#: app/Admin/Settings/SettingsPage.php:601
+#: app/Admin/Settings/SettingsPage.php:570
+#: app/Admin/Settings/SettingsPage.php:627
 msgid "Expired"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:547
+#: app/Admin/Settings/SettingsPage.php:573
 msgid "Expires"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:547
+#: app/Admin/Settings/SettingsPage.php:573
 msgid "The date your current license term ends according to the license server."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:553
+#: app/Admin/Settings/SettingsPage.php:579
 msgid "Plan"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:553
+#: app/Admin/Settings/SettingsPage.php:579
 msgid "The product plan currently associated with the active UpsellBay license."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:564
+#: app/Admin/Settings/SettingsPage.php:590
 msgid "Use these tools to verify the current license status or remove a stored key from this site."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:566
+#: app/Admin/Settings/SettingsPage.php:592
 msgid "Check License"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:569
+#: app/Admin/Settings/SettingsPage.php:595
 msgid "Reactivate"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:572
+#: app/Admin/Settings/SettingsPage.php:598
 msgid "Remove License"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:572
+#: app/Admin/Settings/SettingsPage.php:598
 msgid "Removing this license disconnects this site from UpsellBay updates and support checks until a new key is activated. Offers will continue running."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:578
+#: app/Admin/Settings/SettingsPage.php:604
 msgid "Activate New Key"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:578
+#: app/Admin/Settings/SettingsPage.php:604
 msgid "Paste a new UpsellBay license key here to replace the currently stored key without exposing it in normal option fields."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:581
+#: app/Admin/Settings/SettingsPage.php:607
 msgid "Activate License"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:582
+#: app/Admin/Settings/SettingsPage.php:608
 msgid "Leave blank to keep the existing key unchanged."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:600
+#: app/Admin/Settings/SettingsPage.php:626
 msgid "Inactive"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:602
+#: app/Admin/Settings/SettingsPage.php:628
 msgid "Invalid"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:603
+#: app/Admin/Settings/SettingsPage.php:629
 msgid "Dev Mode"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:604
+#: app/Admin/Settings/SettingsPage.php:630
 msgid "Server Error"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:605
+#: app/Admin/Settings/SettingsPage.php:631
 msgid "Unknown"
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:671
+#: app/Admin/Settings/SettingsPage.php:697
 msgid "How long aggregate, non-PII offer analytics are retained for dashboard reporting."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:672
+#: app/Admin/Settings/SettingsPage.php:698
 msgid "How long temporary offer session state is retained for shopper interactions such as dismissals."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:673
+#: app/Admin/Settings/SettingsPage.php:699
 msgid "How long UpsellBay operational logs are retained for troubleshooting."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:688
+#: app/Admin/Settings/SettingsPage.php:713
 msgid "Show offers on product pages as add-ons or frequently bought together suggestions."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:692
+#: app/Admin/Settings/SettingsPage.php:718
 msgid "Display cross-sell and threshold offers in the cart and mini-cart."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:696
+#: app/Admin/Settings/SettingsPage.php:723
 msgid "Render order bumps on the checkout page before the place order button."
 msgstr ""
 
-#: app/Admin/Settings/SettingsPage.php:700
+#: app/Admin/Settings/SettingsPage.php:728
 msgid "Present follow-on offers on the order received page after purchase."
 msgstr ""
 
@@ -1342,144 +1373,152 @@ msgstr ""
 msgid "UpsellBay Offer"
 msgstr ""
 
-#: app/Core/Plugin.php:557
-#: app/Core/Plugin.php:590
-#: app/Core/Plugin.php:624
+#: app/Core/Plugin.php:558
+#: app/Core/Plugin.php:591
+#: app/Core/Plugin.php:625
 msgid "You do not have permission to manage licenses."
 msgstr ""
 
-#: app/Core/Plugin.php:574
+#: app/Core/Plugin.php:575
 msgid "License activated successfully."
 msgstr ""
 
-#: app/Core/Plugin.php:596
+#: app/Core/Plugin.php:597
 msgid "License removed by user"
 msgstr ""
 
-#: app/Core/Plugin.php:607
+#: app/Core/Plugin.php:608
 msgid "Local license data removed."
 msgstr ""
 
 #. translators: %s: validity status
-#: app/Core/Plugin.php:634
+#: app/Core/Plugin.php:635
 #, php-format
 msgid "Manual license check performed. Status: %s"
 msgstr ""
 
-#: app/Core/Plugin.php:642
+#: app/Core/Plugin.php:643
 msgid "License check complete: valid."
 msgstr ""
 
-#: app/Core/Plugin.php:644
+#: app/Core/Plugin.php:645
 msgid "License check failed: inactive."
 msgstr ""
 
-#: app/Core/Plugin.php:660
+#: app/Core/Plugin.php:661
 msgid "You do not have permission to manage offers."
 msgstr ""
 
-#: app/Core/Plugin.php:671
+#: app/Core/Plugin.php:672
 msgid "Offer deleted."
 msgstr ""
 
-#: app/Core/Plugin.php:764
+#: app/Core/Plugin.php:687
+msgid "You do not have permission to manage data."
+msgstr ""
+
+#: app/Core/Plugin.php:695
+msgid "All UpsellBay data has been permanently deleted and reset to defaults."
+msgstr ""
+
+#: app/Core/Plugin.php:788
 msgid "Your UpsellBay license has expired. Renew your license to restore updates and support."
 msgstr ""
 
-#: app/Core/Plugin.php:765
+#: app/Core/Plugin.php:789
 msgid "The UpsellBay license key on this site is invalid. Please verify and re-enter your license key."
 msgstr ""
 
-#: app/Core/Plugin.php:766
+#: app/Core/Plugin.php:790
 msgid "UpsellBay could not verify your license because the license server is unreachable. Offers will keep running, but updates and support checks are suspended."
 msgstr ""
 
-#: app/Core/Plugin.php:767
+#: app/Core/Plugin.php:791
 msgid "UpsellBay license is not activated. Activate your license key to receive updates and support."
 msgstr ""
 
-#: app/Core/Plugin.php:781
+#: app/Core/Plugin.php:805
 msgid "Manage License"
 msgstr ""
 
-#: app/Core/Plugin.php:824
+#: app/Core/Plugin.php:848
 msgid "UpsellBay settings updated"
 msgstr ""
 
 #. translators: %d: offer ID
-#: app/Core/Plugin.php:843
+#: app/Core/Plugin.php:867
 #, php-format
 msgid "Offer #%d created"
 msgstr ""
 
 #. translators: %d: offer ID
-#: app/Core/Plugin.php:865
+#: app/Core/Plugin.php:889
 #, php-format
 msgid "Offer #%d updated"
 msgstr ""
 
 #. translators: %d: offer ID
-#: app/Core/Plugin.php:886
+#: app/Core/Plugin.php:910
 #, php-format
 msgid "Offer #%d deleted"
 msgstr ""
 
 #. translators: 1: offer ID, 2: placement
-#: app/Core/Plugin.php:908
+#: app/Core/Plugin.php:932
 #, php-format
 msgid "Offer #%1$d accepted at %2$s"
 msgstr ""
 
 #. translators: 1: offer ID, 2: placement
-#: app/Core/Plugin.php:932
+#: app/Core/Plugin.php:956
 #, php-format
 msgid "Offer #%1$d dismissed at %2$s"
 msgstr ""
 
 #. translators: 1: endpoint, 2: reason
-#: app/Core/Plugin.php:956
+#: app/Core/Plugin.php:980
 #, php-format
 msgid "API request to %1$s failed (%2$s)"
 msgstr ""
 
 #. translators: %s: license key suffix
-#: app/Core/Plugin.php:974
+#: app/Core/Plugin.php:998
 #, php-format
 msgid "License activated successfully: %s"
 msgstr ""
 
 #. translators: %s: error code
-#: app/Core/Plugin.php:1006
+#: app/Core/Plugin.php:1030
 #, php-format
 msgid "License activation failed: %s"
 msgstr ""
 
 #. translators: %s: error code
-#: app/Core/Plugin.php:1034
+#: app/Core/Plugin.php:1058
 #, php-format
 msgid "Background license check failed: %s"
 msgstr ""
 
 #. translators: 1: offer ID, 2: placement
-#: app/Core/Plugin.php:1053
+#: app/Core/Plugin.php:1077
 #, php-format
 msgid "Offer #%1$d rendered at %2$s"
 msgstr ""
 
 #. translators: 1: offer ID, 2: placement
-#: app/Core/Plugin.php:1081
+#: app/Core/Plugin.php:1105
 #, php-format
 msgid "Attribution written for Offer #%1$d at %2$s"
 msgstr ""
 
 #. translators: 1: order ID, 2: source order ID
-#: app/Core/Plugin.php:1107
+#: app/Core/Plugin.php:1131
 #, php-format
 msgid "Follow-on order #%1$d created from order #%2$d"
 msgstr ""
 
 #. translators: 1: offer ID, 2: date
-#: app/Core/Plugin.php:1132
+#: app/Core/Plugin.php:1156
 #, php-format
 msgid "Stats reconciled for Offer #%1$d on %2$s"
 msgstr ""
