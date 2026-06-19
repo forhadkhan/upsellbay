@@ -144,10 +144,7 @@ final class OffersPage {
 				'attributed_revenue' => __( 'Revenue', 'upsellbay' ),
 			) as $column => $heading
 		) {
-				$is_current = $column === (string) $filters['orderby'];
-				$sort_dir   = $is_current ? $filters['order'] : 'desc';
-				$classes    = 'manage-column column-' . $column . ( $is_current ? ' sorted ' : ' sortable ' ) . $sort_dir;
-				echo '<th scope="col" id="' . esc_attr( $column ) . '" class="' . esc_attr( $classes ) . '">' . wp_kses_post( $this->sortable_heading( $column, $heading, $filters ) ) . '</th>';
+			$this->render_column_heading( $column, $heading, $filters );
 		}
 		echo '</tr></thead><tbody>';
 
@@ -256,7 +253,7 @@ final class OffersPage {
 	}
 
 	/**
-	 * Render a sortable heading link.
+	 * Render a sortable heading th element.
 	 *
 	 * @since 1.0.0
 	 *
@@ -264,10 +261,23 @@ final class OffersPage {
 	 * @param string               $label   Column label.
 	 * @param array<string, mixed> $filters Filters.
 	 */
-	private function sortable_heading( string $column, string $label, array $filters ): string {
+	private function render_column_heading( string $column, string $label, array $filters ): void {
 		$is_current = $column === (string) $filters['orderby'];
-		$next_order = $is_current && 'asc' === $filters['order'] ? 'desc' : 'asc';
-		$url        = $this->table_url(
+		$order      = strtolower( (string) $filters['order'] );
+		$next_order = $is_current && 'asc' === $order ? 'desc' : 'asc';
+
+		$classes = array( 'manage-column', 'column-' . $column );
+		if ( $is_current ) {
+			$classes[] = 'sorted';
+			$classes[] = $order;
+		} else {
+			$classes[] = 'sortable';
+			// If not sorted, clicking sets to 'asc' (usually), so the class is 'desc'.
+			// For some columns default is 'desc', but we just default to 'desc' here to show the 'asc' arrow on hover.
+			$classes[] = 'desc';
+		}
+
+		$url = $this->table_url(
 			array_merge(
 				$filters,
 				array(
@@ -278,7 +288,15 @@ final class OffersPage {
 			)
 		);
 
-		return '<a href="' . esc_url( $url ) . '"><span>' . esc_html( $label ) . '</span><span class="sorting-indicator"></span></a>';
+		echo '<th scope="col" class="' . esc_attr( implode( ' ', $classes ) ) . '">';
+		echo '<a href="' . esc_url( $url ) . '">';
+		echo '<span>' . esc_html( $label ) . '</span>';
+		echo '<span class="sorting-indicators">';
+		echo '<span class="sorting-indicator asc" aria-hidden="true"></span>';
+		echo '<span class="sorting-indicator desc" aria-hidden="true"></span>';
+		echo '</span>';
+		echo '</a>';
+		echo '</th>';
 	}
 
 	/**
