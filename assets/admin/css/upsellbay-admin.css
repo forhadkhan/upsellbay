@@ -516,3 +516,116 @@
 .upsellbay-product-selector__message--error {
 	color: #d63638;
 }
+
+/* Placements Grid */
+.upsellbay-placements-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+	gap: 12px;
+	margin-top: 4px;
+}
+
+.upsellbay-placement-card {
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	padding: 16px;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.upsellbay-placement-card:hover {
+	border-color: #c3c4c7;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.upsellbay-placement-card__header {
+	margin-bottom: 8px;
+}
+
+.upsellbay-placement-toggle {
+	display: flex;
+	align-items: center;
+	cursor: pointer;
+	font-weight: 500;
+	color: #1d2327;
+	font-size: 14px;
+}
+
+.upsellbay-placement-toggle input[type="checkbox"] {
+	position: absolute;
+	opacity: 0;
+	width: 0;
+	height: 0;
+}
+
+.upsellbay-placement-toggle__switch {
+	position: relative;
+	width: 40px;
+	height: 22px;
+	background: #dcdcde;
+	border-radius: 11px;
+	margin-right: 10px;
+	transition: background-color 0.15s ease;
+	flex-shrink: 0;
+}
+
+.upsellbay-placement-toggle__switch::after {
+	content: '';
+	position: absolute;
+	top: 2px;
+	left: 2px;
+	width: 18px;
+	height: 18px;
+	background: #fff;
+	border-radius: 50%;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+	transition: transform 0.15s ease;
+}
+
+.upsellbay-placement-toggle input:checked + .upsellbay-placement-toggle__switch {
+	background: #3858e9;
+}
+
+.upsellbay-placement-toggle input:checked + .upsellbay-placement-toggle__switch::after {
+	transform: translateX(18px);
+}
+
+.upsellbay-placement-toggle input:focus + .upsellbay-placement-toggle__switch {
+	box-shadow: 0 0 0 2px #fff, 0 0 0 4px #3858e9;
+}
+
+.upsellbay-placement-card__description {
+	margin: 0 0 12px;
+	font-size: 12px;
+	color: #646970;
+	line-height: 1.5;
+	padding-bottom: 12px;
+}
+
+.upsellbay-placement-card__control {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.upsellbay-placement-card__control input[type="number"] {
+	width: 60px;
+}
+
+.upsellbay-placement-card__control-label {
+	color: #646970;
+	font-size: 12px;
+	font-weight: 500;
+}
+
+.upsellbay-placement-card input:disabled,
+.upsellbay-placement-card input:disabled + .upsellbay-placement-card__control-label {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+@media (max-width: 782px) {
+	.upsellbay-placements-grid {
+		grid-template-columns: 1fr;
+	}
+}

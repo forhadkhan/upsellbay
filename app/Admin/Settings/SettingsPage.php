@@ -8,8 +8,9 @@
 declare(strict_types=1);
 
 namespace WPAnchorBay\UpsellBay\Admin\Settings;
+
 // Exit if accessed directly.
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
@@ -216,6 +217,14 @@ final class SettingsPage {
 	 * @return true|null|\WP_Error
 	 */
 	private function maybe_activate_license_from_request( array $request ) {
+		if ( isset( $request['upsellbay_reactivate_license'] ) ) {
+			$status      = $this->license_client->get_status();
+			$license_key = isset( $status['key'] ) ? sanitize_text_field( (string) $status['key'] ) : '';
+			if ( '' !== $license_key ) {
+				return $this->license_client->activate( $license_key );
+			}
+		}
+
 		if ( ! isset( $request['upsellbay_new_license_key'] ) ) {
 			return null;
 		}
@@ -305,27 +314,42 @@ final class SettingsPage {
 		$this->checkbox_row( 'test_mode', __( 'Test mode', 'upsellbay' ), (bool) $settings['test_mode'], __( 'Limit previews and draft offer checks to store managers before shoppers see them.', 'upsellbay' ), __( 'Use test mode while configuring offers. It should be disabled before live shoppers need to see offers.', 'upsellbay' ) );
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- help_tip() returns escaped WooCommerce help tip markup.
 		echo '<tr><th scope="row">' . esc_html__( 'Placements', 'upsellbay' ) . ' ' . $this->help_tip( __( 'Choose where UpsellBay is allowed to render active, eligible offers. Individual offers still need matching placement settings.', 'upsellbay' ) ) . '</th><td>';
-		foreach ( $this->placement_labels() as $key => $label ) {
+		echo '<div class="upsellbay-placements-grid">';
+		foreach ( $this->placement_data() as $key => $data ) {
 			$is_checked  = true === (bool) ( $placements[ $key ] ?? false );
 			$max_display = (int) ( $settings['placement_max_display'][ $key ] ?? 1 );
 
-			echo '<div style="margin-bottom: 8px; display: flex; align-items: center; gap: 12px;">';
-			echo '<label class="upsellbay-checkbox-row"><input type="checkbox" name="placements[' . esc_attr( $key ) . ']" value="1"';
+			echo '<div class="upsellbay-placement-card">';
+			echo '<div class="upsellbay-placement-card__header">';
+			echo '<label class="upsellbay-placement-toggle">';
+			echo '<input type="checkbox" name="placements[' . esc_attr( $key ) . ']" value="1"';
 			if ( $is_checked ) {
 				echo ' checked="checked"';
 			}
-			echo '> ' . esc_html( $label ) . '</label>';
+			echo '>';
+			echo '<span class="upsellbay-placement-toggle__switch" aria-hidden="true"></span>';
+			echo '<span class="upsellbay-placement-toggle__label">' . esc_html( $data['label'] ) . '</span>';
+			echo '</label>';
+			echo '</div>';
 
-			echo '<label><span class="screen-reader-text">' . esc_html__( 'Max display for', 'upsellbay' ) . ' ' . esc_html( $label ) . '</span>';
-			echo esc_html__( 'Max offers:', 'upsellbay' ) . ' <input type="number" name="placement_max_display[' . esc_attr( $key ) . ']" value="' . esc_attr( (string) $max_display ) . '" min="1" max="5" class="small-text"></label>';
+			echo '<p class="upsellbay-placement-card__description">' . esc_html( $data['description'] ) . '</p>';
+
+			echo '<div class="upsellbay-placement-card__control">';
+			echo '<label for="upsellbay-max-display-' . esc_attr( $key ) . '" class="screen-reader-text">' . esc_html__( 'Maximum offers to display for', 'upsellbay' ) . ' ' . esc_html( $data['label'] ) . '</label>';
+			echo '<input type="number" id="upsellbay-max-display-' . esc_attr( $key ) . '" name="placement_max_display[' . esc_attr( $key ) . ']" value="' . esc_attr( (string) $max_display ) . '" min="1" max="5" class="small-text" ' . ( ! $is_checked ? 'disabled' : '' ) . '>';
+			echo '<span class="upsellbay-placement-card__control-label screen-reader-text">' . esc_html__( 'Max offers', 'upsellbay' ) . '</span>';
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- help_tip() returns escaped WooCommerce help tip markup.
+				echo $this->help_tip( __( 'Maximum number of offers to show simultaneously in this placement.', 'upsellbay' ) );
+			echo '</div>';
 			echo '</div>';
 		}
+		echo '</div>';
 		echo '</td></tr></tbody></table>';
 
 		echo '<h2>' . esc_html__( 'Style', 'upsellbay' ) . '</h2>';
 		echo '<table class="form-table upsellbay-settings-table" role="presentation"><tbody>';
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- help_tip() returns escaped WooCommerce help tip markup.
-		echo '<tr><th scope="row"><label for="upsellbay-accent-color">' . esc_html__( 'Accent color', 'upsellbay' ) . '</label> ' . $this->help_tip( __( 'Used for UpsellBay offer accents while preserving the theme and WooCommerce layout.', 'upsellbay' ) ) . '</th><td><input id="upsellbay-accent-color" name="accent_color" type="text" class="upsellbay-color-picker" value="' . esc_attr( (string) ( $style['accent_color'] ?? '#2271b1' ) ) . '" data-default-color="#2271b1"></td></tr>';
+		echo '<tr><th scope="row"><label for="upsellbay-accent-color">' . esc_html__( 'Accent color', 'upsellbay' ) . '</label> ' . $this->help_tip( __( 'Used for UpsellBay offer accents while preserving the theme and WooCommerce layout.', 'upsellbay' ) ) . '</th><td><input id="upsellbay-accent-color" name="accent_color" type="text" class="upsellbay-color-picker" value="' . esc_attr( (string) ( $style['accent_color'] ?? Settings::DEFAULT_ACCENT_COLOR ) ) . '" data-default-color="' . esc_attr( Settings::DEFAULT_ACCENT_COLOR ) . '"></td></tr>';
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- help_tip() returns escaped WooCommerce help tip markup.
 		echo '<tr><th scope="row"><label for="upsellbay-button-style">' . esc_html__( 'Button style', 'upsellbay' ) . '</label> ' . $this->help_tip( __( 'Theme buttons inherit the storefront button styling. Outline keeps the offer action visually lighter.', 'upsellbay' ) ) . '</th><td><select id="upsellbay-button-style" name="button_style">';
 		foreach (
@@ -540,6 +564,11 @@ final class SettingsPage {
 			echo '<tr><th scope="row">' . esc_html__( 'Actions', 'upsellbay' ) . ' ' . $this->help_tip( __( 'Use these tools to verify the current license status or remove a stored key from this site.', 'upsellbay' ) ) . '</th>';
 			echo '<td>';
 			echo '<a href="' . esc_url( $check_url ) . '" class="button">' . esc_html__( 'Check License', 'upsellbay' ) . '</a> ';
+
+			if ( ! in_array( $status_code, array( 'active', 'valid' ), true ) ) {
+				echo '<button type="submit" name="upsellbay_reactivate_license" value="1" class="button">' . esc_html__( 'Reactivate', 'upsellbay' ) . '</button> ';
+			}
+
 			echo '<a href="' . esc_url( $remove_url ) . '" class="button button-secondary upsellbay-button-danger upsellbay-license-remove-trigger" data-modal-title="' . esc_attr__( 'Remove License', 'upsellbay' ) . '" data-modal-message="' . esc_attr__( 'Removing this license disconnects this site from UpsellBay updates and support checks until a new key is activated. Offers will continue running.', 'upsellbay' ) . '" data-modal-confirm="' . esc_attr__( 'Remove License', 'upsellbay' ) . '" data-modal-cancel="' . esc_attr__( 'Cancel', 'upsellbay' ) . '">' . esc_html__( 'Remove License', 'upsellbay' ) . '</a>';
 			echo '</td></tr>';
 		}
@@ -646,18 +675,30 @@ final class SettingsPage {
 	}
 
 	/**
-	 * Return placement labels.
+	 * Return placement data with labels and descriptions.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @return array<string, string>
+	 * @return array<string, array{label: string, description: string}>
 	 */
-	private function placement_labels(): array {
+	private function placement_data(): array {
 		return array(
-			'product_upsell' => __( 'Product page offer', 'upsellbay' ),
-			'cart_crosssell' => __( 'Cart offer', 'upsellbay' ),
-			'checkout_bump'  => __( 'Checkout bump', 'upsellbay' ),
-			'thankyou_offer' => __( 'Thank-you offer', 'upsellbay' ),
+			'product_upsell' => array(
+				'label'       => __( 'Product page offer', 'upsellbay' ),
+				'description' => __( 'Show offers on product pages as add-ons or frequently bought together suggestions.', 'upsellbay' ),
+			),
+			'cart_crosssell' => array(
+				'label'       => __( 'Cart offer', 'upsellbay' ),
+				'description' => __( 'Display cross-sell and threshold offers in the cart and mini-cart.', 'upsellbay' ),
+			),
+			'checkout_bump'  => array(
+				'label'       => __( 'Checkout bump', 'upsellbay' ),
+				'description' => __( 'Render order bumps on the checkout page before the place order button.', 'upsellbay' ),
+			),
+			'thankyou_offer' => array(
+				'label'       => __( 'Thank-you offer', 'upsellbay' ),
+				'description' => __( 'Present follow-on offers on the order received page after purchase.', 'upsellbay' ),
+			),
 		);
 	}
 }
