@@ -1115,11 +1115,10 @@ function upsellbay_admin_architecture_tests(): array {
 			assert_contains( '20.00%', $html );
 			assert_contains( 'Active offers', $html );
 			assert_contains( 'On', $html );
-			assert_contains( 'name="range"', $html );
-			assert_contains( 'value="7"', $html );
-			assert_contains( 'value="30"', $html );
-			assert_contains( 'value="90" class="button button-primary upsellbay-button-group__button--active" aria-pressed="true"', $html );
-			assert_contains( 'value="90"', $html );
+			assert_contains( 'range=7', $html );
+			assert_contains( 'range=30', $html );
+			assert_contains( 'range=90', $html );
+			assert_contains( 'class="button button-primary" aria-current="true">Last 90 days', $html );
 			assert_contains( 'Performance (Last 90 days)', $html );
 			assert_same( 90 * 86400, strtotime( (string) $captured_filters['end_date'] ) - strtotime( (string) $captured_filters['start_date'] ) );
 		},

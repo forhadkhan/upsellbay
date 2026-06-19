@@ -101,18 +101,15 @@ final class DashboardPage {
 		echo '<div class="upsellbay-overview-header">';
 		/* translators: %d: number of days in the selected analytics range. */
 		echo '<h3 class="upsellbay-overview-title">' . esc_html( sprintf( __( 'Performance (Last %d days)', 'upsellbay' ), $range ) ) . '</h3>';
-		echo '<form method="get" class="upsellbay-dashboard-range-filter" aria-label="' . esc_attr__( 'Performance date range', 'upsellbay' ) . '">';
-		echo '<input type="hidden" name="page" value="upsellbay">';
-		echo '<input type="hidden" name="tab" value="dashboard">';
-		echo '<div class="upsellbay-button-group upsellbay-button-group--toggle" role="group">';
+		echo '<div class="upsellbay-button-group" role="group" aria-label="' . esc_attr__( 'Performance date range', 'upsellbay' ) . '">';
 		foreach ( $this->range_options() as $days => $label ) {
 			$is_selected = $range === $days;
-			echo '<button type="submit" name="range" value="' . esc_attr( (string) $days ) . '" class="button' . ( $is_selected ? ' button-primary upsellbay-button-group__button--active' : '' ) . '"' . ( $is_selected ? ' aria-pressed="true"' : ' aria-pressed="false"' ) . '>';
+			$url         = 'admin.php?page=upsellbay&tab=dashboard&range=' . $days;
+			echo '<a href="' . esc_url( $url ) . '" class="button' . ( $is_selected ? ' button-primary' : '' ) . '"' . ( $is_selected ? ' aria-current="true"' : '' ) . '>';
 			echo esc_html( $label );
-			echo '</button>';
+			echo '</a>';
 		}
 		echo '</div>';
-		echo '</form>';
 		echo '</div>';
 		echo '<div class="upsellbay-card-grid upsellbay-card-grid--metrics">';
 		$this->summary_item( __( 'Views', 'upsellbay' ), (string) $summary['views'], __( 'Offer render events recorded in aggregate stats.', 'upsellbay' ) );
