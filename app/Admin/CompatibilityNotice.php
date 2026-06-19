@@ -43,6 +43,7 @@ final class CompatibilityNotice {
 	public function register_hooks(): void {
 		if ( function_exists( 'add_action' ) ) {
 			add_action( 'admin_notices', array( $this, 'render' ) );
+			add_action( 'upsellbay_admin_page_heading_before', array( $this, 'render' ) );
 		}
 	}
 

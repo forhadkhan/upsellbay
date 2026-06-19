@@ -68,6 +68,20 @@ final class AdminPage {
 		$this->navigation = $navigation ?? new TabNavigation();
 
 		add_filter( 'admin_title', array( $this, 'filter_admin_title' ), 10, 2 );
+		add_action( 'in_admin_header', array( $this, 'remove_third_party_notices' ), 1 );
+	}
+
+	/**
+	 * Remove third-party admin notices on UpsellBay pages.
+	 *
+	 * @since 1.0.0
+	 */
+	public function remove_third_party_notices(): void {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( $screen && str_starts_with( $screen->id, 'woocommerce_page_upsellbay' ) ) {
+			remove_all_actions( 'admin_notices' );
+			remove_all_actions( 'all_admin_notices' );
+		}
 	}
 
 	/**
