@@ -8,8 +8,9 @@
 declare(strict_types=1);
 
 namespace WPAnchorBay\UpsellBay\Domain\Storefront;
+
 // Exit if accessed directly.
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
@@ -350,7 +351,7 @@ final class StorefrontController {
 		}
 
 		$tokens       = $this->settings->all()['style_tokens'] ?? array();
-		$accent_color = (string) ( $tokens['accent_color'] ?? '#2271b1' );
+		$accent_color = (string) ( $tokens['accent_color'] ?? Settings::DEFAULT_ACCENT_COLOR );
 		$button_style = (string) ( $tokens['button_style'] ?? 'theme' );
 		$css          = '.upsellbay-offer{--upsellbay-accent:' . esc_attr( $accent_color ) . ';}';
 		if ( 'outline' === $button_style ) {
