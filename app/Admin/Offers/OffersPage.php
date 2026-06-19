@@ -206,17 +206,22 @@ final class OffersPage {
 		echo '<form method="get" class="upsellbay-offers-table-controls">';
 		echo '<input type="hidden" name="page" value="upsellbay">';
 		echo '<input type="hidden" name="tab" value="offers">';
-		echo '<p class="search-box">';
-		echo '<label class="screen-reader-text" for="upsellbay-offer-search-input">' . esc_html__( 'Search offers', 'upsellbay' ) . '</label>';
-		echo '<input type="search" id="upsellbay-offer-search-input" name="s" value="' . esc_attr( (string) $filters['search'] ) . '">';
-		echo '<button type="submit" class="button">' . esc_html__( 'Search offers', 'upsellbay' ) . '</button>';
-		echo '</p>';
-		echo '<div class="tablenav top"><div class="alignleft actions">';
+		
+		echo '<div class="tablenav top" style="padding-bottom: 10px;">';
+		
+		echo '<div class="alignleft actions">';
 		$this->select_filter( 'placement', __( 'All placements', 'upsellbay' ), $this->placement_options(), (string) $filters['placement'] );
 		$this->select_filter( 'status', __( 'All statuses', 'upsellbay' ), $this->status_options(), (string) $filters['status'] );
 		$this->select_filter( 'health', __( 'All health states', 'upsellbay' ), $this->health_options(), (string) $filters['health'] );
 		echo '<button type="submit" class="button">' . esc_html__( 'Filter', 'upsellbay' ) . '</button>';
 		echo '</div>';
+		
+		echo '<div class="alignright actions">';
+		echo '<label class="screen-reader-text" for="upsellbay-offer-search-input">' . esc_html__( 'Search offers', 'upsellbay' ) . '</label>';
+		echo '<input type="search" id="upsellbay-offer-search-input" name="s" value="' . esc_attr( (string) $filters['search'] ) . '"> ';
+		echo '<button type="submit" class="button">' . esc_html__( 'Search offers', 'upsellbay' ) . '</button>';
+		echo '</div>';
+
 		echo '<br class="clear"></div>';
 		echo '</form>';
 	}
