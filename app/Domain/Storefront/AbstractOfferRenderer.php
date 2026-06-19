@@ -72,7 +72,7 @@ abstract class AbstractOfferRenderer implements OfferRendererInterface {
 
 		$control = $is_checkbox
 			? '<label class="upsellbay-offer__toggle"><input type="checkbox" class="upsellbay-offer__checkbox" data-upsellbay-offer-id="' . $this->esc_attr( (string) $offer_id ) . '"> <span class="upsellbay-offer__button-text">' . $this->esc_html( $button_text ) . '</span></label>'
-			: '<button type="button" class="button upsellbay-offer__button" data-upsellbay-offer-id="' . $this->esc_attr( (string) $offer_id ) . '">' . $this->esc_html( $button_text ) . '</button>';
+			: '<button type="button" class="button wp-element-button wc-block-components-button upsellbay-offer__button" data-upsellbay-offer-id="' . $this->esc_attr( (string) $offer_id ) . '">' . $this->esc_html( $button_text ) . '</button>';
 
 		$source_order_attr = (int) ( $context['source_order_id'] ?? 0 ) > 0 ? ' data-upsellbay-source-order-id="' . $this->esc_attr( (string) (int) $context['source_order_id'] ) . '"' : '';
 
@@ -259,6 +259,6 @@ abstract class AbstractOfferRenderer implements OfferRendererInterface {
 	 * @return string
 	 */
 	protected function render_already_in_cart_notice(): string {
-		return '<button type="button" class="button upsellbay-offer__button" disabled>' . $this->esc_html( __( 'Already in cart', 'upsellbay' ) ) . '</button>';
+		return '<button type="button" class="button wp-element-button wc-block-components-button upsellbay-offer__button" disabled>' . $this->esc_html( __( 'Already in cart', 'upsellbay' ) ) . '</button>';
 	}
 }

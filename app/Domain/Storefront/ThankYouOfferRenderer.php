@@ -46,7 +46,7 @@ final class ThankYouOfferRenderer extends AbstractOfferRenderer {
 		$source_order_id   = (int) ( $context['source_order_id'] ?? 0 );
 		$source_order_attr = $source_order_id > 0 ? ' data-upsellbay-source-order-id="' . $this->esc_attr( (string) $source_order_id ) . '"' : '';
 
-		$control     = '<button type="button" class="button upsellbay-offer__button" data-upsellbay-offer-id="' . $this->esc_attr( (string) $offer_id ) . '">' . $this->esc_html( $button_text ) . '</button>';
+		$control     = '<button type="button" class="button wp-element-button wc-block-components-button upsellbay-offer__button" data-upsellbay-offer-id="' . $this->esc_attr( (string) $offer_id ) . '">' . $this->esc_html( $button_text ) . '</button>';
 		$dismiss_btn = $this->render_dismiss_button();
 		$explainer   = '<div class="upsellbay-offer__explainer">' . $this->esc_html( __( 'Your original order is complete. Adding this item starts a separate checkout.', 'upsellbay' ) ) . '</div>';
 

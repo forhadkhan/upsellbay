@@ -51,7 +51,7 @@ final class ProductPageRenderer extends AbstractOfferRenderer {
 
 		$control = $in_cart
 			? $this->render_already_in_cart_notice()
-			: '<button type="button" class="button upsellbay-offer__button" data-upsellbay-offer-id="' . $this->esc_attr( (string) $offer_id ) . '">' . $this->esc_html( $button_text ) . '</button>';
+			: '<button type="button" class="button wp-element-button wc-block-components-button upsellbay-offer__button" data-upsellbay-offer-id="' . $this->esc_attr( (string) $offer_id ) . '">' . $this->esc_html( $button_text ) . '</button>';
 
 		$dismiss_btn = $this->render_dismiss_button();
 
