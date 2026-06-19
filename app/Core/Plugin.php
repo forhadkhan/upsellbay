@@ -329,6 +329,7 @@ final class Plugin {
 		add_action( 'admin_post_upsellbay_remove_license', array( $this, 'handle_remove_license' ) );
 		add_action( 'admin_post_upsellbay_check_license', array( $this, 'handle_check_license' ) );
 		add_action( 'admin_post_upsellbay_delete_offer', array( $this, 'handle_delete_offer' ) );
+		add_action( 'admin_post_upsellbay_clear_all_data', array( $this, 'handle_clear_all_data' ) );
 
 		$this->container->get( AdminAssets::class )->register_hooks();
 		$this->container->get( AdminBar::class )->register_hooks();
@@ -669,6 +670,29 @@ final class Plugin {
 
 		$redirect_url = admin_url( 'admin.php?page=upsellbay&tab=offers' );
 		$redirect_url = add_query_arg( 'wc_message', rawurlencode( __( 'Offer deleted.', 'upsellbay' ) ), $redirect_url );
+
+		wp_safe_redirect( $redirect_url );
+		exit;
+	}
+
+	/**
+	 * Handle clearing all data from the admin-post action.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return void
+	 */
+	public function handle_clear_all_data(): void {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) { // phpcs:ignore WordPress.WP.Capabilities.Unknown
+			wp_die( esc_html__( 'You do not have permission to manage data.', 'upsellbay' ) );
+		}
+
+		check_admin_referer( 'upsellbay_clear_all_data' );
+
+		$this->container->get( Installer::class )->clear_all_data();
+
+		$redirect_url = admin_url( 'admin.php?page=upsellbay&tab=settings&section=data' );
+		$redirect_url = add_query_arg( 'wc_message', rawurlencode( __( 'All UpsellBay data has been permanently deleted and reset to defaults.', 'upsellbay' ) ), $redirect_url );
 
 		wp_safe_redirect( $redirect_url );
 		exit;

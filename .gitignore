@@ -94,5 +94,6 @@ graphify-out/
 GEMINI.md
 AGENTS.md
 .meta/
-.antigravitycli
+.antigravitycli/
+.generic-ui/
 .generic-ui/*.js.map

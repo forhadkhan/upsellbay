@@ -391,6 +391,19 @@ final class SettingsPage {
 		}
 		$this->checkbox_row( 'cleanup_on_delete', __( 'Delete data on uninstall', 'upsellbay' ), (bool) $settings['cleanup_on_delete'], __( 'Keep this off unless the merchant explicitly wants plugin data removed during uninstall.', 'upsellbay' ), __( 'When enabled, uninstall cleanup can remove UpsellBay settings, offers, and aggregate stats instead of preserving them.', 'upsellbay' ) );
 		echo '</tbody></table>';
+
+		echo '<h2>' . esc_html__( 'Clear All Data', 'upsellbay' ) . '</h2>';
+		echo '<table class="form-table upsellbay-settings-table" role="presentation"><tbody>';
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo '<tr><th scope="row">' . esc_html__( 'Reset Application', 'upsellbay' ) . ' ' . $this->help_tip( __( 'This will permanently delete all UpsellBay data and reset the plugin to a fresh installation state.', 'upsellbay' ) ) . '</th>';
+		echo '<td>';
+		$clear_nonce = wp_create_nonce( 'upsellbay_clear_all_data' );
+		$clear_url   = admin_url( 'admin-post.php?action=upsellbay_clear_all_data&_wpnonce=' . $clear_nonce );
+		
+		echo '<a href="' . esc_url( $clear_url ) . '" class="button button-secondary upsellbay-button-danger upsellbay-modal-trigger" data-modal-title="' . esc_attr__( 'Clear All Data', 'upsellbay' ) . '" data-modal-message="' . esc_attr__( 'Are you sure you want to permanently delete all records, configurations, settings, generated data, analytics, offers and any other data stored by UpsellBay? This action is irreversible.', 'upsellbay' ) . '" data-modal-confirm="' . esc_attr__( 'Yes, Clear All Data', 'upsellbay' ) . '" data-modal-cancel="' . esc_attr__( 'Cancel', 'upsellbay' ) . '">' . esc_html__( 'Clear All Data', 'upsellbay' ) . '</a>';
+		echo '<p class="description">' . esc_html__( 'Warning: This action will permanently delete all offers, configurations, analytics, and session data. It cannot be undone.', 'upsellbay' ) . '</p>';
+		echo '</td></tr>';
+		echo '</tbody></table>';
 	}
 
 	/**

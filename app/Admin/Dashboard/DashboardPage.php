@@ -68,7 +68,7 @@ final class DashboardPage {
 		if ( 0 === (int) $data['active_offers'] ) {
 			echo '<div class="upsellbay-onboarding-panel" style="background: #fff; border: 1px solid #c3c4c7; padding: 30px; text-align: center; margin-bottom: 20px; border-radius: 4px;">';
 			echo '<h2 style="margin-top: 0;">' . esc_html__( 'Welcome to UpsellBay!', 'upsellbay' ) . '</h2>';
-			echo '<p style="font-size: 16px; color: #50575e; max-width: 600px; margin: 0 auto 20px;">' . esc_html__( 'Increase your average order value instantly by creating your first highly-targeted upsell offer.', 'upsellbay' ) . '</p>';
+			echo '<p style="font-size: 16px; color: #50575e; max-width: 600px; margin: 0 auto 20px;">' . esc_html__( 'Increase your average order value (AOV) instantly by creating your first highly-targeted upsell offer.', 'upsellbay' ) . '</p>';
 			echo '<a href="' . esc_url( 'admin.php?page=upsellbay&tab=offers&action=add' ) . '" class="button button-primary button-hero">' . esc_html__( 'Create your first offer', 'upsellbay' ) . '</a>';
 			echo '</div>';
 		}

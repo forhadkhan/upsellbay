@@ -244,4 +244,44 @@ final class Installer {
 			$wpdb->query( "DROP TABLE IF EXISTS {$logs_table}" );
 		}
 	}
+
+	/**
+	 * Permanently delete all UpsellBay data and reset to fresh install state.
+	 *
+	 * @since 1.0.0
+	 */
+	public function clear_all_data(): void {
+		$this->scheduler->unschedule_all();
+
+		if ( function_exists( 'delete_option' ) ) {
+			delete_option( Constants::SETTINGS_OPTION );
+			delete_option( Constants::DB_VERSION_OPTION );
+		}
+
+		if ( isset( $GLOBALS['wpdb'] ) ) {
+			$wpdb        = $GLOBALS['wpdb'];
+			$post_type   = esc_sql( Constants::OFFER_POST_TYPE );
+			$stats_table = esc_sql( $wpdb->prefix . Constants::STATS_TABLE_SUFFIX );
+			$logs_table  = esc_sql( $wpdb->prefix . Constants::LOGS_TABLE_SUFFIX );
+
+			// Delete postmeta.
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->query( "DELETE meta FROM {$wpdb->postmeta} meta LEFT JOIN {$wpdb->posts} posts ON posts.ID = meta.post_id WHERE posts.post_type = '{$post_type}'" );
+
+			// Delete posts.
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->query( "DELETE FROM {$wpdb->posts} WHERE post_type = '{$post_type}'" );
+
+			// Drop tables so they can be recreated cleanly.
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->query( "DROP TABLE IF EXISTS {$stats_table}" );
+
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->query( "DROP TABLE IF EXISTS {$logs_table}" );
+		}
+
+		$this->settings->seed_defaults();
+		( $this->schema_migrator )();
+		$this->scheduler->ensure_recurring_jobs();
+	}
 }
