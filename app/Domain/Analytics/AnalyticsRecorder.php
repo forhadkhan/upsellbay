@@ -8,8 +8,9 @@
 declare(strict_types=1);
 
 namespace WPAnchorBay\UpsellBay\Domain\Analytics;
+
 // Exit if accessed directly.
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
