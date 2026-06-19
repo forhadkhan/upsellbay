@@ -8,8 +8,9 @@
 declare(strict_types=1);
 
 namespace WPAnchorBay\UpsellBay\Domain\Offers;
+
 // Exit if accessed directly.
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
@@ -37,22 +38,31 @@ final class OfferValidator {
 	private $product_exists;
 
 	/**
+	 * Product context callback.
+	 *
+	 * @var callable(int): array<string, mixed>|null
+	 */
+	private $product_context;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.0.0
 	 *
 	 * @param OfferSchema   $schema Product schema.
 	 * @param callable|null $product_exists Optional product existence callback.
+	 * @param callable|null $product_context Optional product context callback.
 	 */
-	public function __construct( OfferSchema $schema, ?callable $product_exists = null ) {
-		$this->schema         = $schema;
-		$this->product_exists = $product_exists ?? static function ( int $product_id ): bool {
+	public function __construct( OfferSchema $schema, ?callable $product_exists = null, ?callable $product_context = null ) {
+		$this->schema          = $schema;
+		$this->product_exists  = $product_exists ?? static function ( int $product_id ): bool {
 			if ( $product_id <= 0 ) {
 				return false;
 			}
 
 			return ! function_exists( 'wc_get_product' ) || false !== wc_get_product( $product_id );
 		};
+		$this->product_context = $product_context ?? array( $this, 'load_product_context' );
 	}
 
 	/**
@@ -74,12 +84,6 @@ final class OfferValidator {
 			$errors['_ub_status'] = 'Invalid offer status.';
 		}
 
-		if ( $normalized['_ub_offer_product_id'] <= 0 ) {
-			$errors['_ub_offer_product_id'] = 'Offer product is required.';
-		} elseif ( ! ( $this->product_exists )( $normalized['_ub_offer_product_id'] ) ) {
-			$errors['_ub_offer_product_id'] = 'Offer product does not exist.';
-		}
-
 		if ( ! in_array( $normalized['_ub_discount_type'], $this->schema->discount_types(), true ) ) {
 			$errors['_ub_discount_type'] = 'Invalid discount type.';
 		}
@@ -88,16 +92,12 @@ final class OfferValidator {
 			$errors['_ub_discount_value'] = 'Discount value cannot be negative.';
 		}
 
-		if ( '' === $normalized['_ub_headline'] ) {
-			$errors['_ub_headline'] = 'Headline is required.';
-		}
-
-		if ( '' === $normalized['_ub_button_text'] ) {
-			$errors['_ub_button_text'] = 'Button text is required.';
-		}
-
 		if ( null !== $normalized['_ub_start_at'] && null !== $normalized['_ub_end_at'] && $normalized['_ub_start_at'] > $normalized['_ub_end_at'] ) {
 			$errors['_ub_end_at'] = 'End date must be after start date.';
+		}
+
+		if ( 'active' === $normalized['_ub_status'] ) {
+			$errors = array_replace( $errors, $this->validate_active_offer( $normalized ) );
 		}
 
 		return new ValidationResult( array() === $errors, $errors, $normalized );
@@ -227,5 +227,215 @@ final class OfferValidator {
 	 */
 	private function to_bool( $value ): bool {
 		return in_array( $value, array( true, 1, '1', 'yes', 'on' ), true );
+	}
+
+	/**
+	 * Validate fields required for a live storefront offer.
+	 *
+	 * @param array<string, mixed> $meta Normalized offer meta.
+	 * @return array<string, string>
+	 */
+	private function validate_active_offer( array $meta ): array {
+		$errors     = array();
+		$product_id = (int) $meta['_ub_offer_product_id'];
+
+		if ( $product_id <= 0 ) {
+			$errors['_ub_offer_product_id'] = 'Offer product is required.';
+		} elseif ( ! ( $this->product_exists )( $product_id ) ) {
+			$errors['_ub_offer_product_id'] = 'Offer product does not exist.';
+		}
+
+		if ( '' === $meta['_ub_headline'] ) {
+			$errors['_ub_headline'] = 'Headline is required.';
+		}
+
+		if ( '' === $meta['_ub_button_text'] ) {
+			$errors['_ub_button_text'] = 'Button text is required.';
+		}
+
+		$product = $product_id > 0 ? ( $this->product_context )( $product_id ) : null;
+		if ( is_array( $product ) ) {
+			if ( false === ( $product['purchasable'] ?? true ) ) {
+				$errors['_ub_offer_product_id_purchasable'] = 'Offer product is not currently purchasable.';
+			}
+			if ( false === ( $product['in_stock'] ?? true ) ) {
+				$errors['_ub_offer_product_id_stock'] = 'Offer product is out of stock.';
+			}
+			if ( false === ( $product['visible'] ?? true ) ) {
+				$errors['_ub_offer_product_id_visible'] = 'Offer product is not visible in the catalog.';
+			}
+
+			$product_type = (string) ( $product['type'] ?? 'simple' );
+			if ( in_array( $meta['_ub_offer_type'], array( OfferSchema::TYPE_CHECKOUT_BUMP, OfferSchema::TYPE_THANKYOU_OFFER ), true ) && ! in_array( $product_type, array( 'simple', 'variation' ), true ) ) {
+				$errors['_ub_offer_product_id_type'] = 'Checkout and thank-you offers require a simple product or variation.';
+			}
+
+			if ( true === ( $product['subscription'] ?? false ) && 'none' !== $meta['_ub_discount_type'] ) {
+				$errors['_ub_discount_type_subscription'] = 'Subscription products cannot receive UpsellBay discounts.';
+			}
+		}
+
+		$discount_value = (float) $meta['_ub_discount_value'];
+		if ( 'none' !== $meta['_ub_discount_type'] && $discount_value <= 0 ) {
+			$errors['_ub_discount_value_required'] = 'Discount value is required when a discount type is selected.';
+		}
+		if ( 'percent' === $meta['_ub_discount_type'] && $discount_value > 100 ) {
+			$errors['_ub_discount_value_percent'] = 'Percentage discount cannot be greater than 100.';
+		}
+
+		$rule_errors = $this->validate_rules( $meta['_ub_rules'] );
+		foreach ( $rule_errors as $index => $message ) {
+			$errors[ '_ub_rules_' . $index ] = $message;
+		}
+
+		$position_error = $this->validate_placement_position( (string) $meta['_ub_offer_type'], $meta['_ub_placement_config'] );
+		if ( '' !== $position_error ) {
+			$errors['_ub_placement_config'] = $position_error;
+		}
+
+		if ( true === $meta['_ub_conflict_override'] && '' === $meta['_ub_conflict_override_reason'] ) {
+			$errors['_ub_conflict_override_reason'] = 'Conflict override requires a reason.';
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * Validate normalized targeting rules.
+	 *
+	 * @param mixed $rules Rules.
+	 * @return array<int, string>
+	 */
+	private function validate_rules( $rules ): array {
+		if ( ! is_array( $rules ) ) {
+			return array( 'Rules must be an array.' );
+		}
+
+		$errors = array();
+		foreach ( $rules as $index => $rule ) {
+			if ( ! is_array( $rule ) ) {
+				$errors[ $index ] = 'Each rule must be an object.';
+				continue;
+			}
+
+			$type     = $this->sanitize_key( $rule['type'] ?? '' );
+			$operator = $this->sanitize_key( $rule['operator'] ?? 'eq' );
+			$value    = $rule['value'] ?? null;
+
+			if ( ! in_array( $type, array( 'cart_product', 'cart_category', 'cart_tag', 'cart_subtotal', 'viewed_product', 'user_role', 'customer_order_count', 'customer_lifetime_spend', 'stock_status', 'exclude_if_product_in_cart' ), true ) ) {
+				$errors[ $index ] = 'Rule type is not supported.';
+				continue;
+			}
+
+			if ( in_array( $type, array( 'cart_subtotal', 'customer_order_count', 'customer_lifetime_spend' ), true ) ) {
+				if ( ! in_array( $operator, array( 'eq', 'neq', 'gt', 'gte', 'lt', 'lte' ), true ) ) {
+					$errors[ $index ] = 'Cart subtotal rules require a numeric comparison operator.';
+				} elseif ( ! is_numeric( $value ) ) {
+					$errors[ $index ] = 'Numeric rules require a numeric value.';
+				}
+				continue;
+			}
+
+			if ( 'stock_status' === $type ) {
+				if ( ! in_array( (string) $value, array( 'instock', 'outofstock', 'onbackorder' ), true ) ) {
+					$errors[ $index ] = 'Stock status rule requires a supported stock status.';
+				}
+				continue;
+			}
+
+			if ( ! in_array( $operator, array( 'eq', 'neq', 'in', 'not_in', 'contains' ), true ) ) {
+				$errors[ $index ] = 'Rule operator is not supported for this rule type.';
+				continue;
+			}
+
+			if ( array() === $this->rule_value_list( $value, 'user_role' !== $type ) ) {
+				$errors[ $index ] = 'Rule value is required.';
+			}
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * Normalize rule values to a non-empty list.
+	 *
+	 * @param mixed $value Rule value.
+	 * @param bool  $require_integer Whether values must be numeric.
+	 * @return array<int, int|string>
+	 */
+	private function rule_value_list( $value, bool $require_integer ): array {
+		$values = is_array( $value ) ? $value : array( $value );
+		$list   = array();
+		foreach ( $values as $item ) {
+			if ( $require_integer ) {
+				$item = (int) $item;
+				if ( $item > 0 ) {
+					$list[] = $item;
+				}
+			} else {
+				$item = trim( (string) $item );
+				if ( '' !== $item ) {
+					$list[] = $item;
+				}
+			}
+		}
+		return $list;
+	}
+
+	/**
+	 * Validate placement display metadata against the offer placement.
+	 *
+	 * @param string $offer_type Offer type.
+	 * @param mixed  $config Placement config.
+	 */
+	private function validate_placement_position( string $offer_type, $config ): string {
+		if ( ! is_array( $config ) || ! isset( $config['position'] ) || '' === (string) $config['position'] ) {
+			return '';
+		}
+
+		$expected = array(
+			OfferSchema::TYPE_CHECKOUT_BUMP  => 'before_submit',
+			OfferSchema::TYPE_PRODUCT_UPSELL => 'after_add_to_cart',
+			OfferSchema::TYPE_CART_CROSSSELL => 'after_cart_table',
+			OfferSchema::TYPE_THANKYOU_OFFER => 'order_received_actions',
+		);
+
+		if ( isset( $expected[ $offer_type ] ) && (string) $config['position'] !== $expected[ $offer_type ] ) {
+			$messages = array(
+				OfferSchema::TYPE_CHECKOUT_BUMP  => 'Checkout bump display position must use the checkout bump area.',
+				OfferSchema::TYPE_PRODUCT_UPSELL => 'Product page offer display position must use the product page area.',
+				OfferSchema::TYPE_CART_CROSSSELL => 'Cart offer display position must use the cart offer area.',
+				OfferSchema::TYPE_THANKYOU_OFFER => 'Thank-you offer display position must use the thank-you follow-on area.',
+			);
+
+			return $messages[ $offer_type ];
+		}
+
+		return '';
+	}
+
+	/**
+	 * Load WooCommerce product state when WooCommerce is available.
+	 *
+	 * @param int $product_id Product ID.
+	 * @return array<string, mixed>|null
+	 */
+	private function load_product_context( int $product_id ): ?array {
+		if ( ! function_exists( 'wc_get_product' ) ) {
+			return null;
+		}
+
+		$product = wc_get_product( $product_id );
+		if ( ! is_object( $product ) ) {
+			return null;
+		}
+
+		return array(
+			'purchasable'  => ! method_exists( $product, 'is_purchasable' ) || $product->is_purchasable(),
+			'visible'      => ! method_exists( $product, 'is_visible' ) || $product->is_visible(),
+			'in_stock'     => ! method_exists( $product, 'is_in_stock' ) || $product->is_in_stock(),
+			'type'         => method_exists( $product, 'get_type' ) ? $product->get_type() : 'simple',
+			'subscription' => function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $product ),
+		);
 	}
 }

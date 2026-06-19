@@ -8,8 +8,9 @@
 declare(strict_types=1);
 
 namespace WPAnchorBay\UpsellBay\Domain\Offers;
+
 // Exit if accessed directly.
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
@@ -58,7 +59,7 @@ final class OfferDefaults {
 	 * Return placement-specific copy.
 	 *
 	 * @param string $offer_type Offer type.
-	 * @return array{headline: string, body: string, button_text: string}
+	 * @return array{offer_goal: string, reason_label: string, headline: string, body: string, button_text: string}
 	 */
 	private function copy_for_type( string $offer_type ): array {
 		$copy = array(
