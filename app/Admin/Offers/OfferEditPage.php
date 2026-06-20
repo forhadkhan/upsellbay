@@ -587,8 +587,16 @@ final class OfferEditPage {
 		} elseif ( '_ub_start_at' === $field || '_ub_end_at' === $field ) {
 			echo '<input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="datetime-local" class="regular-text" value="' . esc_attr( (string) $value ) . '">';
 		} else {
+			$display_value = (string) $value;
+			if ( '_ub_discount_value' === $field && is_numeric( $display_value ) && str_contains( $display_value, '.' ) ) {
+				$display_value = rtrim( rtrim( $display_value, '0' ), '.' );
+				if ( '' === $display_value ) {
+					$display_value = '0';
+				}
+			}
+
 			$is_required = in_array( $field, array( 'title', '_ub_headline', '_ub_button_text' ), true );
-			echo '<input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="text" class="regular-text" value="' . esc_attr( (string) $value ) . '"' . ( $is_required ? ' required' : '' ) . '>';
+			echo '<input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="text" class="regular-text" value="' . esc_attr( $display_value ) . '"' . ( $is_required ? ' required' : '' ) . '>';
 		}
 
 		echo '</td></tr>';
