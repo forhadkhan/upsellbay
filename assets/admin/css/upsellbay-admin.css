@@ -36,6 +36,8 @@
 }
 
 .wrap.upsellbay-admin {
+	/* Match the header shell so the full-bleed offset does not expand past the admin canvas. */
+	box-sizing: border-box;
 	margin: 0 0 0 -20px;
 	padding: 0px 24px;
 	width: calc(100% + 20px);
