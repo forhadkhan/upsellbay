@@ -20,7 +20,7 @@ use WPAnchorBay\UpsellBay\Core\Hooks;
 use WP_Error;
 
 /**
- * Communicates with the WP Anchor Bay license server.
+ * Communicates with the WPAnchorBay license server.
  *
  * @since 1.0.0
  */

@@ -1,4 +1,4 @@
-# Copyright (C) 2026 WP Anchor Bay
+# Copyright (C) 2026 WPAnchorBay
 # This file is distributed under the same license as the UpsellBay plugin.
 msgid ""
 msgstr ""
@@ -36,7 +36,7 @@ msgstr ""
 
 #. Author of the plugin
 #: upsellbay.php
-msgid "WP Anchor Bay"
+msgid "WPAnchorBay"
 msgstr ""
 
 #. Author URI of the plugin
