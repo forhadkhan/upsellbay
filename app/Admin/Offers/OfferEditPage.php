@@ -466,7 +466,10 @@ final class OfferEditPage {
 		$label     = $labels[ $field ] ?? $field;
 		$label_for = '_ub_placement_config' === $field ? 'upsellbay-_ub_placement_config-position' : 'upsellbay-' . $field;
 
-		echo '<tr><th scope="row"><label for="' . esc_attr( $label_for ) . '">' . esc_html( $label ) . '</label></th><td>';
+		$is_required_field = in_array( $field, array( 'title', '_ub_status', '_ub_offer_type', '_ub_offer_product_id', '_ub_headline', '_ub_button_text' ), true );
+		$label_html        = esc_html( $label ) . ( $is_required_field ? ' <span class="required" style="color: #d63638;" title="' . esc_attr__( 'Required', 'upsellbay' ) . '">*</span>' : '' );
+
+		echo '<tr><th scope="row"><label for="' . esc_attr( $label_for ) . '">' . $label_html . '</label></th><td>';
 
 		if ( '_ub_recommendations' === $field ) {
 			echo '<div id="upsellbay-recommendations-container" data-nonce="' . esc_attr( wp_create_nonce( 'wp_rest' ) ) . '">';
