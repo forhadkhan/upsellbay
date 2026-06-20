@@ -384,6 +384,7 @@ foreach (
 		'app/Admin/AdminBar.php',
 		'app/Admin/CompatibilityNotice.php',
 		'app/Admin/Coexistence.php',
+		'app/Admin/PluginActionLinks.php',
 		'app/Admin/OverviewSummary.php',
 		'app/Admin/Dashboard/DashboardPage.php',
 		'app/Admin/Offers/OfferListTable.php',

@@ -45,7 +45,7 @@ final class Constants {
 	public const PLUGIN_URL                      = 'https://wpanchorbay.com/plugins/upsellbay/';
 	public const AUTHOR_URL                      = 'https://wpanchorbay.com/';
 	public const GET_PRO_URL                     = 'https://wpanchorbay.com/plugins/upsellbay/';
-	public const DOCS_URL                        = 'https://wpanchorbay.com/docs/upsellbay/';
+	public const DOCS_URL                        = 'https://docs.wpanchorbay.com/upsellbay/';
 	public const SUPPORT_URL                     = 'https://wpanchorbay.com/support/';
 	public const LICENSE_SERVER_URL              = 'https://wpanchorbay.com/wp-json/license-server/v1';
 	public const SETTINGS_URL                    = 'admin.php?page=upsellbay&tab=settings';

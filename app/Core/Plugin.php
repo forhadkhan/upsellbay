@@ -21,6 +21,7 @@ use WPAnchorBay\UpsellBay\Admin\AdminPage;
 use WPAnchorBay\UpsellBay\Admin\AdminPageRegistrar;
 use WPAnchorBay\UpsellBay\Admin\CompatibilityNotice;
 use WPAnchorBay\UpsellBay\Admin\Coexistence;
+use WPAnchorBay\UpsellBay\Admin\PluginActionLinks;
 use WPAnchorBay\UpsellBay\Admin\Dashboard\DashboardPage;
 use WPAnchorBay\UpsellBay\Admin\Help\HelpPage;
 use WPAnchorBay\UpsellBay\Admin\Navigation\TabFactory;
@@ -295,6 +296,7 @@ final class Plugin {
 		$this->container->set( AdminPage::class, static fn ( Container $container ): AdminPage => new AdminPage( $container->get( TabRegistry::class ), $container->get( TabRouter::class ) ) );
 		$this->container->set( Coexistence::class, static fn (): Coexistence => new Coexistence() );
 		$this->container->set( CompatibilityNotice::class, static fn ( Container $container ): CompatibilityNotice => new CompatibilityNotice( $container->get( Settings::class ), $container->get( Coexistence::class ) ) );
+		$this->container->set( PluginActionLinks::class, static fn (): PluginActionLinks => new PluginActionLinks() );
 		$this->container->set( AdminAssets::class, static fn (): AdminAssets => new AdminAssets() );
 		$this->container->set( AdminBar::class, static fn ( Container $container ): AdminBar => new AdminBar( $container->get( Settings::class ) ) );
 		$this->container->set(
@@ -333,6 +335,7 @@ final class Plugin {
 		$this->container->get( AdminAssets::class )->register_hooks();
 		$this->container->get( AdminBar::class )->register_hooks();
 		$this->container->get( CompatibilityNotice::class )->register_hooks();
+		$this->container->get( PluginActionLinks::class )->register_hooks();
 		$this->container->get( StoreApiExtender::class )->register_hooks();
 		$this->container->get( BlockCheckoutIntegration::class )->register_hooks();
 		$this->container->get( StorefrontController::class )->register_hooks();

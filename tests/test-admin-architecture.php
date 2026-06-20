@@ -18,6 +18,7 @@ use WPAnchorBay\UpsellBay\Admin\AdminPage;
 use WPAnchorBay\UpsellBay\Admin\AdminPageRegistrar;
 use WPAnchorBay\UpsellBay\Admin\CompatibilityNotice;
 use WPAnchorBay\UpsellBay\Admin\Coexistence;
+use WPAnchorBay\UpsellBay\Admin\PluginActionLinks;
 use WPAnchorBay\UpsellBay\Admin\Dashboard\DashboardPage;
 use WPAnchorBay\UpsellBay\Admin\Help\HelpPage;
 use WPAnchorBay\UpsellBay\Admin\Navigation\AdminTab;
@@ -76,6 +77,26 @@ function upsellbay_admin_architecture_tests(): array {
 			assert_true( $registrar->is_upsellbay_screen( 'woocommerce_page_upsellbay' ) );
 			assert_false( $registrar->is_upsellbay_screen( 'woocommerce_page_upsellbay-settings' ) );
 			assert_false( $registrar->is_upsellbay_screen( 'woocommerce_page_wc-orders' ) );
+		},
+		'plugin action links prepend manage and docs links for eligible admins' => static function (): void {
+			$actions = array(
+				'deactivate' => '<a href="plugins.php?action=deactivate">Deactivate</a>',
+			);
+
+			$GLOBALS['upsellbay_test_current_user_can'] = array(
+				'manage_woocommerce' => true,
+			);
+
+			$links = ( new PluginActionLinks() )->add_action_links( $actions );
+
+			unset( $GLOBALS['upsellbay_test_current_user_can'] );
+
+			assert_same( array( 'manage', 'docs', 'deactivate' ), array_keys( $links ) );
+			assert_contains( 'admin.php?page=upsellbay', $links['manage'] );
+			assert_contains( '>Manage<', $links['manage'] );
+			assert_contains( 'https://docs.wpanchorbay.com/upsellbay/', $links['docs'] );
+			assert_contains( 'target="_blank"', $links['docs'] );
+			assert_contains( 'rel="noopener noreferrer"', $links['docs'] );
 		},
 		'admin tabs define dashboard first and route invalid tabs to dashboard' => static function (): void {
 			$registry = new TabRegistry(
