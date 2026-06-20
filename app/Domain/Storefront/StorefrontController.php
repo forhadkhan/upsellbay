@@ -81,10 +81,49 @@ final class StorefrontController {
 			return;
 		}
 
+		// Start WC session early so the cookie is set before output begins.
+		add_action( 'template_redirect', array( $this, 'maybe_start_session' ) );
+
 		add_action( 'woocommerce_review_order_before_submit', array( $this, 'render_checkout_bump' ) );
 		add_action( 'woocommerce_after_add_to_cart_form', array( $this, 'render_product_offer' ) );
 		add_action( 'woocommerce_cart_collaterals', array( $this, 'render_cart_offers' ), 5 );
 		add_action( 'woocommerce_thankyou', array( $this, 'render_thankyou_offer' ) );
+
+		add_action( 'wp_footer', array( $this, 'output_token_fragment' ) );
+		add_filter( 'woocommerce_add_to_cart_fragments', array( $this, 'add_token_fragment' ) );
+	}
+
+	/**
+	 * Start the WooCommerce session and generate the offer token before output.
+	 *
+	 * WC session cookies must be sent before headers are flushed.
+	 * Offer render hooks fire mid-page (after headers are sent),
+	 * so we initialise the session here on `template_redirect`.
+	 *
+	 * @since 1.0.0
+	 */
+	public function maybe_start_session(): void {
+		if ( ! function_exists( 'WC' ) || ! WC()->session ) {
+			return;
+		}
+
+		if ( ! function_exists( 'is_product' ) ) {
+			return;
+		}
+
+		$needs_session = is_product() || is_cart() || is_checkout() || is_order_received_page();
+
+		if ( ! $needs_session ) {
+			return;
+		}
+
+		// Force-start the session so the cookie is sent with this response.
+		if ( ! WC()->session->has_session() ) {
+			WC()->session->set_customer_session_cookie( true );
+		}
+
+		// Pre-generate the token so it is persisted in the now-active session.
+		$this->session->ensure_token();
 	}
 
 	/**
@@ -359,5 +398,29 @@ final class StorefrontController {
 		}
 
 		wp_add_inline_style( $handle, $css );
+	}
+
+	/**
+	 * Output the initial token fragment container.
+	 *
+	 * @since 1.0.0
+	 */
+	public function output_token_fragment(): void {
+		$token = $this->session->ensure_token();
+		echo '<div id="upsellbay-token-fragment" data-token="' . esc_attr( $token ) . '" style="display:none;"></div>';
+	}
+
+	/**
+	 * Refresh the token fragment via WooCommerce AJAX.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<string, string> $fragments Cart fragments.
+	 * @return array<string, string>
+	 */
+	public function add_token_fragment( array $fragments ): array {
+		$token = $this->session->ensure_token();
+		$fragments['div#upsellbay-token-fragment'] = '<div id="upsellbay-token-fragment" data-token="' . esc_attr( $token ) . '" style="display:none;"></div>';
+		return $fragments;
 	}
 }

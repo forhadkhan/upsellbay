@@ -206,6 +206,9 @@ final class CartSession {
 	 */
 	private function wc_session_set( string $key, $value ): void {
 		if ( function_exists( 'WC' ) && WC()->session ) {
+			if ( ! WC()->session->has_session() ) {
+				WC()->session->set_customer_session_cookie( true );
+			}
 			WC()->session->set( $key, $value );
 		}
 	}

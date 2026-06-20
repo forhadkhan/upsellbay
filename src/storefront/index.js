@@ -7,7 +7,10 @@ import { __ } from '@wordpress/i18n';
 const config = window.upsellbayStorefront || {};
 
 async function postOffer(endpoint, payload) {
-	if (!config.restUrl || !config.token) {
+	const fragment = document.getElementById('upsellbay-token-fragment');
+	const currentToken = fragment ? fragment.dataset.token : config.token;
+
+	if (!config.restUrl || !currentToken) {
 		return null;
 	}
 
@@ -19,7 +22,7 @@ async function postOffer(endpoint, payload) {
 		},
 		body: JSON.stringify({
 			...payload,
-			token: config.token,
+			token: currentToken,
 		}),
 	});
 

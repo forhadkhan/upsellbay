@@ -357,6 +357,14 @@ final class PublicOfferRoutes {
 	 */
 	private function guard( string $endpoint, array $params ) {
 		$client_key = (string) ( $params['token'] ?? $params['_wpnonce'] ?? 'guest' );
+
+		// WooCommerce only calls wc_load_cart() for frontend requests.
+		// REST API requests skip it, leaving WC()->session null.
+		// Our endpoints need the session to validate the shopper token.
+		if ( function_exists( 'wc_load_cart' ) && ( ! function_exists( 'WC' ) || null === WC()->session ) ) {
+			wc_load_cart();
+		}
+
 		if ( ! isset( $params['token'] ) || '' === (string) $params['token'] || ! $this->session->validate_token( (string) $params['token'] ) ) {
 			Hooks::action( 'api_request_failed', $endpoint, 'invalid_token', $params );
 			return $this->response(
