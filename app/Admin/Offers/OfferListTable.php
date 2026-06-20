@@ -88,6 +88,30 @@ final class OfferListTable {
 		$filters = $this->normalize_filters( $filters );
 		$rows    = array();
 
+		// Pre-compute context for preview links
+		$context = array();
+		if ( function_exists( 'wc_get_checkout_url' ) ) {
+			$context['checkout_url'] = wc_get_checkout_url();
+		}
+		if ( function_exists( 'wc_get_cart_url' ) ) {
+			$context['cart_url'] = wc_get_cart_url();
+		}
+		if ( function_exists( 'wc_get_orders' ) ) {
+			$latest_orders = wc_get_orders(
+				array(
+					'limit'   => 1,
+					'orderby' => 'date',
+					'order'   => 'DESC',
+					'status'  => array( 'wc-processing', 'wc-completed', 'wc-on-hold' ),
+				)
+			);
+			if ( ! empty( $latest_orders ) ) {
+				$context['order_received_url'] = $latest_orders[0]->get_checkout_order_received_url();
+			}
+		}
+
+		$preview_builder = new \WPAnchorBay\UpsellBay\Admin\PreviewLinks();
+
 		foreach ( $this->repository->query( $filters ) as $offer ) {
 			$meta      = is_array( $offer['meta'] ?? null ) ? $offer['meta'] : array();
 			$placement = (string) ( $meta['_ub_offer_type'] ?? '' );
@@ -111,6 +135,8 @@ final class OfferListTable {
 				}
 			}
 
+			$preview = $preview_builder->for_offer( $offer, $context );
+
 			$rows[] = array(
 				'id'                 => $id,
 				'title'              => (string) ( $offer['title'] ?? $offer['post_title'] ?? '' ),
@@ -121,6 +147,8 @@ final class OfferListTable {
 				'views'              => (int) ( $offer['views'] ?? 0 ),
 				'accepts'            => (int) ( $offer['accepts'] ?? 0 ),
 				'attributed_revenue' => (string) ( $offer['attributed_revenue'] ?? '0.000000' ),
+				'preview_url'        => $preview['available'] ? $preview['url'] : '',
+				'preview_msg'        => $preview['message'],
 			);
 		}
 

@@ -156,6 +156,13 @@ final class OffersPage {
 
 			echo '<td><strong>' . esc_html( (string) $row['title'] ) . '</strong><div class="row-actions">';
 			echo '<span><a href="' . esc_url( $edit_url ) . '">' . esc_html__( 'Edit', 'upsellbay' ) . '</a> | </span>';
+			
+			if ( ! empty( $row['preview_url'] ) ) {
+				echo '<span class="view"><a href="' . esc_url( $row['preview_url'] ) . '" target="_blank" title="' . esc_attr( $row['preview_msg'] ) . '">' . esc_html__( 'View Live', 'upsellbay' ) . '</a> | </span>';
+			} else {
+				echo '<span class="view"><span style="color: #a7aaad; cursor: help;" title="' . esc_attr( $row['preview_msg'] ) . '">' . esc_html__( 'View Live', 'upsellbay' ) . '</span> | </span>';
+			}
+
 			echo '<span class="trash"><a href="' . esc_url( $delete_url ) . '" class="submitdelete upsellbay-modal-trigger" data-modal-title="' . esc_attr__( 'Delete Offer', 'upsellbay' ) . '" data-modal-message="' . esc_attr__( 'Are you sure you want to permanently delete this offer? This cannot be undone.', 'upsellbay' ) . '" data-modal-confirm="' . esc_attr__( 'Delete', 'upsellbay' ) . '" data-modal-cancel="' . esc_attr__( 'Cancel', 'upsellbay' ) . '">' . esc_html__( 'Delete', 'upsellbay' ) . '</a></span>';
 			echo '</div></td>';
 			echo '<td>' . esc_html( $this->placement_label( (string) $row['placement'] ) ) . '</td>';

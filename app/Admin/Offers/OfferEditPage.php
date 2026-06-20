@@ -376,9 +376,69 @@ final class OfferEditPage {
 		$title = null !== $offer ? $offer['title'] : '';
 
 		if ( null !== $offer ) {
+			$context    = array();
+			$offer_type = $meta['_ub_offer_type'] ?? '';
+
+			if ( function_exists( 'wc_get_checkout_url' ) ) {
+				$context['checkout_url'] = wc_get_checkout_url();
+			}
+			if ( function_exists( 'wc_get_cart_url' ) ) {
+				$context['cart_url'] = wc_get_cart_url();
+			}
+			if ( 'thankyou_offer' === $offer_type && function_exists( 'wc_get_orders' ) ) {
+				$latest_orders = wc_get_orders(
+					array(
+						'limit'   => 1,
+						'orderby' => 'date',
+						'order'   => 'DESC',
+						'status'  => array( 'wc-processing', 'wc-completed', 'wc-on-hold' ),
+					)
+				);
+				if ( ! empty( $latest_orders ) ) {
+					$context['order_received_url'] = $latest_orders[0]->get_checkout_order_received_url();
+				}
+			}
+
+			$preview_builder = new \WPAnchorBay\UpsellBay\Admin\PreviewLinks();
+			$preview         = $preview_builder->for_offer( $offer, $context );
+
+			$preview_info = '';
+			if ( 'product_upsell' === $offer_type ) {
+				$preview_info = __( 'To ensure reliable previews, this links to the offered product\'s page. The actual offer will appear on your targeted products based on active rules.', 'upsellbay' );
+			} elseif ( 'thankyou_offer' === $offer_type ) {
+				$preview_info = __( 'Previews use your most recent WooCommerce order. If you haven\'t placed an order yet, you may need to complete a test checkout first.', 'upsellbay' );
+			} elseif ( 'cart_crosssell' === $offer_type ) {
+				$preview_info = __( 'Links directly to your cart page. Add an item to your cart to see the offer preview.', 'upsellbay' );
+			} elseif ( 'checkout_bump' === $offer_type ) {
+				$preview_info = __( 'Links directly to your checkout page. You must have an item in your cart to view checkout.', 'upsellbay' );
+			}
+
+			echo '<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">';
+			echo '<div>';
 			/* translators: %d: offer ID */
-			echo '<h2 class="wp-heading-inline">' . esc_html( sprintf( __( 'UpsellBay Offer: ID - %d', 'upsellbay' ), $offer_id ) ) . '</h2>';
-			echo '<p class="description" style="margin-bottom: 8px;">' . esc_html__( 'You can modify and save data', 'upsellbay' ) . '</p>';
+			echo '<h2 class="wp-heading-inline" style="margin-bottom: 4px;">' . esc_html( sprintf( __( 'UpsellBay Offer: ID - %d', 'upsellbay' ), $offer_id ) ) . '</h2>';
+			echo '<p class="description" style="margin-top: 0;">' . esc_html__( 'You can modify and save data', 'upsellbay' ) . '</p>';
+			echo '</div>';
+			echo '<div style="display: flex; align-items: center; gap: 4px;">';
+			if ( $preview['available'] ) {
+				printf(
+					'<a href="%1$s" target="_blank" class="button button-secondary" title="%2$s">%3$s <span class="dashicons dashicons-external" style="line-height: inherit; font-size: 14px; margin-left: 2px;"></span></a>',
+					esc_url( $preview['url'] ),
+					esc_attr( $preview['message'] ),
+					esc_html__( 'View Live', 'upsellbay' )
+				);
+			} else {
+				printf(
+					'<button type="button" class="button button-secondary disabled" title="%1$s" disabled>%2$s <span class="dashicons dashicons-external" style="line-height: inherit; font-size: 14px; margin-left: 2px;"></span></button>',
+					esc_attr( $preview['message'] ),
+					esc_html__( 'View Live', 'upsellbay' )
+				);
+			}
+			if ( '' !== $preview_info && function_exists( 'wc_help_tip' ) ) {
+				echo wp_kses_post( wc_help_tip( $preview_info ) );
+			}
+			echo '</div>';
+			echo '</div>';
 
 			if ( null !== $this->conflict_detector ) {
 				$warnings = $this->conflict_detector->detect( $offer_id, $meta );
@@ -469,7 +529,16 @@ final class OfferEditPage {
 		$is_required_field = in_array( $field, array( 'title', '_ub_status', '_ub_offer_type', '_ub_offer_product_id', '_ub_headline', '_ub_button_text' ), true );
 		$label_html        = esc_html( $label ) . ( $is_required_field ? ' <span class="required" style="color: #d63638;" title="' . esc_attr__( 'Required', 'upsellbay' ) . '">*</span>' : '' );
 
-		echo '<tr><th scope="row"><label for="' . esc_attr( $label_for ) . '">' . $label_html . '</label></th><td>';
+		echo '<tr><th scope="row"><label for="' . esc_attr( $label_for ) . '">' . wp_kses(
+			$label_html,
+			array(
+				'span' => array(
+					'class' => true,
+					'style' => true,
+					'title' => true,
+				),
+			)
+		) . '</label></th><td>';
 
 		if ( '_ub_recommendations' === $field ) {
 			echo '<div id="upsellbay-recommendations-container" data-nonce="' . esc_attr( wp_create_nonce( 'wp_rest' ) ) . '">';
