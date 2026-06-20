@@ -268,7 +268,7 @@ window.jQuery(function ($) {
       });
       // Update UI for product selector
       const productId = parsedCache['_ub_offer_product_id'];
-      if (productId) {
+      if (productId && productId !== "0") {
          // To make it look selected, at least hide the search wrapper
          $form.find('.upsellbay-product-selector__input-wrapper').hide();
          $form.find('[data-upsellbay-selection]').html(`
