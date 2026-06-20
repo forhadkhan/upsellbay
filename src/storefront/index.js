@@ -97,14 +97,14 @@ document.addEventListener('click', async (event) => {
 		source_order_id: Number(card.dataset.upsellbaySourceOrderId || 0),
 	});
 
-	button.disabled = false;
-	button.removeAttribute('aria-busy');
 	card.classList.remove('is-loading');
-	if (isThankYou) {
-		button.textContent = originalText;
-	}
+	button.removeAttribute('aria-busy');
 
 	if (!result?.ok) {
+		button.disabled = false;
+		if (isThankYou) {
+			button.textContent = originalText;
+		}
 		showNotice(result?.body?.message || __('Unable to add this offer. Please try again.', 'upsellbay'));
 		return;
 	}
@@ -115,9 +115,23 @@ document.addEventListener('click', async (event) => {
 		return;
 	}
 
+	// On success, leave button disabled and change text
+	button.disabled = true;
+	button.textContent = __('Already in cart', 'upsellbay');
+
 	showNotice(result?.body?.message || __('Offer added to your cart.', 'upsellbay'), 'message');
 
+	// 1. Notify Classic WooCommerce Themes (triggers mini-cart fragments to update and slide out)
 	if (window.jQuery) {
+		window.jQuery(document.body).trigger('added_to_cart', [null, null, window.jQuery(button)]);
 		window.jQuery(document.body).trigger('wc_fragment_refresh');
+	}
+
+	// 2. Notify WooCommerce Blocks (invalidates cached cart data so the block refreshes)
+	if (window.wp && window.wp.data && window.wp.data.dispatch) {
+		const cartDispatcher = window.wp.data.dispatch('wc/store/cart');
+		if (cartDispatcher && typeof cartDispatcher.invalidateResolutionForStoreSelector === 'function') {
+			cartDispatcher.invalidateResolutionForStoreSelector('getCartData');
+		}
 	}
 });
