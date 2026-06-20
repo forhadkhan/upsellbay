@@ -283,7 +283,6 @@ final class Plugin {
 				$container->get( OffersPage::class ),
 				$container->get( OfferEditPage::class ),
 				$container->get( SettingsPage::class ),
-				$container->get( ToolsPage::class ),
 				$container->get( WizardController::class ),
 				$container->get( HelpPage::class )
 			)

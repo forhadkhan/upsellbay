@@ -20,7 +20,6 @@ use WPAnchorBay\UpsellBay\Admin\Help\HelpPage;
 use WPAnchorBay\UpsellBay\Admin\Offers\OfferEditPage;
 use WPAnchorBay\UpsellBay\Admin\Offers\OffersPage;
 use WPAnchorBay\UpsellBay\Admin\Settings\SettingsPage;
-use WPAnchorBay\UpsellBay\Admin\Tools\ToolsPage;
 use WPAnchorBay\UpsellBay\Admin\Wizard\WizardController;
 
 /**
@@ -66,15 +65,6 @@ final class TabFactory {
 	private SettingsPage $settings;
 
 	/**
-	 * Tools renderer.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @var ToolsPage
-	 */
-	private ToolsPage $tools;
-
-	/**
 	 * Setup wizard renderer.
 	 *
 	 * @since 1.0.0
@@ -101,16 +91,14 @@ final class TabFactory {
 	 * @param OffersPage       $offers       Offers list renderer.
 	 * @param OfferEditPage    $offer_editor Offer editor renderer.
 	 * @param SettingsPage     $settings     Settings renderer.
-	 * @param ToolsPage        $tools        Tools renderer.
 	 * @param WizardController $wizard       Setup wizard renderer.
 	 * @param HelpPage         $help         Help renderer.
 	 */
-	public function __construct( DashboardPage $dashboard, OffersPage $offers, OfferEditPage $offer_editor, SettingsPage $settings, ToolsPage $tools, WizardController $wizard, HelpPage $help ) {
+	public function __construct( DashboardPage $dashboard, OffersPage $offers, OfferEditPage $offer_editor, SettingsPage $settings, WizardController $wizard, HelpPage $help ) {
 		$this->dashboard    = $dashboard;
 		$this->offers       = $offers;
 		$this->offer_editor = $offer_editor;
 		$this->settings     = $settings;
-		$this->tools        = $tools;
 		$this->wizard       = $wizard;
 		$this->help         = $help;
 	}
@@ -176,14 +164,6 @@ final class TabFactory {
 					function ( array $request ): void {
 						unset( $request );
 						$this->settings->prepare_render();
-					}
-				),
-				new AdminTab(
-					'tools',
-					__( 'Tools', 'upsellbay' ),
-					function ( array $request ): void {
-						unset( $request );
-						$this->tools->render_content();
 					}
 				),
 				new AdminTab(
