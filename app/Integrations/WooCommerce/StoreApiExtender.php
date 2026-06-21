@@ -198,6 +198,10 @@ final class StoreApiExtender {
 					'type'    => 'string',
 					'context' => array( 'view' ),
 				),
+				'section_heading' => array(
+					'type'    => 'string',
+					'context' => array( 'view' ),
+				),
 				'product_id'   => array(
 					'type'    => 'integer',
 					'context' => array( 'view' ),
@@ -311,8 +315,9 @@ final class StoreApiExtender {
 			'title'        => (string) ( $offer['title'] ?? '' ),
 			'headline'     => (string) ( $meta['_ub_headline'] ?? ( $offer['title'] ?? '' ) ),
 			'body'         => function_exists( 'wp_kses_post' ) ? wp_kses_post( (string) ( $meta['_ub_body'] ?? '' ) ) : strip_tags( (string) ( $meta['_ub_body'] ?? '' ), '<a><br><em><strong>' ),
-			'button_text'  => (string) ( $meta['_ub_button_text'] ?? __( 'Add', 'upsellbay' ) ),
-			'product_id'   => $product_id,
+			'button_text'    => (string) ( $meta['_ub_button_text'] ?? __( 'Add', 'upsellbay' ) ),
+			'section_heading' => (string) ( $meta['_ub_section_heading'] ?? '' ),
+			'product_id'      => $product_id,
 			'product_name' => $product_name,
 			'image_url'    => $image_url,
 			'price_html'   => $this->get_offer_price_html( $product, $meta ),

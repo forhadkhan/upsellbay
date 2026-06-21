@@ -270,7 +270,7 @@ final class OfferEditPage {
 			'basics'          => array(
 				'label'     => __( 'Required basics', 'upsellbay' ),
 				'collapsed' => false,
-				'fields'    => array( 'title', '_ub_status', '_ub_offer_type', '_ub_offer_goal', '_ub_offer_product_id', '_ub_reason_label', '_ub_headline', '_ub_body', '_ub_button_text' ),
+				'fields'    => array( 'title', '_ub_status', '_ub_offer_type', '_ub_offer_goal', '_ub_offer_product_id', '_ub_reason_label', '_ub_section_heading', '_ub_headline', '_ub_body', '_ub_button_text' ),
 			),
 			'targeting'       => array(
 				'label'     => __( 'Targeting rules', 'upsellbay' ),
@@ -530,6 +530,7 @@ final class OfferEditPage {
 			'_ub_trigger_category_ids'     => __( 'Trigger category IDs', 'upsellbay' ),
 			'_ub_offer_goal'               => __( 'Offer goal', 'upsellbay' ),
 			'_ub_reason_label'             => __( 'Reason label', 'upsellbay' ),
+			'_ub_section_heading'          => __( 'Section heading', 'upsellbay' ),
 			'_ub_recommendations'          => __( 'Assistant suggestions', 'upsellbay' ),
 			'_ub_conflict_override'        => __( 'Conflict override', 'upsellbay' ),
 			'_ub_conflict_override_reason' => __( 'Conflict override reason', 'upsellbay' ),
@@ -607,6 +608,9 @@ final class OfferEditPage {
 		} elseif ( '_ub_body' === $field ) {
 			echo '<textarea id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" class="large-text" rows="3" maxlength="240">' . esc_textarea( (string) $value ) . '</textarea>';
 			echo '<p class="description">' . esc_html__( 'Optional short description shown below the headline. Max 240 characters. Supports limited HTML: links, line breaks, bold, italic.', 'upsellbay' ) . '</p>';
+		} elseif ( '_ub_section_heading' === $field ) {
+			echo '<input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="text" class="regular-text" value="' . esc_attr( (string) $value ) . '" maxlength="80">';
+			echo '<p class="description">' . esc_html__( 'Controls the heading shown above the cart offer list in block and classic checkout. Leave blank to use the default Recommended for you.', 'upsellbay' ) . '</p>';
 		} elseif ( '_ub_show_image' === $field ) {
 			echo '<label><input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="checkbox" value="1" ' . checked( $value, true, false ) . '> ' . esc_html__( 'Show the WooCommerce product image when available.', 'upsellbay' ) . '</label>';
 		} elseif ( '_ub_conflict_override' === $field ) {
@@ -753,6 +757,7 @@ final class OfferEditPage {
 				'_ub_discount_value'           => (string) ( $request['_ub_discount_value'] ?? $defaults['_ub_discount_value'] ),
 				'_ub_offer_goal'               => $this->sanitize_key( (string) ( $request['_ub_offer_goal'] ?? $defaults['_ub_offer_goal'] ) ),
 				'_ub_reason_label'             => $this->sanitize_text( (string) ( $request['_ub_reason_label'] ?? $defaults['_ub_reason_label'] ) ),
+				'_ub_section_heading'          => $this->sanitize_text( (string) ( $request['_ub_section_heading'] ?? $defaults['_ub_section_heading'] ) ),
 				'_ub_headline'                 => $this->sanitize_text( (string) ( $request['_ub_headline'] ?? $defaults['_ub_headline'] ) ),
 				'_ub_body'                     => $this->sanitize_html( (string) ( $request['_ub_body'] ?? $defaults['_ub_body'] ) ),
 				'_ub_button_text'              => $this->sanitize_text( (string) ( $request['_ub_button_text'] ?? $defaults['_ub_button_text'] ) ),

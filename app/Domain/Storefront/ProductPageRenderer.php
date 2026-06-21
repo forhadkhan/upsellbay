@@ -69,7 +69,10 @@ final class ProductPageRenderer extends AbstractOfferRenderer {
 
 		$html = '';
 		if ( ! $heading_rendered ) {
-			$heading_text = \WPAnchorBay\UpsellBay\Core\Hooks::filter( 'upsellbay_product_upsell_heading', __( 'Complete this product', 'upsellbay' ) );
+			$heading_text = (string) ( $meta['_ub_section_heading'] ?? '' );
+			if ( '' === $heading_text ) {
+				$heading_text = \WPAnchorBay\UpsellBay\Core\Hooks::filter( 'upsellbay_product_upsell_heading', __( 'Recommended for you', 'upsellbay' ) );
+			}
 			if ( '' !== $heading_text ) {
 				$html .= '<h3 class="upsellbay-offer-section__heading">' . $this->esc_html( $heading_text ) . '</h3>';
 			}

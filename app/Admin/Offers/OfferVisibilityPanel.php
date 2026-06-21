@@ -56,7 +56,7 @@ final class OfferVisibilityPanel {
 		};
 
 		echo '<div class="postbox upsellbay-offer-visibility-panel">';
-		echo '<h2><span>' . esc_html__( 'Visibility Inspector', 'upsellbay' ) . '</span></h2>';
+		echo '<h2 style="padding-left: 12px;"><span>' . esc_html__( 'Visibility Inspector', 'upsellbay' ) . '</span></h2>';
 		echo '<div class="inside">';
 		echo '<div class="notice inline ' . esc_attr( $notice_class ) . '"><p>' . esc_html( $report['summary'] ) . '</p></div>';
 		echo '<p><strong>' . esc_html__( 'Preview readiness:', 'upsellbay' ) . '</strong> ' . esc_html( $report['preview']['message'] ) . '</p>';

@@ -315,6 +315,23 @@ function upsellbay_core_business_logic_tests(): array {
 			assert_contains( '<img', $html );
 			assert_contains( '$25.00', $html );
 			assert_same( array( 'views' => 1 ), $events[0][1] );
+
+			$product_renderer = new ProductPageRenderer( new DiscountCalculator() );
+			$product_html     = $product_renderer->render_offer(
+				array(
+					'id'    => 13,
+					'title' => 'Product upsell',
+					'meta'  => array(
+						'_ub_offer_type'       => 'product_upsell',
+						'_ub_offer_product_id' => 50,
+						'_ub_headline'         => 'Frequently bought together',
+						'_ub_section_heading'  => 'Recommended for you',
+					),
+				),
+				array( 'cart_product_ids' => array() )
+			);
+
+			assert_contains( 'Recommended for you', $product_html );
 		},
 		'public routes validate token rate limit and ignore client supplied price' => static function (): void {
 			$session = upsellbay_array_cart_session();
@@ -354,6 +371,7 @@ function upsellbay_core_business_logic_tests(): array {
 			$offer                                  = upsellbay_phase4_offer( 61, 'checkout_bump', 61, 1 );
 			$offer['meta']['_ub_discount_type']     = 'percent';
 			$offer['meta']['_ub_discount_value']    = '25';
+			$offer['meta']['_ub_section_heading']   = 'Recommended for you';
 			$repository                             = upsellbay_test_offer_repository( array( 61 => $offer ) );
 			$extender                               = new StoreApiExtender(
 				$repository,
@@ -367,6 +385,7 @@ function upsellbay_core_business_logic_tests(): array {
 
 			assert_contains( '$100.00', $data['checkout_bump'][0]['price_html'] );
 			assert_contains( '$75.00', $data['checkout_bump'][0]['price_html'] );
+			assert_same( 'Recommended for you', $data['checkout_bump'][0]['section_heading'] );
 		},
 		'attribution writer and reader use woo crud object methods only' => static function (): void {
 			$item   = new UpsellBay_Test_Meta_Object();

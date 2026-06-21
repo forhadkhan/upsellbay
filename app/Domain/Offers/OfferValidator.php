@@ -127,6 +127,7 @@ final class OfferValidator {
 		$normalized['_ub_reason_label']             = substr( $this->sanitize_text( $normalized['_ub_reason_label'] ), 0, 80 );
 		$normalized['_ub_conflict_override']        = $this->to_bool( $normalized['_ub_conflict_override'] );
 		$normalized['_ub_conflict_override_reason'] = substr( $this->sanitize_text( $normalized['_ub_conflict_override_reason'] ), 0, 240 );
+		$normalized['_ub_section_heading']          = substr( $this->sanitize_text( $normalized['_ub_section_heading'] ), 0, 80 );
 		$normalized['_ub_headline']                 = substr( $this->sanitize_text( $normalized['_ub_headline'] ), 0, 80 );
 		$normalized['_ub_body']                     = substr( $this->sanitize_html( $normalized['_ub_body'] ), 0, 240 );
 		$normalized['_ub_button_text']              = substr( $this->sanitize_text( $normalized['_ub_button_text'] ), 0, 40 );

@@ -48,6 +48,7 @@ final class OfferSchema {
 			'_ub_reason_label'             => '',
 			'_ub_conflict_override'        => false,
 			'_ub_conflict_override_reason' => '',
+			'_ub_section_heading'          => '',
 			'_ub_headline'                 => '',
 			'_ub_body'                     => '',
 			'_ub_button_text'              => '',

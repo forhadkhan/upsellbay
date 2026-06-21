@@ -130,6 +130,7 @@ const CartCrossSellsList = ( { extensions } ) => {
 	}
 
 	const visibleOffers = offers.filter( ( offer ) => ! dismissedOfferIds.includes( offer.id ) );
+	const sectionHeading = visibleOffers.find( ( offer ) => offer.section_heading )?.section_heading || __( 'Recommended for you', 'upsellbay' );
 
 	if ( visibleOffers.length === 0 ) {
 		return null;
@@ -147,7 +148,7 @@ const CartCrossSellsList = ( { extensions } ) => {
 
 	return (
 		<div className="upsellbay-block-offers upsellbay-block-offers--cart">
-			<h3 className="upsellbay-offer-section__heading">{ __( 'Still missing?', 'upsellbay' ) }</h3>
+			<h3 className="upsellbay-offer-section__heading">{ sectionHeading }</h3>
 			{ visibleOffers.map( ( offer ) => (
 				<CartCrossSellOffer key={ offer.id } offer={ offer } onDismiss={ handleDismiss } />
 			) ) }

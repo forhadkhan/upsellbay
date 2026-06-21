@@ -90,6 +90,7 @@ function upsellbay_merchant_experience_tests(): array {
 			assert_same( 'draft', $meta['_ub_status'] );
 			assert_same( 'Complete your order with this add-on', $meta['_ub_headline'] );
 			assert_same( 'Add to order', $meta['_ub_button_text'] );
+			assert_same( 'Recommended for you', $defaults->for_type( 'cart_crosssell' )['_ub_section_heading'] );
 			assert_same( 'before_submit', $meta['_ub_placement_config']['position'] );
 			assert_same( '0.000000', $meta['_ub_discount_value'] );
 			assert_true( $meta['_ub_show_image'] );
@@ -123,6 +124,7 @@ function upsellbay_merchant_experience_tests(): array {
 			);
 
 			assert_same( array( 'basics', 'targeting', 'recommendations', 'discount', 'placement', 'schedule', 'advanced' ), array_keys( $page->sections() ) );
+			assert_true( in_array( '_ub_section_heading', $page->sections()['basics']['fields'], true ) );
 			assert_false( $page->sections()['advanced']['collapsed'] );
 			assert_contains( 'server-side', $page->help_tips()['discount'] );
 			assert_same( 'upsellbay-offer-product-id', $page->accessibility()['offer_product_id']['label_for'] );

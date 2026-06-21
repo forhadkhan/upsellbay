@@ -45,6 +45,7 @@ final class OfferDefaults {
 				'_ub_reason_label'             => $copy['reason_label'],
 				'_ub_conflict_override'        => false,
 				'_ub_conflict_override_reason' => '',
+				'_ub_section_heading'          => $copy['section_heading'],
 				'_ub_headline'                 => $copy['headline'],
 				'_ub_body'                     => $copy['body'],
 				'_ub_button_text'              => $copy['button_text'],
@@ -59,13 +60,14 @@ final class OfferDefaults {
 	 * Return placement-specific copy.
 	 *
 	 * @param string $offer_type Offer type.
-	 * @return array{offer_goal: string, reason_label: string, headline: string, body: string, button_text: string}
+	 * @return array{offer_goal: string, reason_label: string, section_heading: string, headline: string, body: string, button_text: string}
 	 */
 	private function copy_for_type( string $offer_type ): array {
 		$copy = array(
 			OfferSchema::TYPE_CHECKOUT_BUMP  => array(
 				'offer_goal'   => 'add_on',
 				'reason_label' => __( 'Special Offer', 'upsellbay' ),
+				'section_heading' => __( 'Recommended for you', 'upsellbay' ),
 				'headline'     => __( 'Complete your order with this add-on', 'upsellbay' ),
 				'body'         => __( 'Add a relevant product before placing the order.', 'upsellbay' ),
 				'button_text'  => __( 'Add to order', 'upsellbay' ),
@@ -73,6 +75,7 @@ final class OfferDefaults {
 			OfferSchema::TYPE_PRODUCT_UPSELL => array(
 				'offer_goal'   => 'add_on',
 				'reason_label' => __( 'Recommended', 'upsellbay' ),
+				'section_heading' => __( 'Recommended for you', 'upsellbay' ),
 				'headline'     => __( 'Frequently bought with this product', 'upsellbay' ),
 				'body'         => __( 'Show a relevant add-on on the product page.', 'upsellbay' ),
 				'button_text'  => __( 'Add item', 'upsellbay' ),
@@ -80,6 +83,7 @@ final class OfferDefaults {
 			OfferSchema::TYPE_CART_CROSSSELL => array(
 				'offer_goal'   => 'upgrade',
 				'reason_label' => __( 'Most Popular', 'upsellbay' ),
+				'section_heading' => __( 'Recommended for you', 'upsellbay' ),
 				'headline'     => __( 'Recommended for your cart', 'upsellbay' ),
 				'body'         => __( 'Offer a useful add-on while the shopper reviews the cart.', 'upsellbay' ),
 				'button_text'  => __( 'Add to cart', 'upsellbay' ),
@@ -87,6 +91,7 @@ final class OfferDefaults {
 			OfferSchema::TYPE_THANKYOU_OFFER => array(
 				'offer_goal'   => 'follow_on',
 				'reason_label' => __( 'Exclusive', 'upsellbay' ),
+				'section_heading' => __( 'Recommended for you', 'upsellbay' ),
 				'headline'     => __( 'Add another useful item', 'upsellbay' ),
 				'body'         => __( 'Send shoppers to a separate checkout for this follow-on offer.', 'upsellbay' ),
 				'button_text'  => __( 'View offer', 'upsellbay' ),

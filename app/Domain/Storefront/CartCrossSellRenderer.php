@@ -69,7 +69,10 @@ final class CartCrossSellRenderer extends AbstractOfferRenderer {
 
 		$html = '';
 		if ( ! $heading_rendered ) {
-			$heading_text = \WPAnchorBay\UpsellBay\Core\Hooks::filter( 'upsellbay_cart_crosssell_heading', __( 'Still missing?', 'upsellbay' ) );
+			$heading_text = (string) ( $meta['_ub_section_heading'] ?? '' );
+			if ( '' === $heading_text ) {
+				$heading_text = \WPAnchorBay\UpsellBay\Core\Hooks::filter( 'upsellbay_cart_crosssell_heading', __( 'Recommended for you', 'upsellbay' ) );
+			}
 			if ( '' !== $heading_text ) {
 				$html .= '<h3 class="upsellbay-offer-section__heading">' . $this->esc_html( $heading_text ) . '</h3>';
 			}
