@@ -37,11 +37,6 @@ final class CompatibilityScanner {
 			'severity' => 'warning',
 			'message'  => 'CheckoutWC replaces the standard checkout surface. Use test mode before enabling checkout bumps.',
 		),
-		'cartbay'    => array(
-			'plugin'   => 'cartbay/cartbay.php',
-			'severity' => 'info',
-			'message'  => 'CartBay can coexist with UpsellBay. UpsellBay does not read or write CartBay recovery data.',
-		),
 	);
 
 	/**
