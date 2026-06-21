@@ -93,6 +93,12 @@ if ( ! function_exists( 'sanitize_text_field' ) ) {
 	}
 }
 
+if ( ! function_exists( 'sanitize_key' ) ) {
+	function sanitize_key( string $key ): string {
+		return strtolower( preg_replace( '/[^a-zA-Z0-9_\-]/', '', $key ) ?? '' );
+	}
+}
+
 if ( ! function_exists( 'wp_unslash' ) ) {
 	function wp_unslash( $value ) {
 		return $value;
@@ -304,9 +310,17 @@ if ( ! class_exists( 'WP_Error' ) ) {
 		 */
 		private string $message;
 
-		public function __construct( string $code = '', string $message = '' ) {
+		/**
+		 * Error data.
+		 *
+		 * @var mixed
+		 */
+		private $data;
+
+		public function __construct( string $code = '', string $message = '', $data = null ) {
 			$this->code    = $code;
 			$this->message = $message;
+			$this->data    = $data;
 		}
 
 		public function get_error_code(): string {
@@ -315,6 +329,14 @@ if ( ! class_exists( 'WP_Error' ) ) {
 
 		public function get_error_message(): string {
 			return $this->message;
+		}
+
+		public function get_error_messages(): array {
+			return array( $this->message );
+		}
+
+		public function get_error_data() {
+			return $this->data;
 		}
 	}
 }

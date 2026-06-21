@@ -141,6 +141,8 @@ final class LicenseClient {
 			array(
 				'headers' => array(
 					'Content-Type' => 'application/json',
+					'Accept'       => 'application/json',
+					'User-Agent'   => $this->request_user_agent(),
 				),
 				'timeout' => 15,
 				'body'    => wp_json_encode(
@@ -200,6 +202,10 @@ final class LicenseClient {
 				Constants::LICENSE_SERVER_URL . '/check'
 			),
 			array(
+				'headers' => array(
+					'Accept'     => 'application/json',
+					'User-Agent' => $this->request_user_agent(),
+				),
 				'timeout' => 15,
 			)
 		);
@@ -210,7 +216,7 @@ final class LicenseClient {
 			return true;
 		}
 
-		$result = $this->parse_license_response( $response, sanitize_text_field( (string) $status['key'] ) );
+		$result = $this->parse_license_response( $response, sanitize_text_field( (string) $status['key'] ), '/check' );
 
 		if ( is_wp_error( $result ) ) {
 			$this->update_status_flag( 'inactive' );
@@ -379,7 +385,7 @@ final class LicenseClient {
 	 * @return true|WP_Error
 	 */
 	private function handle_license_response( mixed $response, string $license_key ): true|WP_Error {
-		$result = $this->parse_license_response( $response, $license_key );
+		$result = $this->parse_license_response( $response, $license_key, '/activate' );
 
 		if ( is_wp_error( $result ) ) {
 			$this->maybe_mark_matching_key_invalid( $license_key );
@@ -425,38 +431,52 @@ final class LicenseClient {
 	 *
 	 * @param array|WP_Error|mixed $response    Remote response.
 	 * @param string               $license_key Sanitized license key.
+	 * @param string               $endpoint    Remote endpoint suffix.
 	 *
 	 * @return array<string, mixed>|WP_Error
 	 */
-	private function parse_license_response( mixed $response, string $license_key ): array|WP_Error {
+	private function parse_license_response( mixed $response, string $license_key, string $endpoint = '/activate' ): array|WP_Error {
 		if ( ! is_array( $response ) ) {
 			return new WP_Error(
 				'upsellbay_license_invalid_response',
-				__( 'The license server returned an unexpected response.', 'upsellbay' )
+				__( 'The license server returned an unexpected response.', 'upsellbay' ),
+				array(
+					'request_data' => $this->build_request_context( $license_key, $endpoint ),
+				)
 			);
 		}
 
 		$response_code = wp_remote_retrieve_response_code( $response );
 		$body          = wp_remote_retrieve_body( $response );
 		$data          = json_decode( $body, true );
+		$headers       = $this->normalize_response_headers( $response );
 
 		if ( ! is_array( $data ) ) {
 			$data = array();
 		}
 
-		$is_valid = $this->response_indicates_valid_license( $response_code, $data );
+		$payload  = $this->extract_license_payload( $data );
+		$is_valid = $this->response_indicates_valid_license( $response_code, $payload );
 
 		if ( ! $is_valid ) {
-			$message = $this->license_error_message( $data );
+			$error_code = $this->license_error_code( $response_code, $headers, $payload, $body );
+			$message    = $this->license_error_message( $response_code, $headers, $payload, $body );
 
-			return new WP_Error( 'upsellbay_license_inactive', $message );
+			return new WP_Error(
+				$error_code,
+				$message,
+				array(
+					'request_data'  => $this->build_request_context( $license_key, $endpoint ),
+					'response_data' => $this->build_response_context( $response_code, $headers, $payload, $body ),
+				)
+			);
 		}
 
 		$normalized = array(
 			'key'          => $license_key,
 			'status'       => 'active',
-			'expires_at'   => isset( $data['expires_at'] ) ? sanitize_text_field( (string) $data['expires_at'] ) : '',
-			'plan'         => isset( $data['plan'] ) ? sanitize_text_field( (string) $data['plan'] ) : '',
+			'expires_at'   => isset( $payload['expires_at'] ) ? sanitize_text_field( (string) $payload['expires_at'] ) : '',
+			'plan'         => isset( $payload['plan'] ) ? sanitize_text_field( (string) $payload['plan'] ) : '',
 			'domain'       => $this->get_domain(),
 			'activated_at' => time(),
 		);
@@ -481,14 +501,19 @@ final class LicenseClient {
 			return false;
 		}
 
-		$status  = isset( $data['status'] ) ? sanitize_text_field( (string) $data['status'] ) : '';
+		$status  = isset( $data['status'] ) ? strtolower( sanitize_text_field( (string) $data['status'] ) ) : '';
 		$license = isset( $data['license'] ) ? sanitize_text_field( (string) $data['license'] ) : '';
+		$success = isset( $data['success'] ) ? filter_var( $data['success'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE ) : null;
 
 		if ( '' !== $license && in_array( strtolower( $license ), array( 'valid', 'active' ), true ) ) {
 			return true;
 		}
 
-		return in_array( $status, array( 'active', 'valid', 'success' ), true );
+		if ( in_array( $status, array( 'active', 'valid', 'success' ), true ) ) {
+			return true;
+		}
+
+		return true === $success && isset( $data['key'] ) && isset( $data['domain'] );
 	}
 
 	/**
@@ -496,11 +521,26 @@ final class LicenseClient {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param array<string, mixed> $data Decoded response body.
+	 * @param int                  $response_code HTTP status code.
+	 * @param array<string,string> $headers       Normalized response headers.
+	 * @param array<string, mixed> $data          Decoded response body.
+	 * @param string               $body          Raw response body.
 	 *
 	 * @return string
 	 */
-	private function license_error_message( array $data ): string {
+	private function license_error_message( int $response_code, array $headers, array $data, string $body ): string {
+		if ( $this->response_is_cloudflare_challenge( $response_code, $headers, $body ) ) {
+			return __( 'The license server blocked this activation request with a security challenge. Please try again shortly. If the problem persists, contact WP Anchor Bay support to whitelist server-to-server license requests.', 'upsellbay' );
+		}
+
+		if ( $response_code >= 500 || 429 === $response_code ) {
+			return __( 'The license server is temporarily unavailable. Please try again shortly.', 'upsellbay' );
+		}
+
+		if ( $response_code > 0 && ( empty( $data ) || ! $this->response_is_json( $headers, $body ) ) ) {
+			return __( 'The license server returned an unexpected non-JSON response. Please try again shortly.', 'upsellbay' );
+		}
+
 		if ( isset( $data['message'] ) && is_string( $data['message'] ) ) {
 			return sanitize_text_field( $data['message'] );
 		}
@@ -510,6 +550,207 @@ final class LicenseClient {
 		}
 
 		return __( 'The license key could not be activated.', 'upsellbay' );
+	}
+
+	/**
+	 * Extract the best available error code for a failed license response.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int                  $response_code HTTP status code.
+	 * @param array<string,string> $headers       Normalized response headers.
+	 * @param array<string,mixed>  $data          Decoded response payload.
+	 * @param string               $body          Raw response body.
+	 *
+	 * @return string
+	 */
+	private function license_error_code( int $response_code, array $headers, array $data, string $body ): string {
+		if ( $this->response_is_cloudflare_challenge( $response_code, $headers, $body ) ) {
+			return 'upsellbay_license_server_challenge';
+		}
+
+		if ( $response_code > 0 && ! $this->response_is_json( $headers, $body ) ) {
+			return 'upsellbay_license_server_error';
+		}
+
+		if ( isset( $data['error'] ) && is_array( $data['error'] ) && isset( $data['error']['code'] ) && is_string( $data['error']['code'] ) ) {
+			return sanitize_key( (string) $data['error']['code'] );
+		}
+
+		if ( isset( $data['code'] ) && is_string( $data['code'] ) ) {
+			return sanitize_key( (string) $data['code'] );
+		}
+
+		if ( $response_code >= 500 || 429 === $response_code || 403 === $response_code ) {
+			return 'upsellbay_license_server_error';
+		}
+
+		return 'upsellbay_license_inactive';
+	}
+
+	/**
+	 * Normalize license response payloads that may be wrapped in a data object.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<string,mixed> $data Decoded response body.
+	 *
+	 * @return array<string,mixed>
+	 */
+	private function extract_license_payload( array $data ): array {
+		if ( isset( $data['data'] ) && is_array( $data['data'] ) ) {
+			return array_replace( $data, $data['data'] );
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Build safe request context for diagnostics.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $license_key Sanitized license key.
+	 * @param string $endpoint    Remote endpoint suffix.
+	 *
+	 * @return array<string,mixed>
+	 */
+	private function build_request_context( string $license_key, string $endpoint = '/activate' ): array {
+		return array(
+			'endpoint'       => Constants::LICENSE_SERVER_URL . $endpoint,
+			'product_slug'   => Constants::LICENSE_PRODUCT_SLUG,
+			'domain'         => $this->get_domain(),
+			'license_suffix' => substr( $license_key, -4 ),
+		);
+	}
+
+	/**
+	 * Build safe response context for diagnostics.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int                  $response_code HTTP status code.
+	 * @param array<string,string> $headers       Response headers.
+	 * @param array<string,mixed>  $data          Decoded response payload.
+	 * @param string               $body          Raw response body.
+	 *
+	 * @return array<string,mixed>
+	 */
+	private function build_response_context( int $response_code, array $headers, array $data, string $body ): array {
+		$context = array(
+			'http_status' => $response_code,
+			'headers'     => $headers,
+		);
+
+		if ( ! empty( $data ) ) {
+			$context['body'] = $data;
+			return $context;
+		}
+
+		$excerpt = trim( strip_tags( substr( $body, 0, 200 ) ) );
+
+		if ( '' !== $excerpt ) {
+			$context['body_excerpt'] = sanitize_text_field( $excerpt );
+		}
+
+		return $context;
+	}
+
+	/**
+	 * Normalize response headers to a plain string map.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<string,mixed> $response Remote response.
+	 *
+	 * @return array<string,string>
+	 */
+	private function normalize_response_headers( array $response ): array {
+		$raw_headers = $response['headers'] ?? array();
+
+		if ( is_object( $raw_headers ) && method_exists( $raw_headers, 'getAll' ) ) {
+			$raw_headers = $raw_headers->getAll();
+		}
+
+		if ( ! is_array( $raw_headers ) ) {
+			return array();
+		}
+
+		$headers = array();
+
+		foreach ( $raw_headers as $key => $value ) {
+			if ( ! is_string( $key ) ) {
+				continue;
+			}
+
+			if ( is_array( $value ) ) {
+				$value = implode( ', ', array_map( 'strval', $value ) );
+			}
+
+			if ( ! is_scalar( $value ) ) {
+				continue;
+			}
+
+			$headers[ strtolower( $key ) ] = sanitize_text_field( (string) $value );
+		}
+
+		return $headers;
+	}
+
+	/**
+	 * Determine whether the response body is JSON.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<string,string> $headers Response headers.
+	 * @param string               $body    Raw response body.
+	 *
+	 * @return bool
+	 */
+	private function response_is_json( array $headers, string $body ): bool {
+		if ( isset( $headers['content-type'] ) && str_contains( strtolower( $headers['content-type'] ), 'json' ) ) {
+			return true;
+		}
+
+		$trimmed = ltrim( $body );
+
+		return '' !== $trimmed && ( str_starts_with( $trimmed, '{' ) || str_starts_with( $trimmed, '[' ) );
+	}
+
+	/**
+	 * Detect Cloudflare challenge responses so they are treated as server errors.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int                  $response_code HTTP status code.
+	 * @param array<string,string> $headers       Response headers.
+	 * @param string               $body          Raw response body.
+	 *
+	 * @return bool
+	 */
+	private function response_is_cloudflare_challenge( int $response_code, array $headers, string $body ): bool {
+		if ( 403 !== $response_code ) {
+			return false;
+		}
+
+		if ( isset( $headers['cf-mitigated'] ) && 'challenge' === strtolower( $headers['cf-mitigated'] ) ) {
+			return true;
+		}
+
+		$body = strtolower( $body );
+
+		return str_contains( $body, 'challenges.cloudflare.com' ) || str_contains( $body, 'just a moment' );
+	}
+
+	/**
+	 * Build a stable user agent for server-to-server license requests.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string
+	 */
+	private function request_user_agent(): string {
+		return 'UpsellBay/' . Constants::VERSION . '; ' . home_url( '/' );
 	}
 
 	/**

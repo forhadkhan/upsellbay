@@ -219,36 +219,99 @@ function upsellbay_foundation_tests(): array {
 				assert_same( array(), $stored );
 				assert_false( isset( $GLOBALS['upsellbay_test_transients']['upsellbay_license_valid'] ) );
 			},
-			'license activation requires a valid server license field before storing active state' => static function (): void {
-				$stored = array();
-				$client = new LicenseClient(
-					static fn (): array => $stored,
-					static function ( array $state ) use ( &$stored ): bool {
-						$stored = $state;
-						return true;
-					},
-					static fn (): string => 'store.test',
-					static fn (): array => array(
-						'response' => array( 'code' => 200 ),
-						'body'     => wp_json_encode(
-							array(
-								'success' => true,
-								'license' => 'invalid',
-							)
-						),
-					)
-				);
+		'license activation requires a valid server license field before storing active state' => static function (): void {
+			$stored = array();
+			$client = new LicenseClient(
+				static fn (): array => $stored,
+				static function ( array $state ) use ( &$stored ): bool {
+					$stored = $state;
+					return true;
+				},
+				static fn (): string => 'store.test',
+				static fn (): array => array(
+					'response' => array( 'code' => 200 ),
+					'body'     => wp_json_encode(
+						array(
+							'success' => true,
+							'license' => 'invalid',
+						)
+					),
+				)
+			);
 
-				$result = $client->activate( 'WPAB-FAKEKEY-DOESNOTEXIST' );
+			$result = $client->activate( 'WPAB-FAKEKEY-DOESNOTEXIST' );
 
-				assert_true( is_wp_error( $result ) );
-				assert_same( array(), $stored );
-			},
-			'license activation rejection corrects a previously stored matching false key' => static function (): void {
-				$stored = array(
-					'key'    => 'WPAB-FAKEKEY-DOESNOTEXIST',
-					'status' => 'active',
-				);
+			assert_true( is_wp_error( $result ) );
+			assert_same( array(), $stored );
+		},
+		'license activation accepts valid responses wrapped in a data payload' => static function (): void {
+			$stored = array();
+			$client = new LicenseClient(
+				static fn (): array => $stored,
+				static function ( array $state ) use ( &$stored ): bool {
+					$stored = $state;
+					return true;
+				},
+				static fn (): string => 'store.test',
+				static fn (): array => array(
+					'response' => array( 'code' => 200 ),
+					'body'     => wp_json_encode(
+						array(
+							'success' => true,
+							'data'    => array(
+								'status'     => 'active',
+								'license'    => 'valid',
+								'expires_at' => '2026-12-31 23:59:59',
+								'plan'       => 'growth',
+							),
+						)
+					),
+				)
+			);
+
+			$result = $client->activate( 'WPAB-NESTED-VALID-123456789012' );
+
+			assert_true( true === $result );
+			assert_same( 'active', $stored['status'] );
+			assert_same( 'growth', $stored['plan'] );
+			assert_same( '2026-12-31 23:59:59', $stored['expires_at'] );
+		},
+		'license activation treats cloudflare challenge responses as server errors with diagnostics' => static function (): void {
+			$stored = array();
+			$client = new LicenseClient(
+				static fn (): array => $stored,
+				static function ( array $state ) use ( &$stored ): bool {
+					$stored = $state;
+					return true;
+				},
+				static fn (): string => 'store.test',
+				static fn (): array => array(
+					'response' => array( 'code' => 403 ),
+					'headers'  => array(
+						'content-type' => 'text/html; charset=UTF-8',
+						'cf-mitigated' => 'challenge',
+					),
+					'body'     => '<html><title>Just a moment...</title><script src="https://challenges.cloudflare.com"></script></html>',
+				)
+			);
+
+			$result = $client->activate( 'WPAB-CHALLENGE-123456789012' );
+
+			assert_true( is_wp_error( $result ) );
+			assert_same( 'upsellbay_license_server_challenge', $result->get_error_code() );
+			assert_contains( 'security challenge', $result->get_error_message() );
+			assert_same( array(), $stored );
+
+			$error_data = $result->get_error_data();
+			assert_same( 403, $error_data['response_data']['http_status'] );
+			assert_same( 'challenge', $error_data['response_data']['headers']['cf-mitigated'] );
+			assert_same( '9012', $error_data['request_data']['license_suffix'] );
+		},
+		'license activation rejection corrects a previously stored matching false key' => static function (): void {
+			$stored = array(
+				'key'    => 'WPAB-FAKEKEY-DOESNOTEXIST',
+				'status' => 'active',
+			);
 			$client = new LicenseClient(
 				static fn (): array => $stored,
 				static function ( array $state ) use ( &$stored ): bool {

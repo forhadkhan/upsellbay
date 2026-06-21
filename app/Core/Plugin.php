@@ -1016,15 +1016,36 @@ final class Plugin {
 	 */
 	public function log_license_activation_failed( string $license_key, string $error_code, mixed $error_obj = null ): void {
 		$context = array(
-			'source'  => 'license_activation',
-			'user_id' => get_current_user_id(),
+			'source'   => 'license_activation',
+			'user_id'  => get_current_user_id(),
+			'metadata' => array(
+				'license_suffix' => substr( $license_key, -4 ),
+			),
 		);
 
-		if ( is_wp_error( $error_obj ) ) {
-			$context['metadata'] = array(
-				'error_messages' => $error_obj->get_error_messages(),
-				'error_data'     => $error_obj->get_error_data(),
+		if ( is_wp_error( $error_obj ) && method_exists( $error_obj, 'get_error_messages' ) ) {
+			$context['metadata'] = array_merge(
+				$context['metadata'],
+				array(
+					'error_messages' => $error_obj->get_error_messages(),
+				)
 			);
+		}
+
+		if ( is_wp_error( $error_obj ) && method_exists( $error_obj, 'get_error_data' ) ) {
+			$error_data = $error_obj->get_error_data();
+
+			if ( is_array( $error_data ) ) {
+				if ( isset( $error_data['request_data'] ) && is_array( $error_data['request_data'] ) ) {
+					$context['request_data'] = $error_data['request_data'];
+				}
+
+				if ( isset( $error_data['response_data'] ) && is_array( $error_data['response_data'] ) ) {
+					$context['response_data'] = $error_data['response_data'];
+				}
+
+				$context['metadata']['error_data'] = $error_data;
+			}
 		}
 
 		$this->container->get( LoggerInterface::class )->warning(
@@ -1048,11 +1069,26 @@ final class Plugin {
 			'user_id' => 0,
 		);
 
-		if ( is_wp_error( $error_obj ) ) {
+		if ( is_wp_error( $error_obj ) && method_exists( $error_obj, 'get_error_messages' ) ) {
 			$context['metadata'] = array(
 				'error_messages' => $error_obj->get_error_messages(),
-				'error_data'     => $error_obj->get_error_data(),
 			);
+		}
+
+		if ( is_wp_error( $error_obj ) && method_exists( $error_obj, 'get_error_data' ) ) {
+			$error_data = $error_obj->get_error_data();
+
+			if ( is_array( $error_data ) ) {
+				if ( isset( $error_data['response_data'] ) && is_array( $error_data['response_data'] ) ) {
+					$context['response_data'] = $error_data['response_data'];
+				}
+
+				if ( isset( $error_data['request_data'] ) && is_array( $error_data['request_data'] ) ) {
+					$context['request_data'] = $error_data['request_data'];
+				}
+
+				$context['metadata']['error_data'] = $error_data;
+			}
 		}
 
 		$this->container->get( LoggerInterface::class )->warning(
