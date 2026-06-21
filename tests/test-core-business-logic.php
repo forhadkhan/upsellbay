@@ -410,14 +410,13 @@ function upsellbay_core_business_logic_tests(): array {
 			assert_same( array( 'dismissals' => 1 ), $events[1][1] );
 			assert_same( array( 'orders' => 1, 'revenue' => '30.000000', 'discount_total' => '5.000000' ), $events[2][1] );
 		},
-		'compatibility scanner detects risky checkout plugins without hard failing cartbay' => static function (): void {
+		'compatibility scanner detects risky checkout plugins without hard failing checkout' => static function (): void {
 			$scanner  = new CompatibilityScanner(
-				static fn ( string $plugin ): bool => in_array( $plugin, array( 'cartflows/cartflows.php', 'cartbay/cartbay.php' ), true )
+				static fn ( string $plugin ): bool => 'cartflows/cartflows.php' === $plugin
 			);
 			$findings = $scanner->findings();
 
 			assert_same( 'warning', $findings['cartflows']['severity'] );
-			assert_same( 'info', $findings['cartbay']['severity'] );
 			assert_false( $scanner->should_block_checkout() );
 		},
 		'visibility inspector reports checkout preview prerequisites' => static function (): void {
@@ -441,9 +440,6 @@ function upsellbay_core_business_logic_tests(): array {
 
 			foreach ( $paths as $path ) {
 				$contents = (string) file_get_contents( $path );
-				if ( str_contains( $path, 'CompatibilityScanner.php' ) ) {
-					continue;
-				}
 				assert_false( str_contains( $contents, 'cartbay_' ) );
 				assert_false( str_contains( $contents, '_cartbay_' ) );
 				assert_false( str_contains( $contents, 'WPAnchorBay\\CartBay' ) );
