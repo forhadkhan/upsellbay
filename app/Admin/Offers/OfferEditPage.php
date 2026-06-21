@@ -840,10 +840,12 @@ final class OfferEditPage {
 	 * @return array<string, mixed>
 	 */
 	private function new_offer_meta(): array {
-		$schema = new OfferSchema();
+		$schema  = new OfferSchema();
+		$defaults = $this->defaults->for_type( OfferSchema::TYPE_CHECKOUT_BUMP );
 
 		return array_replace(
 			$schema->defaults(),
+			$defaults,
 			array(
 				'_ub_offer_type'       => '',
 				'_ub_status'           => 'draft',

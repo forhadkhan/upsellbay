@@ -851,6 +851,8 @@ function upsellbay_admin_architecture_tests(): array {
 			assert_contains( 'upsellbay-placement-config-advanced', $html );
 			assert_contains( 'data-upsellbay-json-field="_ub_placement_config"', $html );
 			assert_contains( 'value="">' . 'Select an offer type', $html );
+			assert_contains( 'value="Complete your order with this add-on"', $html );
+			assert_contains( 'value="Add to order"', $html );
 			assert_contains( 'data-upsellbay-offer-type-description', $html );
 		},
 		'offer editor preserves advanced placement config keys and defaults invalid config' => static function (): void {

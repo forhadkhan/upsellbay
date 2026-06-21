@@ -408,6 +408,79 @@ window.jQuery(function ($) {
 });
 
 /**
+ * UpsellBay offer type copy hydration.
+ */
+window.jQuery(function ($) {
+  const $select = $('#upsellbay-_ub_offer_type');
+  const $headline = $('#upsellbay-_ub_headline');
+  const $buttonText = $('#upsellbay-_ub_button_text');
+  const $sectionHeading = $('#upsellbay-_ub_section_heading');
+
+  if (!$select.length) {
+    return;
+  }
+
+  const copyByType = {
+    checkout_bump: {
+      _ub_section_heading: __('Recommended for you', 'upsellbay'),
+      _ub_headline: __('Complete your order with this add-on', 'upsellbay'),
+      _ub_button_text: __('Add to order', 'upsellbay'),
+    },
+    product_upsell: {
+      _ub_section_heading: __('Recommended for you', 'upsellbay'),
+      _ub_headline: __('Frequently bought with this product', 'upsellbay'),
+      _ub_button_text: __('Add item', 'upsellbay'),
+    },
+    cart_crosssell: {
+      _ub_section_heading: __('Recommended for you', 'upsellbay'),
+      _ub_headline: __('Recommended for your cart', 'upsellbay'),
+      _ub_button_text: __('Add to cart', 'upsellbay'),
+    },
+    thankyou_offer: {
+      _ub_section_heading: __('Recommended for you', 'upsellbay'),
+      _ub_headline: __('Add another useful item', 'upsellbay'),
+      _ub_button_text: __('View offer', 'upsellbay'),
+    },
+  };
+
+  let lastType = $select.val() || 'checkout_bump';
+
+  const currentValue = ($field) => ($field.length ? String($field.val() || '') : '');
+
+  const shouldHydrate = (value, previousType, key) => {
+    const defaults = copyByType[previousType] || {};
+    return '' === value || value === String(defaults[key] || '');
+  };
+
+  const hydrate = (nextType) => {
+    const defaults = copyByType[nextType];
+
+    if (!defaults) {
+      lastType = nextType;
+      return;
+    }
+
+    if ($sectionHeading.length && shouldHydrate(currentValue($sectionHeading), lastType, '_ub_section_heading')) {
+      $sectionHeading.val(defaults._ub_section_heading).trigger('input');
+    }
+
+    if ($headline.length && shouldHydrate(currentValue($headline), lastType, '_ub_headline')) {
+      $headline.val(defaults._ub_headline).trigger('input');
+    }
+
+    if ($buttonText.length && shouldHydrate(currentValue($buttonText), lastType, '_ub_button_text')) {
+      $buttonText.val(defaults._ub_button_text).trigger('input');
+    }
+
+    lastType = nextType;
+  };
+
+  $select.on('change', function () {
+    hydrate(String($(this).val() || ''));
+  });
+});
+
+/**
  * UpsellBay Recommendation Assistant
  */
 window.jQuery(function ($) {
