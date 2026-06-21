@@ -76,7 +76,9 @@ final class OfferValidator {
 		$normalized = $this->normalize( $meta );
 		$errors     = array();
 
-		if ( ! in_array( $normalized['_ub_offer_type'], $this->schema->offer_types(), true ) ) {
+		if ( '' === $normalized['_ub_offer_type'] ) {
+			$errors['_ub_offer_type'] = 'Offer type is required.';
+		} elseif ( ! in_array( $normalized['_ub_offer_type'], $this->schema->offer_types(), true ) ) {
 			$errors['_ub_offer_type'] = 'Invalid offer type.';
 		}
 

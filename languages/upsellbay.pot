@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-06-21T07:19:35+00:00\n"
+"POT-Creation-Date: 2026-06-21T07:40:04+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: upsellbay\n"
@@ -142,7 +142,7 @@ msgid "Performance date range"
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:115
-#: app/Admin/Offers/OfferEditPage.php:867
+#: app/Admin/Offers/OfferEditPage.php:924
 #: app/Admin/Offers/OffersPage.php:143
 msgid "Views"
 msgstr ""
@@ -152,7 +152,7 @@ msgid "Offer render events recorded in aggregate stats."
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:116
-#: app/Admin/Offers/OfferEditPage.php:868
+#: app/Admin/Offers/OfferEditPage.php:925
 #: app/Admin/Offers/OffersPage.php:144
 msgid "Accepts"
 msgstr ""
@@ -162,7 +162,7 @@ msgid "Accepted offers recorded in aggregate stats."
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:117
-#: app/Admin/Offers/OfferEditPage.php:870
+#: app/Admin/Offers/OfferEditPage.php:927
 msgid "Accept rate"
 msgstr ""
 
@@ -171,7 +171,7 @@ msgid "Accepted offers divided by offer views for this period."
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:118
-#: app/Admin/Offers/OfferEditPage.php:873
+#: app/Admin/Offers/OfferEditPage.php:930
 msgid "Attributed revenue"
 msgstr ""
 
@@ -180,12 +180,12 @@ msgid "Revenue attributed to accepted offers in aggregate stats."
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:123
-#: app/Admin/Offers/OfferEditPage.php:869
+#: app/Admin/Offers/OfferEditPage.php:926
 msgid "Dismissals"
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:124
-#: app/Admin/Offers/OfferEditPage.php:871
+#: app/Admin/Offers/OfferEditPage.php:928
 msgid "Orders"
 msgstr ""
 
@@ -540,6 +540,132 @@ msgid "Select a primary target product above to see AI/WooCommerce product recom
 msgstr ""
 
 #: app/Admin/Offers/OfferEditPage.php:553
+msgid "Select an offer type"
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:565
+msgid "All rules"
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:566
+msgid "Any rule"
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:572
+#: app/Admin/Offers/OffersPage.php:423
+msgid "Draft"
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:573
+#: app/Admin/Offers/OffersPage.php:421
+#: app/Admin/Settings/SettingsPage.php:625
+msgid "Active"
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:574
+#: app/Admin/Offers/OffersPage.php:422
+msgid "Paused"
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:580
+msgid "Draft offers are only visible in the admin. Active offers are shown to shoppers. Paused offers are temporarily hidden."
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:585
+msgid "Add-on (Complementary item)"
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:586
+msgid "Upgrade (Better version)"
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:587
+msgid "Protection (Warranty/Insurance)"
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:588
+msgid "Threshold Helper (Free shipping/discount)"
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:589
+msgid "Follow-on (Post-purchase)"
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:595
+msgid "Defines the primary intent of this offer. Used for conflict resolution and performance tracking."
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:598
+msgid "No discount"
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:599
+msgid "Percentage"
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:600
+msgid "Fixed amount off"
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:601
+msgid "Fixed offer price"
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:605
+msgid "Optional short description shown below the headline. Max 240 characters. Supports limited HTML: links, line breaks, bold, italic."
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:607
+msgid "Show the WooCommerce product image when available."
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:609
+msgid "Override conflict prevention (advanced)"
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:610
+msgid "If checked, this offer may show even if it conflicts with another offer or the current cart state. Use with caution."
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:614
+#: templates/admin/wizard.php:56
+msgid "Search for a product..."
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:615
+#: templates/admin/wizard.php:57
+msgid "Clear search"
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:640
+msgid "Lower numbers appear first when multiple offers are eligible for the same placement."
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:645
+msgid "Comma-separated product IDs. When set, this offer only appears if one of these products is in the cart or being viewed."
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:647
+msgid "Comma-separated category IDs. When set, this offer only appears if a product from one of these categories is in the cart or being viewed."
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:690
+msgid "Custom saved position"
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:696
+msgid "Choose from the predefined display positions. This updates the saved placement config without changing WooCommerce hook registration."
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:698
+msgid "Advanced JSON"
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:700
+msgid "Advanced users can add extra placement config keys here. The position selector preserves unknown keys when possible."
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:803
 #: app/Admin/Offers/OffersPage.php:387
 #: app/Admin/Offers/OffersPage.php:405
 #: app/Admin/Settings/SettingsPage.php:722
@@ -548,7 +674,7 @@ msgstr ""
 msgid "Checkout bump"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:554
+#: app/Admin/Offers/OfferEditPage.php:804
 #: app/Admin/Offers/OffersPage.php:388
 #: app/Admin/Offers/OffersPage.php:406
 #: app/Admin/Settings/SettingsPage.php:712
@@ -557,7 +683,7 @@ msgstr ""
 msgid "Product page offer"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:555
+#: app/Admin/Offers/OfferEditPage.php:805
 #: app/Admin/Offers/OffersPage.php:389
 #: app/Admin/Offers/OffersPage.php:407
 #: app/Admin/Settings/SettingsPage.php:717
@@ -565,142 +691,36 @@ msgstr ""
 msgid "Cart offer"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:556
+#: app/Admin/Offers/OfferEditPage.php:806
 #: templates/admin/wizard.php:47
 msgid "Thank-you follow-on offer"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:564
-msgid "All rules"
+#: app/Admin/Offers/OfferEditPage.php:819
+msgid "A checkout bump is a last-step add-on shown on checkout before Place order. Shoppers can add it without leaving checkout. It appears when the offer is active, its rules match the current cart or checkout context, and the offered product is available."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:565
-msgid "Any rule"
+#: app/Admin/Offers/OfferEditPage.php:820
+msgid "A product page offer is a related add-on shown near the add-to-cart area on matching product pages. It helps shoppers add a complementary item while considering a product. It appears when the offer is active, the viewed product matches your rules, and the offered product is available."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:571
-#: app/Admin/Offers/OffersPage.php:423
-msgid "Draft"
+#: app/Admin/Offers/OfferEditPage.php:821
+msgid "A cart offer is a cross-sell shown while shoppers review their cart. It recommends an extra item before they continue to checkout. It appears when the offer is active, the current cart matches your rules, and the offered product is available."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:572
-#: app/Admin/Offers/OffersPage.php:421
-#: app/Admin/Settings/SettingsPage.php:625
-msgid "Active"
+#: app/Admin/Offers/OfferEditPage.php:822
+msgid "A thank-you follow-on offer is a post-purchase offer shown on the order received page after the main order is complete. It sends shoppers to a separate checkout for the extra item. It appears when the offer is active, the completed order matches your rules, and the offered product is available."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:573
-#: app/Admin/Offers/OffersPage.php:422
-msgid "Paused"
-msgstr ""
-
-#: app/Admin/Offers/OfferEditPage.php:579
-msgid "Draft offers are only visible in the admin. Active offers are shown to shoppers. Paused offers are temporarily hidden."
-msgstr ""
-
-#: app/Admin/Offers/OfferEditPage.php:584
-msgid "Add-on (Complementary item)"
-msgstr ""
-
-#: app/Admin/Offers/OfferEditPage.php:585
-msgid "Upgrade (Better version)"
-msgstr ""
-
-#: app/Admin/Offers/OfferEditPage.php:586
-msgid "Protection (Warranty/Insurance)"
-msgstr ""
-
-#: app/Admin/Offers/OfferEditPage.php:587
-msgid "Threshold Helper (Free shipping/discount)"
-msgstr ""
-
-#: app/Admin/Offers/OfferEditPage.php:588
-msgid "Follow-on (Post-purchase)"
-msgstr ""
-
-#: app/Admin/Offers/OfferEditPage.php:594
-msgid "Defines the primary intent of this offer. Used for conflict resolution and performance tracking."
-msgstr ""
-
-#: app/Admin/Offers/OfferEditPage.php:597
-msgid "No discount"
-msgstr ""
-
-#: app/Admin/Offers/OfferEditPage.php:598
-msgid "Percentage"
-msgstr ""
-
-#: app/Admin/Offers/OfferEditPage.php:599
-msgid "Fixed amount off"
-msgstr ""
-
-#: app/Admin/Offers/OfferEditPage.php:600
-msgid "Fixed offer price"
-msgstr ""
-
-#: app/Admin/Offers/OfferEditPage.php:604
-msgid "Optional short description shown below the headline. Max 240 characters. Supports limited HTML: links, line breaks, bold, italic."
-msgstr ""
-
-#: app/Admin/Offers/OfferEditPage.php:606
-msgid "Show the WooCommerce product image when available."
-msgstr ""
-
-#: app/Admin/Offers/OfferEditPage.php:608
-msgid "Override conflict prevention (advanced)"
-msgstr ""
-
-#: app/Admin/Offers/OfferEditPage.php:609
-msgid "If checked, this offer may show even if it conflicts with another offer or the current cart state. Use with caution."
-msgstr ""
-
-#: app/Admin/Offers/OfferEditPage.php:613
-#: templates/admin/wizard.php:56
-msgid "Search for a product..."
-msgstr ""
-
-#: app/Admin/Offers/OfferEditPage.php:614
-#: templates/admin/wizard.php:57
-msgid "Clear search"
-msgstr ""
-
-#: app/Admin/Offers/OfferEditPage.php:639
-msgid "Lower numbers appear first when multiple offers are eligible for the same placement."
-msgstr ""
-
-#: app/Admin/Offers/OfferEditPage.php:644
-msgid "Comma-separated product IDs. When set, this offer only appears if one of these products is in the cart or being viewed."
-msgstr ""
-
-#: app/Admin/Offers/OfferEditPage.php:646
-msgid "Comma-separated category IDs. When set, this offer only appears if a product from one of these categories is in the cart or being viewed."
-msgstr ""
-
-#: app/Admin/Offers/OfferEditPage.php:689
-msgid "Custom saved position"
-msgstr ""
-
-#: app/Admin/Offers/OfferEditPage.php:695
-msgid "Choose from the predefined display positions. This updates the saved placement config without changing WooCommerce hook registration."
-msgstr ""
-
-#: app/Admin/Offers/OfferEditPage.php:697
-msgid "Advanced JSON"
-msgstr ""
-
-#: app/Admin/Offers/OfferEditPage.php:699
-msgid "Advanced users can add extra placement config keys here. The position selector preserves unknown keys when possible."
-msgstr ""
-
-#: app/Admin/Offers/OfferEditPage.php:851
+#: app/Admin/Offers/OfferEditPage.php:908
 msgid "Performance stats will appear here after the offer is saved and starts receiving traffic."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:877
+#: app/Admin/Offers/OfferEditPage.php:934
 msgid "Total discounts"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:890
+#: app/Admin/Offers/OfferEditPage.php:947
 msgid "All-time aggregate stats for this offer. For date-range analytics, use the Dashboard tab."
 msgstr ""
 

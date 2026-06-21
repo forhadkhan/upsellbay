@@ -639,6 +639,29 @@ function upsellbay_admin_architecture_tests(): array {
 
 			assert_false( $page->save( array( 'nonce' => 'bad' ) )['success'] );
 		},
+		'offer editor requires an offer type before a new offer can be created' => static function (): void {
+			$page = new OfferEditPage(
+				new OfferService( upsellbay_test_offer_repository( array() ), new OfferValidator( new OfferSchema(), static fn ( int $product_id ): bool => 25 === $product_id ) ),
+				new OfferValidator( new OfferSchema(), static fn ( int $product_id ): bool => 25 === $product_id ),
+				static fn (): bool => true,
+				static fn ( string $nonce ): bool => 'good' === $nonce
+			);
+
+			$result = $page->save(
+				array(
+					'nonce'                => 'good',
+					'title'                => 'Offer without type',
+					'_ub_offer_type'       => '',
+					'_ub_status'           => 'draft',
+					'_ub_offer_product_id' => '25',
+					'_ub_headline'         => 'Add this',
+					'_ub_button_text'      => 'Add',
+				)
+			);
+
+			assert_false( $result['success'] );
+			assert_contains( 'Offer type is required.', $result['message'] );
+		},
 		'offer editor blocks active conflicting offers before persistence' => static function (): void {
 			$saved       = array();
 			$repository  = upsellbay_test_offer_repository(
@@ -749,6 +772,8 @@ function upsellbay_admin_architecture_tests(): array {
 			assert_contains( 'Checkout bump, before Place order', $html );
 			assert_contains( 'upsellbay-placement-config-advanced', $html );
 			assert_contains( 'data-upsellbay-json-field="_ub_placement_config"', $html );
+			assert_contains( 'value="">' . 'Select an offer type', $html );
+			assert_contains( 'data-upsellbay-offer-type-description', $html );
 		},
 		'offer editor preserves advanced placement config keys and defaults invalid config' => static function (): void {
 			$saved      = array();

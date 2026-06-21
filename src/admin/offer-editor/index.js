@@ -373,6 +373,41 @@ window.jQuery(function ($) {
 });
 
 /**
+ * UpsellBay offer type guidance
+ */
+window.jQuery(function ($) {
+  const $select = $('#upsellbay-_ub_offer_type');
+  const $description = $('[data-upsellbay-offer-type-description]');
+
+  if (!$select.length || !$description.length) {
+    return;
+  }
+
+  let descriptions = {};
+
+  try {
+    descriptions = JSON.parse($description.attr('data-descriptions') || '{}');
+  } catch (error) {
+    descriptions = {};
+  }
+
+  function updateOfferTypeDescription() {
+    const selectedType = $select.val();
+    const text = descriptions[selectedType] || '';
+
+    if (!text) {
+      $description.text('').attr('hidden', true);
+      return;
+    }
+
+    $description.text(text).attr('hidden', false);
+  }
+
+  $select.on('change', updateOfferTypeDescription);
+  updateOfferTypeDescription();
+});
+
+/**
  * UpsellBay Recommendation Assistant
  */
 window.jQuery(function ($) {
@@ -783,7 +818,10 @@ window.jQuery(function ($) {
 
   function updateSummary() {
     const status = $('#upsellbay-_ub_status').val() || 'draft';
-    const placement = $('#upsellbay-_ub_offer_type option:selected').text();
+    const offerType = $('#upsellbay-_ub_offer_type').val();
+    const placement = offerType
+      ? $('#upsellbay-_ub_offer_type option:selected').text()
+      : 'Not selected';
     const discountType = $('#upsellbay-_ub_discount_type').val();
     const discountVal = parseFloat($('#upsellbay-_ub_discount_value').val()) || 0;
     

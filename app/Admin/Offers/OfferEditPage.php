@@ -372,7 +372,7 @@ final class OfferEditPage {
 
 		$this->section_navigation->render( null !== $offer ? '' : 'add_offer' );
 
-		$meta  = null !== $offer ? $offer['meta'] : $this->defaults->for_type( 'checkout_bump' );
+		$meta  = null !== $offer ? $offer['meta'] : $this->new_offer_meta();
 		$title = null !== $offer ? $offer['title'] : '';
 
 		if ( null !== $offer ) {
@@ -527,18 +527,11 @@ final class OfferEditPage {
 		$label_for = '_ub_placement_config' === $field ? 'upsellbay-_ub_placement_config-position' : 'upsellbay-' . $field;
 
 		$is_required_field = in_array( $field, array( 'title', '_ub_status', '_ub_offer_type', '_ub_offer_product_id', '_ub_headline', '_ub_button_text' ), true );
-		$label_html        = esc_html( $label ) . ( $is_required_field ? ' <span class="required" style="color: #d63638;" title="' . esc_attr__( 'Required', 'upsellbay' ) . '">*</span>' : '' );
-
-		echo '<tr><th scope="row"><label for="' . esc_attr( $label_for ) . '">' . wp_kses(
-			$label_html,
-			array(
-				'span' => array(
-					'class' => true,
-					'style' => true,
-					'title' => true,
-				),
-			)
-		) . '</label></th><td>';
+		echo '<tr><th scope="row"><label for="' . esc_attr( $label_for ) . '">' . esc_html( $label );
+		if ( $is_required_field ) {
+			echo ' <span class="required" style="color: #d63638;" title="' . esc_attr__( 'Required', 'upsellbay' ) . '">*</span>';
+		}
+		echo '</label></th><td>';
 
 		if ( '_ub_recommendations' === $field ) {
 			echo '<div id="upsellbay-recommendations-container" data-nonce="' . esc_attr( wp_create_nonce( 'wp_rest' ) ) . '">';
@@ -547,18 +540,19 @@ final class OfferEditPage {
 		} elseif ( '_ub_stats_summary' === $field ) {
 			$this->render_stats_summary();
 		} elseif ( '_ub_offer_type' === $field ) {
-			echo '<select id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '">';
-			foreach (
-				array(
-					'checkout_bump'  => __( 'Checkout bump', 'upsellbay' ),
-					'product_upsell' => __( 'Product page offer', 'upsellbay' ),
-					'cart_crosssell' => __( 'Cart offer', 'upsellbay' ),
-					'thankyou_offer' => __( 'Thank-you follow-on offer', 'upsellbay' ),
-				) as $option_val => $option_label
-			) {
+			$descriptions = $this->offer_type_descriptions();
+
+			echo '<select id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" required aria-required="true">';
+			echo '<option value="">' . esc_html__( 'Select an offer type', 'upsellbay' ) . '</option>';
+			foreach ( $this->offer_type_options() as $option_val => $option_label ) {
 				echo '<option value="' . esc_attr( $option_val ) . '" ' . selected( $value, $option_val, false ) . '>' . esc_html( $option_label ) . '</option>';
 			}
 			echo '</select>';
+			echo '<p id="upsellbay-offer-type-description" class="description" data-upsellbay-offer-type-description data-descriptions="' . esc_attr( wp_json_encode( $descriptions ) ) . '"' . ( isset( $descriptions[ (string) $value ] ) ? '' : ' hidden' ) . '>';
+			if ( isset( $descriptions[ (string) $value ] ) ) {
+				echo esc_html( $descriptions[ (string) $value ] );
+			}
+			echo '</p>';
 		} elseif ( '_ub_rules_match' === $field ) {
 			echo '<select id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '">';
 			echo '<option value="all" ' . selected( $value, 'all', false ) . '>' . esc_html__( 'All rules', 'upsellbay' ) . '</option>';
@@ -707,7 +701,7 @@ final class OfferEditPage {
 	 * @return array<string, mixed>
 	 */
 	private function submitted_meta( array $request ): array {
-		$offer_type = $this->sanitize_key( (string) ( $request['_ub_offer_type'] ?? 'checkout_bump' ) );
+		$offer_type = $this->sanitize_key( (string) ( $request['_ub_offer_type'] ?? '' ) );
 		$defaults   = $this->defaults->for_type( $offer_type );
 		$show_image = array_key_exists( '_ub_show_image', $request )
 			&& false !== $request['_ub_show_image']
@@ -788,6 +782,62 @@ final class OfferEditPage {
 	 */
 	private function sanitize_key( string $value ): string {
 		return function_exists( 'sanitize_key' ) ? sanitize_key( $value ) : strtolower( preg_replace( '/[^a-z0-9_\-]/', '', $value ) ?? '' );
+	}
+
+	/**
+	 * Return the offer type options shown in the editor.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return array<string, string>
+	 */
+	private function offer_type_options(): array {
+		return array(
+			OfferSchema::TYPE_CHECKOUT_BUMP  => __( 'Checkout bump', 'upsellbay' ),
+			OfferSchema::TYPE_PRODUCT_UPSELL => __( 'Product page offer', 'upsellbay' ),
+			OfferSchema::TYPE_CART_CROSSSELL => __( 'Cart offer', 'upsellbay' ),
+			OfferSchema::TYPE_THANKYOU_OFFER => __( 'Thank-you follow-on offer', 'upsellbay' ),
+		);
+	}
+
+	/**
+	 * Return concise contextual descriptions for each offer type.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return array<string, string>
+	 */
+	private function offer_type_descriptions(): array {
+		return array(
+			OfferSchema::TYPE_CHECKOUT_BUMP  => __( 'A checkout bump is a last-step add-on shown on checkout before Place order. Shoppers can add it without leaving checkout. It appears when the offer is active, its rules match the current cart or checkout context, and the offered product is available.', 'upsellbay' ),
+			OfferSchema::TYPE_PRODUCT_UPSELL => __( 'A product page offer is a related add-on shown near the add-to-cart area on matching product pages. It helps shoppers add a complementary item while considering a product. It appears when the offer is active, the viewed product matches your rules, and the offered product is available.', 'upsellbay' ),
+			OfferSchema::TYPE_CART_CROSSSELL => __( 'A cart offer is a cross-sell shown while shoppers review their cart. It recommends an extra item before they continue to checkout. It appears when the offer is active, the current cart matches your rules, and the offered product is available.', 'upsellbay' ),
+			OfferSchema::TYPE_THANKYOU_OFFER => __( 'A thank-you follow-on offer is a post-purchase offer shown on the order received page after the main order is complete. It sends shoppers to a separate checkout for the extra item. It appears when the offer is active, the completed order matches your rules, and the offered product is available.', 'upsellbay' ),
+		);
+	}
+
+	/**
+	 * Return neutral defaults for a brand-new offer form.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return array<string, mixed>
+	 */
+	private function new_offer_meta(): array {
+		$schema = new OfferSchema();
+
+		return array_replace(
+			$schema->defaults(),
+			array(
+				'_ub_offer_type'       => '',
+				'_ub_status'           => 'draft',
+				'_ub_discount_type'    => 'none',
+				'_ub_discount_value'   => '0.000000',
+				'_ub_show_image'       => true,
+				'_ub_priority'         => 10,
+				'_ub_placement_config' => array(),
+			)
+		);
 	}
 
 	/**
