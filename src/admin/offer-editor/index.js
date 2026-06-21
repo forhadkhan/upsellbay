@@ -475,6 +475,8 @@ window.jQuery(function ($) {
     lastType = nextType;
   };
 
+  hydrate(String($select.val() || 'checkout_bump'));
+
   $select.on('change', function () {
     hydrate(String($(this).val() || ''));
   });
