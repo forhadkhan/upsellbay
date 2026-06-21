@@ -75,7 +75,7 @@ final class OfferPrioritizer {
 		$eligible = array_values(
 			array_filter(
 				$offers,
-				fn ( array $offer ): bool => $this->is_eligible( $offer, $placement, $context )
+				fn ( array $offer ): bool => $this->evaluate( $offer, $placement, $context )['eligible']
 			)
 		);
 
@@ -109,17 +109,25 @@ final class OfferPrioritizer {
 	}
 
 	/**
-	 * Determine whether an offer is currently eligible.
+	 * Evaluate one offer and return normalized eligibility reasons.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @param array<string, mixed> $offer     Offer.
 	 * @param string               $placement Placement key.
 	 * @param array<string, mixed> $context   Evaluation context.
+	 * @return array{eligible: bool, reasons: array<int, string>}
 	 */
-	private function is_eligible( array $offer, string $placement, array $context ): bool {
-		$meta = is_array( $offer['meta'] ?? null ) ? $offer['meta'] : array();
+	public function evaluate( array $offer, string $placement, array $context = array() ): array {
+		$meta    = is_array( $offer['meta'] ?? null ) ? $offer['meta'] : array();
+		$reasons = array();
 
-		if ( ( $meta['_ub_offer_type'] ?? '' ) !== $placement || 'active' !== ( $meta['_ub_status'] ?? '' ) ) {
-			return false;
+		if ( ( $meta['_ub_offer_type'] ?? '' ) !== $placement ) {
+			$reasons[] = 'placement_mismatch';
+		}
+
+		if ( 'active' !== ( $meta['_ub_status'] ?? '' ) ) {
+			$reasons[] = 'inactive_offer';
 		}
 
 		$offer_id   = (int) ( $offer['id'] ?? 0 );
@@ -128,8 +136,12 @@ final class OfferPrioritizer {
 		$cart_ids   = is_array( $context['cart_product_ids'] ?? null ) ? array_map( 'intval', $context['cart_product_ids'] ) : array();
 		$in_cart    = in_array( $product_id, $cart_ids, true );
 
+		if ( in_array( $offer_id, $dismissed, true ) ) {
+			$reasons[] = 'dismissed_in_session';
+		}
+
 		if ( $in_cart && in_array( $placement, array( 'checkout_bump', 'thankyou_offer' ), true ) ) {
-			return false;
+			$reasons[] = 'product_already_in_cart';
 		}
 
 		$start_at    = $this->datetime_to_timestamp( $meta['_ub_start_at'] ?? null );
@@ -138,13 +150,32 @@ final class OfferPrioritizer {
 		$rules       = is_array( $meta['_ub_rules'] ?? null ) ? $meta['_ub_rules'] : array();
 		$rules_match = (string) ( $meta['_ub_rules_match'] ?? 'all' );
 
-		return ! in_array( $offer_id, $dismissed, true )
-			&& ( null === $start_at || $start_at <= $current )
-			&& ( null === $end_at || $end_at >= $current )
-			&& $product_id > 0
-			&& ( $this->product_available )( $product_id, $placement )
-			&& $this->matches_triggers( $meta, $context )
-			&& $this->rules->matches( $rules, $rules_match, $context );
+		if ( null !== $start_at && $start_at > $current ) {
+			$reasons[] = 'not_started';
+		}
+
+		if ( null !== $end_at && $end_at < $current ) {
+			$reasons[] = 'expired';
+		}
+
+		if ( $product_id <= 0 ) {
+			$reasons[] = 'missing_product';
+		} elseif ( ! ( $this->product_available )( $product_id, $placement ) ) {
+			$reasons[] = 'product_unavailable';
+		}
+
+		if ( ! $this->matches_triggers( $meta, $context ) ) {
+			$reasons[] = 'trigger_mismatch';
+		}
+
+		if ( ! $this->rules->matches( $rules, $rules_match, $context ) ) {
+			$reasons[] = 'rules_failed';
+		}
+
+		return array(
+			'eligible' => array() === $reasons,
+			'reasons'  => array_values( array_unique( $reasons ) ),
+		);
 	}
 
 	/**

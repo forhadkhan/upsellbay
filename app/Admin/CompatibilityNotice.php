@@ -16,6 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 
 use WPAnchorBay\UpsellBay\Core\Settings;
+use WPAnchorBay\UpsellBay\Domain\Compatibility\CompatibilityScanner;
 
 /**
  * Builds dismissible compatibility and coexistence notices.
@@ -24,15 +25,25 @@ use WPAnchorBay\UpsellBay\Core\Settings;
  */
 final class CompatibilityNotice {
 	/**
+	 * Compatibility scanner.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var CompatibilityScanner
+	 */
+	private CompatibilityScanner $scanner;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param Settings    $settings    Settings service, retained for constructor compatibility.
-	 * @param Coexistence $coexistence Coexistence detector, retained for constructor compatibility.
+	 * @param Settings                         $settings               Settings service, retained for constructor compatibility.
+	 * @param Coexistence|CompatibilityScanner $coexistence_or_scanner Coexistence detector or compatibility scanner.
 	 */
-	public function __construct( Settings $settings, Coexistence $coexistence ) {
-		unset( $settings, $coexistence );
+	public function __construct( Settings $settings, Coexistence|CompatibilityScanner $coexistence_or_scanner ) {
+		unset( $settings );
+		$this->scanner = $coexistence_or_scanner instanceof CompatibilityScanner ? $coexistence_or_scanner : new CompatibilityScanner();
 	}
 
 	/**
@@ -55,7 +66,17 @@ final class CompatibilityNotice {
 	 * @return array<int, array<string, string>>
 	 */
 	public function notices(): array {
-		return array();
+		$notices = array();
+
+		foreach ( $this->scanner->findings() as $finding ) {
+			$notices[] = array(
+				'type'    => $finding['severity'] ?? 'warning',
+				'message' => $finding['message'] ?? '',
+				'url'     => admin_url( 'admin.php?page=upsellbay&tab=help' ),
+			);
+		}
+
+		return $notices;
 	}
 
 	/**

@@ -17,6 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WPAnchorBay\UpsellBay\Core\Constants;
 use WPAnchorBay\UpsellBay\Core\Settings;
+use WPAnchorBay\UpsellBay\Domain\Compatibility\CompatibilityScanner;
 use WPAnchorBay\UpsellBay\Utils\ImportExporter;
 
 /**
@@ -44,16 +45,27 @@ final class ToolsPage {
 	private Settings $settings;
 
 	/**
+	 * Compatibility scanner.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var CompatibilityScanner
+	 */
+	private CompatibilityScanner $scanner;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param ImportExporter $import_exporter Import/export helper.
-	 * @param Settings       $settings        Settings service.
+	 * @param ImportExporter            $import_exporter Import/export helper.
+	 * @param Settings                  $settings        Settings service.
+	 * @param CompatibilityScanner|null $scanner         Compatibility scanner.
 	 */
-	public function __construct( ImportExporter $import_exporter, Settings $settings ) {
+	public function __construct( ImportExporter $import_exporter, Settings $settings, ?CompatibilityScanner $scanner = null ) {
 		$this->import_exporter = $import_exporter;
 		$this->settings        = $settings;
+		$this->scanner         = $scanner ?? new CompatibilityScanner();
 	}
 
 	/**
@@ -73,6 +85,10 @@ final class ToolsPage {
 			'license_status=' . (string) ( $license['status'] ?? 'unknown' ),
 			'license_masked=' . (string) ( $license['masked_key'] ?? '' ),
 			'test_mode=' . ( true === ( $settings['test_mode'] ?? false ) ? 'yes' : 'no' ),
+			'debug_logging=' . ( true === ( $settings['debug_logging'] ?? false ) ? 'yes' : 'no' ),
+			'checkout_bump_enabled=' . ( true === ( $settings['placements']['checkout_bump'] ?? true ) ? 'yes' : 'no' ),
+			'checkout_bump_max_display=' . (string) $this->settings->placement_max_display( 'checkout_bump' ),
+			'compatibility_findings=' . (string) count( $this->scanner->findings() ),
 		);
 	}
 
@@ -122,8 +138,11 @@ final class ToolsPage {
 	 * Render tools tab content.
 	 *
 	 * @since 1.0.0
+	 *
+	 * @param array<string, mixed> $request Optional request payload.
 	 */
-	public function render_content(): void {
+	public function render_content( array $request = array() ): void {
+		unset( $request );
 		echo '<h2>' . esc_html__( 'System diagnostics', 'upsellbay' ) . '</h2>';
 		echo '<table class="widefat striped upsellbay-diagnostics-table"><tbody>';
 		foreach ( $this->diagnostics() as $line ) {

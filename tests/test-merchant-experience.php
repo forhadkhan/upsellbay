@@ -106,7 +106,9 @@ function upsellbay_merchant_experience_tests(): array {
 		'preview links route known placements and explain unavailable previews' => static function (): void {
 			$links = new PreviewLinks( 'https://example.test' );
 
-			assert_contains( 'upsellbay_preview=1', $links->for_offer( upsellbay_phase5_offer( 9, 'checkout_bump', 44 ), array( 'checkout_url' => '/checkout/' ) )['url'] );
+			assert_false( $links->for_offer( upsellbay_phase5_offer( 9, 'checkout_bump', 44 ), array( 'checkout_url' => '/checkout/' ) )['available'] );
+			assert_contains( 'at least one item in the cart', $links->for_offer( upsellbay_phase5_offer( 9, 'checkout_bump', 44 ), array( 'checkout_url' => '/checkout/' ) )['message'] );
+			assert_contains( 'upsellbay_preview=1', $links->for_offer( upsellbay_phase5_offer( 9, 'checkout_bump', 44 ), array( 'checkout_url' => '/checkout/', 'cart_product_ids' => array( 12 ) ) )['url'] );
 			assert_contains( '/product/44/', $links->for_offer( upsellbay_phase5_offer( 9, 'product_upsell', 44 ), array( 'product_url' => '/product/%d/' ) )['url'] );
 			assert_false( $links->for_offer( upsellbay_phase5_offer( 9, 'thankyou_offer', 44 ), array() )['available'] );
 			assert_contains( 'saved test order', $links->for_offer( upsellbay_phase5_offer( 9, 'thankyou_offer', 44 ), array() )['message'] );

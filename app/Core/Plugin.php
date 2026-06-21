@@ -30,6 +30,7 @@ use WPAnchorBay\UpsellBay\Admin\Navigation\TabRouter;
 use WPAnchorBay\UpsellBay\Admin\Offers\OfferEditPage;
 use WPAnchorBay\UpsellBay\Admin\Offers\OfferListTable;
 use WPAnchorBay\UpsellBay\Admin\Offers\OffersPage;
+use WPAnchorBay\UpsellBay\Admin\Offers\OfferVisibilityPanel;
 use WPAnchorBay\UpsellBay\Admin\OverviewSummary;
 use WPAnchorBay\UpsellBay\Admin\PreviewLinks;
 use WPAnchorBay\UpsellBay\Admin\Settings\LogsSectionRenderer;
@@ -60,6 +61,7 @@ use WPAnchorBay\UpsellBay\Domain\Offers\OfferDefaults;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferSchema;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferService;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferValidator;
+use WPAnchorBay\UpsellBay\Domain\Offers\OfferVisibilityInspector;
 use WPAnchorBay\UpsellBay\Domain\Offers\ProductRecommendationAssistant;
 use WPAnchorBay\UpsellBay\Domain\Rules\RuleEvaluator;
 use WPAnchorBay\UpsellBay\Domain\Rules\RuleParser;
@@ -191,6 +193,8 @@ final class Plugin {
 		$this->container->set( OfferValidator::class, static fn ( Container $container ): OfferValidator => new OfferValidator( $container->get( OfferSchema::class ) ) );
 		$this->container->set( OfferRepository::class, static fn ( Container $container ): OfferRepository => new OfferRepository( $container->get( OfferValidator::class ) ) );
 		$this->container->set( OfferConflictDetector::class, static fn ( Container $container ): OfferConflictDetector => new OfferConflictDetector( $container->get( OfferRepository::class ) ) );
+		$this->container->set( OfferVisibilityInspector::class, static fn ( Container $container ): OfferVisibilityInspector => new OfferVisibilityInspector( $container->get( Settings::class ), $container->get( OfferValidator::class ), $container->get( OfferPrioritizer::class ), $container->get( OfferRepository::class ), $container->get( CartSession::class ) ) );
+		$this->container->set( OfferVisibilityPanel::class, static fn ( Container $container ): OfferVisibilityPanel => new OfferVisibilityPanel( $container->get( OfferVisibilityInspector::class ) ) );
 		$this->container->set( OfferService::class, static fn ( Container $container ): OfferService => new OfferService( $container->get( OfferRepository::class ), $container->get( OfferValidator::class ) ) );
 		$this->container->set( RuleParser::class, static fn (): RuleParser => new RuleParser() );
 		$this->container->set( RuleEvaluator::class, static fn ( Container $container ): RuleEvaluator => new RuleEvaluator( $container->get( RuleParser::class ) ) );
@@ -246,7 +250,7 @@ final class Plugin {
 		$this->container->set( RateLimiter::class, static fn (): RateLimiter => new RateLimiter() );
 		$this->container->set( OfferListTable::class, static fn ( Container $container ): OfferListTable => new OfferListTable( $container->get( OfferRepository::class ), $container->get( OfferService::class ), $container->get( OfferConflictDetector::class ) ) );
 		$this->container->set( OffersPage::class, static fn ( Container $container ): OffersPage => new OffersPage( $container->get( OfferListTable::class ) ) );
-		$this->container->set( OfferEditPage::class, static fn ( Container $container ): OfferEditPage => new OfferEditPage( $container->get( OfferService::class ), $container->get( OfferValidator::class ), null, null, $container->get( OfferDefaults::class ), null, $container->get( OfferConflictDetector::class ), $container->get( LoggerInterface::class ) ) );
+		$this->container->set( OfferEditPage::class, static fn ( Container $container ): OfferEditPage => new OfferEditPage( $container->get( OfferService::class ), $container->get( OfferValidator::class ), null, null, $container->get( OfferDefaults::class ), null, $container->get( OfferConflictDetector::class ), $container->get( LoggerInterface::class ), $container->get( OfferVisibilityPanel::class ) ) );
 		$this->container->set( WizardController::class, static fn ( Container $container ): WizardController => new WizardController( $container->get( OfferService::class ), $container->get( Settings::class ), $container->get( OfferDefaults::class ), null, null, $container->get( LoggerInterface::class ) ) );
 		$this->container->set( PreviewLinks::class, static fn (): PreviewLinks => new PreviewLinks() );
 		$this->container->set(
@@ -273,7 +277,7 @@ final class Plugin {
 		);
 		$this->container->set( LogsSectionRenderer::class, static fn ( Container $container ): LogsSectionRenderer => new LogsSectionRenderer( $container->get( LogRepository::class ) ) );
 		$this->container->set( SettingsPage::class, static fn ( Container $container ): SettingsPage => new SettingsPage( $container->get( Settings::class ), null, null, null, null, null, $container->get( LogsSectionRenderer::class ) ) );
-		$this->container->set( ToolsPage::class, static fn ( Container $container ): ToolsPage => new ToolsPage( $container->get( ImportExporter::class ), $container->get( Settings::class ) ) );
+		$this->container->set( ToolsPage::class, static fn ( Container $container ): ToolsPage => new ToolsPage( $container->get( ImportExporter::class ), $container->get( Settings::class ), $container->get( CompatibilityScanner::class ) ) );
 		$this->container->set( HelpPage::class, static fn (): HelpPage => new HelpPage() );
 		$this->container->set( OverviewSummary::class, static fn ( Container $container ): OverviewSummary => new OverviewSummary( $container->get( OfferRepository::class ), $container->get( StatsRepository::class ), $container->get( Settings::class ) ) );
 		$this->container->set( DashboardPage::class, static fn ( Container $container ): DashboardPage => new DashboardPage( $container->get( OverviewSummary::class ), $container->get( StatsRepository::class ) ) );
@@ -284,6 +288,7 @@ final class Plugin {
 				$container->get( OffersPage::class ),
 				$container->get( OfferEditPage::class ),
 				$container->get( SettingsPage::class ),
+				$container->get( ToolsPage::class ),
 				$container->get( WizardController::class ),
 				$container->get( HelpPage::class )
 			)
@@ -295,7 +300,7 @@ final class Plugin {
 		$this->container->set( TabRouter::class, static fn ( Container $container ): TabRouter => new TabRouter( $container->get( TabRegistry::class ) ) );
 		$this->container->set( AdminPage::class, static fn ( Container $container ): AdminPage => new AdminPage( $container->get( TabRegistry::class ), $container->get( TabRouter::class ) ) );
 		$this->container->set( Coexistence::class, static fn (): Coexistence => new Coexistence() );
-		$this->container->set( CompatibilityNotice::class, static fn ( Container $container ): CompatibilityNotice => new CompatibilityNotice( $container->get( Settings::class ), $container->get( Coexistence::class ) ) );
+		$this->container->set( CompatibilityNotice::class, static fn ( Container $container ): CompatibilityNotice => new CompatibilityNotice( $container->get( Settings::class ), $container->get( CompatibilityScanner::class ) ) );
 		$this->container->set( PluginActionLinks::class, static fn (): PluginActionLinks => new PluginActionLinks() );
 		$this->container->set( AdminAssets::class, static fn (): AdminAssets => new AdminAssets() );
 		$this->container->set( AdminBar::class, static fn ( Container $container ): AdminBar => new AdminBar( $container->get( Settings::class ) ) );
@@ -348,6 +353,7 @@ final class Plugin {
 		add_action( Constants::hook_name( 'offer_accepted' ), array( $this, 'log_offer_accepted' ), 10, 3 );
 		add_action( Constants::hook_name( 'offer_dismissed' ), array( $this, 'log_offer_dismissed' ), 10, 2 );
 		add_action( Constants::hook_name( 'offer_rendered' ), array( $this, 'log_offer_rendered' ), 10, 4 );
+		add_action( Constants::hook_name( 'offer_skipped' ), array( $this, 'log_offer_skipped' ), 10, 5 );
 		add_action( Constants::hook_name( 'api_request_failed' ), array( $this, 'log_api_request_failed' ), 10, 3 );
 		add_action( Constants::hook_name( 'license_activated' ), array( $this, 'log_license_activated' ) );
 		add_action( Constants::hook_name( 'license_activation_failed' ), array( $this, 'log_license_activation_failed' ), 10, 3 );
@@ -508,7 +514,7 @@ final class Plugin {
 		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
 			'cart_checkout_blocks',
 			Constants::plugin_file(),
-			false
+			true
 		);
 	}
 
@@ -1109,6 +1115,10 @@ final class Plugin {
 	 * @param array<string, mixed> $context   Context payload.
 	 */
 	public function log_offer_rendered( int $offer_id, string $placement, array $offer, array $context ): void {
+		if ( true !== ( $this->container->get( Settings::class )->all()['debug_logging'] ?? false ) ) {
+			return;
+		}
+
 		// Log as debug, since rendering happens often.
 		$this->container->get( LoggerInterface::class )->debug(
 			/* translators: 1: offer ID, 2: placement */
@@ -1120,6 +1130,39 @@ final class Plugin {
 				'metadata'    => array(
 					'placement'   => $placement,
 					'offer_title' => $offer['title'] ?? '',
+					'context'     => $context,
+				),
+			)
+		);
+	}
+
+	/**
+	 * Log when an offer is skipped before render.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int                  $offer_id  Offer ID.
+	 * @param string               $placement Offer placement.
+	 * @param array<string, mixed> $offer     Offer data.
+	 * @param array<string, mixed> $context   Context payload.
+	 * @param array<int, string>   $reasons   Skip reasons.
+	 */
+	public function log_offer_skipped( int $offer_id, string $placement, array $offer, array $context, array $reasons ): void {
+		if ( true !== ( $this->container->get( Settings::class )->all()['debug_logging'] ?? false ) ) {
+			return;
+		}
+
+		$this->container->get( LoggerInterface::class )->debug(
+			/* translators: 1: offer ID, 2: placement */
+			sprintf( __( 'Offer #%1$d skipped at %2$s', 'upsellbay' ), $offer_id, $placement ),
+			array(
+				'source'      => 'offer_skip',
+				'object_type' => 'offer',
+				'object_id'   => $offer_id,
+				'metadata'    => array(
+					'placement'   => $placement,
+					'offer_title' => $offer['title'] ?? '',
+					'reasons'     => $reasons,
 					'context'     => $context,
 				),
 			)

@@ -16,6 +16,7 @@ use WPAnchorBay\UpsellBay\Domain\Offers\OfferDefaults;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferSchema;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferValidator;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferConflictDetector;
+use WPAnchorBay\UpsellBay\Admin\Offers\OfferVisibilityPanel;
 use WPAnchorBay\UpsellBay\Domain\Logging\LoggerInterface;
 use Throwable;
 
@@ -71,6 +72,15 @@ final class OfferEditPage {
 	private ?OfferConflictDetector $conflict_detector;
 
 	/**
+	 * Offer visibility panel.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var OfferVisibilityPanel|null
+	 */
+	private ?OfferVisibilityPanel $visibility_panel;
+
+	/**
 	 * Capability callback.
 	 *
 	 * @var callable(): bool
@@ -106,14 +116,16 @@ final class OfferEditPage {
 	 * @param OfferSectionNavigation|null $section_navigation Offers section navigation.
 	 * @param OfferConflictDetector|null  $conflict_detector  Offer conflict detector.
 	 * @param LoggerInterface|null        $logger             Logger instance.
+	 * @param OfferVisibilityPanel|null   $visibility_panel   Visibility diagnostics panel.
 	 */
-	public function __construct( OfferService $service, OfferValidator $validator, ?callable $can_manage = null, ?callable $verify_nonce = null, ?OfferDefaults $defaults = null, ?OfferSectionNavigation $section_navigation = null, ?OfferConflictDetector $conflict_detector = null, ?LoggerInterface $logger = null ) {
+	public function __construct( OfferService $service, OfferValidator $validator, ?callable $can_manage = null, ?callable $verify_nonce = null, ?OfferDefaults $defaults = null, ?OfferSectionNavigation $section_navigation = null, ?OfferConflictDetector $conflict_detector = null, ?LoggerInterface $logger = null, ?OfferVisibilityPanel $visibility_panel = null ) {
 		$this->service            = $service;
 		$this->validator          = $validator;
 		$this->defaults           = $defaults ?? new OfferDefaults();
 		$this->section_navigation = $section_navigation ?? new OfferSectionNavigation();
 		$this->conflict_detector  = $conflict_detector;
 		$this->logger             = $logger;
+		$this->visibility_panel   = $visibility_panel;
 		$this->can_manage         = $can_manage ?? static fn (): bool => function_exists( 'current_user_can' ) && current_user_can( 'manage_woocommerce' ); // phpcs:ignore WordPress.WP.Capabilities.Unknown
 		$this->verify_nonce       = $verify_nonce ?? static fn ( string $nonce ): bool => function_exists( 'wp_verify_nonce' ) && (bool) wp_verify_nonce( $nonce, 'upsellbay_save_offer' );
 	}
@@ -158,16 +170,6 @@ final class OfferEditPage {
 				'success' => false,
 				'message' => implode( ' ', $valid->errors() ),
 			);
-		}
-
-		if ( null !== $this->conflict_detector && 'active' === ( $valid->data()['_ub_status'] ?? '' ) && true !== ( $valid->data()['_ub_conflict_override'] ?? false ) ) {
-			$warnings = $this->conflict_detector->detect( isset( $request['offer_id'] ) ? (int) $request['offer_id'] : 0, $valid->data() );
-			if ( count( $warnings ) > 0 ) {
-				return array(
-					'success' => false,
-					'message' => implode( ' ', $warnings ),
-				);
-			}
 		}
 
 		try {
@@ -385,6 +387,12 @@ final class OfferEditPage {
 			if ( function_exists( 'wc_get_cart_url' ) ) {
 				$context['cart_url'] = wc_get_cart_url();
 			}
+			if ( function_exists( 'WC' ) && WC()->cart ) {
+				$context['cart_product_ids'] = array_map(
+					static fn ( array $cart_item ): int => (int) ( $cart_item['product_id'] ?? 0 ),
+					WC()->cart->get_cart()
+				);
+			}
 			if ( 'thankyou_offer' === $offer_type && function_exists( 'wc_get_orders' ) ) {
 				$latest_orders = wc_get_orders(
 					array(
@@ -445,6 +453,9 @@ final class OfferEditPage {
 				foreach ( $warnings as $warning ) {
 					echo '<div class="notice notice-warning inline"><p>' . esc_html( $warning ) . '</p></div>';
 				}
+			}
+			if ( null !== $this->visibility_panel ) {
+				$this->visibility_panel->render( $offer );
 			}
 		} else {
 			echo '<h2 class="wp-heading-inline">' . esc_html__( 'Add UpsellBay Offer', 'upsellbay' ) . '</h2>';

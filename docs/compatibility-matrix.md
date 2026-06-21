@@ -8,7 +8,7 @@ UpsellBay is built as an additive WooCommerce AOV offer layer. It preserves the 
 | --- | --- | --- |
 | HPOS | Supported by architecture | Attribution uses WooCommerce order and order-item object methods. Final HPOS enabled and disabled QA evidence is required before release. |
 | Classic checkout | Implemented, QA required | Classic checkout bump support must pass Phase 7 E2E before release. |
-| Block Checkout | Integration path implemented, full E2E verification pending. Classic checkout is fully supported. | Runtime Block Checkout integration code is pending Phase 7 E2E suite verification. |
+| Block Checkout | Supported after E2E proof | Block Checkout render, toggle, keyboard, accessibility, and placement checks passed the documented Phase 7 proof on 2026-06-19. |
 | WooPayments | QA required | Required for the Block Checkout proof path. |
 | Stripe for WooCommerce | QA required | Normal checkout compatibility only; no gateway-tokenized one-click upsell claim. |
 | PayPal Payments | QA required | Normal checkout compatibility only. |

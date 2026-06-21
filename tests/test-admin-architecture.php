@@ -28,6 +28,7 @@ use WPAnchorBay\UpsellBay\Admin\Navigation\TabRouter;
 use WPAnchorBay\UpsellBay\Admin\Offers\OfferEditPage;
 use WPAnchorBay\UpsellBay\Admin\Offers\OfferListTable;
 use WPAnchorBay\UpsellBay\Admin\Offers\OffersPage;
+use WPAnchorBay\UpsellBay\Admin\Offers\OfferVisibilityPanel;
 use WPAnchorBay\UpsellBay\Admin\OverviewSummary;
 use WPAnchorBay\UpsellBay\Admin\Settings\BasicSection;
 use WPAnchorBay\UpsellBay\Admin\Settings\SettingsPage;
@@ -41,6 +42,11 @@ use WPAnchorBay\UpsellBay\Domain\Offers\OfferConflictDetector;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferSchema;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferService;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferValidator;
+use WPAnchorBay\UpsellBay\Domain\Offers\OfferVisibilityInspector;
+use WPAnchorBay\UpsellBay\Domain\Offers\OfferPrioritizer;
+use WPAnchorBay\UpsellBay\Domain\Rules\RuleEvaluator;
+use WPAnchorBay\UpsellBay\Domain\Rules\RuleParser;
+use WPAnchorBay\UpsellBay\Domain\Compatibility\CompatibilityScanner;
 use WPAnchorBay\UpsellBay\Integrations\Licensing\LicenseClient;
 use WPAnchorBay\UpsellBay\Utils\ImportExporter;
 
@@ -662,7 +668,7 @@ function upsellbay_admin_architecture_tests(): array {
 			assert_false( $result['success'] );
 			assert_contains( 'Offer type is required.', $result['message'] );
 		},
-		'offer editor blocks active conflicting offers before persistence' => static function (): void {
+		'offer editor saves active conflicting offers without blocking persistence' => static function (): void {
 			$saved       = array();
 			$repository  = upsellbay_test_offer_repository(
 				array(
@@ -705,9 +711,9 @@ function upsellbay_admin_architecture_tests(): array {
 				)
 			);
 
-			assert_false( $result['success'] );
-			assert_contains( 'Funnel overlap', $result['message'] );
-			assert_same( array(), $saved );
+			assert_true( $result['success'] );
+			assert_contains( 'Offer saved.', $result['message'] );
+			assert_same( 'New global bump', $saved['title'] );
 		},
 		'offer editor allows explicit conflict override with reason' => static function (): void {
 			$saved       = array();
@@ -1179,8 +1185,37 @@ function upsellbay_admin_architecture_tests(): array {
 			assert_true( $coexistence->is_cartbay_active() );
 			assert_same( array(), $notice->notices() );
 			assert_false( str_contains( implode( ' ', $tools->diagnostics() ), 'license_key' ) );
+			assert_contains( 'checkout_bump_enabled=yes', implode( ' ', $tools->diagnostics() ) );
 			assert_contains( 'AOV offer', implode( ' ', $help->links()[0] ) );
 			assert_true( $admin_bar->should_show_indicator() );
+		},
+		'compatibility notice surfaces scanner findings' => static function (): void {
+			$settings = new Settings( static fn (): array => array(), static fn (): bool => true );
+			$notice   = new CompatibilityNotice(
+				$settings,
+				new CompatibilityScanner( static fn ( string $plugin ): bool => 'checkout-for-woocommerce/checkout-for-woocommerce.php' === $plugin )
+			);
+
+			assert_same( 'warning', $notice->notices()[0]['type'] );
+			assert_contains( 'CheckoutWC replaces the standard checkout surface', $notice->notices()[0]['message'] );
+		},
+		'visibility panel explains checkout preview prerequisites' => static function (): void {
+			$offer      = upsellbay_phase4_offer( 88, 'checkout_bump', 25, 1 );
+			$panel      = new OfferVisibilityPanel(
+				new OfferVisibilityInspector(
+					new Settings( static fn (): array => array(), static fn (): bool => true ),
+					new OfferValidator( new OfferSchema(), static fn (): bool => true ),
+					new OfferPrioritizer( new RuleEvaluator( new RuleParser() ), static fn (): bool => true ),
+					upsellbay_test_offer_repository( array( 88 => $offer ) )
+				)
+			);
+
+			ob_start();
+			$panel->render( $offer );
+			$html = (string) ob_get_clean();
+
+			assert_contains( 'Visibility Inspector', $html );
+			assert_contains( 'Checkout previews need at least one item in the cart', $html );
 		},
 		'admin pages render native operational surfaces instead of placeholder headings' => static function (): void {
 			$repository = upsellbay_test_offer_repository(

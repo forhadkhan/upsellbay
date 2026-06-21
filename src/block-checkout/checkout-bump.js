@@ -42,12 +42,14 @@ const CheckoutBumpOffer = ( { offer } ) => {
 
 	const descId = `upsellbay-bump-desc-${ offer.id }`;
 
-	return (
-		<div className={ classes } data-upsellbay-placement="checkout_bump" data-upsellbay-offer-id={ offer.id }>
-			{ offer.image_url && (
-				<img src={ offer.image_url } className="upsellbay-offer__image" alt={ offer.product_name } />
-			) }
-			<div className="upsellbay-offer__content">
+		return (
+			<div className={ classes } data-upsellbay-placement="checkout_bump" data-upsellbay-offer-id={ offer.id }>
+				{ offer.image_url && (
+					<div className="upsellbay-offer__image">
+						<img src={ offer.image_url } alt={ offer.product_name } />
+					</div>
+				) }
+				<div className="upsellbay-offer__content">
 				<div className="upsellbay-offer__header">
 					<label className="upsellbay-offer__toggle">
 						<input 
@@ -57,12 +59,12 @@ const CheckoutBumpOffer = ( { offer } ) => {
 							disabled={ isLoading }
 							checked={ offer.in_cart }
 							aria-describedby={ offer.body ? descId : undefined }
-						/>
-						<strong className="upsellbay-offer__headline">
-							{ offer.headline }
-							<span className="upsellbay-offer__badge" style={{ marginLeft: '8px', backgroundColor: '#e2401c', color: '#fff', fontSize: '11px', padding: '2px 6px', borderRadius: '3px', textTransform: 'uppercase', fontWeight: 'bold' }}>One-Time Offer</span>
-						</strong>
-					</label>
+							/>
+							<strong className="upsellbay-offer__headline">
+								{ offer.headline }
+								<span className="upsellbay-offer__badge">One-Time Offer</span>
+							</strong>
+						</label>
 					{ offer.price_html && (
 						<div className="upsellbay-offer__price" dangerouslySetInnerHTML={ { __html: offer.price_html } } />
 					) }

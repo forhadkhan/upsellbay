@@ -85,9 +85,34 @@ final class PlacementRenderer {
 			return '';
 		}
 
-		$selected = $this->prioritizer->select( $offers, $placement, $context, $limit );
-		$html     = '';
-		$date     = ( $this->date_provider )();
+		$selected     = $this->prioritizer->select( $offers, $placement, $context, $limit );
+		$selected_ids = array_map(
+			static fn ( array $offer ): int => (int) ( $offer['id'] ?? 0 ),
+			$selected
+		);
+		$html         = '';
+		$date         = ( $this->date_provider )();
+
+		foreach ( $offers as $offer ) {
+			$meta = is_array( $offer['meta'] ?? null ) ? $offer['meta'] : array();
+			if ( (string) ( $meta['_ub_offer_type'] ?? '' ) !== $placement ) {
+				continue;
+			}
+
+			$offer_id     = (int) ( $offer['id'] ?? 0 );
+			$evaluation   = $this->prioritizer->evaluate( $offer, $placement, $context );
+			$skip_reasons = array();
+
+			if ( ! $evaluation['eligible'] ) {
+				$skip_reasons = $evaluation['reasons'];
+			} elseif ( ! in_array( $offer_id, $selected_ids, true ) ) {
+				$skip_reasons = array( 'lost_priority_competition' );
+			}
+
+			if ( array() !== $skip_reasons ) {
+				Hooks::action( 'offer_skipped', $offer_id, $placement, $offer, $context, $skip_reasons );
+			}
+		}
 
 		foreach ( $selected as $offer ) {
 			$offer_id = (int) ( $offer['id'] ?? 0 );

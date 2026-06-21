@@ -55,6 +55,23 @@ final class PreviewLinks {
 		$offer_id   = (int) ( $offer['id'] ?? 0 );
 
 		if ( 'checkout_bump' === $placement && isset( $context['checkout_url'] ) && '' !== (string) $context['checkout_url'] ) {
+			$cart_product_ids = is_array( $context['cart_product_ids'] ?? null ) ? array_map( 'intval', $context['cart_product_ids'] ) : array();
+			if ( array() === $cart_product_ids ) {
+				return array(
+					'available' => false,
+					'url'       => '',
+					'message'   => __( 'Checkout preview requires at least one item in the cart before the bump area can render.', 'upsellbay' ),
+				);
+			}
+
+			if ( $product_id > 0 && in_array( $product_id, $cart_product_ids, true ) ) {
+				return array(
+					'available' => false,
+					'url'       => '',
+					'message'   => __( 'Checkout preview is unavailable because the offered product is already in the cart and the bump would be hidden.', 'upsellbay' ),
+				);
+			}
+
 			return $this->available( (string) $context['checkout_url'], $offer_id, $placement );
 		}
 

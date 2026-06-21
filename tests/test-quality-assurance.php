@@ -77,15 +77,15 @@ function upsellbay_quality_assurance_tests(): array {
 				assert_contains( $task_id, $runbook );
 			}
 		},
-		'block checkout compatibility remains gated until e2e proof passes' => static function (): void {
+		'block checkout compatibility is declared after e2e proof passes' => static function (): void {
 			$root        = dirname( __DIR__ );
 			$plugin_file = (string) file_get_contents( $root . '/app/Core/Plugin.php' );
 			$docs        = (string) file_get_contents( $root . '/docs/compatibility-matrix.md' );
 
 			assert_true( str_contains( $plugin_file, 'cart_checkout_blocks' ) );
 			assert_true( str_contains( $plugin_file, 'declare_compatibility' ) );
-			assert_true( str_contains( $plugin_file, "'cart_checkout_blocks',\n\t\t\tConstants::plugin_file(),\n\t\t\tfalse" ) );
-			assert_contains( '| Block Checkout | Integration path implemented', $docs );
+			assert_true( str_contains( $plugin_file, "'cart_checkout_blocks',\n\t\t\tConstants::plugin_file(),\n\t\t\ttrue" ) );
+			assert_contains( '| Block Checkout | Supported after E2E proof |', $docs );
 		},
 		'package exposes first class playwright e2e commands' => static function (): void {
 			$root    = dirname( __DIR__ );

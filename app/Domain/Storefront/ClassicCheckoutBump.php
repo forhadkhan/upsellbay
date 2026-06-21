@@ -58,7 +58,7 @@ final class ClassicCheckoutBump extends AbstractOfferRenderer {
 
 		$control = '<label class="upsellbay-offer__toggle">'
 			. '<input type="checkbox" class="upsellbay-offer__checkbox" data-upsellbay-offer-id="' . $this->esc_attr( (string) $offer_id ) . '" aria-describedby="' . $this->esc_attr( $desc_id ) . '">'
-			. ' <strong class="upsellbay-offer__headline">' . $this->esc_html( $headline ) . '<span class="upsellbay-offer__badge" style="margin-left:8px;background-color:#e2401c;color:#fff;font-size:11px;padding:2px 6px;border-radius:3px;text-transform:uppercase;font-weight:bold;">' . esc_html__( 'One-Time Offer', 'upsellbay' ) . '</span></strong>'
+			. ' <strong class="upsellbay-offer__headline">' . $this->esc_html( $headline ) . '<span class="upsellbay-offer__badge">' . esc_html__( 'One-Time Offer', 'upsellbay' ) . '</span></strong>'
 			. '</label>';
 
 		$classes = array(

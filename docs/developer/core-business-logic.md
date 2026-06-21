@@ -11,5 +11,7 @@ UpsellBay Phase 4 implements the offer engine as small services under `app/Domai
 - Attribution: `AttributionWriter` and `AttributionReader` use WooCommerce CRUD methods only.
 - Analytics: `AnalyticsService` records aggregate non-PII event counters.
 - Compatibility: `CompatibilityScanner` detects risky checkout/funnel plugins without blocking checkout.
+- Merchant diagnostics: `OfferVisibilityInspector` and the editor visibility panel explain why a checkout bump is eligible, suppressed, or risky in the current context.
+- Observability: `PlacementRenderer` emits skip reasons for suppressed offers, and debug render/skip logging is gated behind the `debug_logging` setting.
 
 Block Checkout code is present as an implementation path, but product and marketplace compatibility claims remain blocked until the Phase 7 Block Checkout E2E suite passes.

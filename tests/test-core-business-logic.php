@@ -31,6 +31,7 @@ use WPAnchorBay\UpsellBay\Domain\Offers\OfferPrioritizer;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferSchema;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferService;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferValidator;
+use WPAnchorBay\UpsellBay\Domain\Offers\OfferVisibilityInspector;
 use WPAnchorBay\UpsellBay\Domain\Rules\RuleEvaluator;
 use WPAnchorBay\UpsellBay\Domain\Rules\RuleParser;
 use WPAnchorBay\UpsellBay\Domain\Storefront\CartCrossSellRenderer;
@@ -149,6 +150,22 @@ function upsellbay_core_business_logic_tests(): array {
 
 			assert_same( 2, $selected[0]['id'] );
 			assert_same( 1, count( $selected ) );
+		},
+		'prioritizer exposes skip reasons for suppressed checkout bumps' => static function (): void {
+			$prioritizer = new OfferPrioritizer( new RuleEvaluator( new RuleParser() ), static fn (): bool => true, static fn (): int => 100 );
+			$offer       = upsellbay_phase4_offer( 41, 'checkout_bump', 25, 1 );
+			$result      = $prioritizer->evaluate(
+				$offer,
+				'checkout_bump',
+				array(
+					'cart_product_ids'    => array( 25 ),
+					'dismissed_offer_ids' => array( 41 ),
+				)
+			);
+
+			assert_false( $result['eligible'] );
+			assert_true( in_array( 'dismissed_in_session', $result['reasons'], true ) );
+			assert_true( in_array( 'product_already_in_cart', $result['reasons'], true ) );
 		},
 		'rule aliases and trigger ids are applied to storefront eligibility' => static function (): void {
 			$page  = new \WPAnchorBay\UpsellBay\Admin\Offers\OfferEditPage(
@@ -402,6 +419,19 @@ function upsellbay_core_business_logic_tests(): array {
 			assert_same( 'warning', $findings['cartflows']['severity'] );
 			assert_same( 'info', $findings['cartbay']['severity'] );
 			assert_false( $scanner->should_block_checkout() );
+		},
+		'visibility inspector reports checkout preview prerequisites' => static function (): void {
+			$offer     = upsellbay_phase4_offer( 77, 'checkout_bump', 44, 1 );
+			$inspector = new OfferVisibilityInspector(
+				new Settings( static fn (): array => array(), static fn (): bool => true ),
+				new OfferValidator( new OfferSchema(), static fn (): bool => true ),
+				new OfferPrioritizer( new RuleEvaluator( new RuleParser() ), static fn (): bool => true ),
+				upsellbay_test_offer_repository( array( 77 => $offer ) )
+			);
+			$report    = $inspector->inspect( $offer, array( 'cart_product_ids' => array() ) );
+
+			assert_same( 'eligible', $report['status'] );
+			assert_contains( 'at least one item in the cart', $report['preview']['message'] );
 		},
 		'core business logic contains no cartbay runtime coupling' => static function (): void {
 			$paths = array_merge(

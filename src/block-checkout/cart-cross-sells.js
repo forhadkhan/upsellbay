@@ -1,6 +1,7 @@
 import { registerPlugin } from '@wordpress/plugins';
 const { ExperimentalOrderMeta, extensionCartUpdate } = window.wc.blocksCheckout;
 import { useState } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 
 const CartCrossSellOffer = ( { offer } ) => {
@@ -63,7 +64,9 @@ const CartCrossSellOffer = ( { offer } ) => {
 	return (
 		<div className={ classes } data-upsellbay-placement="cart_crosssell" data-upsellbay-offer-id={ offer.id }>
 			{ offer.image_url && (
-				<img src={ offer.image_url } className="upsellbay-offer__image" alt={ offer.product_name } />
+				<div className="upsellbay-offer__image">
+					<img src={ offer.image_url } alt={ offer.product_name } />
+				</div>
 			) }
 			<div className="upsellbay-offer__content">
 				<div className="upsellbay-offer__text">
@@ -84,24 +87,24 @@ const CartCrossSellOffer = ( { offer } ) => {
 			</div>
 			<div className="upsellbay-offer__action">
 				{ offer.in_cart ? (
-					<span className="upsellbay-offer__notice">Added to cart</span>
+					<span className="upsellbay-offer__notice">{ __( 'Added to cart', 'upsellbay' ) }</span>
 				) : (
 					<button 
 						type="button" 
-						className="button upsellbay-offer__button" 
+						className="button wp-element-button wc-block-components-button upsellbay-offer__button" 
 						onClick={ handleAdd }
 						disabled={ isLoading }
 					>
-						{ isLoading ? 'Adding...' : offer.button_text }
+						{ isLoading ? __( 'Adding...', 'upsellbay' ) : offer.button_text }
 					</button>
 				) }
 				<button 
 					type="button" 
 					className="upsellbay-offer__dismiss" 
 					onClick={ handleDismiss }
-					aria-label="Dismiss"
+					disabled={ isLoading }
 				>
-					&times;
+					{ __( 'No thanks', 'upsellbay' ) }
 				</button>
 			</div>
 		</div>
@@ -117,7 +120,7 @@ const CartCrossSellsList = ( { extensions } ) => {
 
 	return (
 		<div className="upsellbay-block-offers upsellbay-block-offers--cart">
-			<h3 className="upsellbay-offer-section__heading">Still missing?</h3>
+			<h3 className="upsellbay-offer-section__heading">{ __( 'Still missing?', 'upsellbay' ) }</h3>
 			{ offers.map( ( offer ) => (
 				<CartCrossSellOffer key={ offer.id } offer={ offer } />
 			) ) }

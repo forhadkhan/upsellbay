@@ -61,17 +61,21 @@ final class AnalyticsRecorder {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param int    $offer_id  Offer ID.
-	 * @param string $placement Placement key.
-	 * @param string $date      Store date.
+	 * @param int    $offer_id       Offer ID.
+	 * @param string $placement      Placement key.
+	 * @param string $date           Store date.
+	 * @param string $revenue        Revenue delta.
+	 * @param string $discount_total Discount delta.
 	 */
-	public function record_accept( int $offer_id, string $placement, string $date ): void {
+	public function record_accept( int $offer_id, string $placement, string $date, string $revenue = '0.000000', string $discount_total = '0.000000' ): void {
 		$this->stats->increment(
 			$date,
 			$offer_id,
 			$placement,
 			array(
-				'accepts' => 1,
+				'accepts'        => 1,
+				'revenue'        => $revenue,
+				'discount_total' => $discount_total,
 			)
 		);
 	}
