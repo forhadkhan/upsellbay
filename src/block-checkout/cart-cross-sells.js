@@ -1,8 +1,17 @@
 import { registerPlugin } from '@wordpress/plugins';
-const { ExperimentalOrderMeta, extensionCartUpdate } = window.wc.blocksCheckout;
+const { ExperimentalOrderMeta } = window.wc.blocksCheckout;
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
+
+const refreshBlockCart = () => {
+	if ( window.wp && window.wp.data && window.wp.data.dispatch ) {
+		const cartDispatcher = window.wp.data.dispatch( 'wc/store/cart' );
+		if ( cartDispatcher && typeof cartDispatcher.invalidateResolutionForStoreSelector === 'function' ) {
+			cartDispatcher.invalidateResolutionForStoreSelector( 'getCartData' );
+		}
+	}
+};
 
 const CartCrossSellOffer = ( { offer } ) => {
 	const [ isLoading, setIsLoading ] = useState( false );
@@ -23,8 +32,7 @@ const CartCrossSellOffer = ( { offer } ) => {
 				},
 			} );
 
-			// Inform the Cart Block to invalidate and refetch its data.
-			extensionCartUpdate( { namespace: 'upsellbay' } );
+			refreshBlockCart();
 		} catch ( error ) {
 			console.error( 'UpsellBay Add Error:', error );
 		} finally {
@@ -41,11 +49,12 @@ const CartCrossSellOffer = ( { offer } ) => {
 				method: 'POST',
 				data: {
 					offer_id: offer.id,
+					placement: 'cart_crosssell',
 					token: window.upsellbayStorefront?.token || '',
 				},
 			} );
 
-			extensionCartUpdate( { namespace: 'upsellbay' } );
+			refreshBlockCart();
 		} catch ( error ) {
 			console.error( 'UpsellBay Dismiss Error:', error );
 		} finally {

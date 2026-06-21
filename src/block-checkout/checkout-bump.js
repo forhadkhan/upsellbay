@@ -1,7 +1,16 @@
 import { registerPlugin } from '@wordpress/plugins';
-const { ExperimentalOrderMeta, extensionCartUpdate } = window.wc.blocksCheckout;
+const { ExperimentalOrderMeta } = window.wc.blocksCheckout;
 import { useState } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
+
+const refreshBlockCart = () => {
+	if ( window.wp && window.wp.data && window.wp.data.dispatch ) {
+		const cartDispatcher = window.wp.data.dispatch( 'wc/store/cart' );
+		if ( cartDispatcher && typeof cartDispatcher.invalidateResolutionForStoreSelector === 'function' ) {
+			cartDispatcher.invalidateResolutionForStoreSelector( 'getCartData' );
+		}
+	}
+};
 
 const CheckoutBumpOffer = ( { offer } ) => {
 	const [ isLoading, setIsLoading ] = useState( false );
@@ -22,8 +31,7 @@ const CheckoutBumpOffer = ( { offer } ) => {
 				},
 			} );
 
-			// Inform the Checkout Block to invalidate and refetch its data (totals)
-			extensionCartUpdate( { namespace: 'upsellbay' } );
+			refreshBlockCart();
 		} catch ( error ) {
 			console.error( 'UpsellBay Toggle Error:', error );
 			// If it fails, revert the checkbox visually by letting the React state or block refresh handle it.

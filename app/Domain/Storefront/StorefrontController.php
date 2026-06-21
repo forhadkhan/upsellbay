@@ -265,6 +265,11 @@ final class StorefrontController {
 			}
 		}
 
+		// Merchant previews should remain inspectable even after a local dismiss action.
+		if ( true === ( $context['is_preview'] ?? false ) || ( function_exists( 'current_user_can' ) && current_user_can( 'manage_woocommerce' ) ) ) { // phpcs:ignore WordPress.WP.Capabilities.Unknown
+			$context['dismissed_offer_ids'] = array();
+		}
+
 		return $context;
 	}
 
