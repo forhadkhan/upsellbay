@@ -108,8 +108,9 @@ final class OffersPage {
 	 * @param array<string, mixed> $request Request data.
 	 */
 	public function render_content( array $request = array() ): void {
-		$filters = $this->filters_from_request( $request );
-		$rows    = $this->rows( $filters );
+		$filters  = $this->filters_from_request( $request );
+		$rows     = $this->rows( $filters );
+		$overview = $this->table->overview_data();
 
 		/**
 		 * Fires before the Offers section navigation and list-table content.
@@ -119,6 +120,7 @@ final class OffersPage {
 		do_action( 'upsellbay_offers_header_after' );
 
 		$this->section_navigation->render( 'general' );
+		$this->render_overview( $overview );
 		$this->render_table_controls( $filters );
 
 		if ( array() === $rows ) {
@@ -156,7 +158,7 @@ final class OffersPage {
 
 			echo '<td><strong>' . esc_html( (string) $row['title'] ) . '</strong><div class="row-actions">';
 			echo '<span><a href="' . esc_url( $edit_url ) . '">' . esc_html__( 'Edit', 'upsellbay' ) . '</a> | </span>';
-			
+
 			if ( ! empty( $row['preview_url'] ) ) {
 				echo '<span class="view"><a href="' . esc_url( $row['preview_url'] ) . '" target="_blank" title="' . esc_attr( $row['preview_msg'] ) . '">' . esc_html__( 'View Live', 'upsellbay' ) . '</a> | </span>';
 			} else {
@@ -180,6 +182,106 @@ final class OffersPage {
 		echo '<div class="tablenav bottom">';
 		$this->render_pagination( $filters );
 		echo '<br class="clear"></div>';
+	}
+
+	/**
+	 * Render the offers overview section.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<string, int> $overview Overview counts.
+	 */
+	private function render_overview( array $overview ): void {
+		$total_offers      = (int) ( $overview['total_offers'] ?? 0 );
+		$active_offers     = (int) ( $overview['active_offers'] ?? 0 );
+		$paused_offers     = (int) ( $overview['paused_offers'] ?? 0 );
+		$draft_offers      = (int) ( $overview['draft_offers'] ?? 0 );
+		$conflicted_offers = (int) ( $overview['conflicted_offers'] ?? 0 );
+
+		echo '<div class="upsellbay-overview-header">';
+		echo '<h3 class="upsellbay-overview-title">' . esc_html__( 'Overview', 'upsellbay' ) . '</h3>';
+		echo '</div>';
+		echo '<p class="description">' . esc_html( $this->overview_summary_text( $total_offers, $active_offers, $paused_offers, $draft_offers ) ) . '</p>';
+		echo '<div class="upsellbay-card-grid upsellbay-card-grid--metrics">';
+		$this->summary_item( __( 'Total offers', 'upsellbay' ), (string) $total_offers, __( 'All published UpsellBay offers stored in the private offer library.', 'upsellbay' ) );
+		$this->summary_item( __( 'Active offers', 'upsellbay' ), (string) $active_offers, __( 'Offers currently eligible to render when their rules and placement match.', 'upsellbay' ) );
+		$this->summary_item( __( 'Paused offers', 'upsellbay' ), (string) $paused_offers, __( 'Offers saved for later but currently disabled from live rendering.', 'upsellbay' ) );
+		$this->summary_item( __( 'Draft offers', 'upsellbay' ), (string) $draft_offers, __( 'Unpublished or unfinished offers that are not yet live.', 'upsellbay' ) );
+		$this->summary_item( __( 'Active offers with conflicts', 'upsellbay' ), $this->count_or_none( $conflicted_offers ), __( 'Active offers with detected placement crowding or funnel overlap.', 'upsellbay' ) );
+		echo '</div>';
+	}
+
+	/**
+	 * Return the overview sentence.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int $total_offers Total offers.
+	 * @param int $active_offers Active offers.
+	 * @param int $paused_offers Paused offers.
+	 * @param int $draft_offers Draft offers.
+	 */
+	private function overview_summary_text( int $total_offers, int $active_offers, int $paused_offers, int $draft_offers ): string {
+		/* translators: 1: total offers, 2: active offers, 3: paused offers, 4: draft offers. */
+		$message = __( '%1$d total offers: %2$d active, %3$d paused, %4$d draft.', 'upsellbay' );
+
+		return sprintf(
+			$message,
+			$total_offers,
+			$active_offers,
+			$paused_offers,
+			$draft_offers
+		);
+	}
+
+	/**
+	 * Return a display value for a count or zero-state.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int $count Count value.
+	 */
+	private function count_or_none( int $count ): string {
+		if ( 0 === $count ) {
+			return __( 'None', 'upsellbay' );
+		}
+
+		return (string) $count;
+	}
+
+	/**
+	 * Render a native metric card.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $label Metric label.
+	 * @param string $value Metric value.
+	 * @param string $help  Optional help tip text.
+	 */
+	private function summary_item( string $label, string $value, string $help = '' ): void {
+		echo '<div class="upsellbay-metric-card">';
+		if ( '' !== $help ) {
+			echo '<span class="upsellbay-metric-card__help">' . $this->help_tip( $help ) . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- help_tip() returns escaped WooCommerce help markup.
+		}
+		echo '<span class="upsellbay-metric-card__value">' . esc_html( $value ) . '</span>';
+		echo '<span class="upsellbay-metric-card__label">' . esc_html( $label ) . '</span>';
+		echo '</div>';
+	}
+
+	/**
+	 * Render a WooCommerce help tip when available.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $text Tip text.
+	 * @return string
+	 */
+	private function help_tip( string $text ): string {
+		if ( function_exists( 'wc_help_tip' ) ) {
+			return wc_help_tip( $text, false );
+		}
+
+		return '<span class="description">' . esc_html( $text ) . '</span>';
 	}
 
 	/**

@@ -88,7 +88,7 @@ final class OfferListTable {
 		$filters = $this->normalize_filters( $filters );
 		$rows    = array();
 
-		// Pre-compute context for preview links
+		// Pre-compute context for preview links.
 		$context = array();
 		if ( function_exists( 'wc_get_checkout_url' ) ) {
 			$context['checkout_url'] = wc_get_checkout_url();
@@ -172,6 +172,51 @@ final class OfferListTable {
 	 */
 	public function last_total_items(): int {
 		return $this->last_total_items;
+	}
+
+	/**
+	 * Return overview data for the offers tab.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return array<string, int>
+	 */
+	public function overview_data(): array {
+		$offers = $this->repository->query(
+			array(
+				'limit' => -1,
+			)
+		);
+
+		$summary = array(
+			'total_offers'      => 0,
+			'active_offers'     => 0,
+			'paused_offers'     => 0,
+			'draft_offers'      => 0,
+			'conflicted_offers' => 0,
+		);
+
+		foreach ( $offers as $offer ) {
+			++$summary['total_offers'];
+
+			$meta   = is_array( $offer['meta'] ?? null ) ? $offer['meta'] : array();
+			$status = (string) ( $meta['_ub_status'] ?? 'draft' );
+
+			if ( in_array( $status, array( 'active', 'paused', 'draft' ), true ) ) {
+				++$summary[ $status . '_offers' ];
+			}
+
+			if ( 'active' !== $status || null === $this->conflict_detector ) {
+				continue;
+			}
+
+			$warnings = $this->conflict_detector->detect( (int) ( $offer['id'] ?? $offer['ID'] ?? 0 ), $meta );
+			if ( count( $warnings ) > 0 ) {
+				++$summary['conflicted_offers'];
+			}
+		}
+
+		return $summary;
 	}
 
 	/**

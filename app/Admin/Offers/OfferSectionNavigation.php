@@ -58,7 +58,7 @@ final class OfferSectionNavigation {
 	private function sections(): array {
 		return array(
 			'general'   => array(
-				'label' => __( 'General', 'upsellbay' ),
+				'label' => __( 'Overview', 'upsellbay' ),
 				'url'   => 'admin.php?page=upsellbay&tab=offers',
 			),
 			'add_offer' => array(

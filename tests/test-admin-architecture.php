@@ -558,8 +558,12 @@ function upsellbay_admin_architecture_tests(): array {
 			$editor_html = (string) ob_get_clean();
 
 			assert_contains( 'subsubsub upsellbay-offers-section-menu', $list_html );
-			assert_contains( 'admin.php?page=upsellbay&amp;tab=offers" class="current" aria-current="page">General</a>', $list_html );
+			assert_contains( 'admin.php?page=upsellbay&amp;tab=offers" class="current" aria-current="page">Overview</a>', $list_html );
 			assert_contains( 'admin.php?page=upsellbay&amp;tab=offers&amp;action=edit">Add Offer</a>', $list_html );
+			assert_contains( 'Overview', $list_html );
+			assert_contains( '0 total offers: 0 active, 0 paused, 0 draft.', $list_html );
+			assert_contains( 'Active offers with conflicts', $list_html );
+			assert_contains( '>None<', $list_html );
 			assert_true( strpos( $list_html, 'upsellbay-offers-section-menu' ) < strpos( $list_html, 'No UpsellBay offers yet' ) );
 
 			$repository = upsellbay_test_offer_repository(
@@ -598,9 +602,77 @@ function upsellbay_admin_architecture_tests(): array {
 			assert_contains( 'tablenav-pages', $list_controls_html );
 			assert_contains( 'value="warranty"', $list_controls_html );
 
-			assert_contains( 'admin.php?page=upsellbay&amp;tab=offers">General</a>', $editor_html );
+			assert_contains( 'admin.php?page=upsellbay&amp;tab=offers">Overview</a>', $editor_html );
 			assert_contains( 'admin.php?page=upsellbay&amp;tab=offers&amp;action=edit" class="current" aria-current="page">Add Offer</a>', $editor_html );
 			assert_true( strpos( $editor_html, 'upsellbay-offers-section-menu' ) < strpos( $editor_html, 'Add UpsellBay Offer' ) );
+		},
+		'offers tab overview summarizes status counts and conflicts' => static function (): void {
+			$repository = upsellbay_test_offer_repository(
+				array(
+					11 => array(
+						'id'     => 11,
+						'title'  => 'Checkout bump A',
+						'status' => 'publish',
+						'meta'   => array(
+							'_ub_offer_type'       => 'checkout_bump',
+							'_ub_status'           => 'active',
+							'_ub_offer_product_id' => 25,
+							'_ub_headline'         => 'Offer A',
+							'_ub_button_text'      => 'Add',
+							'_ub_priority'         => 1,
+						),
+					),
+					12 => array(
+						'id'     => 12,
+						'title'  => 'Checkout bump B',
+						'status' => 'publish',
+						'meta'   => array(
+							'_ub_offer_type'       => 'checkout_bump',
+							'_ub_status'           => 'active',
+							'_ub_offer_product_id' => 26,
+							'_ub_headline'         => 'Offer B',
+							'_ub_button_text'      => 'Add',
+							'_ub_priority'         => 1,
+						),
+					),
+					13 => array(
+						'id'     => 13,
+						'title'  => 'Cart offer',
+						'status' => 'publish',
+						'meta'   => array(
+							'_ub_offer_type'       => 'cart_crosssell',
+							'_ub_status'           => 'paused',
+							'_ub_offer_product_id' => 27,
+							'_ub_headline'         => 'Paused offer',
+							'_ub_button_text'      => 'Add',
+							'_ub_priority'         => 5,
+						),
+					),
+					14 => array(
+						'id'     => 14,
+						'title'  => 'Product offer draft',
+						'status' => 'publish',
+						'meta'   => array(
+							'_ub_offer_type'       => 'product_upsell',
+							'_ub_status'           => 'draft',
+							'_ub_offer_product_id' => 28,
+							'_ub_headline'         => 'Draft offer',
+							'_ub_button_text'      => 'Add',
+							'_ub_priority'         => 9,
+						),
+					),
+				)
+			);
+			$validator = new OfferValidator( new OfferSchema(), static fn (): bool => true );
+			$service   = new OfferService( $repository, $validator );
+
+			ob_start();
+			( new OffersPage( new OfferListTable( $repository, $service, new \WPAnchorBay\UpsellBay\Domain\Offers\OfferConflictDetector( $repository ) ) ) )->render_content();
+			$html = (string) ob_get_clean();
+
+			assert_contains( '4 total offers: 2 active, 1 paused, 1 draft.', $html );
+			assert_contains( 'Active offers with conflicts', $html );
+			assert_contains( '>2<', $html );
 		},
 		'offer editor shell sanitizes and validates submitted fields' => static function (): void {
 			$saved      = array();
