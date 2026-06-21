@@ -13,7 +13,7 @@ const refreshBlockCart = () => {
 	}
 };
 
-const CartCrossSellOffer = ( { offer } ) => {
+const CartCrossSellOffer = ( { offer, onDismiss } ) => {
 	const [ isLoading, setIsLoading ] = useState( false );
 
 	const handleAdd = async () => {
@@ -55,6 +55,7 @@ const CartCrossSellOffer = ( { offer } ) => {
 			} );
 
 			refreshBlockCart();
+			onDismiss( offer.id );
 		} catch ( error ) {
 			console.error( 'UpsellBay Dismiss Error:', error );
 		} finally {
@@ -122,16 +123,33 @@ const CartCrossSellOffer = ( { offer } ) => {
 
 const CartCrossSellsList = ( { extensions } ) => {
 	const offers = extensions?.upsellbay?.cart_crosssell || [];
+	const [ dismissedOfferIds, setDismissedOfferIds ] = useState( [] );
 
 	if ( ! offers || offers.length === 0 ) {
 		return null;
 	}
 
+	const visibleOffers = offers.filter( ( offer ) => ! dismissedOfferIds.includes( offer.id ) );
+
+	if ( visibleOffers.length === 0 ) {
+		return null;
+	}
+
+	const handleDismiss = ( offerId ) => {
+		setDismissedOfferIds( ( currentIds ) => {
+			if ( currentIds.includes( offerId ) ) {
+				return currentIds;
+			}
+
+			return [ ...currentIds, offerId ];
+		} );
+	};
+
 	return (
 		<div className="upsellbay-block-offers upsellbay-block-offers--cart">
 			<h3 className="upsellbay-offer-section__heading">{ __( 'Still missing?', 'upsellbay' ) }</h3>
-			{ offers.map( ( offer ) => (
-				<CartCrossSellOffer key={ offer.id } offer={ offer } />
+			{ visibleOffers.map( ( offer ) => (
+				<CartCrossSellOffer key={ offer.id } offer={ offer } onDismiss={ handleDismiss } />
 			) ) }
 		</div>
 	);
