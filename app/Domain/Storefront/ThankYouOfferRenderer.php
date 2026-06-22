@@ -45,6 +45,8 @@ final class ThankYouOfferRenderer extends AbstractOfferRenderer {
 
 		$source_order_id   = (int) ( $context['source_order_id'] ?? 0 );
 		$source_order_attr = $source_order_id > 0 ? ' data-upsellbay-source-order-id="' . $this->esc_attr( (string) $source_order_id ) . '"' : '';
+		$token             = (string) ( $context['token'] ?? '' );
+		$token_attr        = '' !== $token ? ' data-upsellbay-token="' . $this->esc_attr( $token ) . '"' : '';
 
 		$control     = '<button type="button" class="button wp-element-button wc-block-components-button upsellbay-offer__button" data-upsellbay-offer-id="' . $this->esc_attr( (string) $offer_id ) . '">' . $this->esc_html( $button_text ) . '</button>';
 		$dismiss_btn = $this->render_dismiss_button();
@@ -59,7 +61,7 @@ final class ThankYouOfferRenderer extends AbstractOfferRenderer {
 			$classes[] = 'upsellbay-offer--has-image';
 		}
 
-		$html = '<div class="' . $this->esc_attr( implode( ' ', $classes ) ) . '" data-upsellbay-placement="thankyou_offer" data-upsellbay-offer-id="' . $this->esc_attr( (string) $offer_id ) . '"' . $source_order_attr . '>'
+		$html = '<div class="' . $this->esc_attr( implode( ' ', $classes ) ) . '" data-upsellbay-placement="thankyou_offer" data-upsellbay-offer-id="' . $this->esc_attr( (string) $offer_id ) . '"' . $source_order_attr . $token_attr . '>'
 			. $image_html
 			. '<div class="upsellbay-offer__content">'
 			. '<div class="upsellbay-offer__text">'

@@ -190,6 +190,7 @@ final class StorefrontController {
 
 		$context                    = $this->context();
 		$context['source_order_id'] = $order_id;
+		$context['token']           = $this->session->ensure_token();
 		$limit                      = $this->settings->placement_max_display( 'thankyou_offer' );
 		$this->echo_placement( 'thankyou_offer', $context, $limit );
 	}

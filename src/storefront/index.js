@@ -6,9 +6,11 @@ import { __ } from '@wordpress/i18n';
 
 const config = window.upsellbayStorefront || {};
 
-async function postOffer(endpoint, payload) {
+async function postOffer(endpoint, payload, card = null) {
 	const fragment = document.getElementById('upsellbay-token-fragment');
-	const currentToken = fragment ? fragment.dataset.token : config.token;
+	const currentToken = (card && card.dataset && card.dataset.upsellbayToken)
+		|| (fragment ? fragment.dataset.token : '')
+		|| config.token;
 
 	if (!config.restUrl || !currentToken) {
 		return null;
@@ -57,7 +59,7 @@ document.addEventListener('click', async (event) => {
 		const result = await postOffer('dismiss', {
 			offer_id: Number(card.dataset.upsellbayOfferId || 0),
 			placement: card.dataset.upsellbayPlacement || 'product_upsell',
-		});
+		}, card);
 
 		if (result?.ok) {
 			const section = card.closest('.upsellbay-offer-section');
@@ -95,7 +97,7 @@ document.addEventListener('click', async (event) => {
 		offer_id: Number(card.dataset.upsellbayOfferId || 0),
 		placement: card.dataset.upsellbayPlacement || 'cart_crosssell',
 		source_order_id: Number(card.dataset.upsellbaySourceOrderId || 0),
-	});
+	}, card);
 
 	card.classList.remove('is-loading');
 	button.removeAttribute('aria-busy');

@@ -332,6 +332,26 @@ function upsellbay_core_business_logic_tests(): array {
 			);
 
 			assert_contains( 'Recommended for you', $product_html );
+
+			$thankyou_html = ( new ThankYouOfferRenderer( new DiscountCalculator() ) )->render_offer(
+				array(
+					'id'    => 14,
+					'title' => 'Thank you offer',
+					'meta'  => array(
+						'_ub_offer_type'       => 'thankyou_offer',
+						'_ub_offer_product_id' => 50,
+						'_ub_headline'         => 'Add this after checkout',
+						'_ub_button_text'      => 'Add to order',
+					),
+				),
+				array(
+					'source_order_id' => 123,
+					'token'           => 'token-123',
+				)
+			);
+
+			assert_contains( 'data-upsellbay-source-order-id="123"', $thankyou_html );
+			assert_contains( 'data-upsellbay-token="token-123"', $thankyou_html );
 		},
 		'public routes validate token rate limit and ignore client supplied price' => static function (): void {
 			$session = upsellbay_array_cart_session();
