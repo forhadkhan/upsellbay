@@ -142,6 +142,10 @@ final class StorefrontController {
 	 * @since 1.0.0
 	 */
 	public function render_checkout_bump(): void {
+		if ( function_exists( 'is_checkout' ) && ! is_checkout() ) {
+			return;
+		}
+
 		$limit = $this->settings->placement_max_display( 'checkout_bump' );
 		$this->echo_placement( 'checkout_bump', $this->context(), $limit );
 	}
@@ -152,6 +156,10 @@ final class StorefrontController {
 	 * @since 1.0.0
 	 */
 	public function render_product_offer(): void {
+		if ( function_exists( 'is_product' ) && ! is_product() ) {
+			return;
+		}
+
 		$limit = $this->settings->placement_max_display( 'product_upsell' );
 		$this->echo_placement( 'product_upsell', $this->context(), $limit );
 	}
@@ -162,6 +170,10 @@ final class StorefrontController {
 	 * @since 1.0.0
 	 */
 	public function render_cart_offers(): void {
+		if ( function_exists( 'is_cart' ) && ! is_cart() ) {
+			return;
+		}
+
 		$limit = $this->settings->placement_max_display( 'cart_crosssell' );
 		$this->echo_placement( 'cart_crosssell', $this->context(), $limit );
 	}
