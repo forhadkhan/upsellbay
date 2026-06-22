@@ -345,13 +345,19 @@ function upsellbay_core_business_logic_tests(): array {
 					),
 				),
 				array(
-					'source_order_id' => 123,
-					'token'           => 'token-123',
+					'source_order_id'  => 123,
+					'source_order_key' => 'wc_order_123',
+					'token'            => 'token-123',
+					'rest_url'         => 'https://store.test/wp-json/upsellbay/v1',
+					'checkout_url'     => 'https://store.test/checkout/',
 				)
 			);
 
 			assert_contains( 'data-upsellbay-source-order-id="123"', $thankyou_html );
+			assert_contains( 'data-upsellbay-source-order-key="wc_order_123"', $thankyou_html );
 			assert_contains( 'data-upsellbay-token="token-123"', $thankyou_html );
+			assert_contains( 'data-upsellbay-rest-url="https://store.test/wp-json/upsellbay/v1"', $thankyou_html );
+			assert_contains( 'data-upsellbay-checkout-url="https://store.test/checkout/"', $thankyou_html );
 		},
 		'public routes validate token rate limit and ignore client supplied price' => static function (): void {
 			$session = upsellbay_array_cart_session();
@@ -385,6 +391,66 @@ function upsellbay_core_business_logic_tests(): array {
 			assert_same( '19.000000', $response['data']['offer_price'] );
 			assert_same( 429, $routes->dismiss( array( 'offer_id' => 22, 'placement' => 'checkout_bump', 'token' => $token ) )['status'] );
 			assert_same( 403, $routes->bump_toggle( array( 'offer_id' => 22, 'token' => 'bad' ) )['status'] );
+		},
+		'thank-you route validates against verified source order context' => static function (): void {
+			$GLOBALS['upsellbay_test_current_user_id'] = 0;
+			$GLOBALS['upsellbay_test_products'][50]   = new UpsellBay_Test_Storefront_Product( 50, 'Follow-on', '19.000000', 0 );
+			$GLOBALS['upsellbay_test_orders'][700]    = new UpsellBay_Test_Order(
+				700,
+				0,
+				'wc_order_700',
+				'processing',
+				array( new UpsellBay_Test_Order_Item( 99 ) ),
+				'45.000000'
+			);
+
+			$cart_items                    = array();
+			$session                       = upsellbay_array_cart_session();
+			$token                         = $session->ensure_token();
+			$offer                         = upsellbay_phase4_offer( 33, 'thankyou_offer', 50, 1 );
+			$offer['meta']['_ub_rules']    = array(
+				array(
+					'type'     => 'cart_product',
+					'operator' => 'eq',
+					'value'    => array( 99 ),
+				),
+			);
+			$mutator                       = new CartMutator(
+				$session,
+				new CartValidator( new RuleEvaluator( new RuleParser() ), new DiscountCalculator(), static fn (): array => array( 'id' => 50, 'price' => '19.000000', 'purchasable' => true, 'visible' => true, 'in_stock' => true, 'type' => 'simple', 'subscription' => false ) ),
+				new DiscountCalculator(),
+				static function ( int $product_id, int $quantity, array $cart_item_data ) use ( &$cart_items ): string {
+					$cart_items['thankyou_item'] = compact( 'product_id', 'quantity', 'cart_item_data' );
+					return 'thankyou_item';
+				},
+				static fn (): bool => true,
+				static fn (): bool => true
+			);
+			$routes                        = new PublicOfferRoutes(
+				static fn ( int $offer_id ): ?array => 33 === $offer_id ? $offer : null,
+				$mutator,
+				$session,
+				static fn (): bool => true,
+				static fn (): string => '2026-05-30',
+				new AnalyticsService( new AnalyticsRecorder( new StatsRepository( static function (): void {}, static fn (): array => array() ) ) )
+			);
+
+			$response = $routes->cart_offer_add(
+				array(
+					'offer_id'         => 33,
+					'placement'        => 'thankyou_offer',
+					'source_order_id'  => 700,
+					'source_order_key' => 'wc_order_700',
+					'token'            => $token,
+				)
+			);
+
+			unset( $GLOBALS['upsellbay_test_current_user_id'], $GLOBALS['upsellbay_test_orders'][700] );
+
+			assert_same( 200, $response['status'] );
+			assert_true( $response['data']['success'] );
+			assert_same( 50, $cart_items['thankyou_item']['product_id'] );
+			assert_same( 700, $cart_items['thankyou_item']['cart_item_data'][ Constants::ATTRIBUTION_SOURCE_ORDER_ID ] );
 		},
 		'store api offer payload uses configured discount value for price html' => static function (): void {
 			$GLOBALS['upsellbay_test_products'][61] = new UpsellBay_Test_Storefront_Product( 61, 'Warranty', '100.00', 0 );
@@ -622,6 +688,86 @@ final class UpsellBay_Test_Storefront_Product {
 
 	public function get_type(): string {
 		return 'simple';
+	}
+}
+
+/**
+ * Source order item test double.
+ *
+ * @since 1.0.0
+ */
+final class UpsellBay_Test_Order_Item {
+	private int $product_id;
+
+	public function __construct( int $product_id ) {
+		$this->product_id = $product_id;
+	}
+
+	public function get_product_id(): int {
+		return $this->product_id;
+	}
+}
+
+/**
+ * Source order test double.
+ *
+ * @since 1.0.0
+ */
+final class UpsellBay_Test_Order {
+	private int $id;
+	private int $user_id;
+	private string $order_key;
+	private string $status;
+	/** @var array<int, UpsellBay_Test_Order_Item> */
+	private array $items;
+	private string $subtotal;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param int                              $id        Order ID.
+	 * @param int                              $user_id   Customer user ID.
+	 * @param string                           $order_key Order key.
+	 * @param string                           $status    Order status.
+	 * @param array<int, UpsellBay_Test_Order_Item> $items Order items.
+	 * @param string                           $subtotal  Order subtotal.
+	 */
+	public function __construct( int $id, int $user_id, string $order_key, string $status, array $items, string $subtotal ) {
+		$this->id        = $id;
+		$this->user_id   = $user_id;
+		$this->order_key = $order_key;
+		$this->status    = $status;
+		$this->items     = $items;
+		$this->subtotal  = $subtotal;
+	}
+
+	public function get_id(): int {
+		return $this->id;
+	}
+
+	public function get_user_id(): int {
+		return $this->user_id;
+	}
+
+	public function get_order_key(): string {
+		return $this->order_key;
+	}
+
+	public function get_status(): string {
+		return $this->status;
+	}
+
+	/**
+	 * Return order items.
+	 *
+	 * @return array<int, UpsellBay_Test_Order_Item>
+	 */
+	public function get_items(): array {
+		return $this->items;
+	}
+
+	public function get_subtotal(): string {
+		return $this->subtotal;
 	}
 }
 

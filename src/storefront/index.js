@@ -6,17 +6,22 @@ import { __ } from '@wordpress/i18n';
 
 const config = window.upsellbayStorefront || {};
 
+function cardValue(card, key, fallback = '') {
+	return (card && card.dataset && card.dataset[key]) || fallback || '';
+}
+
 async function postOffer(endpoint, payload, card = null) {
 	const fragment = document.getElementById('upsellbay-token-fragment');
 	const currentToken = (card && card.dataset && card.dataset.upsellbayToken)
 		|| (fragment ? fragment.dataset.token : '')
 		|| config.token;
+	const restUrl = cardValue(card, 'upsellbayRestUrl', config.restUrl);
 
-	if (!config.restUrl || !currentToken) {
+	if (!restUrl || !currentToken) {
 		return null;
 	}
 
-	const response = await window.fetch(`${config.restUrl}/${endpoint}`, {
+	const response = await window.fetch(`${restUrl}/${endpoint}`, {
 		method: 'POST',
 		credentials: 'same-origin',
 		headers: {
@@ -97,6 +102,7 @@ document.addEventListener('click', async (event) => {
 		offer_id: Number(card.dataset.upsellbayOfferId || 0),
 		placement: card.dataset.upsellbayPlacement || 'cart_crosssell',
 		source_order_id: Number(card.dataset.upsellbaySourceOrderId || 0),
+		source_order_key: card.dataset.upsellbaySourceOrderKey || '',
 	}, card);
 
 	card.classList.remove('is-loading');
@@ -111,9 +117,12 @@ document.addEventListener('click', async (event) => {
 		return;
 	}
 
-	if (isThankYou && (config.checkoutUrl || config.cartUrl)) {
+	const checkoutUrl = cardValue(card, 'upsellbayCheckoutUrl', config.checkoutUrl);
+	const cartUrl = cardValue(card, 'upsellbayCartUrl', config.cartUrl);
+
+	if (isThankYou && (checkoutUrl || cartUrl)) {
 		showNotice(__('Adding to new checkout…', 'upsellbay'), 'message');
-		window.location.href = config.checkoutUrl || config.cartUrl;
+		window.location.href = checkoutUrl || cartUrl;
 		return;
 	}
 

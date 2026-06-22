@@ -147,14 +147,14 @@ final class PublicOfferRoutes {
 				'callback'            => array( $this, 'cart_offer_add' ),
 				'permission_callback' => '__return_true',
 				'args'                => array(
-					'offer_id'        => array(
+					'offer_id'         => array(
 						'required'          => true,
 						'type'              => 'integer',
 						'minimum'           => 1,
 						'sanitize_callback' => 'absint',
 						'validate_callback' => static fn( $value ) => absint( $value ) > 0,
 					),
-					'placement'       => array(
+					'placement'        => array(
 						'required'          => false,
 						'type'              => 'string',
 						'default'           => 'cart_crosssell',
@@ -165,13 +165,19 @@ final class PublicOfferRoutes {
 							true
 						),
 					),
-					'source_order_id' => array(
+					'source_order_id'  => array(
 						'required'          => false,
 						'type'              => 'integer',
 						'default'           => 0,
 						'sanitize_callback' => 'absint',
 					),
-					'token'           => array(
+					'source_order_key' => array(
+						'required'          => false,
+						'type'              => 'string',
+						'default'           => '',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'token'            => array(
 						'required'          => true,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
@@ -279,13 +285,31 @@ final class PublicOfferRoutes {
 		}
 
 		$placement = (string) ( $params['placement'] ?? 'cart_crosssell' );
-		$result    = $this->cart->accept(
+		$context   = array(
+			'source_context'  => $placement,
+			'source_order_id' => (int) ( $params['source_order_id'] ?? 0 ),
+		);
+
+		if ( 'thankyou_offer' === $placement ) {
+			$source_order_context = $this->source_order_context( $params );
+			if ( null === $source_order_context ) {
+				return $this->response(
+					400,
+					array(
+						'success' => false,
+						'message' => __( 'This order could not be verified for the follow-on offer.', 'upsellbay' ),
+						'notices' => array(),
+					)
+				);
+			}
+
+			$context = array_replace( $context, $source_order_context );
+		}
+
+		$result = $this->cart->accept(
 			$offer,
 			$placement,
-			array(
-				'source_context'  => $placement,
-				'source_order_id' => (int) ( $params['source_order_id'] ?? 0 ),
-			)
+			$context
 		);
 
 		if ( true === ( $result['success'] ?? false ) ) {
@@ -316,6 +340,109 @@ final class PublicOfferRoutes {
 			'subscription_discount_blocked' => __( 'Discounts cannot be applied to subscription products.', 'upsellbay' ),
 			default                => __( 'Unable to add this offer. Please try again.', 'upsellbay' ),
 		};
+	}
+
+	/**
+	 * Build a cart-like rule context from a verified source order.
+	 *
+	 * @param array<string, mixed> $params Request params.
+	 * @return array<string, mixed>|null Null when the order cannot be verified.
+	 */
+	private function source_order_context( array $params ): ?array {
+		$order_id = (int) ( $params['source_order_id'] ?? 0 );
+		if ( $order_id <= 0 || ! function_exists( 'wc_get_order' ) ) {
+			return null;
+		}
+
+		$order = wc_get_order( $order_id );
+		if ( ! is_object( $order ) || ! $this->can_use_source_order( $order, (string) ( $params['source_order_key'] ?? '' ) ) ) {
+			return null;
+		}
+
+		$product_ids  = array();
+		$category_ids = array();
+		$tag_ids      = array();
+
+		if ( method_exists( $order, 'get_items' ) ) {
+			foreach ( $order->get_items() as $item ) {
+				$product_id = $this->order_item_product_id( $item );
+				if ( $product_id <= 0 ) {
+					continue;
+				}
+
+				$product_ids[] = $product_id;
+				$category_ids  = array_merge( $category_ids, $this->product_term_ids( $product_id, 'product_cat' ) );
+				$tag_ids       = array_merge( $tag_ids, $this->product_term_ids( $product_id, 'product_tag' ) );
+			}
+		}
+
+		return array(
+			'cart_product_ids'    => array_values( array_unique( $product_ids ) ),
+			'cart_category_ids'   => array_values( array_unique( $category_ids ) ),
+			'cart_tag_ids'        => array_values( array_unique( $tag_ids ) ),
+			'cart_subtotal'       => method_exists( $order, 'get_subtotal' ) ? (string) $order->get_subtotal() : '0',
+			'source_context'      => 'thankyou',
+			'source_order_id'     => $order_id,
+			'source_order_status' => method_exists( $order, 'get_status' ) ? (string) $order->get_status() : '',
+		);
+	}
+
+	/**
+	 * Confirm the shopper can use a source order for follow-on eligibility.
+	 *
+	 * @param object $order Source order.
+	 * @param string $source_order_key Submitted source order key.
+	 */
+	private function can_use_source_order( object $order, string $source_order_key ): bool {
+		$status = method_exists( $order, 'get_status' ) ? (string) $order->get_status() : '';
+		if ( in_array( $status, array( 'failed', 'cancelled', 'refunded' ), true ) ) {
+			return false;
+		}
+
+		$order_user_id = method_exists( $order, 'get_user_id' ) ? (int) $order->get_user_id() : 0;
+		$current_user  = function_exists( 'get_current_user_id' ) ? get_current_user_id() : 0;
+		if ( $order_user_id > 0 ) {
+			return $order_user_id === $current_user;
+		}
+
+		return '' !== $source_order_key && method_exists( $order, 'get_order_key' ) && hash_equals( (string) $order->get_order_key(), $source_order_key );
+	}
+
+	/**
+	 * Return the product ID represented by an order item.
+	 *
+	 * @param mixed $item Order item.
+	 */
+	private function order_item_product_id( $item ): int {
+		if ( is_object( $item ) && method_exists( $item, 'get_product_id' ) ) {
+			return (int) $item->get_product_id();
+		}
+
+		if ( is_array( $item ) ) {
+			return (int) ( $item['product_id'] ?? 0 );
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Return product term IDs when taxonomy helpers are available.
+	 *
+	 * @param int    $product_id Product ID.
+	 * @param string $taxonomy Taxonomy name.
+	 * @return array<int, int>
+	 */
+	private function product_term_ids( int $product_id, string $taxonomy ): array {
+		if ( $product_id <= 0 || ! function_exists( 'wp_get_post_terms' ) ) {
+			return array();
+		}
+
+		$terms = wp_get_post_terms( $product_id, $taxonomy, array( 'fields' => 'ids' ) );
+		if ( ! is_array( $terms ) ) {
+			return array();
+		}
+
+		return array_values( array_filter( array_map( 'intval', $terms ) ) );
 	}
 
 	/**

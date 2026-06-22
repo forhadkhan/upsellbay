@@ -196,6 +196,19 @@ if ( ! function_exists( 'wc_get_product' ) ) {
 	}
 }
 
+if ( ! function_exists( 'wc_get_order' ) ) {
+	function wc_get_order( int $order_id ) {
+		return $GLOBALS['upsellbay_test_orders'][ $order_id ] ?? false;
+	}
+}
+
+if ( ! function_exists( 'wp_get_post_terms' ) ) {
+	function wp_get_post_terms( int $post_id, string $taxonomy, array $args = array() ): array {
+		unset( $args );
+		return $GLOBALS['upsellbay_test_product_terms'][ $taxonomy ][ $post_id ] ?? array();
+	}
+}
+
 if ( ! function_exists( 'wc_get_customer_order_count' ) ) {
 	function wc_get_customer_order_count( int $customer_id ): int {
 		return (int) ( $GLOBALS['upsellbay_test_customer_order_counts'][ $customer_id ] ?? 0 );

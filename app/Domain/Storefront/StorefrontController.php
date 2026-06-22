@@ -188,10 +188,14 @@ final class StorefrontController {
 			}
 		}
 
-		$context                    = $this->context();
-		$context['source_order_id'] = $order_id;
-		$context['token']           = $this->session->ensure_token();
-		$limit                      = $this->settings->placement_max_display( 'thankyou_offer' );
+		$context                     = $this->context();
+		$context['source_order_id']  = $order_id;
+		$context['source_order_key'] = method_exists( $order, 'get_order_key' ) ? (string) $order->get_order_key() : '';
+		$context['token']            = $this->session->ensure_token();
+		$context['rest_url']         = function_exists( 'rest_url' ) ? rest_url( Constants::REST_NAMESPACE ) : '';
+		$context['cart_url']         = function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : '';
+		$context['checkout_url']     = function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : '';
+		$limit                       = $this->settings->placement_max_display( 'thankyou_offer' );
 		$this->echo_placement( 'thankyou_offer', $context, $limit );
 	}
 
@@ -425,7 +429,7 @@ final class StorefrontController {
 	 * @return array<string, string>
 	 */
 	public function add_token_fragment( array $fragments ): array {
-		$token = $this->session->ensure_token();
+		$token                                     = $this->session->ensure_token();
 		$fragments['div#upsellbay-token-fragment'] = '<div id="upsellbay-token-fragment" data-token="' . esc_attr( $token ) . '" style="display:none;"></div>';
 		return $fragments;
 	}

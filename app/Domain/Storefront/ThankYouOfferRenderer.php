@@ -45,8 +45,16 @@ final class ThankYouOfferRenderer extends AbstractOfferRenderer {
 
 		$source_order_id   = (int) ( $context['source_order_id'] ?? 0 );
 		$source_order_attr = $source_order_id > 0 ? ' data-upsellbay-source-order-id="' . $this->esc_attr( (string) $source_order_id ) . '"' : '';
+		$source_order_key  = (string) ( $context['source_order_key'] ?? '' );
+		$order_key_attr    = '' !== $source_order_key ? ' data-upsellbay-source-order-key="' . $this->esc_attr( $source_order_key ) . '"' : '';
 		$token             = (string) ( $context['token'] ?? '' );
 		$token_attr        = '' !== $token ? ' data-upsellbay-token="' . $this->esc_attr( $token ) . '"' : '';
+		$rest_url          = (string) ( $context['rest_url'] ?? '' );
+		$rest_url_attr     = '' !== $rest_url ? ' data-upsellbay-rest-url="' . $this->esc_attr( $rest_url ) . '"' : '';
+		$checkout_url      = (string) ( $context['checkout_url'] ?? '' );
+		$checkout_url_attr = '' !== $checkout_url ? ' data-upsellbay-checkout-url="' . $this->esc_attr( $checkout_url ) . '"' : '';
+		$cart_url          = (string) ( $context['cart_url'] ?? '' );
+		$cart_url_attr     = '' !== $cart_url ? ' data-upsellbay-cart-url="' . $this->esc_attr( $cart_url ) . '"' : '';
 
 		$control     = '<button type="button" class="button wp-element-button wc-block-components-button upsellbay-offer__button" data-upsellbay-offer-id="' . $this->esc_attr( (string) $offer_id ) . '">' . $this->esc_html( $button_text ) . '</button>';
 		$dismiss_btn = $this->render_dismiss_button();
@@ -61,7 +69,7 @@ final class ThankYouOfferRenderer extends AbstractOfferRenderer {
 			$classes[] = 'upsellbay-offer--has-image';
 		}
 
-		$html = '<div class="' . $this->esc_attr( implode( ' ', $classes ) ) . '" data-upsellbay-placement="thankyou_offer" data-upsellbay-offer-id="' . $this->esc_attr( (string) $offer_id ) . '"' . $source_order_attr . $token_attr . '>'
+		$html = '<div class="' . $this->esc_attr( implode( ' ', $classes ) ) . '" data-upsellbay-placement="thankyou_offer" data-upsellbay-offer-id="' . $this->esc_attr( (string) $offer_id ) . '"' . $source_order_attr . $order_key_attr . $token_attr . $rest_url_attr . $checkout_url_attr . $cart_url_attr . '>'
 			. $image_html
 			. '<div class="upsellbay-offer__content">'
 			. '<div class="upsellbay-offer__text">'
