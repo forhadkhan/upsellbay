@@ -33,6 +33,7 @@ use WPAnchorBay\UpsellBay\Domain\Offers\OfferService;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferValidator;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferVisibilityInspector;
 use WPAnchorBay\UpsellBay\Domain\Rules\RuleEvaluator;
+use WPAnchorBay\UpsellBay\Domain\Rules\RuleDefinitions;
 use WPAnchorBay\UpsellBay\Domain\Rules\RuleParser;
 use WPAnchorBay\UpsellBay\Domain\Storefront\CartCrossSellRenderer;
 use WPAnchorBay\UpsellBay\Domain\Storefront\ClassicCheckoutBump;
@@ -93,6 +94,14 @@ function upsellbay_core_business_logic_tests(): array {
 			assert_same( 'Add this', $preview['headline'] );
 		},
 		'rule parser and evaluator support all p0 rule families' => static function (): void {
+			$definitions = new RuleDefinitions();
+			assert_same(
+				array( 'cart_product', 'cart_category', 'cart_tag', 'cart_subtotal', 'viewed_product', 'user_role', 'customer_order_count', 'customer_lifetime_spend', 'stock_status', 'exclude_if_product_in_cart' ),
+				$definitions->types()
+			);
+			assert_same( 'contains', $definitions->resolve_operator( 'cart_product', 'in' ) );
+			assert_same( null, $definitions->resolve_operator( 'cart_product', 'gt' ) );
+
 			$parser    = new RuleParser();
 			$evaluator = new RuleEvaluator( $parser );
 			$context   = array(
@@ -108,12 +117,12 @@ function upsellbay_core_business_logic_tests(): array {
 			);
 
 			$rules = array(
-				array( 'type' => 'cart_product', 'operator' => 'in', 'value' => array( 10 ) ),
-				array( 'type' => 'cart_category', 'operator' => 'in', 'value' => array( 3 ) ),
-				array( 'type' => 'cart_tag', 'operator' => 'in', 'value' => array( 8 ) ),
+				array( 'type' => 'cart_product', 'operator' => 'contains', 'value' => array( 10 ) ),
+				array( 'type' => 'cart_category', 'operator' => 'contains', 'value' => array( 3 ) ),
+				array( 'type' => 'cart_tag', 'operator' => 'contains', 'value' => array( 8 ) ),
 				array( 'type' => 'cart_subtotal', 'operator' => 'gte', 'value' => '50' ),
-				array( 'type' => 'viewed_product', 'operator' => 'eq', 'value' => 20 ),
-				array( 'type' => 'user_role', 'operator' => 'in', 'value' => array( 'customer' ) ),
+				array( 'type' => 'viewed_product', 'operator' => 'contains', 'value' => array( 20 ) ),
+				array( 'type' => 'user_role', 'operator' => 'contains', 'value' => array( 'customer' ) ),
 				array( 'type' => 'customer_order_count', 'operator' => 'gte', 'value' => 1 ),
 				array( 'type' => 'customer_lifetime_spend', 'operator' => 'gte', 'value' => '100' ),
 				array( 'type' => 'stock_status', 'operator' => 'eq', 'value' => 'instock' ),
@@ -124,6 +133,8 @@ function upsellbay_core_business_logic_tests(): array {
 			assert_true( $evaluator->matches( array(), 'all', $context ) );
 			assert_true( $evaluator->matches( array( array( 'type' => 'bad' ) ), 'all', $context ) === false );
 			assert_true( $evaluator->matches( array( array( 'type' => 'cart_subtotal', 'operator' => 'lt', 'value' => '50' ), $rules[0] ), 'any', $context ) );
+			assert_false( $evaluator->matches( array( array( 'type' => 'user_role', 'operator' => 'contains', 'value' => array( 'guest' ) ) ), 'all', $context ) );
+			assert_false( $evaluator->matches( array( array( 'type' => 'cart_product', 'operator' => 'gt', 'value' => array( 10 ) ) ), 'all', $context ) );
 		},
 		'discount calculator clamps invalid prices and never trusts client input' => static function (): void {
 			$calculator = new DiscountCalculator();
@@ -151,6 +162,29 @@ function upsellbay_core_business_logic_tests(): array {
 
 			assert_same( 2, $selected[0]['id'] );
 			assert_same( 1, count( $selected ) );
+		},
+		'prioritizer evaluates stock status rules from the offered product' => static function (): void {
+			$GLOBALS['upsellbay_test_products'][60] = new class() {
+				public function get_stock_status(): string {
+					return 'onbackorder';
+				}
+			};
+
+			$offer = upsellbay_phase4_offer( 60, 'checkout_bump', 60, 1 );
+			$offer['meta']['_ub_rules'] = array(
+				array(
+					'type'     => 'stock_status',
+					'operator' => 'eq',
+					'value'    => 'onbackorder',
+				),
+			);
+
+			$prioritizer = new OfferPrioritizer( new RuleEvaluator( new RuleParser() ), static fn (): bool => true, static fn (): int => 100 );
+
+			assert_same( 60, $prioritizer->select( array( $offer ), 'checkout_bump', array(), 1 )[0]['id'] );
+
+			$offer['meta']['_ub_rules'][0]['value'] = 'instock';
+			assert_same( array(), $prioritizer->select( array( $offer ), 'checkout_bump', array(), 1 ) );
 		},
 		'prioritizer exposes skip reasons for suppressed checkout bumps' => static function (): void {
 			$prioritizer = new OfferPrioritizer( new RuleEvaluator( new RuleParser() ), static fn (): bool => true, static fn (): int => 100 );

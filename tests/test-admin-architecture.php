@@ -34,6 +34,8 @@ use WPAnchorBay\UpsellBay\Admin\Settings\BasicSection;
 use WPAnchorBay\UpsellBay\Admin\Settings\SettingsPage;
 use WPAnchorBay\UpsellBay\Admin\Tools\ToolsPage;
 use WPAnchorBay\UpsellBay\Admin\Wizard\WizardController;
+use WPAnchorBay\UpsellBay\Api\ProductsController;
+use WPAnchorBay\UpsellBay\Api\Routes\ProductsRoute;
 use WPAnchorBay\UpsellBay\Core\Constants;
 use WPAnchorBay\UpsellBay\Core\Settings;
 use WPAnchorBay\UpsellBay\Data\OfferRepository;
@@ -763,6 +765,68 @@ function upsellbay_admin_architecture_tests(): array {
 
 			assert_false( $page->save( array( 'nonce' => 'bad' ) )['success'] );
 		},
+		'offer editor normalizes rule definitions and rejects unsupported configurations' => static function (): void {
+			$GLOBALS['upsellbay_test_terms']['product_cat'][9] = (object) array(
+				'term_id' => 9,
+				'name'    => 'Accessories',
+				'count'   => 3,
+				'slug'    => 'accessories',
+			);
+			$GLOBALS['upsellbay_test_terms']['product_tag'][12] = (object) array(
+				'term_id' => 12,
+				'name'    => 'Featured',
+				'count'   => 2,
+				'slug'    => 'featured',
+			);
+			$GLOBALS['upsellbay_test_roles'] = array(
+				'customer' => array( 'name' => 'Customer' ),
+			);
+
+			$page = new OfferEditPage(
+				new OfferService( upsellbay_test_offer_repository( array() ), new OfferValidator( new OfferSchema(), static fn ( int $product_id ): bool => in_array( $product_id, array( 25, 44 ), true ) ) ),
+				new OfferValidator( new OfferSchema(), static fn ( int $product_id ): bool => in_array( $product_id, array( 25, 44 ), true ) ),
+				static fn (): bool => true,
+				static fn ( string $nonce ): bool => 'good' === $nonce
+			);
+
+			$rules = $page->normalize_rules(
+				array(
+					array( 'type' => 'cart_product', 'operator' => 'in', 'value' => array( '44' ) ),
+					array( 'type' => 'cart_category', 'operator' => 'gt', 'value' => array( '9' ) ),
+					array( 'type' => 'user_role', 'value' => array( 'customer' ) ),
+					array( 'type' => 'bad_rule', 'value' => '1' ),
+				)
+			);
+
+			assert_same( 'contains', $rules[0]['operator'] );
+			assert_same( 'contains', $rules[1]['operator'] );
+			assert_same( array( 'customer' ), $rules[2]['value'] );
+			assert_same( 3, count( $rules ) );
+
+			$result = $page->save(
+				array(
+					'nonce'                => 'good',
+					'title'                => 'Invalid rule',
+					'_ub_offer_type'       => 'checkout_bump',
+					'_ub_status'           => 'draft',
+					'_ub_offer_product_id' => '25',
+					'_ub_headline'         => 'Add this',
+					'_ub_button_text'      => 'Add',
+					'_ub_rules'            => array(
+						array(
+							'type'     => 'cart_product',
+							'operator' => 'contains',
+							'value'    => array( 999 ),
+						),
+					),
+				)
+			);
+
+			assert_false( $result['success'] );
+			assert_contains( 'Product rules require existing WooCommerce products.', $result['message'] );
+
+			unset( $GLOBALS['upsellbay_test_roles'], $GLOBALS['upsellbay_test_terms']['product_cat'][9], $GLOBALS['upsellbay_test_terms']['product_tag'][12] );
+		},
 		'offer editor requires an offer type before a new offer can be created' => static function (): void {
 			$page = new OfferEditPage(
 				new OfferService( upsellbay_test_offer_repository( array() ), new OfferValidator( new OfferSchema(), static fn ( int $product_id ): bool => 25 === $product_id ) ),
@@ -1243,6 +1307,35 @@ function upsellbay_admin_architecture_tests(): array {
 				$assets->assets_for_screen( 'woocommerce_page_upsellbay', array( 'tab' => 'settings' ) )['upsellbay-admin']['deps']
 			);
 			assert_same( array(), $assets->assets_for_screen( 'woocommerce_page_upsellbay-add-offer' ) );
+		},
+		'products route exposes searchable category tag and role selectors' => static function (): void {
+			$GLOBALS['upsellbay_test_current_user_can'] = array( 'manage_woocommerce' => true );
+			$GLOBALS['upsellbay_test_terms']['product_cat'][9] = (object) array(
+				'term_id' => 9,
+				'name'    => 'Accessories',
+				'count'   => 3,
+				'slug'    => 'accessories',
+			);
+			$GLOBALS['upsellbay_test_terms']['product_tag'][12] = (object) array(
+				'term_id' => 12,
+				'name'    => 'Featured',
+				'count'   => 2,
+				'slug'    => 'featured',
+			);
+			$GLOBALS['upsellbay_test_roles'] = array(
+				'customer'     => array( 'name' => 'Customer' ),
+				'shop_manager' => array( 'name' => 'Shop manager' ),
+			);
+
+			$controller = new ProductsController();
+			$route      = new ProductsRoute( $controller );
+
+			assert_true( $route->can_manage() );
+			assert_same( 'Accessories', $controller->categories( new WP_REST_Request( array( 'search' => 'access' ) ) )->get_data()[0]['name'] );
+			assert_same( 'Featured', $controller->tags( new WP_REST_Request( array( 'search' => 'feat' ) ) )->get_data()[0]['name'] );
+			assert_same( 'customer', $controller->roles( new WP_REST_Request( array( 'search' => 'cust' ) ) )->get_data()[0]['id'] );
+
+			unset( $GLOBALS['upsellbay_test_roles'], $GLOBALS['upsellbay_test_terms']['product_cat'][9], $GLOBALS['upsellbay_test_terms']['product_tag'][12] );
 		},
 		'dashboard shows overview and analytics from aggregate stats without live order scans' => static function (): void {
 			$captured_filters = array();

@@ -16,6 +16,26 @@ test.describe('admin offer editor permutation tests', () => {
 		await expect(page.locator('[name="_ub_conflict_override_reason"], #upsellbay-conflict-override-reason')).toHaveCount(1);
 	});
 
+	test('adapts rule controls to the selected rule type', async ({ page }) => {
+		await loginAsAdmin(page, env);
+		await gotoUpsellBay(page, env, 'tab=offers&action=edit');
+
+		await page.getByRole('button', { name: /add rule/i }).click();
+		const firstRule = page.locator('#upsellbay-builder-_ub_rules tbody tr').first();
+
+		await expect(firstRule.locator('.upsellbay-vb-type')).toHaveValue('cart_product');
+		await expect(firstRule.locator('.upsellbay-vb-op')).toBeVisible();
+		await expect(firstRule.locator('.upsellbay-rule-entity-search')).toHaveCount(1);
+
+		await firstRule.locator('.upsellbay-vb-type').selectOption('cart_subtotal');
+		await expect(firstRule.locator('input[type="number"].upsellbay-vb-val')).toHaveCount(1);
+		await expect(firstRule.locator('.upsellbay-vb-op')).toBeVisible();
+
+		await firstRule.locator('.upsellbay-vb-type').selectOption('user_role');
+		await expect(firstRule.locator('.upsellbay-rule-entity-search[data-endpoint="roles"]')).toHaveCount(1);
+		await expect(firstRule.locator('td').nth(1)).toContainText('Not required');
+	});
+
 	for (const caseData of offerTypesMatrix) {
 		test(`Offer Matrix: ${caseData.id} - ${caseData.description}`, async ({ page }) => {
 			const health = captureBrowserHealth(page);

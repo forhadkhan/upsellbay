@@ -360,6 +360,123 @@ if ( ! function_exists( 'is_wp_error' ) ) {
 	}
 }
 
+if ( ! class_exists( 'WP_REST_Request' ) ) {
+	class WP_REST_Request {
+		private array $params;
+
+		public function __construct( array $params = array() ) {
+			$this->params = $params;
+		}
+
+		public function get_param( string $key ) {
+			return $this->params[ $key ] ?? null;
+		}
+	}
+}
+
+if ( ! class_exists( 'WP_REST_Response' ) ) {
+	class WP_REST_Response implements ArrayAccess {
+		private $data;
+		private int $status;
+
+		public function __construct( $data = null, int $status = 200 ) {
+			$this->data   = $data;
+			$this->status = $status;
+		}
+
+		public function get_data() {
+			return $this->data;
+		}
+
+		public function get_status(): int {
+			return $this->status;
+		}
+
+		public function offsetExists( $offset ): bool {
+			return in_array( $offset, array( 'status', 'data' ), true ) || ( is_array( $this->data ) && array_key_exists( $offset, $this->data ) );
+		}
+
+		public function offsetGet( $offset ) {
+			if ( 'status' === $offset ) {
+				return $this->status;
+			}
+
+			if ( 'data' === $offset ) {
+				return $this->data;
+			}
+
+			return is_array( $this->data ) ? ( $this->data[ $offset ] ?? null ) : null;
+		}
+
+		public function offsetSet( $offset, $value ): void {
+			if ( 'status' === $offset ) {
+				$this->status = (int) $value;
+				return;
+			}
+
+			if ( 'data' === $offset ) {
+				$this->data = $value;
+				return;
+			}
+
+			if ( ! is_array( $this->data ) ) {
+				$this->data = array();
+			}
+
+			if ( null === $offset ) {
+				$this->data[] = $value;
+				return;
+			}
+
+			$this->data[ $offset ] = $value;
+		}
+
+		public function offsetUnset( $offset ): void {
+			if ( is_array( $this->data ) ) {
+				unset( $this->data[ $offset ] );
+			}
+		}
+	}
+}
+
+if ( ! function_exists( 'term_exists' ) ) {
+	function term_exists( int $term_id, string $taxonomy ) {
+		return isset( $GLOBALS['upsellbay_test_terms'][ $taxonomy ][ $term_id ] ) ? $term_id : null;
+	}
+}
+
+if ( ! function_exists( 'get_terms' ) ) {
+	function get_terms( array $args ): array {
+		$taxonomy = (string) ( $args['taxonomy'] ?? '' );
+		$terms    = array_values( $GLOBALS['upsellbay_test_terms'][ $taxonomy ] ?? array() );
+		$search   = strtolower( (string) ( $args['search'] ?? '' ) );
+		$include  = array_map( 'intval', (array) ( $args['include'] ?? array() ) );
+		$number   = (int) ( $args['number'] ?? 0 );
+
+		$terms = array_filter(
+			$terms,
+			static function ( object $term ) use ( $search, $include ): bool {
+				if ( array() !== $include ) {
+					return in_array( (int) $term->term_id, $include, true );
+				}
+
+				return '' === $search || str_contains( strtolower( $term->name . ' ' . $term->slug ), $search );
+			}
+		);
+
+		return $number > 0 ? array_slice( array_values( $terms ), 0, $number ) : array_values( $terms );
+	}
+}
+
+if ( ! function_exists( 'get_editable_roles' ) ) {
+	function get_editable_roles(): array {
+		return $GLOBALS['upsellbay_test_roles'] ?? array(
+			'customer'     => array( 'name' => 'Customer' ),
+			'shop_manager' => array( 'name' => 'Shop manager' ),
+		);
+	}
+}
+
 foreach (
 	array(
 		'app/Core/Constants.php',
@@ -369,6 +486,7 @@ foreach (
 		'app/Core/Platform.php',
 		'app/Core/Scheduler.php',
 		'app/Core/Installer.php',
+		'app/Domain/Rules/RuleDefinitions.php',
 		'app/Domain/Offers/ValidationResult.php',
 		'app/Domain/Offers/OfferSchema.php',
 		'app/Domain/Offers/OfferValidator.php',
@@ -399,6 +517,8 @@ foreach (
 		'app/Domain/Storefront/PlacementRenderer.php',
 		'app/Domain/Storefront/StorefrontController.php',
 		'app/Domain/Compatibility/CompatibilityScanner.php',
+		'app/Api/ProductsController.php',
+		'app/Api/Routes/ProductsRoute.php',
 		'app/Api/Routes/OfferPreviewRoute.php',
 		'app/Api/Routes/PublicOfferRoutes.php',
 		'app/Integrations/WooCommerce/CheckoutFields.php',
