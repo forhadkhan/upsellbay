@@ -564,6 +564,53 @@
 	font-size: 11px;
 }
 
+.upsellbay-discount-preview {
+	margin-top: 12px;
+	padding: 12px 14px;
+}
+
+.upsellbay-discount-preview--empty {
+	border-left-color: #8c8f94;
+}
+
+.upsellbay-discount-preview--warning {
+	border-left-color: #d63638;
+}
+
+.upsellbay-discount-preview__label {
+	color: #646970;
+	display: block;
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	line-height: 1.2;
+	margin-bottom: 4px;
+	text-transform: uppercase;
+}
+
+.upsellbay-discount-preview__value {
+	color: #1d2327;
+	display: block;
+	font-size: 18px;
+	font-weight: 600;
+	line-height: 1.35;
+}
+
+.upsellbay-discount-preview__value del {
+	color: #646970;
+	font-weight: 500;
+	margin-right: 8px;
+}
+
+.upsellbay-discount-preview__value strong {
+	font-weight: 700;
+}
+
+.upsellbay-discount-preview__note {
+	display: block;
+	margin-top: 6px;
+}
+
 .upsellbay-product-selector__selection {
 	align-items: center;
 	background: #f6f7f7;

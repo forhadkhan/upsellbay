@@ -16,6 +16,7 @@ use WPAnchorBay\UpsellBay\Domain\Offers\OfferDefaults;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferSchema;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferValidator;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferConflictDetector;
+use WPAnchorBay\UpsellBay\Domain\Discounts\DiscountCalculator;
 use WPAnchorBay\UpsellBay\Admin\Offers\OfferVisibilityPanel;
 use WPAnchorBay\UpsellBay\Domain\Logging\LoggerInterface;
 use Throwable;
@@ -104,6 +105,24 @@ final class OfferEditPage {
 	private ?LoggerInterface $logger;
 
 	/**
+	 * Meta for the offer currently being rendered.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var array<string, mixed>
+	 */
+	private array $current_meta = array();
+
+	/**
+	 * Discount calculator.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var DiscountCalculator
+	 */
+	private DiscountCalculator $discount_calculator;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.0.0
@@ -126,6 +145,7 @@ final class OfferEditPage {
 		$this->conflict_detector  = $conflict_detector;
 		$this->logger             = $logger;
 		$this->visibility_panel   = $visibility_panel;
+		$this->discount_calculator = new DiscountCalculator();
 		$this->can_manage         = $can_manage ?? static fn (): bool => function_exists( 'current_user_can' ) && current_user_can( 'manage_woocommerce' ); // phpcs:ignore WordPress.WP.Capabilities.Unknown
 		$this->verify_nonce       = $verify_nonce ?? static fn ( string $nonce ): bool => function_exists( 'wp_verify_nonce' ) && (bool) wp_verify_nonce( $nonce, 'upsellbay_save_offer' );
 	}
@@ -311,7 +331,7 @@ final class OfferEditPage {
 		return array(
 			'product_selection'      => __( 'Choose the product shoppers can add from this offer. Product and stock are validated again before cart changes.', 'upsellbay' ),
 			'rules'                  => __( 'Rules narrow when an offer appears. Leave them empty for a simple first offer.', 'upsellbay' ),
-			'discount'               => __( 'Discounts are calculated server-side from the product price. Shopper-sent prices are ignored.', 'upsellbay' ),
+			'discount'               => __( 'Discounts are calculated server-side from the selected product price. The updated price preview below the discount fields refreshes as you edit.', 'upsellbay' ),
 			'display_limits'         => __( 'Priority controls which eligible offer wins when a placement has a display limit.', 'upsellbay' ),
 			'test_mode'              => __( 'Test mode lets admins preview offers before shoppers can see them.', 'upsellbay' ),
 			'compatibility_warnings' => __( 'Compatibility notices flag checkout plugins that may alter the placement area.', 'upsellbay' ),
@@ -371,6 +391,7 @@ final class OfferEditPage {
 
 		$meta  = null !== $offer ? $offer['meta'] : $this->new_offer_meta();
 		$title = null !== $offer ? $offer['title'] : '';
+		$this->current_meta = $meta;
 
 		if ( null !== $offer ) {
 			$context    = array();
@@ -486,6 +507,7 @@ final class OfferEditPage {
 
 		echo '</p>';
 		echo '</form>';
+		$this->current_meta = array();
 	}
 
 	/**
@@ -670,6 +692,7 @@ final class OfferEditPage {
 			echo '<option value="fixed_amount" ' . selected( $value, 'fixed_amount', false ) . '>' . esc_html__( 'Fixed amount off', 'upsellbay' ) . '</option>';
 			echo '<option value="fixed_price" ' . selected( $value, 'fixed_price', false ) . '>' . esc_html__( 'Fixed offer price', 'upsellbay' ) . '</option>';
 			echo '</select>';
+			echo '<p class="description">' . esc_html__( 'Choose the discount method first. The updated price preview below will refresh automatically.', 'upsellbay' ) . '</p>';
 		} elseif ( '_ub_body' === $field ) {
 			echo '<textarea id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" class="large-text" rows="3" maxlength="240">' . esc_textarea( (string) $value ) . '</textarea>';
 			echo '<p class="description">' . esc_html__( 'Optional short description shown below the headline. Max 240 characters. Supports limited HTML: links, line breaks, bold, italic.', 'upsellbay' ) . '</p>';
@@ -682,14 +705,23 @@ final class OfferEditPage {
 			echo '<label><input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="checkbox" value="1" ' . checked( $value, true, false ) . '> ' . esc_html__( 'Override conflict prevention (advanced)', 'upsellbay' ) . '</label>';
 			echo '<p class="description">' . esc_html__( 'If checked, this offer may show even if it conflicts with another offer or the current cart state. Use with caution.', 'upsellbay' ) . '</p>';
 		} elseif ( '_ub_offer_product_id' === $field ) {
+			$selection_price = '';
+			if ( 0 !== (int) $value && function_exists( 'wc_get_product' ) ) {
+				$selection_product = wc_get_product( (int) $value );
+				if ( $selection_product && method_exists( $selection_product, 'get_price' ) ) {
+					$selection_price = (string) $selection_product->get_price();
+				}
+			}
+
 			echo '<div class="upsellbay-product-selector" data-upsellbay-product-selector>';
 			echo '<div class="upsellbay-product-selector__input-wrapper" ' . ( 0 !== (int) $value ? 'style="display:none;"' : '' ) . '>';
 			echo '<input id="upsellbay-' . esc_attr( $field ) . '-search" type="text" class="regular-text" placeholder="' . esc_attr__( 'Search for a product...', 'upsellbay' ) . '" autocomplete="off">';
 			echo '<button type="button" class="upsellbay-product-selector__clear" style="display: none;" title="' . esc_attr__( 'Clear search', 'upsellbay' ) . '">&times;</button>';
 			echo '</div>';
 			echo '<input type="hidden" id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" value="' . esc_attr( (string) $value ) . '">';
+			echo '<input type="hidden" id="upsellbay-' . esc_attr( $field ) . '-price" name="_ub_offer_product_price" value="' . esc_attr( $selection_price ) . '" data-upsellbay-product-price-input>';
 			echo '<div class="upsellbay-product-selector__results" data-upsellbay-results></div>';
-			echo '<div class="upsellbay-product-selector__selection' . ( 0 !== (int) $value ? ' is-active' : '' ) . '" data-upsellbay-selection>';
+			echo '<div class="upsellbay-product-selector__selection' . ( 0 !== (int) $value ? ' is-active' : '' ) . '" data-upsellbay-selection' . ( '' !== $selection_price ? ' data-upsellbay-product-price="' . esc_attr( $selection_price ) . '"' : '' ) . '>';
 			if ( 0 !== (int) $value && function_exists( 'wc_get_product' ) ) {
 				$product = wc_get_product( $value );
 				if ( $product ) {
@@ -740,9 +772,113 @@ final class OfferEditPage {
 
 			$is_required = in_array( $field, array( 'title', '_ub_headline', '_ub_button_text' ), true );
 			echo '<input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="text" class="regular-text" value="' . esc_attr( $display_value ) . '"' . ( $is_required ? ' required' : '' ) . '>';
+			if ( '_ub_discount_value' === $field ) {
+				$this->render_discount_preview();
+			}
 		}
 
 		echo '</td></tr>';
+	}
+
+	/**
+	 * Render the live updated price preview for the discount section.
+	 *
+	 * @since 1.0.0
+	 */
+	private function render_discount_preview(): void {
+		$preview = $this->discount_preview();
+
+		echo '<div class="upsellbay-discount-preview upsellbay-discount-preview--' . esc_attr( $preview['state'] ) . '" data-upsellbay-discount-preview aria-live="polite">';
+		echo '<span class="upsellbay-discount-preview__label">' . esc_html__( 'Updated price', 'upsellbay' ) . '</span>';
+		echo '<span class="upsellbay-discount-preview__value" data-upsellbay-discount-preview-value>' . wp_kses_post( $preview['value_html'] ) . '</span>';
+		echo '<span class="description upsellbay-discount-preview__note" data-upsellbay-discount-preview-note>' . esc_html( $preview['note'] ) . '</span>';
+		echo '</div>';
+	}
+
+	/**
+	 * Resolve the live discount preview for the current editor state.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return array{state: string, value_html: string, note: string}
+	 */
+	private function discount_preview(): array {
+		$product_id = (int) ( $this->current_meta['_ub_offer_product_id'] ?? 0 );
+		if ( $product_id <= 0 || ! function_exists( 'wc_get_product' ) ) {
+			return array(
+				'state'      => 'empty',
+				'value_html' => __( 'Select a product to preview the updated price.', 'upsellbay' ),
+				'note'       => __( 'The discount preview uses the selected product price.', 'upsellbay' ),
+			);
+		}
+
+		$product = wc_get_product( $product_id );
+		if ( ! $product || ! method_exists( $product, 'get_price' ) ) {
+			return array(
+				'state'      => 'empty',
+				'value_html' => __( 'Select a product to preview the updated price.', 'upsellbay' ),
+				'note'       => __( 'The discount preview uses the selected product price.', 'upsellbay' ),
+			);
+		}
+
+		$original_price = (string) $product->get_price();
+		if ( '' === $original_price || ! is_numeric( $original_price ) ) {
+			return array(
+				'state'      => 'empty',
+				'value_html' => __( 'This product does not expose a numeric price yet.', 'upsellbay' ),
+				'note'       => __( 'Pick a priced product to preview the discount outcome.', 'upsellbay' ),
+			);
+		}
+
+		$discount = $this->discount_calculator->calculate( $original_price, $this->current_meta );
+		if ( null === $discount ) {
+			return array(
+				'state'      => 'warning',
+				'value_html' => __( 'Unable to calculate the updated price for this configuration.', 'upsellbay' ),
+				'note'       => __( 'Double-check the selected discount values and try again.', 'upsellbay' ),
+			);
+		}
+
+		$original_html = $this->format_currency_value( (float) $discount['original_price'] );
+		$offer_html    = $this->format_currency_value( (float) $discount['offer_price'] );
+
+		if ( $discount['offer_price'] === $discount['original_price'] ) {
+			return array(
+				'state'      => 'regular',
+				'value_html' => '<strong>' . esc_html( $offer_html ) . '</strong>',
+				'note'       => __( 'No discount is applied, so the current product price is shown here.', 'upsellbay' ),
+			);
+		}
+
+		return array(
+			'state'      => 'discounted',
+			'value_html' => '<del>' . esc_html( $original_html ) . '</del> <strong>' . esc_html( $offer_html ) . '</strong>',
+			'note'       => __( 'This is the price shoppers will see after the selected discount is applied.', 'upsellbay' ),
+		);
+	}
+
+	/**
+	 * Format a value as a WooCommerce currency string.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param float $value Price value.
+	 * @return string
+	 */
+	private function format_currency_value( float $value ): string {
+		$symbol             = function_exists( 'get_woocommerce_currency_symbol' ) ? get_woocommerce_currency_symbol() : '$';
+		$position           = function_exists( 'get_option' ) ? (string) get_option( 'woocommerce_currency_pos', 'left' ) : 'left';
+		$decimals           = function_exists( 'wc_get_price_decimals' ) ? (int) wc_get_price_decimals() : 2;
+		$decimal_separator  = function_exists( 'get_option' ) ? (string) get_option( 'woocommerce_price_decimal_sep', '.' ) : '.';
+		$thousand_separator = function_exists( 'get_option' ) ? (string) get_option( 'woocommerce_price_thousand_sep', ',' ) : ',';
+		$formatted          = number_format( $value, $decimals, $decimal_separator, $thousand_separator );
+
+		return match ( $position ) {
+			'left_space'   => $symbol . ' ' . $formatted,
+			'right_space'  => $formatted . ' ' . $symbol,
+			'right'        => $formatted . $symbol,
+			default        => $symbol . $formatted,
+		};
 	}
 
 	/**

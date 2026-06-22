@@ -143,11 +143,12 @@ final class ProductsController {
 	private function format_product( $product ): array {
 		$image_url = wp_get_attachment_image_url( $product->get_image_id(), 'thumbnail' );
 		return array(
-			'id'    => $product->get_id(),
-			'name'  => $product->get_name(),
-			'sku'   => $product->get_sku(),
-			'price' => $product->get_price_html(),
-			'image' => false !== $image_url ? $image_url : '',
+			'id'        => $product->get_id(),
+			'name'      => $product->get_name(),
+			'sku'       => $product->get_sku(),
+			'price'     => $product->get_price_html(),
+			'price_raw' => (string) $product->get_price(),
+			'image'     => false !== $image_url ? $image_url : '',
 		);
 	}
 

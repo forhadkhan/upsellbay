@@ -133,6 +133,7 @@ window.jQuery(function ($) {
 
     function selectProduct(product) {
       $input.val(product.id);
+      $selector.find('[data-upsellbay-product-price-input]').val(product.price_raw || '');
       $inputWrapper.hide();
       $results.removeClass("is-active");
 
@@ -151,13 +152,15 @@ window.jQuery(function ($) {
 				<span class="upsellbay-product-selector__selection-remove">&times;</span>
 			`,
         )
+        .attr("data-upsellbay-product-price", product.price_raw || "")
         .addClass("is-active");
 
       $selection
         .find(".upsellbay-product-selector__selection-remove")
         .on("click", () => {
           $input.val("");
-          $selection.empty().removeClass("is-active");
+          $selector.find('[data-upsellbay-product-price-input]').val("");
+          $selection.empty().removeAttr("data-upsellbay-product-price").removeClass("is-active");
           $inputWrapper.show();
           $search.focus();
         });
@@ -218,6 +221,7 @@ window.jQuery(function ($) {
         .find(".upsellbay-product-selector__selection-remove")
         .on("click", () => {
           $input.val("");
+          $selector.find('[data-upsellbay-product-price-input]').val("");
           $selection.empty().removeClass("is-active");
           $inputWrapper.show();
           $search.focus();
@@ -281,7 +285,8 @@ window.jQuery(function ($) {
          
          $form.find('.upsellbay-product-selector__selection-remove').on("click", () => {
             $form.find('input[name="_ub_offer_product_id"]').val("");
-            $form.find('[data-upsellbay-selection]').empty().removeClass("is-active");
+            $form.find('[data-upsellbay-product-price-input]').val("");
+            $form.find('[data-upsellbay-selection]').empty().removeAttr('data-upsellbay-product-price').removeClass("is-active");
             $form.find('.upsellbay-product-selector__input-wrapper').show();
          });
       }
@@ -782,15 +787,120 @@ window.jQuery(function ($) {
     return;
   }
 
+  function getCurrencySettings() {
+    const priceDecimals = window.upsellbay_data && Object.prototype.hasOwnProperty.call(window.upsellbay_data, 'price_decimals')
+      ? window.upsellbay_data.price_decimals
+      : 2;
+
+    return {
+      symbol: (window.upsellbay_data && window.upsellbay_data.currency_symbol) || '$',
+      position: (window.upsellbay_data && window.upsellbay_data.currency_position) || 'left',
+      decimals: Number.isFinite(Number.parseInt(priceDecimals, 10)) ? Number.parseInt(priceDecimals, 10) : 2,
+      decimalSeparator: (window.upsellbay_data && window.upsellbay_data.decimal_separator) || '.',
+      thousandSeparator: (window.upsellbay_data && window.upsellbay_data.thousand_separator) || ',',
+    };
+  }
+
+  function formatPrice(value) {
+    const settings = getCurrencySettings();
+    const amount = Number.parseFloat(value);
+
+    if (!Number.isFinite(amount)) {
+      return '';
+    }
+
+    const negative = amount < 0 ? '-' : '';
+    const fixed = Math.abs(amount).toFixed(Math.max(settings.decimals, 0));
+    const parts = fixed.split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, settings.thousandSeparator);
+
+    const number = parts.length > 1 ? parts.join(settings.decimalSeparator) : parts[0];
+    const formatted = negative + number;
+
+    switch (settings.position) {
+      case 'left_space':
+        return `${settings.symbol} ${formatted}`;
+      case 'right_space':
+        return `${formatted} ${settings.symbol}`;
+      case 'right':
+        return `${formatted}${settings.symbol}`;
+      default:
+        return `${settings.symbol}${formatted}`;
+    }
+  }
+
+  function getSelectedProductPrice() {
+    const $priceInput = $('[data-upsellbay-product-price-input]');
+    const price = $priceInput.length ? $priceInput.val() : '';
+
+    return Number.parseFloat(price);
+  }
+
+  function getDiscountPreview() {
+    const productPrice = getSelectedProductPrice();
+
+    if (!Number.isFinite(productPrice)) {
+      return {
+        state: 'empty',
+        valueHtml: 'Select a product to preview the updated price.',
+        note: 'The discount preview uses the selected product price.',
+      };
+    }
+
+    const discountType = $('#upsellbay-_ub_discount_type').val() || 'none';
+    const discountValue = Number.parseFloat($('#upsellbay-_ub_discount_value').val()) || 0;
+
+    let offerPrice = productPrice;
+
+    if (discountType === 'percent') {
+      offerPrice = productPrice - (productPrice * Math.min(100, Math.max(0, discountValue)) / 100);
+    } else if (discountType === 'fixed_amount') {
+      offerPrice = productPrice - Math.max(0, discountValue);
+    } else if (discountType === 'fixed_price') {
+      offerPrice = Math.max(0, discountValue);
+    }
+
+    offerPrice = Math.max(0, offerPrice);
+
+    if (offerPrice === productPrice) {
+      return {
+        state: 'regular',
+        valueHtml: `<strong>${formatPrice(productPrice)}</strong>`,
+        note: 'No discount is applied, so the current product price is shown here.',
+      };
+    }
+
+    return {
+      state: 'discounted',
+      valueHtml: `<del>${formatPrice(productPrice)}</del> <strong>${formatPrice(offerPrice)}</strong>`,
+      note: 'This is the price shoppers will see after the selected discount is applied.',
+    };
+  }
+
+  function renderDiscountPreview() {
+    const preview = getDiscountPreview();
+    const html = [
+      '<span class="upsellbay-discount-preview__label">Updated price</span>',
+      `<span class="upsellbay-discount-preview__value" data-upsellbay-discount-preview-value>${preview.valueHtml}</span>`,
+      `<span class="description upsellbay-discount-preview__note" data-upsellbay-discount-preview-note>${preview.note}</span>`,
+    ].join('');
+
+    $('[data-upsellbay-discount-preview]')
+      .attr('data-upsellbay-discount-preview', preview.state)
+      .attr('class', `upsellbay-discount-preview upsellbay-discount-preview--${preview.state}`)
+      .html(html);
+  }
+
   function updateSummary() {
     const status = $('#upsellbay-_ub_status').val() || 'draft';
     const offerType = $('#upsellbay-_ub_offer_type').val();
     const placement = offerType
       ? $('#upsellbay-_ub_offer_type option:selected').text()
       : 'Not selected';
+    const preview = getDiscountPreview();
     const discountType = $('#upsellbay-_ub_discount_type').val();
     const discountVal = parseFloat($('#upsellbay-_ub_discount_value').val()) || 0;
-    
+
     let discountText = 'None';
     let isHighRisk = false;
 
@@ -798,11 +908,11 @@ window.jQuery(function ($) {
       discountText = discountVal + '% OFF';
       if (discountVal > 50) isHighRisk = true;
     } else if (discountType === 'fixed_amount') {
-      discountText = window.upsellbay_data && window.upsellbay_data.currency_symbol 
+      discountText = window.upsellbay_data && window.upsellbay_data.currency_symbol
         ? window.upsellbay_data.currency_symbol + discountVal + ' OFF'
         : discountVal + ' OFF (Fixed)';
     } else if (discountType === 'fixed_price') {
-      discountText = window.upsellbay_data && window.upsellbay_data.currency_symbol 
+      discountText = window.upsellbay_data && window.upsellbay_data.currency_symbol
         ? 'Fixed Price: ' + window.upsellbay_data.currency_symbol + discountVal
         : 'Fixed Price: ' + discountVal;
     }
@@ -810,22 +920,26 @@ window.jQuery(function ($) {
     let html = '<p style="margin: 0.5em 0;">';
     html += `<strong>Status:</strong> ${status.charAt(0).toUpperCase() + status.slice(1)} | `;
     html += `<strong>Placement:</strong> ${placement} | `;
-    
+
     if (isHighRisk) {
-      html += `<strong>Discount:</strong> <span style="color: #d63638; font-weight: bold;">⚠️ ${discountText} (High)</span>`;
+      html += `<strong>Discount:</strong> <span style="color: #d63638; font-weight: bold;">⚠️ ${discountText} (High)</span> | `;
     } else {
-      html += `<strong>Discount:</strong> ${discountText}`;
+      html += `<strong>Discount:</strong> ${discountText} | `;
     }
-    
+
+    html += `<strong>Updated price:</strong> ${preview.valueHtml}`;
     html += '</p>';
 
     $summaryContainer.html(html).show();
-    
+
     if (isHighRisk) {
       $summaryContainer.css('border-left-color', '#d63638');
-    } else {
+    } else if (preview.state === 'discounted') {
       $summaryContainer.css('border-left-color', '#007cba');
+    } else {
+      $summaryContainer.css('border-left-color', '#8c8f94');
     }
+    renderDiscountPreview();
   }
 
   $form.on('input change', 'input, select, textarea', function() {

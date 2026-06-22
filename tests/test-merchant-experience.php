@@ -130,6 +130,82 @@ function upsellbay_merchant_experience_tests(): array {
 			assert_same( 'upsellbay-offer-product-id', $page->accessibility()['offer_product_id']['label_for'] );
 			assert_same( 'button', $page->accessibility()['advanced_toggle']['role'] );
 		},
+		'offer editor preview shows the updated price and falls back to the actual price when no discount is set' => static function (): void {
+			$offer_id = 88;
+			$GLOBALS['upsellbay_test_products'][321] = new class() {
+				public function get_price() {
+					return '80';
+				}
+
+				public function get_price_html() {
+					return '$80.00';
+				}
+
+				public function get_name() {
+					return 'Demo Product';
+				}
+
+				public function get_image_id() {
+					return 0;
+				}
+			};
+
+			$offers = array(
+				88 => array(
+					'id'    => 88,
+					'title' => 'Discounted offer',
+					'meta'  => array(
+						'_ub_offer_type'       => 'checkout_bump',
+						'_ub_offer_product_id' => 321,
+						'_ub_discount_type'    => 'percent',
+						'_ub_discount_value'   => '25',
+					),
+				),
+				89 => array(
+					'id'    => 89,
+					'title' => 'Regular price offer',
+					'meta'  => array(
+						'_ub_offer_type'       => 'checkout_bump',
+						'_ub_offer_product_id' => 321,
+						'_ub_discount_type'    => 'none',
+						'_ub_discount_value'   => '0.000000',
+					),
+				),
+			);
+			$service = new OfferService(
+				upsellbay_test_offer_repository( $offers ),
+				new OfferValidator( new OfferSchema(), static fn (): bool => true )
+			);
+			$page    = new OfferEditPage(
+				$service,
+				new OfferValidator( new OfferSchema(), static fn (): bool => true ),
+				static fn (): bool => true,
+				static fn (): bool => true,
+				new OfferDefaults()
+			);
+
+			$_GET['offer_id'] = (string) $offer_id;
+			ob_start();
+			$page->render_content();
+			$discounted_html = (string) ob_get_clean();
+
+			$_GET['offer_id'] = '89';
+			ob_start();
+			$page->render_content();
+			$regular_html = (string) ob_get_clean();
+			unset( $_GET['offer_id'] );
+
+			assert_contains( 'upsellbay-discount-preview--discounted', $discounted_html );
+			assert_contains( 'Updated price', $discounted_html );
+			assert_contains( '<del>$80.00</del>', $discounted_html );
+			assert_contains( '<strong>$60.00</strong>', $discounted_html );
+			assert_contains( 'upsellbay-_ub_offer_product_id-price', $discounted_html );
+			assert_contains( 'data-upsellbay-product-price="80"', $discounted_html );
+
+			assert_contains( 'upsellbay-discount-preview--regular', $regular_html );
+			assert_contains( '<strong>$80.00</strong>', $regular_html );
+			assert_contains( 'No discount is applied', $regular_html );
+		},
 		'local recommendation assistant ranks explainable optional product suggestions' => static function (): void {
 			$assistant = new ProductRecommendationAssistant(
 				static fn ( int $product_id ): array => array( 10, 11 ),

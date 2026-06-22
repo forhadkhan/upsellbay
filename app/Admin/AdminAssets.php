@@ -142,10 +142,15 @@ final class AdminAssets {
 						$handle,
 						'upsellbay_data',
 						array(
-							'rest_url'   => get_rest_url( null, '/' ),
-							'ajax_url'   => admin_url( 'admin-ajax.php' ),
-							'nonce'      => wp_create_nonce( 'wp_rest' ),
-							'ajax_nonce' => wp_create_nonce( 'upsellbay_admin_ajax' ),
+							'rest_url'            => get_rest_url( null, '/' ),
+							'ajax_url'            => admin_url( 'admin-ajax.php' ),
+							'nonce'               => wp_create_nonce( 'wp_rest' ),
+							'ajax_nonce'          => wp_create_nonce( 'upsellbay_admin_ajax' ),
+							'currency_symbol'     => function_exists( 'get_woocommerce_currency_symbol' ) ? get_woocommerce_currency_symbol() : '$',
+							'currency_position'   => function_exists( 'get_option' ) ? (string) get_option( 'woocommerce_currency_pos', 'left' ) : 'left',
+							'decimal_separator'   => function_exists( 'get_option' ) ? (string) get_option( 'woocommerce_price_decimal_sep', '.' ) : '.',
+							'thousand_separator'  => function_exists( 'get_option' ) ? (string) get_option( 'woocommerce_price_thousand_sep', ',' ) : ',',
+							'price_decimals'      => function_exists( 'wc_get_price_decimals' ) ? (int) wc_get_price_decimals() : 2,
 						)
 					);
 				}
