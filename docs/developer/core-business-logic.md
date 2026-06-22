@@ -3,7 +3,7 @@
 UpsellBay Phase 4 implements the offer engine as small services under `app/Domain/`.
 
 - Offers: `OfferService` owns lifecycle actions and preview payloads.
-- Rules: `RuleParser` and `RuleEvaluator` evaluate P0 targeting rules server-side.
+- Rules: `RuleDefinitions`, `RuleParser`, and `RuleEvaluator` define, normalize, and evaluate P0 targeting rules server-side. Entity-based rules are validated on save, and stock-status rules are evaluated from the offered WooCommerce product state.
 - Discounts: `DiscountCalculator` computes trusted offer prices from current product prices.
 - Cart: `CartValidator`, `CartMutator`, and `DiscountApplier` validate and apply accepted offer items without public coupon codes.
 - Storefront: `PlacementRenderer` and placement renderers output native offer cards for checkout, product, cart, and thank-you contexts.
