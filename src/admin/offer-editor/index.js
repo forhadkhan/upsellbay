@@ -271,6 +271,8 @@ window.jQuery(function ($) {
   if (cachedData) {
     try {
       const parsedCache = JSON.parse(cachedData);
+      const initialProductId = $form.find('input[name="_ub_offer_product_id"]').val();
+
       Object.keys(parsedCache).forEach(key => {
         const $input = $form.find(`[name="${key}"]`);
         if ($input.length) {
@@ -283,7 +285,7 @@ window.jQuery(function ($) {
       });
       // Update UI for product selector
       const productId = parsedCache['_ub_offer_product_id'];
-      if (productId && productId !== "0") {
+      if (productId && productId !== "0" && productId !== initialProductId) {
          // To make it look selected, at least hide the search wrapper
          $form.find('.upsellbay-product-selector__input-wrapper').hide();
          $form.find('[data-upsellbay-selection]').html(`
