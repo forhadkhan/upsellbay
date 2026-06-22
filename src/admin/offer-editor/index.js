@@ -891,7 +891,17 @@ window.jQuery(function ($) {
 
       if (['categories', 'tags', 'roles'].includes(definition.valueType)) {
         const endpoint = endpointForValueType(definition.valueType);
-        const options = values.map((selectedValue) => `<option value="${escapeHtml(selectedValue)}" selected>${escapeHtml(`#${selectedValue}`)}</option>`).join('');
+        let preloaded = {};
+        try {
+          const preloadedStr = $builder.attr('data-preloaded-entities');
+          if (preloadedStr) {
+            preloaded = JSON.parse(preloadedStr);
+          }
+        } catch (e) {}
+        const options = values.map((selectedValue) => {
+          const label = preloaded[selectedValue] || `#${selectedValue}`;
+          return `<option value="${escapeHtml(selectedValue)}" selected>${escapeHtml(label)}</option>`;
+        }).join('');
         return `
           <select
             class="upsellbay-vb-val upsellbay-rule-entity-search"

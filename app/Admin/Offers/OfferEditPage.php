@@ -148,17 +148,17 @@ final class OfferEditPage {
 	 * @param OfferVisibilityPanel|null   $visibility_panel   Visibility diagnostics panel.
 	 */
 	public function __construct( OfferService $service, OfferValidator $validator, ?callable $can_manage = null, ?callable $verify_nonce = null, ?OfferDefaults $defaults = null, ?OfferSectionNavigation $section_navigation = null, ?OfferConflictDetector $conflict_detector = null, ?LoggerInterface $logger = null, ?OfferVisibilityPanel $visibility_panel = null ) {
-		$this->service            = $service;
-		$this->validator          = $validator;
-		$this->defaults           = $defaults ?? new OfferDefaults();
-		$this->section_navigation = $section_navigation ?? new OfferSectionNavigation();
-		$this->conflict_detector  = $conflict_detector;
-		$this->logger             = $logger;
-		$this->visibility_panel   = $visibility_panel;
+		$this->service             = $service;
+		$this->validator           = $validator;
+		$this->defaults            = $defaults ?? new OfferDefaults();
+		$this->section_navigation  = $section_navigation ?? new OfferSectionNavigation();
+		$this->conflict_detector   = $conflict_detector;
+		$this->logger              = $logger;
+		$this->visibility_panel    = $visibility_panel;
 		$this->discount_calculator = new DiscountCalculator();
 		$this->rule_definitions    = new RuleDefinitions();
-		$this->can_manage         = $can_manage ?? static fn (): bool => function_exists( 'current_user_can' ) && current_user_can( 'manage_woocommerce' ); // phpcs:ignore WordPress.WP.Capabilities.Unknown
-		$this->verify_nonce       = $verify_nonce ?? static fn ( string $nonce ): bool => function_exists( 'wp_verify_nonce' ) && (bool) wp_verify_nonce( $nonce, 'upsellbay_save_offer' );
+		$this->can_manage          = $can_manage ?? static fn (): bool => function_exists( 'current_user_can' ) && current_user_can( 'manage_woocommerce' ); // phpcs:ignore WordPress.WP.Capabilities.Unknown
+		$this->verify_nonce        = $verify_nonce ?? static fn ( string $nonce ): bool => function_exists( 'wp_verify_nonce' ) && (bool) wp_verify_nonce( $nonce, 'upsellbay_save_offer' );
 	}
 
 	/**
@@ -306,32 +306,32 @@ final class OfferEditPage {
 	 */
 	public function sections(): array {
 		return array(
-			'basics'          => array(
+			'basics'    => array(
 				'label'     => __( 'Required basics', 'upsellbay' ),
 				'collapsed' => false,
 				'fields'    => array( 'title', '_ub_status', '_ub_offer_type', '_ub_offer_goal', '_ub_offer_product_id', '_ub_reason_label', '_ub_section_heading', '_ub_headline', '_ub_body', '_ub_button_text' ),
 			),
-			'targeting'       => array(
+			'targeting' => array(
 				'label'     => __( 'Targeting rules', 'upsellbay' ),
 				'collapsed' => false,
 				'fields'    => array( '_ub_rules_match', '_ub_rules' ),
 			),
-			'discount'        => array(
+			'discount'  => array(
 				'label'     => __( 'Discount', 'upsellbay' ),
 				'collapsed' => false,
 				'fields'    => array( '_ub_discount_type', '_ub_discount_value' ),
 			),
-			'placement'       => array(
+			'placement' => array(
 				'label'     => __( 'Display settings', 'upsellbay' ),
 				'collapsed' => false,
 				'fields'    => array( '_ub_show_image', '_ub_placement_config' ),
 			),
-			'schedule'        => array(
+			'schedule'  => array(
 				'label'     => __( 'Schedule and priority', 'upsellbay' ),
 				'collapsed' => false,
 				'fields'    => array( '_ub_start_at', '_ub_end_at', '_ub_priority' ),
 			),
-			'advanced'        => array(
+			'advanced'  => array(
 				'label'     => __( 'Advanced metadata', 'upsellbay' ),
 				'collapsed' => false,
 				'fields'    => array( '_ub_stats_summary', '_ub_trigger_product_ids', '_ub_trigger_category_ids', '_ub_conflict_override', '_ub_conflict_override_reason' ),
@@ -408,8 +408,8 @@ final class OfferEditPage {
 		$this->section_navigation->render( null !== $offer ? '' : 'add_offer' );
 		$this->render_notices( $offer );
 
-		$meta  = null !== $offer ? $offer['meta'] : $this->new_offer_meta();
-		$title = null !== $offer ? $offer['title'] : '';
+		$meta               = null !== $offer ? $offer['meta'] : $this->new_offer_meta();
+		$title              = null !== $offer ? $offer['title'] : '';
 		$this->current_meta = $meta;
 
 		if ( null !== $offer ) {
@@ -730,10 +730,10 @@ final class OfferEditPage {
 			if ( 0 !== (int) $value && function_exists( 'wc_get_product' ) ) {
 				$selection_product = wc_get_product( (int) $value );
 				if ( $selection_product && method_exists( $selection_product, 'get_price' ) ) {
-					$price_context    = $this->product_price_context( $selection_product );
-					$selection_price  = (string) $price_context['regular_min'];
-					$selection_min    = (string) $price_context['regular_min'];
-					$selection_max    = (string) $price_context['regular_max'];
+					$price_context   = $this->product_price_context( $selection_product );
+					$selection_price = (string) $price_context['regular_min'];
+					$selection_min   = (string) $price_context['regular_min'];
+					$selection_max   = (string) $price_context['regular_max'];
 				}
 			}
 
@@ -782,8 +782,9 @@ final class OfferEditPage {
 			if ( '_ub_placement_config' === $field ) {
 				$this->render_placement_config_field( is_array( $value ) ? $value : array(), (string) $val_str );
 			} else {
+				$preloaded = is_array( $value ) ? $this->get_preloaded_rule_entities( $value ) : array();
 				echo '<textarea id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" style="display:none;" data-upsellbay-json-field="' . esc_attr( $field ) . '">' . esc_textarea( (string) $val_str ) . '</textarea>';
-				echo '<div id="upsellbay-builder-' . esc_attr( $field ) . '" class="upsellbay-visual-builder"></div>';
+				echo '<div id="upsellbay-builder-' . esc_attr( $field ) . '" class="upsellbay-visual-builder" data-preloaded-entities="' . esc_attr( wp_json_encode( $preloaded ) ) . '"></div>';
 			}
 		} elseif ( '_ub_start_at' === $field || '_ub_end_at' === $field ) {
 			echo '<input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="datetime-local" class="regular-text" value="' . esc_attr( (string) $value ) . '">';
@@ -1155,7 +1156,7 @@ final class OfferEditPage {
 	 * @return array<string, mixed>
 	 */
 	private function new_offer_meta(): array {
-		$schema  = new OfferSchema();
+		$schema   = new OfferSchema();
 		$defaults = $this->defaults->for_type( OfferSchema::TYPE_CHECKOUT_BUMP );
 
 		return array_replace(
@@ -1288,6 +1289,97 @@ final class OfferEditPage {
 
 		echo '</tbody></table>';
 		echo '<p class="description">' . esc_html__( 'All-time aggregate stats for this offer. For date-range analytics, use the Dashboard tab.', 'upsellbay' ) . '</p>';
+	}
+
+	/**
+	 * Preload entity names (categories, tags, roles) for rules to avoid JS displaying IDs.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<int, array<string, mixed>> $rules Current rules.
+	 * @return array<string, string> Key-value map of entity ID/slug to human-readable name.
+	 */
+	private function get_preloaded_rule_entities( array $rules ): array {
+		$entities     = array();
+		$category_ids = array();
+		$tag_ids      = array();
+		$role_keys    = array();
+
+		foreach ( $rules as $rule ) {
+			$type = (string) ( $rule['type'] ?? '' );
+			if ( '' === $type ) {
+				continue;
+			}
+
+			$definition = $this->rule_definitions->get( $type );
+			if ( null === $definition ) {
+				continue;
+			}
+
+			$value_type = (string) ( $definition['value_type'] ?? '' );
+			if ( ! in_array( $value_type, array( 'categories', 'tags', 'roles' ), true ) ) {
+				continue;
+			}
+
+			$rule_value = $rule['value'] ?? array();
+			if ( ! is_array( $rule_value ) ) {
+				$rule_value = array( $rule_value );
+			}
+
+			if ( 'categories' === $value_type ) {
+				$category_ids = array_merge( $category_ids, $rule_value );
+			} elseif ( 'tags' === $value_type ) {
+				$tag_ids = array_merge( $tag_ids, $rule_value );
+			} elseif ( 'roles' === $value_type ) {
+				$role_keys = array_merge( $role_keys, $rule_value );
+			}
+		}
+
+		if ( ! empty( $category_ids ) && function_exists( 'get_terms' ) ) {
+			$terms = get_terms(
+				array(
+					'taxonomy'   => 'product_cat',
+					'include'    => array_filter( array_map( 'intval', array_unique( $category_ids ) ) ),
+					'hide_empty' => false,
+				)
+			);
+			if ( ! is_wp_error( $terms ) && is_array( $terms ) ) {
+				foreach ( $terms as $term ) {
+					$entities[ (string) $term->term_id ] = $term->name;
+				}
+			}
+		}
+
+		if ( ! empty( $tag_ids ) && function_exists( 'get_terms' ) ) {
+			$terms = get_terms(
+				array(
+					'taxonomy'   => 'product_tag',
+					'include'    => array_filter( array_map( 'intval', array_unique( $tag_ids ) ) ),
+					'hide_empty' => false,
+				)
+			);
+			if ( ! is_wp_error( $terms ) && is_array( $terms ) ) {
+				foreach ( $terms as $term ) {
+					$entities[ (string) $term->term_id ] = $term->name;
+				}
+			}
+		}
+
+		if ( ! empty( $role_keys ) && function_exists( 'get_editable_roles' ) ) {
+			$roles = get_editable_roles();
+			if ( empty( $roles ) && function_exists( 'wp_roles' ) ) {
+				$roles = wp_roles()->roles;
+			}
+			if ( is_array( $roles ) ) {
+				foreach ( array_unique( $role_keys ) as $role_key ) {
+					if ( isset( $roles[ $role_key ] ) ) {
+						$entities[ (string) $role_key ] = $roles[ $role_key ]['name'] ?? $role_key;
+					}
+				}
+			}
+		}
+
+		return $entities;
 	}
 
 	/**
