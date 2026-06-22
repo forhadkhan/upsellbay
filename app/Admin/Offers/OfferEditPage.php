@@ -324,7 +324,7 @@ final class OfferEditPage {
 			'placement' => array(
 				'label'     => __( 'Display settings', 'upsellbay' ),
 				'collapsed' => false,
-				'fields'    => array( '_ub_show_image', '_ub_placement_config' ),
+				'fields'    => array( '_ub_show_image', '_ub_hide_if_in_cart', '_ub_placement_config' ),
 			),
 			'schedule'  => array(
 				'label'     => __( 'Schedule and priority', 'upsellbay' ),
@@ -632,6 +632,7 @@ final class OfferEditPage {
 			'_ub_discount_type'            => __( 'Discount type', 'upsellbay' ),
 			'_ub_discount_value'           => __( 'Discount value', 'upsellbay' ),
 			'_ub_show_image'               => __( 'Show product image', 'upsellbay' ),
+			'_ub_hide_if_in_cart'          => __( 'Hide if in cart', 'upsellbay' ),
 			'_ub_placement_config'         => __( 'Display position', 'upsellbay' ),
 			'_ub_start_at'                 => __( 'Start date', 'upsellbay' ),
 			'_ub_end_at'                   => __( 'End date', 'upsellbay' ),
@@ -720,6 +721,9 @@ final class OfferEditPage {
 			echo '<p class="description">' . esc_html__( 'Controls the heading shown above the cart offer list in block and classic checkout. Leave blank to use the default Recommended for you.', 'upsellbay' ) . '</p>';
 		} elseif ( '_ub_show_image' === $field ) {
 			echo '<label><input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="checkbox" value="1" ' . checked( $value, true, false ) . '> ' . esc_html__( 'Show the WooCommerce product image when available.', 'upsellbay' ) . '</label>';
+		} elseif ( '_ub_hide_if_in_cart' === $field ) {
+			echo '<label><input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="checkbox" value="1" ' . checked( $value, true, false ) . '> ' . esc_html__( 'Hide this offer if the offered product is already in the cart.', 'upsellbay' ) . '</label>';
+			echo '<p class="description">' . esc_html__( 'Uncheck this if you want customers to be able to add multiple quantities of the offered product.', 'upsellbay' ) . '</p>';
 		} elseif ( '_ub_conflict_override' === $field ) {
 			echo '<label><input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="checkbox" value="1" ' . checked( $value, true, false ) . '> ' . esc_html__( 'Override conflict prevention (advanced)', 'upsellbay' ) . '</label>';
 			echo '<p class="description">' . esc_html__( 'If checked, this offer may show even if it conflicts with another offer or the current cart state. Use with caution.', 'upsellbay' ) . '</p>';

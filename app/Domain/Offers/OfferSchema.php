@@ -56,6 +56,7 @@ final class OfferSchema {
 			'_ub_rules_match'              => 'all',
 			'_ub_placement_config'         => array(),
 			'_ub_show_image'               => true,
+			'_ub_hide_if_in_cart'          => true,
 			'_ub_start_at'                 => null,
 			'_ub_end_at'                   => null,
 			'_ub_priority'                 => 0,

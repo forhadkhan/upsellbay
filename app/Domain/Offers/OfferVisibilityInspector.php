@@ -276,10 +276,13 @@ final class OfferVisibilityInspector {
 			}
 
 			if ( $product_id > 0 && in_array( $product_id, $cart_ids, true ) ) {
-				return array(
-					'available' => false,
-					'message'   => __( 'The offered product is already in the cart, so the checkout bump is intentionally suppressed.', 'upsellbay' ),
-				);
+				$hide_if_in_cart = (bool) ( $meta['_ub_hide_if_in_cart'] ?? true );
+				if ( $hide_if_in_cart ) {
+					return array(
+						'available' => false,
+						'message'   => __( 'The offered product is already in the cart, so the checkout bump is intentionally suppressed.', 'upsellbay' ),
+					);
+				}
 			}
 		}
 

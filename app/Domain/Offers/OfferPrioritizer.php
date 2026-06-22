@@ -140,7 +140,8 @@ final class OfferPrioritizer {
 			$reasons[] = 'dismissed_in_session';
 		}
 
-		if ( $in_cart && in_array( $placement, array( 'checkout_bump', 'thankyou_offer' ), true ) ) {
+		$hide_if_in_cart = (bool) ( $meta['_ub_hide_if_in_cart'] ?? true );
+		if ( $in_cart && $hide_if_in_cart && in_array( $placement, array( 'checkout_bump', 'thankyou_offer' ), true ) ) {
 			$reasons[] = 'product_already_in_cart';
 		}
 

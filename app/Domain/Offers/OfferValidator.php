@@ -152,6 +152,7 @@ final class OfferValidator {
 		$normalized['_ub_rules_match']              = in_array( $normalized['_ub_rules_match'], array( 'all', 'any' ), true ) ? $normalized['_ub_rules_match'] : 'all';
 		$normalized['_ub_placement_config']         = is_array( $normalized['_ub_placement_config'] ) ? $normalized['_ub_placement_config'] : array();
 		$normalized['_ub_show_image']               = $this->to_bool( $normalized['_ub_show_image'] );
+		$normalized['_ub_hide_if_in_cart']          = $this->to_bool( $normalized['_ub_hide_if_in_cart'] ?? true );
 		$normalized['_ub_start_at']                 = $this->normalize_datetime( $normalized['_ub_start_at'] );
 		$normalized['_ub_end_at']                   = $this->normalize_datetime( $normalized['_ub_end_at'] );
 		$normalized['_ub_priority']                 = (int) $normalized['_ub_priority'];
