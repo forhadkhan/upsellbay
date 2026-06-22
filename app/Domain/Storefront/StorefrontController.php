@@ -19,6 +19,7 @@ use WPAnchorBay\UpsellBay\Core\Constants;
 use WPAnchorBay\UpsellBay\Core\Settings;
 use WPAnchorBay\UpsellBay\Data\CartSession;
 use WPAnchorBay\UpsellBay\Data\OfferRepository;
+use WPAnchorBay\UpsellBay\Utils\TokenHelper;
 
 /**
  * Connects WooCommerce storefront hooks to the placement renderer.
@@ -55,6 +56,13 @@ final class StorefrontController {
 	private Settings $settings;
 
 	/**
+	 * Token helper.
+	 *
+	 * @var TokenHelper
+	 */
+	private TokenHelper $tokens;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.0.0
@@ -63,12 +71,14 @@ final class StorefrontController {
 	 * @param PlacementRenderer $renderer Placement renderer.
 	 * @param CartSession       $session  Cart session.
 	 * @param Settings|null     $settings Plugin settings.
+	 * @param TokenHelper|null  $tokens   Token helper.
 	 */
-	public function __construct( OfferRepository $offers, PlacementRenderer $renderer, CartSession $session, ?Settings $settings = null ) {
+	public function __construct( OfferRepository $offers, PlacementRenderer $renderer, CartSession $session, ?Settings $settings = null, ?TokenHelper $tokens = null ) {
 		$this->offers   = $offers;
 		$this->renderer = $renderer;
 		$this->session  = $session;
 		$this->settings = $settings ?? new Settings();
+		$this->tokens   = $tokens ?? new TokenHelper();
 	}
 
 	/**
@@ -191,7 +201,13 @@ final class StorefrontController {
 		$context                     = $this->context();
 		$context['source_order_id']  = $order_id;
 		$context['source_order_key'] = method_exists( $order, 'get_order_key' ) ? (string) $order->get_order_key() : '';
-		$context['token']            = $this->session->ensure_token();
+		$context['token']            = $this->tokens->sign_action(
+			'thankyou_offer',
+			array(
+				'source_order_id'  => $order_id,
+				'source_order_key' => $context['source_order_key'],
+			)
+		);
 		$context['rest_url']         = function_exists( 'rest_url' ) ? rest_url( Constants::REST_NAMESPACE ) : '';
 		$context['cart_url']         = function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : '';
 		$context['checkout_url']     = function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : '';

@@ -41,6 +41,7 @@ use WPAnchorBay\UpsellBay\Domain\Storefront\ProductPageRenderer;
 use WPAnchorBay\UpsellBay\Domain\Storefront\StorefrontController;
 use WPAnchorBay\UpsellBay\Domain\Storefront\ThankYouOfferRenderer;
 use WPAnchorBay\UpsellBay\Integrations\WooCommerce\StoreApiExtender;
+use WPAnchorBay\UpsellBay\Utils\TokenHelper;
 
 /**
  * Returns Phase 4 test cases.
@@ -406,7 +407,13 @@ function upsellbay_core_business_logic_tests(): array {
 
 			$cart_items                    = array();
 			$session                       = upsellbay_array_cart_session();
-			$token                         = $session->ensure_token();
+			$token                         = ( new TokenHelper() )->sign_action(
+				'thankyou_offer',
+				array(
+					'source_order_id'  => 700,
+					'source_order_key' => 'wc_order_700',
+				)
+			);
 			$offer                         = upsellbay_phase4_offer( 33, 'thankyou_offer', 50, 1 );
 			$offer['meta']['_ub_rules']    = array(
 				array(
@@ -445,12 +452,25 @@ function upsellbay_core_business_logic_tests(): array {
 				)
 			);
 
-			unset( $GLOBALS['upsellbay_test_current_user_id'], $GLOBALS['upsellbay_test_orders'][700] );
-
 			assert_same( 200, $response['status'] );
 			assert_true( $response['data']['success'] );
 			assert_same( 50, $cart_items['thankyou_item']['product_id'] );
 			assert_same( 700, $cart_items['thankyou_item']['cart_item_data'][ Constants::ATTRIBUTION_SOURCE_ORDER_ID ] );
+
+			$dismiss_response = $routes->dismiss(
+				array(
+					'offer_id'         => 33,
+					'placement'        => 'thankyou_offer',
+					'source_order_id'  => 700,
+					'source_order_key' => 'wc_order_700',
+					'token'            => $token,
+				)
+			);
+
+			assert_same( 200, $dismiss_response['status'] );
+			assert_true( $dismiss_response['data']['success'] );
+
+			unset( $GLOBALS['upsellbay_test_current_user_id'], $GLOBALS['upsellbay_test_orders'][700] );
 		},
 		'store api offer payload uses configured discount value for price html' => static function (): void {
 			$GLOBALS['upsellbay_test_products'][61] = new UpsellBay_Test_Storefront_Product( 61, 'Warranty', '100.00', 0 );

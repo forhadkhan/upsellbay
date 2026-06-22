@@ -20,6 +20,7 @@ use WPAnchorBay\UpsellBay\Core\Hooks;
 use WPAnchorBay\UpsellBay\Data\CartSession;
 use WPAnchorBay\UpsellBay\Domain\Analytics\AnalyticsService;
 use WPAnchorBay\UpsellBay\Domain\Cart\CartMutator;
+use WPAnchorBay\UpsellBay\Utils\TokenHelper;
 
 /**
  * Shopper-safe public REST route handlers.
@@ -70,6 +71,13 @@ final class PublicOfferRoutes {
 	private AnalyticsService $analytics;
 
 	/**
+	 * Token helper.
+	 *
+	 * @var TokenHelper
+	 */
+	private TokenHelper $tokens;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.0.0
@@ -80,14 +88,16 @@ final class PublicOfferRoutes {
 	 * @param callable         $rate_limit    Rate limiter.
 	 * @param callable|null    $date_provider Date callback.
 	 * @param AnalyticsService $analytics     Analytics service.
+	 * @param TokenHelper|null $tokens         Token helper.
 	 */
-	public function __construct( callable $offer_loader, CartMutator $cart, CartSession $session, callable $rate_limit, ?callable $date_provider, AnalyticsService $analytics ) {
+	public function __construct( callable $offer_loader, CartMutator $cart, CartSession $session, callable $rate_limit, ?callable $date_provider, AnalyticsService $analytics, ?TokenHelper $tokens = null ) {
 		$this->offer_loader  = $offer_loader;
 		$this->cart          = $cart;
 		$this->session       = $session;
 		$this->rate_limit    = $rate_limit;
 		$this->date_provider = $date_provider ?? static fn (): string => gmdate( 'Y-m-d' );
 		$this->analytics     = $analytics;
+		$this->tokens        = $tokens ?? new TokenHelper();
 	}
 
 	/**
@@ -193,20 +203,32 @@ final class PublicOfferRoutes {
 				'callback'            => array( $this, 'dismiss' ),
 				'permission_callback' => '__return_true',
 				'args'                => array(
-					'offer_id'  => array(
+					'offer_id'         => array(
 						'required'          => true,
 						'type'              => 'integer',
 						'minimum'           => 1,
 						'sanitize_callback' => 'absint',
 						'validate_callback' => static fn( $value ) => absint( $value ) > 0,
 					),
-					'placement' => array(
+					'placement'        => array(
 						'required'          => false,
 						'type'              => 'string',
 						'default'           => '',
 						'sanitize_callback' => 'sanitize_key',
 					),
-					'token'     => array(
+					'source_order_id'  => array(
+						'required'          => false,
+						'type'              => 'integer',
+						'default'           => 0,
+						'sanitize_callback' => 'absint',
+					),
+					'source_order_key' => array(
+						'required'          => false,
+						'type'              => 'string',
+						'default'           => '',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'token'            => array(
 						'required'          => true,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
@@ -492,7 +514,8 @@ final class PublicOfferRoutes {
 			wc_load_cart();
 		}
 
-		if ( ! isset( $params['token'] ) || '' === (string) $params['token'] || ! $this->session->validate_token( (string) $params['token'] ) ) {
+		$token = (string) ( $params['token'] ?? '' );
+		if ( '' === $token || ( ! $this->session->validate_token( $token ) && ! $this->validate_thankyou_action_token( $endpoint, $params, $token ) ) ) {
 			Hooks::action( 'api_request_failed', $endpoint, 'invalid_token', $params );
 			return $this->response(
 				403,
@@ -515,6 +538,42 @@ final class PublicOfferRoutes {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Validate a stateless thank-you action token.
+	 *
+	 * WooCommerce can rotate the cart session after checkout. Thank-you offers
+	 * therefore use an order-bound signed token and still verify the source
+	 * order before accepting the offer.
+	 *
+	 * @param string               $endpoint Endpoint key.
+	 * @param array<string, mixed> $params   Request params.
+	 * @param string               $token    Submitted token.
+	 */
+	private function validate_thankyou_action_token( string $endpoint, array $params, string $token ): bool {
+		if ( ! in_array( $endpoint, array( 'cart_offer_add', 'dismiss' ), true ) ) {
+			return false;
+		}
+
+		if ( 'thankyou_offer' !== (string) ( $params['placement'] ?? '' ) ) {
+			return false;
+		}
+
+		$order_id  = (int) ( $params['source_order_id'] ?? 0 );
+		$order_key = (string) ( $params['source_order_key'] ?? '' );
+		if ( $order_id <= 0 || '' === $order_key ) {
+			return false;
+		}
+
+		return $this->tokens->verify_action(
+			$token,
+			'thankyou_offer',
+			array(
+				'source_order_id'  => $order_id,
+				'source_order_key' => $order_key,
+			)
+		);
 	}
 
 	/**

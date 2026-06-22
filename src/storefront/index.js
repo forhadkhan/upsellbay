@@ -64,6 +64,8 @@ document.addEventListener('click', async (event) => {
 		const result = await postOffer('dismiss', {
 			offer_id: Number(card.dataset.upsellbayOfferId || 0),
 			placement: card.dataset.upsellbayPlacement || 'product_upsell',
+			source_order_id: Number(card.dataset.upsellbaySourceOrderId || 0),
+			source_order_key: card.dataset.upsellbaySourceOrderKey || '',
 		}, card);
 
 		if (result?.ok) {
