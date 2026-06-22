@@ -259,7 +259,7 @@ final class OfferValidator {
 		$product = $product_id > 0 ? ( $this->product_context )( $product_id ) : null;
 		if ( is_array( $product ) ) {
 			if ( false === ( $product['purchasable'] ?? true ) ) {
-				$errors['_ub_offer_product_id_purchasable'] = 'Offer product is not currently purchasable.';
+				$errors['_ub_offer_product_id_purchasable'] = 'Selected offer product is not currently purchasable.';
 			}
 			if ( false === ( $product['in_stock'] ?? true ) ) {
 				$errors['_ub_offer_product_id_stock'] = 'Offer product is out of stock.';
