@@ -420,7 +420,8 @@ final class StorefrontController {
 		$button_style = (string) ( $tokens['button_style'] ?? 'theme' );
 		$css          = '.upsellbay-offer{--upsellbay-accent:' . esc_attr( $accent_color ) . ';}';
 		if ( 'outline' === $button_style ) {
-			$css .= '.upsellbay-offer .upsellbay-offer__button{background:transparent;color:var(--upsellbay-accent);border-color:var(--upsellbay-accent);}';
+			$css .= '.upsellbay-offer .upsellbay-offer__button{background:transparent;color:var(--upsellbay-accent);border:1px solid var(--upsellbay-accent);}';
+			$css .= '.upsellbay-offer .upsellbay-offer__button:hover,.upsellbay-offer .upsellbay-offer__button:focus{background:var(--upsellbay-accent);color:#fff;}';
 		}
 
 		wp_add_inline_style( $handle, $css );
