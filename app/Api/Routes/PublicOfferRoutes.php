@@ -421,13 +421,14 @@ final class PublicOfferRoutes {
 			return false;
 		}
 
-		$order_user_id = method_exists( $order, 'get_user_id' ) ? (int) $order->get_user_id() : 0;
-		$current_user  = function_exists( 'get_current_user_id' ) ? get_current_user_id() : 0;
-		if ( $order_user_id > 0 ) {
-			return $order_user_id === $current_user;
+		if ( '' !== $source_order_key && method_exists( $order, 'get_order_key' ) && hash_equals( (string) $order->get_order_key(), $source_order_key ) ) {
+			return true;
 		}
 
-		return '' !== $source_order_key && method_exists( $order, 'get_order_key' ) && hash_equals( (string) $order->get_order_key(), $source_order_key );
+		$order_user_id = method_exists( $order, 'get_user_id' ) ? (int) $order->get_user_id() : 0;
+		$current_user  = function_exists( 'get_current_user_id' ) ? get_current_user_id() : 0;
+
+		return $order_user_id > 0 && $order_user_id === $current_user;
 	}
 
 	/**

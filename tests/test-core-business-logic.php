@@ -472,6 +472,64 @@ function upsellbay_core_business_logic_tests(): array {
 
 			unset( $GLOBALS['upsellbay_test_current_user_id'], $GLOBALS['upsellbay_test_orders'][700] );
 		},
+		'thank-you route accepts registered customer order key when rest user is anonymous' => static function (): void {
+			$GLOBALS['upsellbay_test_current_user_id'] = 0;
+			$GLOBALS['upsellbay_test_products'][50]   = new UpsellBay_Test_Storefront_Product( 50, 'Follow-on', '19.000000', 0 );
+			$GLOBALS['upsellbay_test_orders'][701]    = new UpsellBay_Test_Order(
+				701,
+				12,
+				'wc_order_701',
+				'processing',
+				array( new UpsellBay_Test_Order_Item( 99 ) ),
+				'45.000000'
+			);
+
+			$cart_items = array();
+			$session    = upsellbay_array_cart_session();
+			$token      = ( new TokenHelper() )->sign_action(
+				'thankyou_offer',
+				array(
+					'source_order_id'  => 701,
+					'source_order_key' => 'wc_order_701',
+				)
+			);
+			$offer      = upsellbay_phase4_offer( 34, 'thankyou_offer', 50, 1 );
+			$mutator    = new CartMutator(
+				$session,
+				new CartValidator( new RuleEvaluator( new RuleParser() ), new DiscountCalculator(), static fn (): array => array( 'id' => 50, 'price' => '19.000000', 'purchasable' => true, 'visible' => true, 'in_stock' => true, 'type' => 'simple', 'subscription' => false ) ),
+				new DiscountCalculator(),
+				static function ( int $product_id, int $quantity, array $cart_item_data ) use ( &$cart_items ): string {
+					$cart_items['registered_thankyou_item'] = compact( 'product_id', 'quantity', 'cart_item_data' );
+					return 'registered_thankyou_item';
+				},
+				static fn (): bool => true,
+				static fn (): bool => true
+			);
+			$routes     = new PublicOfferRoutes(
+				static fn ( int $offer_id ): ?array => 34 === $offer_id ? $offer : null,
+				$mutator,
+				$session,
+				static fn (): bool => true,
+				static fn (): string => '2026-05-30',
+				new AnalyticsService( new AnalyticsRecorder( new StatsRepository( static function (): void {}, static fn (): array => array() ) ) )
+			);
+
+			$response = $routes->cart_offer_add(
+				array(
+					'offer_id'         => 34,
+					'placement'        => 'thankyou_offer',
+					'source_order_id'  => 701,
+					'source_order_key' => 'wc_order_701',
+					'token'            => $token,
+				)
+			);
+
+			assert_same( 200, $response['status'] );
+			assert_true( $response['data']['success'] );
+			assert_same( 50, $cart_items['registered_thankyou_item']['product_id'] );
+
+			unset( $GLOBALS['upsellbay_test_current_user_id'], $GLOBALS['upsellbay_test_orders'][701] );
+		},
 		'store api offer payload uses configured discount value for price html' => static function (): void {
 			$GLOBALS['upsellbay_test_products'][61] = new UpsellBay_Test_Storefront_Product( 61, 'Warranty', '100.00', 0 );
 			$offer                                  = upsellbay_phase4_offer( 61, 'checkout_bump', 61, 1 );
