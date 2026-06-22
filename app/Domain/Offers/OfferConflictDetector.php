@@ -93,10 +93,11 @@ final class OfferConflictDetector {
 			if ( $placement === $other_placement ) {
 				++$placement_count;
 				if ( array_key_exists( '_ub_priority', $meta ) && array_key_exists( '_ub_priority', $other_meta ) && $priority === (int) $other_meta['_ub_priority'] ) {
+					$other_title = (string) ( $other_offer['title'] ?? $this->fallback_title( $other_id ) );
 					$warnings[] = sprintf(
-						/* translators: %s: offer title */
+						/* translators: %s: offer title link */
 						__( 'Priority tie: This offer has the same priority as %s. Lower priority numbers win, and matching numbers fall back to offer ID.', 'upsellbay' ),
-						(string) ( $other_offer['title'] ?? $this->fallback_title( $other_id ) )
+						$this->offer_link( $other_id, $other_title )
 					);
 				}
 
@@ -106,7 +107,8 @@ final class OfferConflictDetector {
 
 				// Funnel overlap: Same placement, same goal, and overlapping triggers.
 				if ( $goal === $other_goal && $this->schedules_overlap( $meta, $other_meta ) && $this->targeting_overlaps( $product_ids, $category_ids, $meta['_ub_rules'] ?? array(), $other_product_ids, $other_category_ids, $other_meta['_ub_rules'] ?? array() ) ) {
-					$funnel_overlaps[] = $other_offer['title'] ?? $this->fallback_title( $other_id );
+					$other_title = (string) ( $other_offer['title'] ?? $this->fallback_title( $other_id ) );
+					$funnel_overlaps[] = $this->offer_link( $other_id, $other_title );
 				}
 			}
 		}
@@ -142,6 +144,18 @@ final class OfferConflictDetector {
 		$other_end     = $this->timestamp( $other['_ub_end_at'] ?? null ) ?? PHP_INT_MAX;
 
 		return $current_start <= $other_end && $other_start <= $current_end;
+	}
+
+	/**
+	 * Build an HTML link to the offer edit screen.
+	 *
+	 * @param int    $offer_id Offer ID.
+	 * @param string $title    Offer title.
+	 * @return string HTML link.
+	 */
+	private function offer_link( int $offer_id, string $title ): string {
+		$url = admin_url( 'admin.php?page=upsellbay&tab=offers&action=edit&offer_id=' . $offer_id );
+		return sprintf( '<a href="%s" target="_blank">%s</a>', esc_url( $url ), esc_html( $title ) );
 	}
 
 	/**

@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-06-22T11:32:53+00:00\n"
+"POT-Creation-Date: 2026-06-22T12:55:55+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: upsellbay\n"
@@ -1765,17 +1765,17 @@ msgstr ""
 #: app/Domain/Storefront/ProductPageRenderer.php:74
 #: assets/admin/js/upsellbay-offer-editor.js:1
 #: assets/frontend/block-checkout.js:1
-#: src/admin/offer-editor/index.js:480
-#: src/admin/offer-editor/index.js:485
-#: src/admin/offer-editor/index.js:490
-#: src/admin/offer-editor/index.js:495
+#: src/admin/offer-editor/index.js:582
+#: src/admin/offer-editor/index.js:587
+#: src/admin/offer-editor/index.js:592
+#: src/admin/offer-editor/index.js:597
 #: src/block-checkout/cart-cross-sells.js:133
 msgid "Recommended for you"
 msgstr ""
 
 #: app/Domain/Offers/OfferDefaults.php:71
 #: assets/admin/js/upsellbay-offer-editor.js:1
-#: src/admin/offer-editor/index.js:481
+#: src/admin/offer-editor/index.js:583
 msgid "Complete your order with this add-on"
 msgstr ""
 
@@ -1785,7 +1785,7 @@ msgstr ""
 
 #: app/Domain/Offers/OfferDefaults.php:73
 #: assets/admin/js/upsellbay-offer-editor.js:1
-#: src/admin/offer-editor/index.js:482
+#: src/admin/offer-editor/index.js:584
 msgid "Add to order"
 msgstr ""
 
@@ -1795,7 +1795,7 @@ msgstr ""
 
 #: app/Domain/Offers/OfferDefaults.php:79
 #: assets/admin/js/upsellbay-offer-editor.js:1
-#: src/admin/offer-editor/index.js:486
+#: src/admin/offer-editor/index.js:588
 msgid "Frequently bought with this product"
 msgstr ""
 
@@ -1805,7 +1805,7 @@ msgstr ""
 
 #: app/Domain/Offers/OfferDefaults.php:81
 #: assets/admin/js/upsellbay-offer-editor.js:1
-#: src/admin/offer-editor/index.js:487
+#: src/admin/offer-editor/index.js:589
 msgid "Add item"
 msgstr ""
 
@@ -1815,7 +1815,7 @@ msgstr ""
 
 #: app/Domain/Offers/OfferDefaults.php:87
 #: assets/admin/js/upsellbay-offer-editor.js:1
-#: src/admin/offer-editor/index.js:491
+#: src/admin/offer-editor/index.js:593
 msgid "Recommended for your cart"
 msgstr ""
 
@@ -1825,7 +1825,7 @@ msgstr ""
 
 #: app/Domain/Offers/OfferDefaults.php:89
 #: assets/admin/js/upsellbay-offer-editor.js:1
-#: src/admin/offer-editor/index.js:492
+#: src/admin/offer-editor/index.js:594
 msgid "Add to cart"
 msgstr ""
 
@@ -1835,7 +1835,7 @@ msgstr ""
 
 #: app/Domain/Offers/OfferDefaults.php:95
 #: assets/admin/js/upsellbay-offer-editor.js:1
-#: src/admin/offer-editor/index.js:496
+#: src/admin/offer-editor/index.js:598
 msgid "Add another useful item"
 msgstr ""
 
@@ -1845,7 +1845,7 @@ msgstr ""
 
 #: app/Domain/Offers/OfferDefaults.php:97
 #: assets/admin/js/upsellbay-offer-editor.js:1
-#: src/admin/offer-editor/index.js:497
+#: src/admin/offer-editor/index.js:599
 msgid "View offer"
 msgstr ""
 
@@ -2224,7 +2224,7 @@ msgid "Create draft offer"
 msgstr ""
 
 #: assets/admin/js/upsellbay-offer-editor.js:1
-#: src/admin/offer-editor/index.js:332
+#: src/admin/offer-editor/index.js:434
 msgid "Are you sure you want to clear all fields?"
 msgstr ""
 

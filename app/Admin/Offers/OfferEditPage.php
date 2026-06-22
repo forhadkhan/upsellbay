@@ -583,7 +583,7 @@ final class OfferEditPage {
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 		foreach ( $conflict_warnings as $warning ) {
-			echo '<div class="notice notice-warning upsellbay-page-notice"><p>' . esc_html( $warning ) . '</p></div>';
+			echo '<div class="notice notice-warning upsellbay-page-notice"><p>' . wp_kses_post( $warning ) . '</p></div>';
 		}
 
 		echo '</div>';
