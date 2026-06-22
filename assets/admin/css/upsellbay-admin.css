@@ -1133,3 +1133,9 @@
 #wpfooter {
 	display: none;
 }
+
+.notice-error, div.error {
+    border-left-color: #cc1818;
+    color: white;
+    background-color: #ffbfbf;
+}
