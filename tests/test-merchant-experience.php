@@ -149,6 +149,58 @@ function upsellbay_merchant_experience_tests(): array {
 					return 0;
 				}
 			};
+			$GLOBALS['upsellbay_test_products'][322] = new class() {
+				public function is_type( string $type ): bool {
+					return 'variable' === $type;
+				}
+
+				public function get_variation_prices( bool $for_display = false ): array {
+					unset( $for_display );
+					return array(
+						'price' => array(
+							101 => '12',
+							102 => '30',
+						),
+					);
+				}
+
+				public function get_price() {
+					return '12';
+				}
+
+				public function get_price_html() {
+					return '$12.00 - $30.00';
+				}
+
+				public function get_name() {
+					return 'Variable Demo';
+				}
+
+				public function get_image_id() {
+					return 0;
+				}
+			};
+			$GLOBALS['upsellbay_test_products'][323] = new class() {
+				public function get_price() {
+					return '80';
+				}
+
+				public function get_regular_price() {
+					return '100';
+				}
+
+				public function get_price_html() {
+					return '$80.00';
+				}
+
+				public function get_name() {
+					return 'Sale Product';
+				}
+
+				public function get_image_id() {
+					return 0;
+				}
+			};
 
 			$offers = array(
 				88 => array(
@@ -169,6 +221,26 @@ function upsellbay_merchant_experience_tests(): array {
 						'_ub_offer_product_id' => 321,
 						'_ub_discount_type'    => 'none',
 						'_ub_discount_value'   => '0.000000',
+					),
+				),
+				90 => array(
+					'id'    => 90,
+					'title' => 'Variable range offer',
+					'meta'  => array(
+						'_ub_offer_type'       => 'checkout_bump',
+						'_ub_offer_product_id' => 322,
+						'_ub_discount_type'    => 'none',
+						'_ub_discount_value'   => '0.000000',
+					),
+				),
+				91 => array(
+					'id'    => 91,
+					'title' => 'Sale-priced offer',
+					'meta'  => array(
+						'_ub_offer_type'       => 'checkout_bump',
+						'_ub_offer_product_id' => 323,
+						'_ub_discount_type'    => 'percent',
+						'_ub_discount_value'   => '10',
 					),
 				),
 			);
@@ -193,6 +265,16 @@ function upsellbay_merchant_experience_tests(): array {
 			ob_start();
 			$page->render_content();
 			$regular_html = (string) ob_get_clean();
+
+			$_GET['offer_id'] = '90';
+			ob_start();
+			$page->render_content();
+			$variable_html = (string) ob_get_clean();
+
+			$_GET['offer_id'] = '91';
+			ob_start();
+			$page->render_content();
+			$sale_html = (string) ob_get_clean();
 			unset( $_GET['offer_id'] );
 
 			assert_contains( 'upsellbay-discount-preview--discounted', $discounted_html );
@@ -205,6 +287,15 @@ function upsellbay_merchant_experience_tests(): array {
 			assert_contains( 'upsellbay-discount-preview--regular', $regular_html );
 			assert_contains( '<strong>$80.00</strong>', $regular_html );
 			assert_contains( 'No discount is applied', $regular_html );
+
+			assert_contains( 'upsellbay-discount-preview--regular', $variable_html );
+			assert_contains( '$12.00 - $30.00', $variable_html );
+			assert_contains( 'Variable products show the lowest and highest variation prices', $variable_html );
+
+			assert_contains( 'upsellbay-discount-preview--discounted', $sale_html );
+			assert_contains( '<del>$100.00</del>', $sale_html );
+			assert_contains( '<strong>$90.00</strong>', $sale_html );
+			assert_contains( 'This is the price shoppers will see after the selected discount is applied.', $sale_html );
 		},
 		'local recommendation assistant ranks explainable optional product suggestions' => static function (): void {
 			$assistant = new ProductRecommendationAssistant(

@@ -706,10 +706,15 @@ final class OfferEditPage {
 			echo '<p class="description">' . esc_html__( 'If checked, this offer may show even if it conflicts with another offer or the current cart state. Use with caution.', 'upsellbay' ) . '</p>';
 		} elseif ( '_ub_offer_product_id' === $field ) {
 			$selection_price = '';
+			$selection_min   = '';
+			$selection_max   = '';
 			if ( 0 !== (int) $value && function_exists( 'wc_get_product' ) ) {
 				$selection_product = wc_get_product( (int) $value );
 				if ( $selection_product && method_exists( $selection_product, 'get_price' ) ) {
-					$selection_price = (string) $selection_product->get_price();
+					$price_context    = $this->product_price_context( $selection_product );
+					$selection_price  = (string) $price_context['regular_min'];
+					$selection_min    = (string) $price_context['regular_min'];
+					$selection_max    = (string) $price_context['regular_max'];
 				}
 			}
 
@@ -720,6 +725,8 @@ final class OfferEditPage {
 			echo '</div>';
 			echo '<input type="hidden" id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" value="' . esc_attr( (string) $value ) . '">';
 			echo '<input type="hidden" id="upsellbay-' . esc_attr( $field ) . '-price" name="_ub_offer_product_price" value="' . esc_attr( $selection_price ) . '" data-upsellbay-product-price-input>';
+			echo '<input type="hidden" id="upsellbay-' . esc_attr( $field ) . '-price-min" name="_ub_offer_product_price_min" value="' . esc_attr( $selection_min ) . '" data-upsellbay-product-price-min-input>';
+			echo '<input type="hidden" id="upsellbay-' . esc_attr( $field ) . '-price-max" name="_ub_offer_product_price_max" value="' . esc_attr( $selection_max ) . '" data-upsellbay-product-price-max-input>';
 			echo '<div class="upsellbay-product-selector__results" data-upsellbay-results></div>';
 			echo '<div class="upsellbay-product-selector__selection' . ( 0 !== (int) $value ? ' is-active' : '' ) . '" data-upsellbay-selection' . ( '' !== $selection_price ? ' data-upsellbay-product-price="' . esc_attr( $selection_price ) . '"' : '' ) . '>';
 			if ( 0 !== (int) $value && function_exists( 'wc_get_product' ) ) {
@@ -821,8 +828,10 @@ final class OfferEditPage {
 			);
 		}
 
-		$original_price = (string) $product->get_price();
-		if ( '' === $original_price || ! is_numeric( $original_price ) ) {
+		$price_context  = $this->product_price_context( $product );
+		$original_price = (float) $price_context['regular_min'];
+
+		if ( $original_price < 0 ) {
 			return array(
 				'state'      => 'empty',
 				'value_html' => __( 'This product does not expose a numeric price yet.', 'upsellbay' ),
@@ -830,7 +839,7 @@ final class OfferEditPage {
 			);
 		}
 
-		$discount = $this->discount_calculator->calculate( $original_price, $this->current_meta );
+		$discount = $this->discount_calculator->calculate( (string) $original_price, $this->current_meta );
 		if ( null === $discount ) {
 			return array(
 				'state'      => 'warning',
@@ -839,8 +848,33 @@ final class OfferEditPage {
 			);
 		}
 
+		$discount_type = (string) ( $this->current_meta['_ub_discount_type'] ?? 'none' );
 		$original_html = $this->format_currency_value( (float) $discount['original_price'] );
 		$offer_html    = $this->format_currency_value( (float) $discount['offer_price'] );
+
+		if ( true === (bool) $price_context['is_range'] ) {
+			$range_min_discount = $this->discount_calculator->calculate( (float) $price_context['regular_min'], $this->current_meta );
+			$range_max_discount = $this->discount_calculator->calculate( (float) $price_context['regular_max'], $this->current_meta );
+
+			if ( null !== $range_min_discount && null !== $range_max_discount ) {
+				$original_html = $this->format_currency_value( (float) $price_context['regular_min'] ) . ' - ' . $this->format_currency_value( (float) $price_context['regular_max'] );
+				$offer_html    = $this->format_currency_value( (float) $range_min_discount['offer_price'] ) . ' - ' . $this->format_currency_value( (float) $range_max_discount['offer_price'] );
+
+				if ( 'none' === $discount_type ) {
+					return array(
+						'state'      => 'regular',
+						'value_html' => '<strong>' . esc_html( $offer_html ) . '</strong>',
+						'note'       => __( 'Variable products show the lowest and highest variation prices until a variation is selected on the storefront.', 'upsellbay' ),
+					);
+				}
+
+				return array(
+					'state'      => 'discounted',
+					'value_html' => '<del>' . esc_html( $original_html ) . '</del> <strong>' . esc_html( $offer_html ) . '</strong>',
+					'note'       => __( 'Variable products show the lowest and highest variation prices until a variation is selected on the storefront.', 'upsellbay' ),
+				);
+			}
+		}
 
 		if ( $discount['offer_price'] === $discount['original_price'] ) {
 			return array(
@@ -853,7 +887,9 @@ final class OfferEditPage {
 		return array(
 			'state'      => 'discounted',
 			'value_html' => '<del>' . esc_html( $original_html ) . '</del> <strong>' . esc_html( $offer_html ) . '</strong>',
-			'note'       => __( 'This is the price shoppers will see after the selected discount is applied.', 'upsellbay' ),
+			'note'       => $price_context['is_range']
+				? __( 'Variable products show the lowest and highest variation prices until a variation is selected on the storefront.', 'upsellbay' )
+				: __( 'This is the price shoppers will see after the selected discount is applied.', 'upsellbay' ),
 		);
 	}
 
@@ -879,6 +915,65 @@ final class OfferEditPage {
 			'right'        => $formatted . $symbol,
 			default        => $symbol . $formatted,
 		};
+	}
+
+	/**
+	 * Build a normalized price context for a WooCommerce product.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param object $product Product object.
+	 * @return array{min: float, max: float, regular_min: float, regular_max: float, is_range: bool}
+	 */
+	private function product_price_context( object $product ): array {
+		$min         = method_exists( $product, 'get_price' ) ? (float) $product->get_price() : -1.0;
+		$max         = $min;
+		$regular_min = $min;
+		$regular_max = $min;
+
+		if ( method_exists( $product, 'is_type' ) && $product->is_type( 'variable' ) && method_exists( $product, 'get_variation_prices' ) ) {
+			$variation_prices = $product->get_variation_prices( false );
+			if ( ! empty( $variation_prices['price'] ) && is_array( $variation_prices['price'] ) ) {
+				$filtered = array_filter(
+					$variation_prices['price'],
+					static fn ( $price ): bool => is_numeric( $price )
+				);
+
+				if ( array() !== $filtered ) {
+					$min = (float) min( $filtered );
+					$max = (float) max( $filtered );
+				}
+			}
+			if ( ! empty( $variation_prices['regular_price'] ) && is_array( $variation_prices['regular_price'] ) ) {
+				$filtered_regular = array_filter(
+					$variation_prices['regular_price'],
+					static fn ( $price ): bool => is_numeric( $price )
+				);
+
+				if ( array() !== $filtered_regular ) {
+					$regular_min = (float) min( $filtered_regular );
+					$regular_max = (float) max( $filtered_regular );
+				}
+			}
+			if ( $regular_min === $min && $regular_max === $min && $max > $min ) {
+				$regular_min = $min;
+				$regular_max = $max;
+			}
+		} elseif ( method_exists( $product, 'get_regular_price' ) ) {
+			$regular_price = (string) $product->get_regular_price();
+			if ( '' !== $regular_price && is_numeric( $regular_price ) ) {
+				$regular_min = (float) $regular_price;
+				$regular_max = (float) $regular_price;
+			}
+		}
+
+		return array(
+			'min'         => $min,
+			'max'         => $max,
+			'regular_min' => $regular_min,
+			'regular_max' => $regular_max,
+			'is_range'    => $regular_max > $regular_min,
+		);
 	}
 
 	/**

@@ -133,7 +133,11 @@ window.jQuery(function ($) {
 
     function selectProduct(product) {
       $input.val(product.id);
-      $selector.find('[data-upsellbay-product-price-input]').val(product.price_raw || '');
+      const baseMin = product.base_price_min_raw || product.regular_price_raw || product.price_min_raw || product.price_raw || '';
+      const baseMax = product.base_price_max_raw || product.regular_price_raw || product.price_max_raw || product.price_raw || '';
+      $selector.find('[data-upsellbay-product-price-input]').val(product.base_price_raw || baseMin || '');
+      $selector.find('[data-upsellbay-product-price-min-input]').val(baseMin);
+      $selector.find('[data-upsellbay-product-price-max-input]').val(baseMax);
       $inputWrapper.hide();
       $results.removeClass("is-active");
 
@@ -155,11 +159,18 @@ window.jQuery(function ($) {
         .attr("data-upsellbay-product-price", product.price_raw || "")
         .addClass("is-active");
 
+      $selector.find('[data-upsellbay-product-price-input]').trigger('change');
+      $(document).trigger('upsellbay:price-context-change');
+
       $selection
         .find(".upsellbay-product-selector__selection-remove")
         .on("click", () => {
           $input.val("");
           $selector.find('[data-upsellbay-product-price-input]').val("");
+          $selector.find('[data-upsellbay-product-price-min-input]').val("");
+          $selector.find('[data-upsellbay-product-price-max-input]').val("");
+          $selector.find('[data-upsellbay-product-price-input]').trigger('change');
+          $(document).trigger('upsellbay:price-context-change');
           $selection.empty().removeAttr("data-upsellbay-product-price").removeClass("is-active");
           $inputWrapper.show();
           $search.focus();
@@ -284,11 +295,16 @@ window.jQuery(function ($) {
          `).addClass("is-active");
          
          $form.find('.upsellbay-product-selector__selection-remove').on("click", () => {
-            $form.find('input[name="_ub_offer_product_id"]').val("");
-            $form.find('[data-upsellbay-product-price-input]').val("");
-            $form.find('[data-upsellbay-selection]').empty().removeAttr('data-upsellbay-product-price').removeClass("is-active");
-            $form.find('.upsellbay-product-selector__input-wrapper').show();
-         });
+          $form.find('input[name="_ub_offer_product_id"]').val("");
+          $form.find('[data-upsellbay-product-price-input]').val("");
+          $form.find('[data-upsellbay-product-price-min-input]').val("");
+          $form.find('[data-upsellbay-product-price-max-input]').val("");
+          $form.find('[data-upsellbay-product-price-input]').trigger('change');
+          $(document).trigger('upsellbay:price-context-change');
+          $form.find('[data-upsellbay-selection]').empty().removeAttr('data-upsellbay-product-price').removeClass("is-active");
+          $form.find('.upsellbay-product-selector__input-wrapper').show();
+          $form.trigger('change');
+        });
       }
     } catch (e) {
       console.error('Failed to parse cached offer data', e);
@@ -829,40 +845,66 @@ window.jQuery(function ($) {
     }
   }
 
-  function getSelectedProductPrice() {
+  function getSelectedPriceContext() {
     const $priceInput = $('[data-upsellbay-product-price-input]');
-    const price = $priceInput.length ? $priceInput.val() : '';
+    const $minInput = $('[data-upsellbay-product-price-min-input]');
+    const $maxInput = $('[data-upsellbay-product-price-max-input]');
+    const fallbackPrice = $priceInput.length ? Number.parseFloat($priceInput.val()) : NaN;
+    const min = $minInput.length ? Number.parseFloat($minInput.val()) : fallbackPrice;
+    const max = $maxInput.length ? Number.parseFloat($maxInput.val()) : fallbackPrice;
 
-    return Number.parseFloat(price);
+    return {
+      min: Number.isFinite(min) ? min : NaN,
+      max: Number.isFinite(max) ? max : NaN,
+      isRange: Number.isFinite(min) && Number.isFinite(max) && max > min,
+    };
   }
 
   function getDiscountPreview() {
-    const productPrice = getSelectedProductPrice();
+    const priceContext = getSelectedPriceContext();
+    const productPrice = priceContext.min;
 
     if (!Number.isFinite(productPrice)) {
       return {
         state: 'empty',
         valueHtml: 'Select a product to preview the updated price.',
-        note: 'The discount preview uses the selected product price.',
+        note: 'The discount preview uses the selected product base price.',
       };
     }
 
     const discountType = $('#upsellbay-_ub_discount_type').val() || 'none';
     const discountValue = Number.parseFloat($('#upsellbay-_ub_discount_value').val()) || 0;
 
-    let offerPrice = productPrice;
+    let offerMin = productPrice;
+    let offerMax = priceContext.isRange ? priceContext.max : productPrice;
 
     if (discountType === 'percent') {
-      offerPrice = productPrice - (productPrice * Math.min(100, Math.max(0, discountValue)) / 100);
+      offerMin = productPrice - (productPrice * Math.min(100, Math.max(0, discountValue)) / 100);
+      offerMax = priceContext.isRange
+        ? priceContext.max - (priceContext.max * Math.min(100, Math.max(0, discountValue)) / 100)
+        : offerMin;
     } else if (discountType === 'fixed_amount') {
-      offerPrice = productPrice - Math.max(0, discountValue);
+      offerMin = productPrice - Math.max(0, discountValue);
+      offerMax = priceContext.isRange
+        ? priceContext.max - Math.max(0, discountValue)
+        : offerMin;
     } else if (discountType === 'fixed_price') {
-      offerPrice = Math.max(0, discountValue);
+      offerMin = Math.max(0, discountValue);
+      offerMax = offerMin;
     }
 
-    offerPrice = Math.max(0, offerPrice);
+    offerMin = Math.max(0, offerMin);
+    offerMax = Math.max(0, offerMax);
 
-    if (offerPrice === productPrice) {
+    if (priceContext.isRange && discountType === 'none') {
+      return {
+        state: 'regular',
+        valueHtml: `<strong>${formatPrice(priceContext.min)} - ${formatPrice(priceContext.max)}</strong>`,
+        note: 'Variable products show the lowest and highest variation prices until a variation is selected on the storefront.',
+      };
+    }
+
+    if (!priceContext.isRange && offerMin === productPrice) {
       return {
         state: 'regular',
         valueHtml: `<strong>${formatPrice(productPrice)}</strong>`,
@@ -872,8 +914,12 @@ window.jQuery(function ($) {
 
     return {
       state: 'discounted',
-      valueHtml: `<del>${formatPrice(productPrice)}</del> <strong>${formatPrice(offerPrice)}</strong>`,
-      note: 'This is the price shoppers will see after the selected discount is applied.',
+      valueHtml: priceContext.isRange
+        ? `<del>${formatPrice(priceContext.min)} - ${formatPrice(priceContext.max)}</del> <strong>${formatPrice(offerMin)} - ${formatPrice(offerMax)}</strong>`
+        : `<del>${formatPrice(productPrice)}</del> <strong>${formatPrice(offerMin)}</strong>`,
+      note: priceContext.isRange
+        ? 'Variable products show the lowest and highest variation prices until a variation is selected on the storefront.'
+        : 'This is the price shoppers will see after the selected discount is applied.',
     };
   }
 
@@ -943,6 +989,9 @@ window.jQuery(function ($) {
   }
 
   $form.on('input change', 'input, select, textarea', function() {
+    updateSummary();
+  });
+  $(document).on('upsellbay:price-context-change', function() {
     updateSummary();
   });
 

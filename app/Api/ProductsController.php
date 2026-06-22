@@ -142,13 +142,66 @@ final class ProductsController {
 	 */
 	private function format_product( $product ): array {
 		$image_url = wp_get_attachment_image_url( $product->get_image_id(), 'thumbnail' );
+		$price_min         = null;
+		$price_max         = null;
+		$regular_min       = null;
+		$regular_max       = null;
+		$regular_price_max = null;
+
+		if ( method_exists( $product, 'is_type' ) && $product->is_type( 'variable' ) && method_exists( $product, 'get_variation_prices' ) ) {
+			$variation_prices = $product->get_variation_prices( false );
+			if ( ! empty( $variation_prices['price'] ) && is_array( $variation_prices['price'] ) ) {
+				$variation_min = min( $variation_prices['price'] );
+				$variation_max = max( $variation_prices['price'] );
+				if ( is_numeric( $variation_min ) ) {
+					$price_min = (string) $variation_min;
+				}
+				if ( is_numeric( $variation_max ) ) {
+					$price_max = (string) $variation_max;
+				}
+			}
+			if ( ! empty( $variation_prices['regular_price'] ) && is_array( $variation_prices['regular_price'] ) ) {
+				$regular_variation_min = min( $variation_prices['regular_price'] );
+				$regular_variation_max = max( $variation_prices['regular_price'] );
+				if ( is_numeric( $regular_variation_min ) ) {
+					$regular_min = (string) $regular_variation_min;
+				}
+				if ( is_numeric( $regular_variation_max ) ) {
+					$regular_max = (string) $regular_variation_max;
+				}
+			}
+		}
+
+		if ( null === $price_min || null === $price_max ) {
+			$price_min = (string) $product->get_price();
+			$price_max = $price_min;
+		}
+
+		if ( null === $regular_min || null === $regular_max ) {
+			$regular_price = method_exists( $product, 'get_regular_price' ) ? (string) $product->get_regular_price() : '';
+			if ( '' === $regular_price ) {
+				$regular_price = $price_min;
+				$regular_price_max = $price_max;
+			} else {
+				$regular_price_max = $regular_price;
+			}
+			$regular_min = $regular_price;
+			$regular_max = isset( $regular_price_max ) ? $regular_price_max : $regular_price;
+		}
+
 		return array(
-			'id'        => $product->get_id(),
-			'name'      => $product->get_name(),
-			'sku'       => $product->get_sku(),
-			'price'     => $product->get_price_html(),
-			'price_raw' => (string) $product->get_price(),
-			'image'     => false !== $image_url ? $image_url : '',
+			'id'                 => $product->get_id(),
+			'name'               => $product->get_name(),
+			'sku'                => $product->get_sku(),
+			'price'              => $product->get_price_html(),
+			'price_raw'          => (string) $product->get_price(),
+			'regular_price_raw'  => (string) $regular_min,
+			'base_price_raw'     => (string) $regular_min,
+			'price_min_raw'      => $price_min,
+			'price_max_raw'      => $price_max,
+			'base_price_min_raw' => $regular_min,
+			'base_price_max_raw' => $regular_max,
+			'image'              => false !== $image_url ? $image_url : '',
 		);
 	}
 
