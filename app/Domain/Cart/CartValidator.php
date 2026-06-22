@@ -98,8 +98,9 @@ final class CartValidator {
 			}
 		}
 
-		$rules = is_array( $meta['_ub_rules'] ?? null ) ? $meta['_ub_rules'] : array();
-		if ( ! $this->rules->matches( $rules, (string) ( $meta['_ub_rules_match'] ?? 'all' ), $context ) ) {
+		$rules        = is_array( $meta['_ub_rules'] ?? null ) ? $meta['_ub_rules'] : array();
+		$rule_context = $this->context_for_product( $context, $product );
+		if ( ! $this->rules->matches( $rules, (string) ( $meta['_ub_rules_match'] ?? 'all' ), $rule_context ) ) {
 			$errors[] = 'rules_failed';
 		}
 
@@ -115,6 +116,21 @@ final class CartValidator {
 			'product'  => $product,
 			'discount' => $discount,
 		);
+	}
+
+	/**
+	 * Add product-specific values required by rule evaluation.
+	 *
+	 * @param array<string, mixed>      $context Shared context.
+	 * @param array<string, mixed>|null $product Loaded product context.
+	 * @return array<string, mixed>
+	 */
+	private function context_for_product( array $context, ?array $product ): array {
+		if ( ! isset( $context['stock_status'] ) && is_array( $product ) && isset( $product['stock_status'] ) ) {
+			$context['stock_status'] = (string) $product['stock_status'];
+		}
+
+		return $context;
 	}
 
 	/**
@@ -139,6 +155,7 @@ final class CartValidator {
 			'purchasable'  => ! method_exists( $product, 'is_purchasable' ) || $product->is_purchasable(),
 			'visible'      => ! method_exists( $product, 'is_visible' ) || $product->is_visible(),
 			'in_stock'     => ! method_exists( $product, 'is_in_stock' ) || $product->is_in_stock(),
+			'stock_status' => method_exists( $product, 'get_stock_status' ) ? $product->get_stock_status() : '',
 			'type'         => method_exists( $product, 'get_type' ) ? $product->get_type() : 'simple',
 			'subscription' => function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $product ),
 		);

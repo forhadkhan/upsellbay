@@ -144,11 +144,12 @@ final class OfferPrioritizer {
 			$reasons[] = 'product_already_in_cart';
 		}
 
-		$start_at    = $this->datetime_to_timestamp( $meta['_ub_start_at'] ?? null );
-		$end_at      = $this->datetime_to_timestamp( $meta['_ub_end_at'] ?? null );
-		$current     = ( $this->clock )();
-		$rules       = is_array( $meta['_ub_rules'] ?? null ) ? $meta['_ub_rules'] : array();
-		$rules_match = (string) ( $meta['_ub_rules_match'] ?? 'all' );
+		$start_at     = $this->datetime_to_timestamp( $meta['_ub_start_at'] ?? null );
+		$end_at       = $this->datetime_to_timestamp( $meta['_ub_end_at'] ?? null );
+		$current      = ( $this->clock )();
+		$rules        = is_array( $meta['_ub_rules'] ?? null ) ? $meta['_ub_rules'] : array();
+		$rules_match  = (string) ( $meta['_ub_rules_match'] ?? 'all' );
+		$rule_context = $this->context_for_offer( $context, $product_id );
 
 		if ( null !== $start_at && $start_at > $current ) {
 			$reasons[] = 'not_started';
@@ -164,11 +165,11 @@ final class OfferPrioritizer {
 			$reasons[] = 'product_unavailable';
 		}
 
-		if ( ! $this->matches_triggers( $meta, $context ) ) {
+		if ( ! $this->matches_triggers( $meta, $rule_context ) ) {
 			$reasons[] = 'trigger_mismatch';
 		}
 
-		if ( ! $this->rules->matches( $rules, $rules_match, $context ) ) {
+		if ( ! $this->rules->matches( $rules, $rules_match, $rule_context ) ) {
 			$reasons[] = 'rules_failed';
 		}
 
@@ -203,6 +204,26 @@ final class OfferPrioritizer {
 
 		return ( array() !== $product_ids && array() !== array_intersect( $product_ids, $context_products ) )
 			|| ( array() !== $category_ids && array() !== array_intersect( $category_ids, $context_categories ) );
+	}
+
+	/**
+	 * Add offer-specific values required by rule evaluation.
+	 *
+	 * @param array<string, mixed> $context    Shared storefront context.
+	 * @param int                  $product_id Offered product ID.
+	 * @return array<string, mixed>
+	 */
+	private function context_for_offer( array $context, int $product_id ): array {
+		if ( isset( $context['stock_status'] ) || $product_id <= 0 || ! function_exists( 'wc_get_product' ) ) {
+			return $context;
+		}
+
+		$product = wc_get_product( $product_id );
+		if ( $product && method_exists( $product, 'get_stock_status' ) ) {
+			$context['stock_status'] = (string) $product->get_stock_status();
+		}
+
+		return $context;
 	}
 
 	/**

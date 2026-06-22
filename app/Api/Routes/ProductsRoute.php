@@ -77,6 +77,30 @@ final class ProductsRoute {
 
 		register_rest_route(
 			Constants::REST_NAMESPACE,
+			'/tags',
+			array(
+				array(
+					'methods'             => 'GET',
+					'callback'            => array( $this->controller, 'tags' ),
+					'permission_callback' => array( $this, 'can_manage' ),
+				),
+			)
+		);
+
+		register_rest_route(
+			Constants::REST_NAMESPACE,
+			'/roles',
+			array(
+				array(
+					'methods'             => 'GET',
+					'callback'            => array( $this->controller, 'roles' ),
+					'permission_callback' => array( $this, 'can_manage' ),
+				),
+			)
+		);
+
+		register_rest_route(
+			Constants::REST_NAMESPACE,
 			'/recommendations',
 			array(
 				array(

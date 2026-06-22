@@ -21,18 +21,23 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since 1.0.0
  */
 final class RuleParser {
-	private const TYPES = array(
-		'cart_product',
-		'cart_category',
-		'cart_tag',
-		'cart_subtotal',
-		'viewed_product',
-		'user_role',
-		'customer_order_count',
-		'customer_lifetime_spend',
-		'stock_status',
-		'exclude_if_product_in_cart',
-	);
+	/**
+	 * Rule definitions.
+	 *
+	 * @var RuleDefinitions
+	 */
+	private RuleDefinitions $definitions;
+
+	/**
+	 * Constructor.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param RuleDefinitions|null $definitions Rule definitions.
+	 */
+	public function __construct( ?RuleDefinitions $definitions = null ) {
+		$this->definitions = $definitions ?? new RuleDefinitions();
+	}
 
 	/**
 	 * Parse raw rules into a normalized array.
@@ -53,14 +58,22 @@ final class RuleParser {
 				return null;
 			}
 
-			$type = $this->normalize_type( $rule['type'] ?? '' );
-			if ( ! in_array( $type, self::TYPES, true ) ) {
+			$type = $this->definitions->normalize_type( $this->sanitize_key( $rule['type'] ?? '' ) );
+			if ( null === $this->definitions->get( $type ) ) {
+				return null;
+			}
+
+			$operator = $this->definitions->resolve_operator(
+				$type,
+				$this->sanitize_key( $rule['operator'] ?? $this->definitions->default_operator( $type ) )
+			);
+			if ( null === $operator ) {
 				return null;
 			}
 
 			$parsed[] = array(
 				'type'     => $type,
-				'operator' => $this->normalize_operator( $rule['operator'] ?? 'eq' ),
+				'operator' => $operator,
 				'value'    => $rule['value'] ?? null,
 			);
 		}
@@ -75,35 +88,5 @@ final class RuleParser {
 	 */
 	private function sanitize_key( $value ): string {
 		return function_exists( 'sanitize_key' ) ? sanitize_key( (string) $value ) : strtolower( preg_replace( '/[^a-z0-9_\-]/i', '', (string) $value ) ?? '' );
-	}
-
-	/**
-	 * Normalize legacy rule aliases to canonical runtime keys.
-	 *
-	 * @param mixed $value Raw rule type.
-	 */
-	private function normalize_type( $value ): string {
-		$type = $this->sanitize_key( $value );
-
-		return match ( $type ) {
-			'lifetime_spend'          => 'customer_lifetime_spend',
-			'exclude_product_in_cart' => 'exclude_if_product_in_cart',
-			default                   => $type,
-		};
-	}
-
-	/**
-	 * Normalize legacy operator aliases to canonical evaluator keys.
-	 *
-	 * @param mixed $value Raw operator.
-	 */
-	private function normalize_operator( $value ): string {
-		$operator = $this->sanitize_key( $value );
-
-		return match ( $operator ) {
-			'is'     => 'eq',
-			'is_not' => 'neq',
-			default  => $operator,
-		};
 	}
 }

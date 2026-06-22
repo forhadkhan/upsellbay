@@ -219,6 +219,17 @@
 	overflow: visible;
 }
 
+.upsellbay-visual-builder .upsellbay-rule-entity-search {
+	min-width: 240px;
+	width: 100%;
+}
+
+.upsellbay-visual-builder .select2-container,
+.upsellbay-visual-builder .selectWoo-container {
+	max-width: 100%;
+	min-width: 240px;
+}
+
 .upsellbay-offer-visibility-panel {
 	margin: 16px 0 20px;
 	padding: 0;

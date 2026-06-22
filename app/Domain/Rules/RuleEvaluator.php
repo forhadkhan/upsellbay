@@ -87,7 +87,7 @@ final class RuleEvaluator {
 			'cart_category'                 => $this->compare_list( $context['cart_category_ids'] ?? array(), $rule['operator'], $rule['value'] ),
 			'cart_tag'                      => $this->compare_list( $context['cart_tag_ids'] ?? array(), $rule['operator'], $rule['value'] ),
 			'cart_subtotal'                 => $this->compare_number( $context['cart_subtotal'] ?? 0, $rule['operator'], $rule['value'] ),
-			'viewed_product'                => $this->compare_number( $context['viewed_product_id'] ?? 0, $rule['operator'], $rule['value'] ),
+			'viewed_product'                => $this->compare_list( array( $context['viewed_product_id'] ?? 0 ), $rule['operator'], $rule['value'] ),
 			'user_role'                     => $this->compare_list( $context['user_roles'] ?? array(), $rule['operator'], $rule['value'], false ),
 			'customer_order_count'          => $this->compare_number( $context['customer_order_count'] ?? 0, $rule['operator'], $rule['value'] ),
 			'customer_lifetime_spend'       => $this->compare_number( $context['customer_lifetime_spend'] ?? 0, $rule['operator'], $rule['value'] ),

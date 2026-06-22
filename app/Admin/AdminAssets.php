@@ -16,6 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 
 use WPAnchorBay\UpsellBay\Core\Constants;
+use WPAnchorBay\UpsellBay\Domain\Rules\RuleDefinitions;
 
 /**
  * Enqueues admin assets only for UpsellBay screens.
@@ -138,19 +139,21 @@ final class AdminAssets {
 				wp_enqueue_script( $handle, plugins_url( $asset['js'], Constants::plugin_file() ), $dependencies, $version, true );
 
 				if ( 'upsellbay-admin' === $handle_suffix ) {
+					$rule_definitions = new RuleDefinitions();
 					wp_localize_script(
 						$handle,
 						'upsellbay_data',
 						array(
-							'rest_url'            => get_rest_url( null, '/' ),
-							'ajax_url'            => admin_url( 'admin-ajax.php' ),
-							'nonce'               => wp_create_nonce( 'wp_rest' ),
-							'ajax_nonce'          => wp_create_nonce( 'upsellbay_admin_ajax' ),
-							'currency_symbol'     => function_exists( 'get_woocommerce_currency_symbol' ) ? get_woocommerce_currency_symbol() : '$',
-							'currency_position'   => function_exists( 'get_option' ) ? (string) get_option( 'woocommerce_currency_pos', 'left' ) : 'left',
-							'decimal_separator'   => function_exists( 'get_option' ) ? (string) get_option( 'woocommerce_price_decimal_sep', '.' ) : '.',
-							'thousand_separator'  => function_exists( 'get_option' ) ? (string) get_option( 'woocommerce_price_thousand_sep', ',' ) : ',',
-							'price_decimals'      => function_exists( 'wc_get_price_decimals' ) ? (int) wc_get_price_decimals() : 2,
+							'rest_url'           => get_rest_url( null, '/' ),
+							'ajax_url'           => admin_url( 'admin-ajax.php' ),
+							'nonce'              => wp_create_nonce( 'wp_rest' ),
+							'ajax_nonce'         => wp_create_nonce( 'upsellbay_admin_ajax' ),
+							'currency_symbol'    => function_exists( 'get_woocommerce_currency_symbol' ) ? get_woocommerce_currency_symbol() : '$',
+							'currency_position'  => function_exists( 'get_option' ) ? (string) get_option( 'woocommerce_currency_pos', 'left' ) : 'left',
+							'decimal_separator'  => function_exists( 'get_option' ) ? (string) get_option( 'woocommerce_price_decimal_sep', '.' ) : '.',
+							'thousand_separator' => function_exists( 'get_option' ) ? (string) get_option( 'woocommerce_price_thousand_sep', ',' ) : ',',
+							'price_decimals'     => function_exists( 'wc_get_price_decimals' ) ? (int) wc_get_price_decimals() : 2,
+							'rule_definitions'   => $rule_definitions->admin_config(),
 						)
 					);
 				}

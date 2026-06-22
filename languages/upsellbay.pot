@@ -9,15 +9,15 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-06-21T07:40:04+00:00\n"
+"POT-Creation-Date: 2026-06-22T11:32:53+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: upsellbay\n"
 
 #. Plugin Name of the plugin
 #: upsellbay.php
-#: app/Admin/AdminPage.php:168
-#: app/Admin/AdminPage.php:209
+#: app/Admin/AdminPage.php:170
+#: app/Admin/AdminPage.php:232
 #: app/Admin/AdminPageRegistrar.php:146
 #: app/Admin/AdminPageRegistrar.php:158
 #: app/Admin/AdminPageRegistrar.php:159
@@ -48,21 +48,21 @@ msgstr ""
 msgid "UpsellBay test mode"
 msgstr ""
 
-#: app/Admin/AdminPage.php:141
+#: app/Admin/AdminPage.php:143
 msgid "Close modal panel"
 msgstr ""
 
-#: app/Admin/AdminPage.php:170
+#: app/Admin/AdminPage.php:172
 msgid "Get Started"
 msgstr ""
 
-#: app/Admin/AdminPage.php:171
-#: app/Admin/AdminPage.php:217
+#: app/Admin/AdminPage.php:173
+#: app/Admin/AdminPage.php:240
 #: app/Admin/Offers/OfferSectionNavigation.php:65
 msgid "Add Offer"
 msgstr ""
 
-#: app/Admin/CompatibilityNotice.php:73
+#: app/Admin/CompatibilityNotice.php:94
 msgid "Compatibility guide"
 msgstr ""
 
@@ -116,6 +116,7 @@ msgid "Admin-only preview mode for checking offers before shoppers see them."
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:82
+#: app/Admin/Offers/OffersPage.php:207
 msgid "Active offers"
 msgstr ""
 
@@ -142,8 +143,8 @@ msgid "Performance date range"
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:115
-#: app/Admin/Offers/OfferEditPage.php:924
-#: app/Admin/Offers/OffersPage.php:143
+#: app/Admin/Offers/OfferEditPage.php:1267
+#: app/Admin/Offers/OffersPage.php:145
 msgid "Views"
 msgstr ""
 
@@ -152,8 +153,8 @@ msgid "Offer render events recorded in aggregate stats."
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:116
-#: app/Admin/Offers/OfferEditPage.php:925
-#: app/Admin/Offers/OffersPage.php:144
+#: app/Admin/Offers/OfferEditPage.php:1268
+#: app/Admin/Offers/OffersPage.php:146
 msgid "Accepts"
 msgstr ""
 
@@ -162,7 +163,7 @@ msgid "Accepted offers recorded in aggregate stats."
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:117
-#: app/Admin/Offers/OfferEditPage.php:927
+#: app/Admin/Offers/OfferEditPage.php:1270
 msgid "Accept rate"
 msgstr ""
 
@@ -171,7 +172,7 @@ msgid "Accepted offers divided by offer views for this period."
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:118
-#: app/Admin/Offers/OfferEditPage.php:930
+#: app/Admin/Offers/OfferEditPage.php:1273
 msgid "Attributed revenue"
 msgstr ""
 
@@ -180,12 +181,12 @@ msgid "Revenue attributed to accepted offers in aggregate stats."
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:123
-#: app/Admin/Offers/OfferEditPage.php:926
+#: app/Admin/Offers/OfferEditPage.php:1269
 msgid "Dismissals"
 msgstr ""
 
 #: app/Admin/Dashboard/DashboardPage.php:124
-#: app/Admin/Offers/OfferEditPage.php:928
+#: app/Admin/Offers/OfferEditPage.php:1271
 msgid "Orders"
 msgstr ""
 
@@ -243,31 +244,35 @@ msgid "Use the first offer tutorial to create a draft offer, preview it in test 
 msgstr ""
 
 #: app/Admin/Help/HelpPage.php:89
-#: app/Admin/Navigation/TabFactory.php:181
+#: app/Admin/Navigation/TabFactory.php:200
 msgid "Help"
 msgstr ""
 
-#: app/Admin/Navigation/TabFactory.php:116
+#: app/Admin/Navigation/TabFactory.php:128
 msgid "Dashboard"
 msgstr ""
 
-#: app/Admin/Navigation/TabFactory.php:123
+#: app/Admin/Navigation/TabFactory.php:135
 msgid "Offers"
 msgstr ""
 
-#: app/Admin/Navigation/TabFactory.php:148
+#: app/Admin/Navigation/TabFactory.php:160
 msgid "Offer saved successfully."
 msgstr ""
 
-#: app/Admin/Navigation/TabFactory.php:160
+#: app/Admin/Navigation/TabFactory.php:172
 msgid "Settings"
 msgstr ""
 
-#: app/Admin/Navigation/TabFactory.php:171
+#: app/Admin/Navigation/TabFactory.php:183
+msgid "Tools"
+msgstr ""
+
+#: app/Admin/Navigation/TabFactory.php:190
 msgid "Setup"
 msgstr ""
 
-#: app/Admin/Navigation/TabFactory.php:171
+#: app/Admin/Navigation/TabFactory.php:190
 msgid "Get started"
 msgstr ""
 
@@ -275,452 +280,497 @@ msgstr ""
 msgid "UpsellBay sections"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:133
+#: app/Admin/Offers/OfferEditPage.php:176
 msgid "You do not have permission to manage UpsellBay offers."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:140
+#: app/Admin/Offers/OfferEditPage.php:183
 msgid "Offer save could not be verified. Please try again."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:149
+#: app/Admin/Offers/OfferEditPage.php:192
 msgid "Offer name is required."
 msgstr ""
 
 #. translators: %s: error message
-#: app/Admin/Offers/OfferEditPage.php:195
+#: app/Admin/Offers/OfferEditPage.php:228
 #, php-format
 msgid "Failed to save offer: %s"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:215
+#: app/Admin/Offers/OfferEditPage.php:248
 msgid "Offer saved."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:269
+#: app/Admin/Offers/OfferEditPage.php:310
 msgid "Required basics"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:274
+#: app/Admin/Offers/OfferEditPage.php:315
 msgid "Targeting rules"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:279
-msgid "Recommendations"
-msgstr ""
-
-#: app/Admin/Offers/OfferEditPage.php:284
+#: app/Admin/Offers/OfferEditPage.php:320
 msgid "Discount"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:289
+#: app/Admin/Offers/OfferEditPage.php:325
 msgid "Display settings"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:294
+#: app/Admin/Offers/OfferEditPage.php:330
 msgid "Schedule and priority"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:299
+#: app/Admin/Offers/OfferEditPage.php:335
 msgid "Advanced metadata"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:315
+#: app/Admin/Offers/OfferEditPage.php:351
 msgid "Choose the product shoppers can add from this offer. Product and stock are validated again before cart changes."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:316
+#: app/Admin/Offers/OfferEditPage.php:352
 msgid "Rules narrow when an offer appears. Leave them empty for a simple first offer."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:317
-msgid "Discounts are calculated server-side from the product price. Shopper-sent prices are ignored."
+#: app/Admin/Offers/OfferEditPage.php:353
+msgid "Discounts are calculated server-side from the selected product price. The updated price preview below the discount fields refreshes as you edit."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:318
+#: app/Admin/Offers/OfferEditPage.php:354
 msgid "Priority controls which eligible offer wins when a placement has a display limit."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:319
+#: app/Admin/Offers/OfferEditPage.php:355
 msgid "Test mode lets admins preview offers before shoppers can see them."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:320
+#: app/Admin/Offers/OfferEditPage.php:356
 msgid "Compatibility notices flag checkout plugins that may alter the placement area."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:339
+#: app/Admin/Offers/OfferEditPage.php:375
 msgid "Offer targeting rules"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:407
+#: app/Admin/Offers/OfferEditPage.php:450
 msgid "To ensure reliable previews, this links to the offered product's page. The actual offer will appear on your targeted products based on active rules."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:409
+#: app/Admin/Offers/OfferEditPage.php:452
 msgid "Previews use your most recent WooCommerce order. If you haven't placed an order yet, you may need to complete a test checkout first."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:411
+#: app/Admin/Offers/OfferEditPage.php:454
 msgid "Links directly to your cart page. Add an item to your cart to see the offer preview."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:413
+#: app/Admin/Offers/OfferEditPage.php:456
 msgid "Links directly to your checkout page. You must have an item in your cart to view checkout."
 msgstr ""
 
 #. translators: %d: offer ID
-#: app/Admin/Offers/OfferEditPage.php:419
+#: app/Admin/Offers/OfferEditPage.php:462
 #, php-format
 msgid "UpsellBay Offer: ID - %d"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:420
+#: app/Admin/Offers/OfferEditPage.php:463
 msgid "You can modify and save data"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:428
-#: app/Admin/Offers/OfferEditPage.php:434
-#: app/Admin/Offers/OffersPage.php:161
+#: app/Admin/Offers/OfferEditPage.php:474
+#: app/Admin/Offers/OfferEditPage.php:480
 #: app/Admin/Offers/OffersPage.php:163
+#: app/Admin/Offers/OffersPage.php:165
 msgid "View Live"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:450
+#: app/Admin/Offers/OfferEditPage.php:490
 msgid "Add UpsellBay Offer"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:479
+#: app/Admin/Offers/OfferEditPage.php:519
 msgid "Save offer"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:480
+#: app/Admin/Offers/OfferEditPage.php:520
 msgid "Back to offers"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:484
-#: app/Admin/Offers/OffersPage.php:166
+#: app/Admin/Offers/OfferEditPage.php:524
+#: app/Admin/Offers/OffersPage.php:168
 msgid "Delete Offer"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:484
-#: app/Admin/Offers/OffersPage.php:166
+#: app/Admin/Offers/OfferEditPage.php:524
+#: app/Admin/Offers/OffersPage.php:168
 msgid "Are you sure you want to permanently delete this offer? This cannot be undone."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:484
-#: app/Admin/Offers/OffersPage.php:166
+#: app/Admin/Offers/OfferEditPage.php:524
+#: app/Admin/Offers/OffersPage.php:168
 #: app/Admin/Settings/LogsListTable.php:225
 #: app/Admin/Settings/LogsListTable.php:227
 #: app/Admin/Settings/LogsListTable.php:284
 msgid "Delete"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:484
-#: app/Admin/Offers/OffersPage.php:166
+#: app/Admin/Offers/OfferEditPage.php:524
+#: app/Admin/Offers/OffersPage.php:168
 #: app/Admin/Settings/LogsListTable.php:226
 #: app/Admin/Settings/SettingsPage.php:416
 #: app/Admin/Settings/SettingsPage.php:598
 msgid "Cancel"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:484
+#: app/Admin/Offers/OfferEditPage.php:524
 msgid "Delete offer"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:501
+#: app/Admin/Offers/OfferEditPage.php:623
 msgid "Offer name"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:502
-#: app/Admin/Offers/OffersPage.php:140
+#: app/Admin/Offers/OfferEditPage.php:624
+#: app/Admin/Offers/OffersPage.php:142
+#: app/Admin/Offers/OfferVisibilityPanel.php:76
 #: app/Admin/Settings/LogsListTable.php:119
 #: app/Admin/Settings/LogsSectionRenderer.php:174
 #: app/Admin/Settings/SettingsPage.php:557
 msgid "Status"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:503
+#: app/Admin/Offers/OfferEditPage.php:625
 msgid "Offer type"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:504
+#: app/Admin/Offers/OfferEditPage.php:626
 #: templates/admin/wizard.php:52
 msgid "Offer product"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:505
+#: app/Admin/Offers/OfferEditPage.php:627
 #: templates/admin/wizard.php:66
 msgid "Headline"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:506
+#: app/Admin/Offers/OfferEditPage.php:628
 msgid "Body text"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:507
+#: app/Admin/Offers/OfferEditPage.php:629
 msgid "Button text"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:508
+#: app/Admin/Offers/OfferEditPage.php:630
 msgid "Rule matching"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:509
+#: app/Admin/Offers/OfferEditPage.php:631
 msgid "Rules"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:510
+#: app/Admin/Offers/OfferEditPage.php:632
 msgid "Discount type"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:511
+#: app/Admin/Offers/OfferEditPage.php:633
 msgid "Discount value"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:512
+#: app/Admin/Offers/OfferEditPage.php:634
 msgid "Show product image"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:513
+#: app/Admin/Offers/OfferEditPage.php:635
 msgid "Display position"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:514
+#: app/Admin/Offers/OfferEditPage.php:636
 msgid "Start date"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:515
+#: app/Admin/Offers/OfferEditPage.php:637
 msgid "End date"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:516
-#: app/Admin/Offers/OffersPage.php:142
+#: app/Admin/Offers/OfferEditPage.php:638
+#: app/Admin/Offers/OffersPage.php:144
 msgid "Priority"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:517
+#: app/Admin/Offers/OfferEditPage.php:639
 msgid "Performance"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:518
+#: app/Admin/Offers/OfferEditPage.php:640
 msgid "Trigger product IDs"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:519
+#: app/Admin/Offers/OfferEditPage.php:641
 msgid "Trigger category IDs"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:520
+#: app/Admin/Offers/OfferEditPage.php:642
 msgid "Offer goal"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:521
+#: app/Admin/Offers/OfferEditPage.php:643
 msgid "Reason label"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:522
-msgid "Assistant suggestions"
+#: app/Admin/Offers/OfferEditPage.php:644
+msgid "Section heading"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:523
+#: app/Admin/Offers/OfferEditPage.php:645
 msgid "Conflict override"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:524
+#: app/Admin/Offers/OfferEditPage.php:646
 msgid "Conflict override reason"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:530
+#: app/Admin/Offers/OfferEditPage.php:654
 msgid "Required"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:545
-msgid "Select a primary target product above to see AI/WooCommerce product recommendations here."
-msgstr ""
-
-#: app/Admin/Offers/OfferEditPage.php:553
+#: app/Admin/Offers/OfferEditPage.php:664
 msgid "Select an offer type"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:565
+#: app/Admin/Offers/OfferEditPage.php:676
 msgid "All rules"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:566
+#: app/Admin/Offers/OfferEditPage.php:677
 msgid "Any rule"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:572
-#: app/Admin/Offers/OffersPage.php:423
+#: app/Admin/Offers/OfferEditPage.php:683
+#: app/Admin/Offers/OffersPage.php:525
 msgid "Draft"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:573
-#: app/Admin/Offers/OffersPage.php:421
+#: app/Admin/Offers/OfferEditPage.php:684
+#: app/Admin/Offers/OffersPage.php:523
 #: app/Admin/Settings/SettingsPage.php:625
 msgid "Active"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:574
-#: app/Admin/Offers/OffersPage.php:422
+#: app/Admin/Offers/OfferEditPage.php:685
+#: app/Admin/Offers/OffersPage.php:524
 msgid "Paused"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:580
+#: app/Admin/Offers/OfferEditPage.php:691
 msgid "Draft offers are only visible in the admin. Active offers are shown to shoppers. Paused offers are temporarily hidden."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:585
+#: app/Admin/Offers/OfferEditPage.php:696
 msgid "Add-on (Complementary item)"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:586
+#: app/Admin/Offers/OfferEditPage.php:697
 msgid "Upgrade (Better version)"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:587
+#: app/Admin/Offers/OfferEditPage.php:698
 msgid "Protection (Warranty/Insurance)"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:588
+#: app/Admin/Offers/OfferEditPage.php:699
 msgid "Threshold Helper (Free shipping/discount)"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:589
+#: app/Admin/Offers/OfferEditPage.php:700
 msgid "Follow-on (Post-purchase)"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:595
+#: app/Admin/Offers/OfferEditPage.php:706
 msgid "Defines the primary intent of this offer. Used for conflict resolution and performance tracking."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:598
+#: app/Admin/Offers/OfferEditPage.php:709
 msgid "No discount"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:599
+#: app/Admin/Offers/OfferEditPage.php:710
 msgid "Percentage"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:600
+#: app/Admin/Offers/OfferEditPage.php:711
 msgid "Fixed amount off"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:601
+#: app/Admin/Offers/OfferEditPage.php:712
 msgid "Fixed offer price"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:605
+#: app/Admin/Offers/OfferEditPage.php:714
+msgid "Choose the discount method first. The updated price preview below will refresh automatically."
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:717
 msgid "Optional short description shown below the headline. Max 240 characters. Supports limited HTML: links, line breaks, bold, italic."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:607
+#: app/Admin/Offers/OfferEditPage.php:720
+msgid "Controls the heading shown above the cart offer list in block and classic checkout. Leave blank to use the default Recommended for you."
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:722
 msgid "Show the WooCommerce product image when available."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:609
+#: app/Admin/Offers/OfferEditPage.php:724
 msgid "Override conflict prevention (advanced)"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:610
+#: app/Admin/Offers/OfferEditPage.php:725
 msgid "If checked, this offer may show even if it conflicts with another offer or the current cart state. Use with caution."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:614
+#: app/Admin/Offers/OfferEditPage.php:742
 #: templates/admin/wizard.php:56
 msgid "Search for a product..."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:615
+#: app/Admin/Offers/OfferEditPage.php:743
 #: templates/admin/wizard.php:57
 msgid "Clear search"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:640
+#: app/Admin/Offers/OfferEditPage.php:771
 msgid "Lower numbers appear first when multiple offers are eligible for the same placement."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:645
+#: app/Admin/Offers/OfferEditPage.php:776
 msgid "Comma-separated product IDs. When set, this offer only appears if one of these products is in the cart or being viewed."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:647
+#: app/Admin/Offers/OfferEditPage.php:778
 msgid "Comma-separated category IDs. When set, this offer only appears if a product from one of these categories is in the cart or being viewed."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:690
+#: app/Admin/Offers/OfferEditPage.php:818
+msgid "Updated price"
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:836
+#: app/Admin/Offers/OfferEditPage.php:845
+msgid "Select a product to preview the updated price."
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:837
+#: app/Admin/Offers/OfferEditPage.php:846
+msgid "The discount preview uses the selected product price."
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:856
+msgid "This product does not expose a numeric price yet."
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:857
+msgid "Pick a priced product to preview the discount outcome."
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:865
+msgid "Unable to calculate the updated price for this configuration."
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:866
+msgid "Double-check the selected discount values and try again."
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:886
+#: app/Admin/Offers/OfferEditPage.php:893
+#: app/Admin/Offers/OfferEditPage.php:910
+msgid "Variable products show the lowest and highest variation prices until a variation is selected on the storefront."
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:902
+msgid "No discount is applied, so the current product price is shown here."
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:911
+msgid "This is the price shoppers will see after the selected discount is applied."
+msgstr ""
+
+#: app/Admin/Offers/OfferEditPage.php:1013
 msgid "Custom saved position"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:696
+#: app/Admin/Offers/OfferEditPage.php:1019
 msgid "Choose from the predefined display positions. This updates the saved placement config without changing WooCommerce hook registration."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:698
+#: app/Admin/Offers/OfferEditPage.php:1021
 msgid "Advanced JSON"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:700
+#: app/Admin/Offers/OfferEditPage.php:1023
 msgid "Advanced users can add extra placement config keys here. The position selector preserves unknown keys when possible."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:803
-#: app/Admin/Offers/OffersPage.php:387
-#: app/Admin/Offers/OffersPage.php:405
+#: app/Admin/Offers/OfferEditPage.php:1127
+#: app/Admin/Offers/OffersPage.php:489
+#: app/Admin/Offers/OffersPage.php:507
 #: app/Admin/Settings/SettingsPage.php:722
-#: app/Domain/Offers/OfferSchema.php:93
+#: app/Domain/Offers/OfferSchema.php:94
 #: templates/admin/wizard.php:44
 msgid "Checkout bump"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:804
-#: app/Admin/Offers/OffersPage.php:388
-#: app/Admin/Offers/OffersPage.php:406
+#: app/Admin/Offers/OfferEditPage.php:1128
+#: app/Admin/Offers/OffersPage.php:490
+#: app/Admin/Offers/OffersPage.php:508
 #: app/Admin/Settings/SettingsPage.php:712
-#: app/Domain/Offers/OfferSchema.php:94
+#: app/Domain/Offers/OfferSchema.php:95
 #: templates/admin/wizard.php:45
 msgid "Product page offer"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:805
-#: app/Admin/Offers/OffersPage.php:389
-#: app/Admin/Offers/OffersPage.php:407
+#: app/Admin/Offers/OfferEditPage.php:1129
+#: app/Admin/Offers/OffersPage.php:491
+#: app/Admin/Offers/OffersPage.php:509
 #: app/Admin/Settings/SettingsPage.php:717
 #: templates/admin/wizard.php:46
 msgid "Cart offer"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:806
+#: app/Admin/Offers/OfferEditPage.php:1130
 #: templates/admin/wizard.php:47
 msgid "Thank-you follow-on offer"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:819
+#: app/Admin/Offers/OfferEditPage.php:1143
 msgid "A checkout bump is a last-step add-on shown on checkout before Place order. Shoppers can add it without leaving checkout. It appears when the offer is active, its rules match the current cart or checkout context, and the offered product is available."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:820
+#: app/Admin/Offers/OfferEditPage.php:1144
 msgid "A product page offer is a related add-on shown near the add-to-cart area on matching product pages. It helps shoppers add a complementary item while considering a product. It appears when the offer is active, the viewed product matches your rules, and the offered product is available."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:821
+#: app/Admin/Offers/OfferEditPage.php:1145
 msgid "A cart offer is a cross-sell shown while shoppers review their cart. It recommends an extra item before they continue to checkout. It appears when the offer is active, the current cart matches your rules, and the offered product is available."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:822
+#: app/Admin/Offers/OfferEditPage.php:1146
 msgid "A thank-you follow-on offer is a post-purchase offer shown on the order received page after the main order is complete. It sends shoppers to a separate checkout for the extra item. It appears when the offer is active, the completed order matches your rules, and the offered product is available."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:908
+#: app/Admin/Offers/OfferEditPage.php:1251
 msgid "Performance stats will appear here after the offer is saved and starts receiving traffic."
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:934
+#: app/Admin/Offers/OfferEditPage.php:1277
 msgid "Total discounts"
 msgstr ""
 
-#: app/Admin/Offers/OfferEditPage.php:947
+#: app/Admin/Offers/OfferEditPage.php:1290
 msgid "All-time aggregate stats for this offer. For date-range analytics, use the Dashboard tab."
 msgstr ""
 
@@ -729,8 +779,8 @@ msgid "Offer sections"
 msgstr ""
 
 #: app/Admin/Offers/OfferSectionNavigation.php:61
-#: app/Admin/Settings/SettingsSectionNavigation.php:61
-msgid "General"
+#: app/Admin/Settings/LogsSectionRenderer.php:169
+msgid "Overview"
 msgstr ""
 
 #: app/Admin/Offers/OffersPage.php:77
@@ -749,107 +799,198 @@ msgstr ""
 msgid "Open setup wizard"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:138
+#: app/Admin/Offers/OffersPage.php:140
 msgid "Offer"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:139
+#: app/Admin/Offers/OffersPage.php:141
 #: templates/admin/wizard.php:41
 msgid "Placement"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:141
+#: app/Admin/Offers/OffersPage.php:143
 msgid "Health"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:145
+#: app/Admin/Offers/OffersPage.php:147
 msgid "Revenue"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:158
+#: app/Admin/Offers/OffersPage.php:160
 msgid "Edit"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:170
+#: app/Admin/Offers/OffersPage.php:172
 msgid "No conflicts"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:170
+#: app/Admin/Offers/OffersPage.php:172
 msgid "Placement crowding or funnel overlap detected"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:221
+#: app/Admin/Offers/OffersPage.php:202
+msgid "Offers Overview"
+msgstr ""
+
+#: app/Admin/Offers/OffersPage.php:206
+msgid "Total offers"
+msgstr ""
+
+#: app/Admin/Offers/OffersPage.php:206
+msgid "All published UpsellBay offers stored in the private offer library."
+msgstr ""
+
+#: app/Admin/Offers/OffersPage.php:207
+msgid "Offers currently eligible to render when their rules and placement match."
+msgstr ""
+
+#: app/Admin/Offers/OffersPage.php:208
+msgid "Paused offers"
+msgstr ""
+
+#: app/Admin/Offers/OffersPage.php:208
+msgid "Offers saved for later but currently disabled from live rendering."
+msgstr ""
+
+#: app/Admin/Offers/OffersPage.php:209
+msgid "Draft offers"
+msgstr ""
+
+#: app/Admin/Offers/OffersPage.php:209
+msgid "Unpublished or unfinished offers that are not yet live."
+msgstr ""
+
+#: app/Admin/Offers/OffersPage.php:210
+msgid "Active offers with conflicts"
+msgstr ""
+
+#: app/Admin/Offers/OffersPage.php:210
+msgid "Active offers with detected placement crowding or funnel overlap."
+msgstr ""
+
+#. translators: 1: total offers, 2: active offers, 3: paused offers, 4: draft offers.
+#: app/Admin/Offers/OffersPage.php:226
+#, php-format
+msgid "%1$d total offers: %2$d active, %3$d paused, %4$d draft."
+msgstr ""
+
+#: app/Admin/Offers/OffersPage.php:246
+msgid "None"
+msgstr ""
+
+#: app/Admin/Offers/OffersPage.php:323
 msgid "All placements"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:222
+#: app/Admin/Offers/OffersPage.php:324
 #: app/Admin/Settings/LogsListTable.php:261
 msgid "All statuses"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:223
+#: app/Admin/Offers/OffersPage.php:325
 msgid "All health states"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:224
+#: app/Admin/Offers/OffersPage.php:326
 #: app/Admin/Settings/LogsListTable.php:271
 msgid "Filter"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:228
+#: app/Admin/Offers/OffersPage.php:330
 msgid "Clear"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:234
-#: app/Admin/Offers/OffersPage.php:236
+#: app/Admin/Offers/OffersPage.php:336
+#: app/Admin/Offers/OffersPage.php:338
 msgid "Search offers"
 msgstr ""
 
 #. translators: %s: number of offers.
-#: app/Admin/Offers/OffersPage.php:326
+#: app/Admin/Offers/OffersPage.php:428
 #, php-format
 msgid "%s item"
 msgstr ""
 
 #. translators: %s: number of offers.
-#: app/Admin/Offers/OffersPage.php:326
+#: app/Admin/Offers/OffersPage.php:428
 #, php-format
 msgid "%s items"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:334
+#: app/Admin/Offers/OffersPage.php:436
 msgid "First page"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:335
+#: app/Admin/Offers/OffersPage.php:437
 msgid "Previous page"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:338
+#: app/Admin/Offers/OffersPage.php:440
 msgid "of"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:344
+#: app/Admin/Offers/OffersPage.php:446
 msgid "Next page"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:345
+#: app/Admin/Offers/OffersPage.php:447
 msgid "Last page"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:390
-#: app/Admin/Offers/OffersPage.php:408
+#: app/Admin/Offers/OffersPage.php:492
+#: app/Admin/Offers/OffersPage.php:510
 #: app/Admin/Settings/SettingsPage.php:727
-#: app/Domain/Offers/OfferSchema.php:96
+#: app/Domain/Offers/OfferSchema.php:97
 msgid "Thank-you offer"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:436
+#: app/Admin/Offers/OffersPage.php:538
 msgid "Healthy"
 msgstr ""
 
-#: app/Admin/Offers/OffersPage.php:437
+#: app/Admin/Offers/OffersPage.php:539
 msgid "Warnings"
+msgstr ""
+
+#: app/Admin/Offers/OfferVisibilityPanel.php:63
+msgid "Blocked"
+msgstr ""
+
+#: app/Admin/Offers/OfferVisibilityPanel.php:64
+msgid "Issues found"
+msgstr ""
+
+#: app/Admin/Offers/OfferVisibilityPanel.php:65
+msgid "All clear"
+msgstr ""
+
+#: app/Admin/Offers/OfferVisibilityPanel.php:70
+msgid "Visibility Inspector"
+msgstr ""
+
+#: app/Admin/Offers/OfferVisibilityPanel.php:75
+msgid "Preview readiness:"
+msgstr ""
+
+#: app/Admin/Offers/OfferVisibilityPanel.php:76
+msgid "Check"
+msgstr ""
+
+#: app/Admin/Offers/OfferVisibilityPanel.php:76
+#: app/Admin/Settings/LogsListTable.php:219
+msgid "Details"
+msgstr ""
+
+#: app/Admin/Offers/OfferVisibilityPanel.php:118
+msgid "Fail"
+msgstr ""
+
+#: app/Admin/Offers/OfferVisibilityPanel.php:119
+msgid "Warn"
+msgstr ""
+
+#: app/Admin/Offers/OfferVisibilityPanel.php:120
+msgid "Pass"
 msgstr ""
 
 #: app/Admin/PluginActionLinks.php:58
@@ -860,11 +1001,19 @@ msgstr ""
 msgid "Docs"
 msgstr ""
 
-#: app/Admin/PreviewLinks.php:77
+#: app/Admin/PreviewLinks.php:63
+msgid "Checkout preview requires at least one item in the cart before the bump area can render."
+msgstr ""
+
+#: app/Admin/PreviewLinks.php:71
+msgid "Checkout preview is unavailable because the offered product is already in the cart and the bump would be hidden."
+msgstr ""
+
+#: app/Admin/PreviewLinks.php:94
 msgid "Preview is unavailable until the placement has enough context, such as a product URL or saved test order."
 msgstr ""
 
-#: app/Admin/PreviewLinks.php:96
+#: app/Admin/PreviewLinks.php:113
 msgid "Open this as an admin while test mode is enabled."
 msgstr ""
 
@@ -918,10 +1067,6 @@ msgstr ""
 
 #: app/Admin/Settings/LogsListTable.php:217
 msgid "Copy"
-msgstr ""
-
-#: app/Admin/Settings/LogsListTable.php:219
-msgid "Details"
 msgstr ""
 
 #: app/Admin/Settings/LogsListTable.php:223
@@ -1008,10 +1153,6 @@ msgstr ""
 
 #: app/Admin/Settings/LogsSectionRenderer.php:154
 msgid "Back to Logs"
-msgstr ""
-
-#: app/Admin/Settings/LogsSectionRenderer.php:169
-msgid "Overview"
 msgstr ""
 
 #: app/Admin/Settings/LogsSectionRenderer.php:175
@@ -1312,28 +1453,32 @@ msgstr ""
 msgid "Settings sections"
 msgstr ""
 
-#: app/Admin/Tools/ToolsPage.php:99
+#: app/Admin/Settings/SettingsSectionNavigation.php:61
+msgid "General"
+msgstr ""
+
+#: app/Admin/Tools/ToolsPage.php:115
 msgid "Import offers when you have a JSON export"
 msgstr ""
 
-#: app/Admin/Tools/ToolsPage.php:100
+#: app/Admin/Tools/ToolsPage.php:116
 msgid "Agencies can move reviewed offer definitions between stores without copying site-specific product IDs blindly."
 msgstr ""
 
-#: app/Admin/Tools/ToolsPage.php:103
-#: app/Admin/Tools/ToolsPage.php:136
+#: app/Admin/Tools/ToolsPage.php:119
+#: app/Admin/Tools/ToolsPage.php:155
 msgid "Import offers"
 msgstr ""
 
-#: app/Admin/Tools/ToolsPage.php:127
+#: app/Admin/Tools/ToolsPage.php:146
 msgid "System diagnostics"
 msgstr ""
 
-#: app/Admin/Tools/ToolsPage.php:138
+#: app/Admin/Tools/ToolsPage.php:157
 msgid "Offer import JSON"
 msgstr ""
 
-#: app/Admin/Tools/ToolsPage.php:139
+#: app/Admin/Tools/ToolsPage.php:158
 msgid "Validate import"
 msgstr ""
 
@@ -1367,52 +1512,56 @@ msgstr ""
 msgid "License key is required."
 msgstr ""
 
-#: app/Api/Routes/PublicOfferRoutes.php:234
-#: app/Api/Routes/PublicOfferRoutes.php:276
+#: app/Api/Routes/PublicOfferRoutes.php:262
+#: app/Api/Routes/PublicOfferRoutes.php:304
 msgid "Offer not found."
 msgstr ""
 
-#: app/Api/Routes/PublicOfferRoutes.php:294
+#: app/Api/Routes/PublicOfferRoutes.php:322
+msgid "This order could not be verified for the follow-on offer."
+msgstr ""
+
+#: app/Api/Routes/PublicOfferRoutes.php:340
 #: assets/frontend/storefront.js:1
-#: src/storefront/index.js:122
+#: src/storefront/index.js:135
 msgid "Offer added to your cart."
 msgstr ""
 
-#: app/Api/Routes/PublicOfferRoutes.php:311
+#: app/Api/Routes/PublicOfferRoutes.php:357
 msgid "This product is currently out of stock."
 msgstr ""
 
-#: app/Api/Routes/PublicOfferRoutes.php:312
+#: app/Api/Routes/PublicOfferRoutes.php:358
 msgid "This product is not currently available for purchase."
 msgstr ""
 
-#: app/Api/Routes/PublicOfferRoutes.php:313
+#: app/Api/Routes/PublicOfferRoutes.php:359
 msgid "This product could not be found."
 msgstr ""
 
-#: app/Api/Routes/PublicOfferRoutes.php:314
+#: app/Api/Routes/PublicOfferRoutes.php:360
 msgid "You are no longer eligible for this offer."
 msgstr ""
 
-#: app/Api/Routes/PublicOfferRoutes.php:315
+#: app/Api/Routes/PublicOfferRoutes.php:361
 msgid "This offer is not valid for this placement."
 msgstr ""
 
-#: app/Api/Routes/PublicOfferRoutes.php:316
+#: app/Api/Routes/PublicOfferRoutes.php:362
 msgid "Discounts cannot be applied to subscription products."
 msgstr ""
 
-#: app/Api/Routes/PublicOfferRoutes.php:317
+#: app/Api/Routes/PublicOfferRoutes.php:363
 #: assets/frontend/storefront.js:1
-#: src/storefront/index.js:108
+#: src/storefront/index.js:118
 msgid "Unable to add this offer. Please try again."
 msgstr ""
 
-#: app/Api/Routes/PublicOfferRoutes.php:374
+#: app/Api/Routes/PublicOfferRoutes.php:525
 msgid "Invalid session token."
 msgstr ""
 
-#: app/Api/Routes/PublicOfferRoutes.php:385
+#: app/Api/Routes/PublicOfferRoutes.php:536
 msgid "Too many requests."
 msgstr ""
 
@@ -1424,152 +1573,158 @@ msgstr ""
 msgid "UpsellBay Offer"
 msgstr ""
 
-#: app/Core/Plugin.php:560
-#: app/Core/Plugin.php:593
-#: app/Core/Plugin.php:627
+#: app/Core/Plugin.php:567
+#: app/Core/Plugin.php:600
+#: app/Core/Plugin.php:634
 msgid "You do not have permission to manage licenses."
 msgstr ""
 
-#: app/Core/Plugin.php:577
+#: app/Core/Plugin.php:584
 msgid "License activated successfully."
 msgstr ""
 
-#: app/Core/Plugin.php:599
+#: app/Core/Plugin.php:606
 msgid "License removed by user"
 msgstr ""
 
-#: app/Core/Plugin.php:610
+#: app/Core/Plugin.php:617
 msgid "Local license data removed."
 msgstr ""
 
 #. translators: %s: validity status
-#: app/Core/Plugin.php:637
+#: app/Core/Plugin.php:644
 #, php-format
 msgid "Manual license check performed. Status: %s"
 msgstr ""
 
-#: app/Core/Plugin.php:645
+#: app/Core/Plugin.php:652
 msgid "License check complete: valid."
 msgstr ""
 
-#: app/Core/Plugin.php:647
+#: app/Core/Plugin.php:654
 msgid "License check failed: inactive."
 msgstr ""
 
-#: app/Core/Plugin.php:663
+#: app/Core/Plugin.php:670
 msgid "You do not have permission to manage offers."
 msgstr ""
 
-#: app/Core/Plugin.php:674
+#: app/Core/Plugin.php:681
 msgid "Offer deleted."
 msgstr ""
 
-#: app/Core/Plugin.php:689
+#: app/Core/Plugin.php:696
 msgid "You do not have permission to manage data."
 msgstr ""
 
-#: app/Core/Plugin.php:697
+#: app/Core/Plugin.php:704
 msgid "All UpsellBay data has been permanently deleted and reset to defaults."
 msgstr ""
 
-#: app/Core/Plugin.php:790
+#: app/Core/Plugin.php:797
 msgid "Your UpsellBay license has expired. Renew your license to restore updates and support."
 msgstr ""
 
-#: app/Core/Plugin.php:791
+#: app/Core/Plugin.php:798
 msgid "The UpsellBay license key on this site is invalid. Please verify and re-enter your license key."
 msgstr ""
 
-#: app/Core/Plugin.php:792
+#: app/Core/Plugin.php:799
 msgid "UpsellBay could not verify your license because the license server is unreachable. Offers will keep running, but updates and support checks are suspended."
 msgstr ""
 
-#: app/Core/Plugin.php:793
+#: app/Core/Plugin.php:800
 msgid "UpsellBay license is not activated. Activate your license key to receive updates and support."
 msgstr ""
 
-#: app/Core/Plugin.php:807
+#: app/Core/Plugin.php:814
 msgid "Manage License"
 msgstr ""
 
-#: app/Core/Plugin.php:850
+#: app/Core/Plugin.php:857
 msgid "UpsellBay settings updated"
 msgstr ""
 
 #. translators: %d: offer ID
-#: app/Core/Plugin.php:869
+#: app/Core/Plugin.php:876
 #, php-format
 msgid "Offer #%d created"
 msgstr ""
 
 #. translators: %d: offer ID
-#: app/Core/Plugin.php:891
+#: app/Core/Plugin.php:898
 #, php-format
 msgid "Offer #%d updated"
 msgstr ""
 
 #. translators: %d: offer ID
-#: app/Core/Plugin.php:912
+#: app/Core/Plugin.php:919
 #, php-format
 msgid "Offer #%d deleted"
 msgstr ""
 
 #. translators: 1: offer ID, 2: placement
-#: app/Core/Plugin.php:934
+#: app/Core/Plugin.php:941
 #, php-format
 msgid "Offer #%1$d accepted at %2$s"
 msgstr ""
 
 #. translators: 1: offer ID, 2: placement
-#: app/Core/Plugin.php:958
+#: app/Core/Plugin.php:965
 #, php-format
 msgid "Offer #%1$d dismissed at %2$s"
 msgstr ""
 
 #. translators: 1: endpoint, 2: reason
-#: app/Core/Plugin.php:982
+#: app/Core/Plugin.php:989
 #, php-format
 msgid "API request to %1$s failed (%2$s)"
 msgstr ""
 
 #. translators: %s: license key suffix
-#: app/Core/Plugin.php:1000
+#: app/Core/Plugin.php:1007
 #, php-format
 msgid "License activated successfully: %s"
 msgstr ""
 
 #. translators: %s: error code
-#: app/Core/Plugin.php:1053
+#: app/Core/Plugin.php:1060
 #, php-format
 msgid "License activation failed: %s"
 msgstr ""
 
 #. translators: %s: error code
-#: app/Core/Plugin.php:1096
+#: app/Core/Plugin.php:1103
 #, php-format
 msgid "Background license check failed: %s"
 msgstr ""
 
 #. translators: 1: offer ID, 2: placement
-#: app/Core/Plugin.php:1115
+#: app/Core/Plugin.php:1126
 #, php-format
 msgid "Offer #%1$d rendered at %2$s"
 msgstr ""
 
 #. translators: 1: offer ID, 2: placement
-#: app/Core/Plugin.php:1143
+#: app/Core/Plugin.php:1158
+#, php-format
+msgid "Offer #%1$d skipped at %2$s"
+msgstr ""
+
+#. translators: 1: offer ID, 2: placement
+#: app/Core/Plugin.php:1187
 #, php-format
 msgid "Attribution written for Offer #%1$d at %2$s"
 msgstr ""
 
 #. translators: 1: order ID, 2: source order ID
-#: app/Core/Plugin.php:1169
+#: app/Core/Plugin.php:1213
 #, php-format
 msgid "Follow-on order #%1$d created from order #%2$d"
 msgstr ""
 
 #. translators: 1: offer ID, 2: date
-#: app/Core/Plugin.php:1194
+#: app/Core/Plugin.php:1238
 #, php-format
 msgid "Stats reconciled for Offer #%1$d on %2$s"
 msgstr ""
@@ -1598,88 +1753,265 @@ msgstr ""
 msgid "Offer #%d"
 msgstr ""
 
-#: app/Domain/Offers/OfferDefaults.php:68
+#: app/Domain/Offers/OfferDefaults.php:69
 msgid "Special Offer"
 msgstr ""
 
-#: app/Domain/Offers/OfferDefaults.php:69
-msgid "Complete your order with this add-on"
-msgstr ""
-
 #: app/Domain/Offers/OfferDefaults.php:70
-msgid "Add a relevant product before placing the order."
+#: app/Domain/Offers/OfferDefaults.php:78
+#: app/Domain/Offers/OfferDefaults.php:86
+#: app/Domain/Offers/OfferDefaults.php:94
+#: app/Domain/Storefront/CartCrossSellRenderer.php:74
+#: app/Domain/Storefront/ProductPageRenderer.php:74
+#: assets/admin/js/upsellbay-offer-editor.js:1
+#: assets/frontend/block-checkout.js:1
+#: src/admin/offer-editor/index.js:480
+#: src/admin/offer-editor/index.js:485
+#: src/admin/offer-editor/index.js:490
+#: src/admin/offer-editor/index.js:495
+#: src/block-checkout/cart-cross-sells.js:133
+msgid "Recommended for you"
 msgstr ""
 
 #: app/Domain/Offers/OfferDefaults.php:71
+#: assets/admin/js/upsellbay-offer-editor.js:1
+#: src/admin/offer-editor/index.js:481
+msgid "Complete your order with this add-on"
+msgstr ""
+
+#: app/Domain/Offers/OfferDefaults.php:72
+msgid "Add a relevant product before placing the order."
+msgstr ""
+
+#: app/Domain/Offers/OfferDefaults.php:73
+#: assets/admin/js/upsellbay-offer-editor.js:1
+#: src/admin/offer-editor/index.js:482
 msgid "Add to order"
 msgstr ""
 
-#: app/Domain/Offers/OfferDefaults.php:75
+#: app/Domain/Offers/OfferDefaults.php:77
 msgid "Recommended"
 msgstr ""
 
-#: app/Domain/Offers/OfferDefaults.php:76
+#: app/Domain/Offers/OfferDefaults.php:79
+#: assets/admin/js/upsellbay-offer-editor.js:1
+#: src/admin/offer-editor/index.js:486
 msgid "Frequently bought with this product"
 msgstr ""
 
-#: app/Domain/Offers/OfferDefaults.php:77
+#: app/Domain/Offers/OfferDefaults.php:80
 msgid "Show a relevant add-on on the product page."
 msgstr ""
 
-#: app/Domain/Offers/OfferDefaults.php:78
+#: app/Domain/Offers/OfferDefaults.php:81
+#: assets/admin/js/upsellbay-offer-editor.js:1
+#: src/admin/offer-editor/index.js:487
 msgid "Add item"
 msgstr ""
 
-#: app/Domain/Offers/OfferDefaults.php:82
+#: app/Domain/Offers/OfferDefaults.php:85
 msgid "Most Popular"
 msgstr ""
 
-#: app/Domain/Offers/OfferDefaults.php:83
+#: app/Domain/Offers/OfferDefaults.php:87
+#: assets/admin/js/upsellbay-offer-editor.js:1
+#: src/admin/offer-editor/index.js:491
 msgid "Recommended for your cart"
 msgstr ""
 
-#: app/Domain/Offers/OfferDefaults.php:84
+#: app/Domain/Offers/OfferDefaults.php:88
 msgid "Offer a useful add-on while the shopper reviews the cart."
 msgstr ""
 
-#: app/Domain/Offers/OfferDefaults.php:85
+#: app/Domain/Offers/OfferDefaults.php:89
+#: assets/admin/js/upsellbay-offer-editor.js:1
+#: src/admin/offer-editor/index.js:492
 msgid "Add to cart"
 msgstr ""
 
-#: app/Domain/Offers/OfferDefaults.php:89
+#: app/Domain/Offers/OfferDefaults.php:93
 msgid "Exclusive"
 msgstr ""
 
-#: app/Domain/Offers/OfferDefaults.php:90
+#: app/Domain/Offers/OfferDefaults.php:95
+#: assets/admin/js/upsellbay-offer-editor.js:1
+#: src/admin/offer-editor/index.js:496
 msgid "Add another useful item"
 msgstr ""
 
-#: app/Domain/Offers/OfferDefaults.php:91
+#: app/Domain/Offers/OfferDefaults.php:96
 msgid "Send shoppers to a separate checkout for this follow-on offer."
 msgstr ""
 
-#: app/Domain/Offers/OfferDefaults.php:92
+#: app/Domain/Offers/OfferDefaults.php:97
+#: assets/admin/js/upsellbay-offer-editor.js:1
+#: src/admin/offer-editor/index.js:497
 msgid "View offer"
 msgstr ""
 
-#: app/Domain/Offers/OfferSchema.php:95
+#: app/Domain/Offers/OfferSchema.php:96
 msgid "Cart cross-sell"
 msgstr ""
 
-#: app/Domain/Offers/OfferSchema.php:118
+#: app/Domain/Offers/OfferSchema.php:119
 msgid "Checkout bump, before Place order"
 msgstr ""
 
-#: app/Domain/Offers/OfferSchema.php:119
+#: app/Domain/Offers/OfferSchema.php:120
 msgid "Product page, after add-to-cart form"
 msgstr ""
 
-#: app/Domain/Offers/OfferSchema.php:120
+#: app/Domain/Offers/OfferSchema.php:121
 msgid "Cart offer area"
 msgstr ""
 
-#: app/Domain/Offers/OfferSchema.php:121
+#: app/Domain/Offers/OfferSchema.php:122
 msgid "Thank-you follow-on area"
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:98
+msgid "UpsellBay enabled"
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:100
+msgid "Storefront rendering is enabled."
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:100
+msgid "UpsellBay is disabled globally."
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:106
+msgid "Placement enabled"
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:108
+msgid "This placement is disabled in settings."
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:108
+msgid "This placement is enabled in settings."
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:113
+msgid "Test mode visibility"
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:115
+msgid "Test mode is enabled. Only admins and preview-mode viewers can see this offer."
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:115
+msgid "Eligible shoppers can see this offer."
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:122
+#: app/Domain/Offers/OfferVisibilityInspector.php:130
+msgid "Offer configuration"
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:124
+msgid "The offer passes required configuration validation."
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:141
+#: app/Domain/Offers/OfferVisibilityInspector.php:149
+msgid "Current storefront eligibility"
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:143
+msgid "The offer is eligible in the current storefront context."
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:161
+#: app/Domain/Offers/OfferVisibilityInspector.php:172
+msgid "Placement competition"
+msgstr ""
+
+#. translators: %s: offer title
+#: app/Domain/Offers/OfferVisibilityInspector.php:165
+#, php-format
+msgid "Another eligible offer currently wins this placement: %s."
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:166
+msgid "Untitled offer"
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:174
+msgid "This offer currently wins its placement."
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:266
+msgid "Preview from an admin session while test mode is enabled."
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:274
+msgid "Checkout previews need at least one item in the cart before the bump area can render."
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:281
+msgid "The offered product is already in the cart, so the checkout bump is intentionally suppressed."
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:288
+msgid "The preview context is ready for this offer type."
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:317
+msgid "This offer is assigned to a different placement."
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:318
+msgid "The offer is not active yet."
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:319
+msgid "This offer was dismissed in the current session."
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:320
+msgid "The offered product is already in the cart, so the bump is hidden."
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:321
+msgid "The offer start date is in the future."
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:322
+msgid "The offer end date has passed."
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:323
+msgid "The offered product is missing."
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:324
+msgid "The offered product is not currently purchasable or in stock."
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:325
+msgid "The current cart does not match the trigger settings."
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:326
+msgid "The current shopper or cart context does not satisfy the offer rules."
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:327
+msgid "The offer is currently suppressed by storefront eligibility checks."
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:359
+msgid "This offer is blocked by configuration or environment checks."
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:360
+msgid "This offer is configured, but one or more conditions may prevent it from showing."
+msgstr ""
+
+#: app/Domain/Offers/OfferVisibilityInspector.php:361
+msgid "This offer is configured correctly and is eligible in the current context."
 msgstr ""
 
 #: app/Domain/Offers/ProductRecommendationAssistant.php:70
@@ -1698,23 +2030,105 @@ msgstr ""
 msgid "Previously accepted UpsellBay offer product."
 msgstr ""
 
+#: app/Domain/Rules/RuleDefinitions.php:162
+msgid "In stock"
+msgstr ""
+
+#: app/Domain/Rules/RuleDefinitions.php:163
+msgid "Out of stock"
+msgstr ""
+
+#: app/Domain/Rules/RuleDefinitions.php:164
+msgid "On backorder"
+msgstr ""
+
+#: app/Domain/Rules/RuleDefinitions.php:298
+msgid "Contains"
+msgstr ""
+
+#: app/Domain/Rules/RuleDefinitions.php:299
+msgid "Does not contain"
+msgstr ""
+
+#: app/Domain/Rules/RuleDefinitions.php:300
+msgid "Equals"
+msgstr ""
+
+#: app/Domain/Rules/RuleDefinitions.php:301
+msgid "Does not equal"
+msgstr ""
+
+#: app/Domain/Rules/RuleDefinitions.php:302
+msgid "Greater than"
+msgstr ""
+
+#: app/Domain/Rules/RuleDefinitions.php:303
+msgid "Greater than or equal to"
+msgstr ""
+
+#: app/Domain/Rules/RuleDefinitions.php:304
+msgid "Less than"
+msgstr ""
+
+#: app/Domain/Rules/RuleDefinitions.php:305
+msgid "Less than or equal to"
+msgstr ""
+
+#: app/Domain/Rules/RuleDefinitions.php:317
+msgid "Cart contains product"
+msgstr ""
+
+#: app/Domain/Rules/RuleDefinitions.php:318
+msgid "Cart contains category"
+msgstr ""
+
+#: app/Domain/Rules/RuleDefinitions.php:319
+msgid "Cart contains tag"
+msgstr ""
+
+#: app/Domain/Rules/RuleDefinitions.php:320
+msgid "Cart subtotal is"
+msgstr ""
+
+#: app/Domain/Rules/RuleDefinitions.php:321
+msgid "Currently viewing product"
+msgstr ""
+
+#: app/Domain/Rules/RuleDefinitions.php:322
+msgid "User role is"
+msgstr ""
+
+#: app/Domain/Rules/RuleDefinitions.php:323
+msgid "Customer order count is"
+msgstr ""
+
+#: app/Domain/Rules/RuleDefinitions.php:324
+msgid "Customer lifetime spend is"
+msgstr ""
+
+#: app/Domain/Rules/RuleDefinitions.php:325
+msgid "Offered product stock status is"
+msgstr ""
+
+#: app/Domain/Rules/RuleDefinitions.php:326
+msgid "Exclude if cart contains product"
+msgstr ""
+
 #: app/Domain/Storefront/AbstractOfferRenderer.php:234
+#: assets/frontend/block-checkout.js:1
+#: src/block-checkout/cart-cross-sells.js:117
 msgid "No thanks"
 msgstr ""
 
 #: app/Domain/Storefront/AbstractOfferRenderer.php:262
 #: assets/frontend/storefront.js:1
-#: src/storefront/index.js:120
+#: src/storefront/index.js:133
 msgid "Already in cart"
 msgstr ""
 
 #: app/Domain/Storefront/CartCrossSellRenderer.php:42
-#: app/Integrations/WooCommerce/StoreApiExtender.php:314
+#: app/Integrations/WooCommerce/StoreApiExtender.php:318
 msgid "Add"
-msgstr ""
-
-#: app/Domain/Storefront/CartCrossSellRenderer.php:72
-msgid "Still missing?"
 msgstr ""
 
 #: app/Domain/Storefront/ClassicCheckoutBump.php:61
@@ -1725,15 +2139,11 @@ msgstr ""
 msgid "Add with product"
 msgstr ""
 
-#: app/Domain/Storefront/ProductPageRenderer.php:72
-msgid "Complete this product"
-msgstr ""
-
 #: app/Domain/Storefront/ThankYouOfferRenderer.php:40
 msgid "Add to a new checkout"
 msgstr ""
 
-#: app/Domain/Storefront/ThankYouOfferRenderer.php:51
+#: app/Domain/Storefront/ThankYouOfferRenderer.php:61
 msgid "Your original order is complete. Adding this item starts a separate checkout."
 msgstr ""
 
@@ -1769,11 +2179,11 @@ msgstr ""
 msgid "UpsellBay accepted offer"
 msgstr ""
 
-#: app/Integrations/WooCommerce/StoreApiExtender.php:230
+#: app/Integrations/WooCommerce/StoreApiExtender.php:234
 msgid "Eligible Cart cross-sells for UpsellBay"
 msgstr ""
 
-#: app/Integrations/WooCommerce/StoreApiExtender.php:236
+#: app/Integrations/WooCommerce/StoreApiExtender.php:240
 msgid "Eligible Checkout bumps for UpsellBay"
 msgstr ""
 
@@ -1814,8 +2224,20 @@ msgid "Create draft offer"
 msgstr ""
 
 #: assets/admin/js/upsellbay-offer-editor.js:1
-#: src/admin/offer-editor/index.js:311
+#: src/admin/offer-editor/index.js:332
 msgid "Are you sure you want to clear all fields?"
+msgstr ""
+
+#: assets/frontend/block-checkout.js:1
+#: src/block-checkout/cart-cross-sells.js:100
+msgid "Added to cart"
+msgstr ""
+
+#: assets/frontend/block-checkout.js:1
+#: assets/frontend/storefront.js:1
+#: src/block-checkout/cart-cross-sells.js:108
+#: src/storefront/index.js:100
+msgid "Adding..."
 msgstr ""
 
 #: assets/frontend/classic-checkout.js:1
@@ -1824,11 +2246,6 @@ msgid "Unable to update this offer. Please try again."
 msgstr ""
 
 #: assets/frontend/storefront.js:1
-#: src/storefront/index.js:91
-msgid "Adding..."
-msgstr ""
-
-#: assets/frontend/storefront.js:1
-#: src/storefront/index.js:113
+#: src/storefront/index.js:126
 msgid "Adding to new checkout…"
 msgstr ""

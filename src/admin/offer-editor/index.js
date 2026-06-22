@@ -374,6 +374,40 @@ window.jQuery(function ($) {
       }
     });
 
+    const $rulesField = $form.find('[name="_ub_rules"]');
+    if ($rulesField.length && $rulesField.val().trim()) {
+      try {
+        const rules = JSON.parse($rulesField.val().trim());
+        const definitions = window.upsellbay_data?.rule_definitions?.rules || {};
+        if (Array.isArray(rules)) {
+          rules.forEach((rule, index) => {
+            const definition = definitions[rule.type];
+            const value = rule.value;
+
+            if (!definition) {
+              isValid = false;
+              errorMessages.push(`Rule ${index + 1} is not supported.`);
+              return;
+            }
+
+            const hasValue = Array.isArray(value) ? value.length > 0 : String(value || '').trim() !== '';
+            if (!hasValue) {
+              isValid = false;
+              errorMessages.push(`Rule ${index + 1} needs a value.`);
+              return;
+            }
+
+            if (definition.valueType === 'number' && !Number.isFinite(Number.parseFloat(value))) {
+              isValid = false;
+              errorMessages.push(`Rule ${index + 1} needs a numeric value.`);
+            }
+          });
+        }
+      } catch (err) {
+        // The JSON parser above already reports this.
+      }
+    }
+
     if (!isValid) {
       e.preventDefault();
       isSubmitting = false;
@@ -615,6 +649,11 @@ window.jQuery(function ($) {
       return;
     }
 
+    const ruleConfig = window.upsellbay_data?.rule_definitions || {};
+    const ruleDefinitions = ruleConfig.rules || {};
+    const stockStatuses = ruleConfig.stockStatuses || [];
+    const firstRuleType = Object.keys(ruleDefinitions)[0] || 'cart_product';
+
     let items = [];
     try {
       const val = $textarea.val();
@@ -628,13 +667,159 @@ window.jQuery(function ($) {
       items = Object.keys(items).map(key => ({ key: key, value: items[key] }));
     }
 
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function normalizeRule(item) {
+      const type = ruleDefinitions[item.type] ? item.type : firstRuleType;
+      const definition = ruleDefinitions[type] || {};
+      const operator = (definition.operators || []).some((op) => op.value === item.operator)
+        ? item.operator
+        : definition.defaultOperator;
+
+      return {
+        type,
+        operator,
+        value: normalizeRuleValue(definition, item.value),
+      };
+    }
+
+    function normalizeRuleValue(definition, value) {
+      if (definition.valueType === 'number' || definition.valueType === 'stock_status') {
+        return value === undefined || value === null ? '' : String(value);
+      }
+
+      const rawValues = Array.isArray(value)
+        ? value
+        : (value === undefined || value === null || value === '' ? [] : String(value).split(','));
+
+      if (definition.valueType === 'roles') {
+        return rawValues.map((item) => String(item).trim()).filter(Boolean);
+      }
+
+      return rawValues
+        .map((item) => Number.parseInt(item, 10))
+        .filter((item) => Number.isFinite(item) && item > 0);
+    }
+
+    function endpointForValueType(valueType) {
+      const endpoints = {
+        products: 'products',
+        categories: 'categories',
+        tags: 'tags',
+        roles: 'roles',
+      };
+
+      return endpoints[valueType] || '';
+    }
+
+    function renderRuleTypeOptions(selectedType) {
+      return Object.keys(ruleDefinitions).map((type) => {
+        const definition = ruleDefinitions[type];
+        return `<option value="${escapeHtml(type)}" ${type === selectedType ? 'selected' : ''}>${escapeHtml(definition.label)}</option>`;
+      }).join('');
+    }
+
+    function renderOperatorControl(item, definition, index) {
+      if (!definition.operatorVisible) {
+        return `<input type="hidden" class="upsellbay-vb-op" data-index="${index}" value="${escapeHtml(definition.defaultOperator || '')}"><span class="description">Not required</span>`;
+      }
+
+      const operators = definition.operators || [];
+      return `
+        <select class="upsellbay-vb-op" data-index="${index}" aria-label="Rule operator">
+          ${operators.map((operator) => `<option value="${escapeHtml(operator.value)}" ${operator.value === item.operator ? 'selected' : ''}>${escapeHtml(operator.label)}</option>`).join('')}
+        </select>
+      `;
+    }
+
+    function renderValueControl(item, definition, index) {
+      const value = item.value;
+      const values = Array.isArray(value) ? value : (value ? [value] : []);
+
+      if (['products', 'categories', 'tags', 'roles'].includes(definition.valueType)) {
+        const endpoint = endpointForValueType(definition.valueType);
+        const options = values.map((selectedValue) => `<option value="${escapeHtml(selectedValue)}" selected>${escapeHtml(`#${selectedValue}`)}</option>`).join('');
+        return `
+          <select
+            class="upsellbay-vb-val upsellbay-rule-entity-search"
+            data-index="${index}"
+            data-endpoint="${escapeHtml(endpoint)}"
+            ${definition.multiple ? 'multiple="multiple"' : ''}
+            data-placeholder="${escapeHtml('Search...')}"
+            aria-label="Rule value"
+          >${options}</select>
+        `;
+      }
+
+      if (definition.valueType === 'stock_status') {
+        return `
+          <select class="upsellbay-vb-val" data-index="${index}" aria-label="Rule value">
+            <option value="">Select stock status</option>
+            ${stockStatuses.map((status) => `<option value="${escapeHtml(status.value)}" ${status.value === value ? 'selected' : ''}>${escapeHtml(status.label)}</option>`).join('')}
+          </select>
+        `;
+      }
+
+      const step = definition.step || 'any';
+      const min = definition.min !== null && definition.min !== undefined ? ` min="${escapeHtml(definition.min)}"` : '';
+      return `<input type="number" step="${escapeHtml(step)}"${min} class="regular-text upsellbay-vb-val" data-index="${index}" value="${escapeHtml(value || '')}" placeholder="Number" aria-label="Rule value">`;
+    }
+
+    function initRuleSelectors() {
+      $builder.find('.upsellbay-rule-entity-search').each(function () {
+        const $select = $(this);
+        const endpoint = $select.data('endpoint');
+        const selectInit = $.fn.selectWoo || $.fn.select2;
+
+        if (!endpoint || !selectInit || $select.data('upsellbay-rule-selector-ready')) {
+          return;
+        }
+
+        $select.data('upsellbay-rule-selector-ready', true);
+        selectInit.call($select, {
+          width: 'resolve',
+          placeholder: $select.data('placeholder') || 'Search...',
+          minimumInputLength: 0,
+          ajax: {
+            url: `${window.upsellbay_data.rest_url}upsellbay/v1/${endpoint}`,
+            dataType: 'json',
+            delay: 250,
+            beforeSend(xhr) {
+              xhr.setRequestHeader('X-WP-Nonce', window.upsellbay_data.nonce);
+            },
+            data(params) {
+              return {
+                search: params.term || '',
+                page: params.page || 1,
+              };
+            },
+            processResults(response) {
+              const results = Array.isArray(response) ? response.map((item) => ({
+                id: item.id,
+                text: item.name || item.slug || item.id,
+              })) : [];
+
+              return { results };
+            },
+          },
+        });
+      });
+    }
+
     function render() {
       $builder.empty();
       const $table = $('<table class="widefat striped" style="margin-bottom: 10px;"></table>');
 
       if (items.length > 0) {
         if (isRules) {
-          $table.append('<thead><tr><th style="padding: 15px 10px;">Rule Type <span class="woocommerce-help-tip" data-tip="The condition to check. For example, &quot;Cart contains product&quot; shows the offer only when the cart has that product."></span></th><th style="padding: 15px 10px;">Operator <span class="woocommerce-help-tip" data-tip="How to compare the rule value. &quot;Equals&quot; matches exactly, &quot;Greater than&quot; / &quot;Less than&quot; work for numbers like subtotal or order count."></span></th><th style="padding: 15px 10px;">Value <span class="woocommerce-help-tip" data-tip="The value to compare against. For product rules this is a product selection, for numeric rules this is a number, for roles this is a comma-separated list."></span></th><th style="padding: 15px 10px;"></th></tr></thead>');
+          $table.append('<thead><tr><th style="padding: 15px 10px;">Rule type <span class="woocommerce-help-tip" data-tip="The condition to check before the offer appears."></span></th><th style="padding: 15px 10px;">Operator <span class="woocommerce-help-tip" data-tip="Shown only when the selected rule needs a comparison."></span></th><th style="padding: 15px 10px;">Value <span class="woocommerce-help-tip" data-tip="Use the selector or input required by the chosen rule type."></span></th><th style="padding: 15px 10px;"></th></tr></thead>');
         } else {
           $table.append('<thead><tr><th style="padding: 15px 10px;">Setting Key</th><th colspan="2" style="padding: 15px 10px;">Value</th><th style="padding: 15px 10px;"></th></tr></thead>');
         }
@@ -649,54 +834,20 @@ window.jQuery(function ($) {
           const $tr = $('<tr></tr>');
 
           if (isRules) {
-            let valueHtml = '';
-            let valArray = Array.isArray(item.value) ? item.value : (item.value ? String(item.value).split(',') : []);
-
-            if (['cart_product', 'exclude_if_product_in_cart', 'viewed_product'].includes(item.type)) {
-              let options = valArray.map(id => `<option value="${id}" selected>#${id}</option>`).join('');
-              valueHtml = `<select class="wc-product-search upsellbay-vb-val" data-index="${index}" multiple="multiple" data-placeholder="Search for a product..." aria-label="Rule value">${options}</select>`;
-            } else if (item.type === 'cart_category') {
-              let options = valArray.map(id => `<option value="${id}" selected>#${id}</option>`).join('');
-              valueHtml = `<select class="wc-category-search upsellbay-vb-val" data-index="${index}" multiple="multiple" data-placeholder="Search for a category..." aria-label="Rule value">${options}</select>`;
-            } else if (item.type === 'stock_status') {
-              valueHtml = `
-                <select class="upsellbay-vb-val" data-index="${index}" aria-label="Rule value">
-                  <option value="" ${!item.value ? 'selected' : ''}>Any</option>
-                  <option value="instock" ${item.value === 'instock' ? 'selected' : ''}>In stock</option>
-                  <option value="outofstock" ${item.value === 'outofstock' ? 'selected' : ''}>Out of stock</option>
-                  <option value="onbackorder" ${item.value === 'onbackorder' ? 'selected' : ''}>On backorder</option>
-                </select>
-              `;
-            } else if (item.type === 'user_role') {
-              valueHtml = `<input type="text" class="regular-text upsellbay-vb-val" data-index="${index}" value="${valArray.join(',')}" placeholder="User roles (comma separated, e.g. customer, subscriber)" aria-label="Rule value">`;
-            } else if (['cart_subtotal', 'customer_order_count', 'customer_lifetime_spend'].includes(item.type)) {
-              valueHtml = `<input type="number" step="any" class="regular-text upsellbay-vb-val" data-index="${index}" value="${item.value || ''}" placeholder="Number" aria-label="Rule value">`;
-            } else {
-              valueHtml = `<input type="text" class="regular-text upsellbay-vb-val" data-index="${index}" value="${valArray.join(',')}" placeholder="Value (comma separated for IDs)" aria-label="Rule value">`;
-            }
+            const normalized = normalizeRule(item);
+            items[index] = normalized;
+            const definition = ruleDefinitions[normalized.type] || {};
+            const valueHtml = renderValueControl(normalized, definition, index);
+            const operatorHtml = renderOperatorControl(normalized, definition, index);
 
             $tr.append(`
               <td>
                 <select class="upsellbay-vb-type" data-index="${index}" aria-label="Rule type">
-                  <option value="cart_product" ${item.type === 'cart_product' ? 'selected' : ''}>Cart contains product</option>
-                  <option value="cart_category" ${item.type === 'cart_category' ? 'selected' : ''}>Cart contains category</option>
-                  <option value="cart_tag" ${item.type === 'cart_tag' ? 'selected' : ''}>Cart contains tag</option>
-                  <option value="cart_subtotal" ${item.type === 'cart_subtotal' ? 'selected' : ''}>Cart subtotal is</option>
-                  <option value="viewed_product" ${item.type === 'viewed_product' ? 'selected' : ''}>Currently viewing product</option>
-                  <option value="user_role" ${item.type === 'user_role' ? 'selected' : ''}>User role is</option>
-                  <option value="customer_order_count" ${item.type === 'customer_order_count' ? 'selected' : ''}>Customer order count is</option>
-                  <option value="customer_lifetime_spend" ${item.type === 'customer_lifetime_spend' ? 'selected' : ''}>Customer lifetime spend is</option>
-                  <option value="stock_status" ${item.type === 'stock_status' ? 'selected' : ''}>Stock status is</option>
-                  <option value="exclude_if_product_in_cart" ${item.type === 'exclude_if_product_in_cart' ? 'selected' : ''}>Exclude if cart contains product</option>
+                  ${renderRuleTypeOptions(normalized.type)}
                 </select>
               </td>
               <td>
-                <select class="upsellbay-vb-op" data-index="${index}" aria-label="Rule operator">
-                  <option value="eq" ${item.operator === 'eq' ? 'selected' : ''}>Equals</option>
-                  <option value="neq" ${item.operator === 'neq' ? 'selected' : ''}>Does not equal</option>
-                  <option value="gt" ${item.operator === 'gt' ? 'selected' : ''}>Greater than</option>
-                  <option value="lt" ${item.operator === 'lt' ? 'selected' : ''}>Less than</option>
-                </select>
+                ${operatorHtml}
               </td>
               <td>
                 ${valueHtml}
@@ -737,7 +888,8 @@ window.jQuery(function ($) {
 
       $builder.find('.upsellbay-vb-add').on('click', function () {
         if (isRules) {
-          items.push({ type: 'cart_product', operator: 'eq', value: '' });
+          const definition = ruleDefinitions[firstRuleType] || {};
+          items.push({ type: firstRuleType, operator: definition.defaultOperator || 'contains', value: [] });
         } else {
           items.push({ key: '', value: '' });
         }
@@ -745,24 +897,31 @@ window.jQuery(function ($) {
         render();
       });
 
-      if (isRules) {
-        $(document.body).trigger('wc-enhanced-select-init');
-      }
+      initRuleSelectors();
 
       $builder.find('input, select').on('change input', function () {
         const idx = $(this).data('index');
         if (isRules) {
-          items[idx].type = $builder.find(`.upsellbay-vb-type[data-index="${idx}"]`).val();
-          items[idx].operator = $builder.find(`.upsellbay-vb-op[data-index="${idx}"]`).val();
-          let rawVal = $builder.find(`.upsellbay-vb-val[data-index="${idx}"]`).val();
-          if (rawVal === null) rawVal = [];
-          if (Array.isArray(rawVal)) {
-            items[idx].value = rawVal.map(s => parseInt(s, 10)).filter(n => !isNaN(n));
-          } else if (typeof rawVal === 'string' && rawVal.includes(',')) {
-            items[idx].value = rawVal.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
-          } else {
-            items[idx].value = rawVal;
+          const previousType = items[idx]?.type;
+          const nextType = $builder.find(`.upsellbay-vb-type[data-index="${idx}"]`).val();
+          const definition = ruleDefinitions[nextType] || {};
+
+          if (previousType !== nextType && $(this).hasClass('upsellbay-vb-type')) {
+            items[idx] = {
+              type: nextType,
+              operator: definition.defaultOperator || '',
+              value: definition.valueType === 'number' || definition.valueType === 'stock_status' ? '' : [],
+            };
+            updateTextarea();
+            render();
+            return;
           }
+
+          items[idx] = normalizeRule({
+            type: nextType,
+            operator: $builder.find(`.upsellbay-vb-op[data-index="${idx}"]`).val(),
+            value: $builder.find(`.upsellbay-vb-val[data-index="${idx}"]`).val(),
+          });
         } else {
           items[idx].key = $builder.find(`.upsellbay-vb-key[data-index="${idx}"]`).val();
           items[idx].value = $builder.find(`.upsellbay-vb-val[data-index="${idx}"]`).val();

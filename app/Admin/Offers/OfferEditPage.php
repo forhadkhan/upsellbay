@@ -19,6 +19,7 @@ use WPAnchorBay\UpsellBay\Domain\Offers\OfferConflictDetector;
 use WPAnchorBay\UpsellBay\Domain\Discounts\DiscountCalculator;
 use WPAnchorBay\UpsellBay\Admin\Offers\OfferVisibilityPanel;
 use WPAnchorBay\UpsellBay\Domain\Logging\LoggerInterface;
+use WPAnchorBay\UpsellBay\Domain\Rules\RuleDefinitions;
 use Throwable;
 
 /**
@@ -123,6 +124,15 @@ final class OfferEditPage {
 	private DiscountCalculator $discount_calculator;
 
 	/**
+	 * Rule definitions.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var RuleDefinitions
+	 */
+	private RuleDefinitions $rule_definitions;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.0.0
@@ -146,6 +156,7 @@ final class OfferEditPage {
 		$this->logger             = $logger;
 		$this->visibility_panel   = $visibility_panel;
 		$this->discount_calculator = new DiscountCalculator();
+		$this->rule_definitions    = new RuleDefinitions();
 		$this->can_manage         = $can_manage ?? static fn (): bool => function_exists( 'current_user_can' ) && current_user_can( 'manage_woocommerce' ); // phpcs:ignore WordPress.WP.Capabilities.Unknown
 		$this->verify_nonce       = $verify_nonce ?? static fn ( string $nonce ): bool => function_exists( 'wp_verify_nonce' ) && (bool) wp_verify_nonce( $nonce, 'upsellbay_save_offer' );
 	}
@@ -259,19 +270,27 @@ final class OfferEditPage {
 	 * @return array<int, array<string, mixed>>
 	 */
 	public function normalize_rules( array $rules ): array {
-		$allowed_types = array( 'cart_product', 'cart_category', 'cart_tag', 'cart_subtotal', 'viewed_product', 'user_role', 'customer_order_count', 'customer_lifetime_spend', 'stock_status', 'exclude_if_product_in_cart' );
-		$normalized    = array();
+		$normalized = array();
 
 		foreach ( $rules as $rule ) {
-			$type = $this->normalize_rule_type( (string) ( $rule['type'] ?? '' ) );
-			if ( ! in_array( $type, $allowed_types, true ) ) {
+			$type       = $this->normalize_rule_type( (string) ( $rule['type'] ?? '' ) );
+			$definition = $this->rule_definitions->get( $type );
+			if ( null === $definition ) {
 				continue;
+			}
+
+			$operator = $this->rule_definitions->resolve_operator(
+				$type,
+				(string) ( $rule['operator'] ?? $this->rule_definitions->default_operator( $type ) )
+			);
+			if ( null === $operator ) {
+				$operator = $this->rule_definitions->default_operator( $type );
 			}
 
 			$normalized[] = array(
 				'type'     => $type,
-				'operator' => $this->normalize_rule_operator( (string) ( $rule['operator'] ?? 'eq' ) ),
-				'value'    => is_array( $rule['value'] ?? null ) ? array_map( array( $this, 'positive_int' ), $rule['value'] ) : $this->sanitize_text( (string) ( $rule['value'] ?? '' ) ),
+				'operator' => $operator,
+				'value'    => $this->normalize_rule_value( $definition, $rule['value'] ?? null ),
 			);
 		}
 
@@ -1160,28 +1179,46 @@ final class OfferEditPage {
 	 * @param string $value Raw rule type.
 	 */
 	private function normalize_rule_type( string $value ): string {
-		$type = $this->sanitize_key( $value );
-
-		return match ( $type ) {
-			'lifetime_spend'         => 'customer_lifetime_spend',
-			'exclude_product_in_cart' => 'exclude_if_product_in_cart',
-			default                  => $type,
-		};
+		return $this->rule_definitions->normalize_type( $this->sanitize_key( $value ) );
 	}
 
 	/**
-	 * Normalize legacy editor operator aliases to runtime evaluator keys.
+	 * Normalize a submitted rule value for the rule definition.
 	 *
-	 * @param string $value Raw operator.
+	 * @param array<string, mixed> $definition Rule definition.
+	 * @param mixed                $value      Raw value.
+	 * @return mixed
 	 */
-	private function normalize_rule_operator( string $value ): string {
-		$operator = $this->sanitize_key( $value );
+	private function normalize_rule_value( array $definition, $value ) {
+		$value_type = (string) ( $definition['value_type'] ?? '' );
+		if ( RuleDefinitions::VALUE_NUMBER === $value_type ) {
+			return $this->sanitize_text( (string) $value );
+		}
 
-		return match ( $operator ) {
-			'is'     => 'eq',
-			'is_not' => 'neq',
-			default  => $operator,
-		};
+		if ( RuleDefinitions::VALUE_STOCK_STATUS === $value_type ) {
+			return $this->sanitize_key( (string) $value );
+		}
+
+		$values = is_array( $value ) ? $value : ( '' !== (string) $value ? explode( ',', (string) $value ) : array() );
+
+		if ( RuleDefinitions::VALUE_ROLES === $value_type ) {
+			return array_values(
+				array_filter(
+					array_map(
+						fn ( $item ): string => $this->sanitize_key( (string) $item ),
+						$values
+					),
+					static fn ( string $item ): bool => '' !== $item
+				)
+			);
+		}
+
+		return array_values(
+			array_filter(
+				array_map( array( $this, 'positive_int' ), $values ),
+				static fn ( int $item ): bool => $item > 0
+			)
+		);
 	}
 
 	/**

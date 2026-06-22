@@ -107,18 +107,89 @@ final class ProductsController {
 	 *
 	 * @since 1.0.0
 	 *
+	 * @param WP_REST_Request $request Request object.
 	 * @return WP_REST_Response
 	 */
-	public function categories(): WP_REST_Response {
-		$terms = get_terms(
-			array(
-				'taxonomy'   => 'product_cat',
-				'hide_empty' => false,
-			)
+	public function categories( WP_REST_Request $request ): WP_REST_Response {
+		return new WP_REST_Response( $this->terms( $request, 'product_cat' ) );
+	}
+
+	/**
+	 * List product tags.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response
+	 */
+	public function tags( WP_REST_Request $request ): WP_REST_Response {
+		return new WP_REST_Response( $this->terms( $request, 'product_tag' ) );
+	}
+
+	/**
+	 * List editable user roles.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response
+	 */
+	public function roles( WP_REST_Request $request ): WP_REST_Response {
+		$search = strtolower( sanitize_text_field( (string) $request->get_param( 'search' ) ) );
+		$roles  = function_exists( 'get_editable_roles' ) ? get_editable_roles() : array();
+
+		if ( array() === $roles && function_exists( 'wp_roles' ) ) {
+			$wp_roles = wp_roles();
+			$roles    = $wp_roles->roles;
+		}
+
+		$data = array();
+		foreach ( $roles as $role_key => $role ) {
+			$name = (string) ( $role['name'] ?? $role_key );
+			if ( '' !== $search && ! str_contains( strtolower( $role_key . ' ' . $name ), $search ) ) {
+				continue;
+			}
+
+			$data[] = array(
+				'id'   => sanitize_key( (string) $role_key ),
+				'name' => $name,
+			);
+		}
+
+		return new WP_REST_Response( $data );
+	}
+
+	/**
+	 * Search product terms.
+	 *
+	 * @param WP_REST_Request $request  Request object.
+	 * @param string          $taxonomy Product taxonomy.
+	 * @return array<int, array<string, mixed>>
+	 */
+	private function terms( WP_REST_Request $request, string $taxonomy ): array {
+		$search  = sanitize_text_field( (string) $request->get_param( 'search' ) );
+		$include = (int) $request->get_param( 'include' );
+		$limit   = (int) $request->get_param( 'limit' );
+		$limit   = $limit > 0 ? $limit : 20;
+
+		$args = array(
+			'taxonomy'   => $taxonomy,
+			'hide_empty' => false,
+			'number'     => $limit,
+			'orderby'    => 'name',
+			'order'      => 'ASC',
 		);
 
-		if ( is_wp_error( $terms ) ) {
-			return new WP_REST_Response( array() );
+		if ( $include > 0 ) {
+			$args['include'] = array( $include );
+		} elseif ( '' !== $search ) {
+			$args['search'] = $search;
+		}
+
+		$terms = function_exists( 'get_terms' ) ? get_terms( $args ) : array();
+
+		if ( function_exists( 'is_wp_error' ) && is_wp_error( $terms ) ) {
+			return array();
 		}
 
 		$data = array();
@@ -131,7 +202,7 @@ final class ProductsController {
 			);
 		}
 
-		return new WP_REST_Response( $data );
+		return $data;
 	}
 
 	/**
@@ -141,7 +212,7 @@ final class ProductsController {
 	 * @return array<string, mixed>
 	 */
 	private function format_product( $product ): array {
-		$image_url = wp_get_attachment_image_url( $product->get_image_id(), 'thumbnail' );
+		$image_url         = wp_get_attachment_image_url( $product->get_image_id(), 'thumbnail' );
 		$price_min         = null;
 		$price_max         = null;
 		$regular_min       = null;
@@ -150,7 +221,7 @@ final class ProductsController {
 
 		if ( method_exists( $product, 'is_type' ) && $product->is_type( 'variable' ) && method_exists( $product, 'get_variation_prices' ) ) {
 			$variation_prices = $product->get_variation_prices( false );
-			if ( ! empty( $variation_prices['price'] ) && is_array( $variation_prices['price'] ) ) {
+			if ( isset( $variation_prices['price'] ) && array() !== $variation_prices['price'] && is_array( $variation_prices['price'] ) ) {
 				$variation_min = min( $variation_prices['price'] );
 				$variation_max = max( $variation_prices['price'] );
 				if ( is_numeric( $variation_min ) ) {
@@ -160,7 +231,7 @@ final class ProductsController {
 					$price_max = (string) $variation_max;
 				}
 			}
-			if ( ! empty( $variation_prices['regular_price'] ) && is_array( $variation_prices['regular_price'] ) ) {
+			if ( isset( $variation_prices['regular_price'] ) && array() !== $variation_prices['regular_price'] && is_array( $variation_prices['regular_price'] ) ) {
 				$regular_variation_min = min( $variation_prices['regular_price'] );
 				$regular_variation_max = max( $variation_prices['regular_price'] );
 				if ( is_numeric( $regular_variation_min ) ) {
@@ -180,13 +251,13 @@ final class ProductsController {
 		if ( null === $regular_min || null === $regular_max ) {
 			$regular_price = method_exists( $product, 'get_regular_price' ) ? (string) $product->get_regular_price() : '';
 			if ( '' === $regular_price ) {
-				$regular_price = $price_min;
+				$regular_price     = $price_min;
 				$regular_price_max = $price_max;
 			} else {
 				$regular_price_max = $regular_price;
 			}
 			$regular_min = $regular_price;
-			$regular_max = isset( $regular_price_max ) ? $regular_price_max : $regular_price;
+			$regular_max = null !== $regular_price_max ? $regular_price_max : $regular_price;
 		}
 
 		return array(

@@ -15,6 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
+use WPAnchorBay\UpsellBay\Domain\Rules\RuleDefinitions;
+
 /**
  * Sanitizes, normalizes, and validates offer configuration metadata.
  *
@@ -45,6 +47,15 @@ final class OfferValidator {
 	private $product_context;
 
 	/**
+	 * Rule definitions.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var RuleDefinitions
+	 */
+	private RuleDefinitions $rule_definitions;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.0.0
@@ -54,15 +65,16 @@ final class OfferValidator {
 	 * @param callable|null $product_context Optional product context callback.
 	 */
 	public function __construct( OfferSchema $schema, ?callable $product_exists = null, ?callable $product_context = null ) {
-		$this->schema          = $schema;
-		$this->product_exists  = $product_exists ?? static function ( int $product_id ): bool {
+		$this->schema           = $schema;
+		$this->rule_definitions = new RuleDefinitions();
+		$this->product_exists   = $product_exists ?? static function ( int $product_id ): bool {
 			if ( $product_id <= 0 ) {
 				return false;
 			}
 
 			return ! function_exists( 'wc_get_product' ) || false !== wc_get_product( $product_id );
 		};
-		$this->product_context = $product_context ?? array( $this, 'load_product_context' );
+		$this->product_context  = $product_context ?? array( $this, 'load_product_context' );
 	}
 
 	/**
@@ -96,6 +108,11 @@ final class OfferValidator {
 
 		if ( null !== $normalized['_ub_start_at'] && null !== $normalized['_ub_end_at'] && $normalized['_ub_start_at'] > $normalized['_ub_end_at'] ) {
 			$errors['_ub_end_at'] = 'End date must be after start date.';
+		}
+
+		$rule_errors = $this->validate_rules( $normalized['_ub_rules'] );
+		foreach ( $rule_errors as $index => $message ) {
+			$errors[ '_ub_rules_' . $index ] = $message;
 		}
 
 		if ( 'active' === $normalized['_ub_status'] ) {
@@ -259,7 +276,7 @@ final class OfferValidator {
 		$product = $product_id > 0 ? ( $this->product_context )( $product_id ) : null;
 		if ( is_array( $product ) ) {
 			if ( false === ( $product['purchasable'] ?? true ) ) {
-				$errors['_ub_offer_product_id_purchasable'] = 'Selected offer product is not currently purchasable.';
+				$errors['_ub_offer_product_id_purchasable'] = 'Offer product is not currently purchasable.';
 			}
 			if ( false === ( $product['in_stock'] ?? true ) ) {
 				$errors['_ub_offer_product_id_stock'] = 'Offer product is out of stock.';
@@ -284,11 +301,6 @@ final class OfferValidator {
 		}
 		if ( 'percent' === $meta['_ub_discount_type'] && $discount_value > 100 ) {
 			$errors['_ub_discount_value_percent'] = 'Percentage discount cannot be greater than 100.';
-		}
-
-		$rule_errors = $this->validate_rules( $meta['_ub_rules'] );
-		foreach ( $rule_errors as $index => $message ) {
-			$errors[ '_ub_rules_' . $index ] = $message;
 		}
 
 		$position_error = $this->validate_placement_position( (string) $meta['_ub_offer_type'], $meta['_ub_placement_config'] );
@@ -321,42 +333,113 @@ final class OfferValidator {
 				continue;
 			}
 
-			$type     = $this->sanitize_key( $rule['type'] ?? '' );
-			$operator = $this->sanitize_key( $rule['operator'] ?? 'eq' );
+			$type     = $this->rule_definitions->normalize_type( $this->sanitize_key( $rule['type'] ?? '' ) );
+			$operator = $this->sanitize_key( $rule['operator'] ?? $this->rule_definitions->default_operator( $type ) );
 			$value    = $rule['value'] ?? null;
 
-			if ( ! in_array( $type, array( 'cart_product', 'cart_category', 'cart_tag', 'cart_subtotal', 'viewed_product', 'user_role', 'customer_order_count', 'customer_lifetime_spend', 'stock_status', 'exclude_if_product_in_cart' ), true ) ) {
+			$definition = $this->rule_definitions->get( $type );
+			if ( null === $definition ) {
 				$errors[ $index ] = 'Rule type is not supported.';
 				continue;
 			}
 
-			if ( in_array( $type, array( 'cart_subtotal', 'customer_order_count', 'customer_lifetime_spend' ), true ) ) {
-				if ( ! in_array( $operator, array( 'eq', 'neq', 'gt', 'gte', 'lt', 'lte' ), true ) ) {
-					$errors[ $index ] = 'Cart subtotal rules require a numeric comparison operator.';
-				} elseif ( ! is_numeric( $value ) ) {
-					$errors[ $index ] = 'Numeric rules require a numeric value.';
-				}
+			$operator = $this->rule_definitions->resolve_operator( $type, $operator );
+			if ( null === $operator ) {
+				$errors[ $index ] = RuleDefinitions::VALUE_NUMBER === ( $definition['value_type'] ?? '' )
+					? 'Cart subtotal rules require a numeric comparison operator.'
+					: 'Rule operator is not supported for this rule type.';
 				continue;
 			}
 
-			if ( 'stock_status' === $type ) {
-				if ( ! in_array( (string) $value, array( 'instock', 'outofstock', 'onbackorder' ), true ) ) {
-					$errors[ $index ] = 'Stock status rule requires a supported stock status.';
-				}
+			if ( ! $this->validate_rule_value( $type, $definition, $value ) ) {
+				$errors[ $index ] = $this->rule_value_error_message( $type );
 				continue;
-			}
-
-			if ( ! in_array( $operator, array( 'eq', 'neq', 'in', 'not_in', 'contains' ), true ) ) {
-				$errors[ $index ] = 'Rule operator is not supported for this rule type.';
-				continue;
-			}
-
-			if ( array() === $this->rule_value_list( $value, 'user_role' !== $type ) ) {
-				$errors[ $index ] = 'Rule value is required.';
 			}
 		}
 
 		return $errors;
+	}
+
+	/**
+	 * Validate a rule value against its definition.
+	 *
+	 * @param string               $type       Rule type.
+	 * @param array<string, mixed> $definition Rule definition.
+	 * @param mixed                $value      Rule value.
+	 */
+	private function validate_rule_value( string $type, array $definition, $value ): bool {
+		$value_type = (string) ( $definition['value_type'] ?? '' );
+
+		if ( RuleDefinitions::VALUE_NUMBER === $value_type ) {
+			if ( ! is_numeric( $value ) ) {
+				return false;
+			}
+
+			$number = (float) $value;
+			if ( $number < 0 ) {
+				return false;
+			}
+
+			return 'customer_order_count' !== $type || (float) (int) $number === $number;
+		}
+
+		if ( RuleDefinitions::VALUE_STOCK_STATUS === $value_type ) {
+			return isset( $this->rule_definitions->stock_statuses()[ (string) $value ] );
+		}
+
+		if ( RuleDefinitions::VALUE_ROLES === $value_type ) {
+			$roles = $this->rule_value_list( $value, false );
+			if ( array() === $roles ) {
+				return false;
+			}
+
+			$available_roles = $this->available_role_keys();
+			foreach ( $roles as $role ) {
+				if ( ! in_array( (string) $role, $available_roles, true ) ) {
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		$ids = $this->rule_value_list( $value, true );
+		if ( array() === $ids ) {
+			return false;
+		}
+
+		foreach ( $ids as $id ) {
+			if ( RuleDefinitions::VALUE_PRODUCTS === $value_type && ! ( $this->product_exists )( (int) $id ) ) {
+				return false;
+			}
+
+			if ( RuleDefinitions::VALUE_CATEGORIES === $value_type && ! $this->term_exists( (int) $id, 'product_cat' ) ) {
+				return false;
+			}
+
+			if ( RuleDefinitions::VALUE_TAGS === $value_type && ! $this->term_exists( (int) $id, 'product_tag' ) ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Return an admin-safe validation message for a rule value.
+	 *
+	 * @param string $type Rule type.
+	 */
+	private function rule_value_error_message( string $type ): string {
+		return match ( $type ) {
+			'cart_product', 'viewed_product', 'exclude_if_product_in_cart' => 'Product rules require existing WooCommerce products.',
+			'cart_category'                                                => 'Category rules require existing product categories.',
+			'cart_tag'                                                     => 'Tag rules require existing product tags.',
+			'user_role'                                                    => 'User role rules require existing role slugs.',
+			'stock_status'                                                 => 'Stock status rule requires a supported stock status.',
+			'customer_order_count'                                         => 'Customer order count rules require a non-negative whole number.',
+			default                                                        => 'Numeric rules require a non-negative numeric value.',
+		};
 	}
 
 	/**
@@ -383,6 +466,47 @@ final class OfferValidator {
 			}
 		}
 		return $list;
+	}
+
+	/**
+	 * Check whether a product taxonomy term exists.
+	 *
+	 * @param int    $term_id  Term ID.
+	 * @param string $taxonomy Taxonomy.
+	 */
+	private function term_exists( int $term_id, string $taxonomy ): bool {
+		if ( $term_id <= 0 ) {
+			return false;
+		}
+
+		if ( function_exists( 'term_exists' ) ) {
+			return 0 !== term_exists( $term_id, $taxonomy ) && null !== term_exists( $term_id, $taxonomy );
+		}
+
+		if ( function_exists( 'get_term' ) ) {
+			$term = get_term( $term_id, $taxonomy );
+			return ( ! function_exists( 'is_wp_error' ) || ! is_wp_error( $term ) ) && null !== $term;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Return available editable role keys.
+	 *
+	 * @return array<int, string>
+	 */
+	private function available_role_keys(): array {
+		if ( function_exists( 'get_editable_roles' ) ) {
+			return array_keys( get_editable_roles() );
+		}
+
+		if ( function_exists( 'wp_roles' ) ) {
+			$roles = wp_roles();
+			return array_keys( $roles->roles );
+		}
+
+		return array( 'administrator', 'editor', 'author', 'contributor', 'subscriber', 'customer', 'shop_manager' );
 	}
 
 	/**
@@ -437,6 +561,7 @@ final class OfferValidator {
 			'purchasable'  => ! method_exists( $product, 'is_purchasable' ) || $product->is_purchasable(),
 			'visible'      => ! method_exists( $product, 'is_visible' ) || $product->is_visible(),
 			'in_stock'     => ! method_exists( $product, 'is_in_stock' ) || $product->is_in_stock(),
+			'stock_status' => method_exists( $product, 'get_stock_status' ) ? $product->get_stock_status() : '',
 			'type'         => method_exists( $product, 'get_type' ) ? $product->get_type() : 'simple',
 			'subscription' => function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $product ),
 		);
