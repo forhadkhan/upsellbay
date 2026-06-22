@@ -133,6 +133,7 @@ window.jQuery(function ($) {
 
     function selectProduct(product) {
       $input.val(product.id);
+      $input.trigger('change');
       const baseMin = product.base_price_min_raw || product.regular_price_raw || product.price_min_raw || product.price_raw || '';
       const baseMax = product.base_price_max_raw || product.regular_price_raw || product.price_max_raw || product.price_raw || '';
       $selector.find('[data-upsellbay-product-price-input]').val(product.base_price_raw || baseMin || '');
@@ -166,6 +167,7 @@ window.jQuery(function ($) {
         .find(".upsellbay-product-selector__selection-remove")
         .on("click", () => {
           $input.val("");
+          $input.trigger('change');
           $selector.find('[data-upsellbay-product-price-input]').val("");
           $selector.find('[data-upsellbay-product-price-min-input]').val("");
           $selector.find('[data-upsellbay-product-price-max-input]').val("");
@@ -232,6 +234,7 @@ window.jQuery(function ($) {
         .find(".upsellbay-product-selector__selection-remove")
         .on("click", () => {
           $input.val("");
+          $input.trigger('change');
           $selector.find('[data-upsellbay-product-price-input]').val("");
           $selection.empty().removeClass("is-active");
           $inputWrapper.show();
@@ -693,6 +696,14 @@ window.jQuery(function ($) {
     }
 
     function normalizeRuleValue(definition, value) {
+      if (definition.valueType === 'products') {
+        if (Array.isArray(value)) {
+          return String(value[0] || '');
+        }
+
+        return value === undefined || value === null ? '' : String(value);
+      }
+
       if (definition.valueType === 'number' || definition.valueType === 'stock_status') {
         return value === undefined || value === null ? '' : String(value);
       }
@@ -712,7 +723,6 @@ window.jQuery(function ($) {
 
     function endpointForValueType(valueType) {
       const endpoints = {
-        products: 'products',
         categories: 'categories',
         tags: 'tags',
         roles: 'roles',
@@ -745,7 +755,44 @@ window.jQuery(function ($) {
       const value = item.value;
       const values = Array.isArray(value) ? value : (value ? [value] : []);
 
-      if (['products', 'categories', 'tags', 'roles'].includes(definition.valueType)) {
+      if (definition.valueType === 'products') {
+        const selectedId = values.length ? String(values[0] || '') : '';
+        const isActive = '' !== selectedId && '0' !== selectedId;
+
+        return `
+          <div class="upsellbay-product-selector upsellbay-product-selector--rule" data-upsellbay-product-selector>
+            <div class="upsellbay-product-selector__input-wrapper" ${isActive ? 'style="display:none;"' : ''}>
+              <input
+                id="upsellbay-rule-product-${index}-search"
+                type="text"
+                class="regular-text"
+                placeholder="${escapeHtml('Search for a product...')}"
+                autocomplete="off"
+              >
+              <button type="button" class="upsellbay-product-selector__clear" style="display: none;" title="${escapeHtml('Clear search')}">&times;</button>
+            </div>
+            <input
+              type="hidden"
+              id="upsellbay-rule-product-${index}"
+              class="upsellbay-vb-val"
+              data-index="${index}"
+              value="${escapeHtml(selectedId)}"
+            >
+            <div class="upsellbay-product-selector__results" data-upsellbay-results></div>
+            <div class="upsellbay-product-selector__selection${isActive ? ' is-active' : ''}" data-upsellbay-selection>
+              ${isActive ? `
+                <div class="upsellbay-product-selector__result-info">
+                  <span class="upsellbay-product-selector__result-name">Product ID: ${escapeHtml(selectedId)}</span>
+                  <span class="upsellbay-product-selector__result-meta">(Selected for this rule)</span>
+                </div>
+                <span class="upsellbay-product-selector__selection-remove">&times;</span>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }
+
+      if (['categories', 'tags', 'roles'].includes(definition.valueType)) {
         const endpoint = endpointForValueType(definition.valueType);
         const options = values.map((selectedValue) => `<option value="${escapeHtml(selectedValue)}" selected>${escapeHtml(`#${selectedValue}`)}</option>`).join('');
         return `
@@ -891,7 +938,11 @@ window.jQuery(function ($) {
       $builder.find('.upsellbay-vb-add').on('click', function () {
         if (isRules) {
           const definition = ruleDefinitions[firstRuleType] || {};
-          items.push({ type: firstRuleType, operator: definition.defaultOperator || 'contains', value: [] });
+          items.push({
+            type: firstRuleType,
+            operator: definition.defaultOperator || 'contains',
+            value: definition.valueType === 'products' || definition.valueType === 'number' || definition.valueType === 'stock_status' ? '' : [],
+          });
         } else {
           items.push({ key: '', value: '' });
         }

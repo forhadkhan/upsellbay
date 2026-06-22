@@ -25,7 +25,8 @@ test.describe('admin offer editor permutation tests', () => {
 
 		await expect(firstRule.locator('.upsellbay-vb-type')).toHaveValue('cart_product');
 		await expect(firstRule.locator('.upsellbay-vb-op')).toBeVisible();
-		await expect(firstRule.locator('.upsellbay-rule-entity-search')).toHaveCount(1);
+		await expect(firstRule.locator('.upsellbay-product-selector--rule[data-upsellbay-product-selector]')).toHaveCount(1);
+		await expect(firstRule.locator('.upsellbay-product-selector--rule .upsellbay-product-selector__input-wrapper input')).toHaveCount(1);
 
 		await firstRule.locator('.upsellbay-vb-type').selectOption('cart_subtotal');
 		await expect(firstRule.locator('input[type="number"].upsellbay-vb-val')).toHaveCount(1);
