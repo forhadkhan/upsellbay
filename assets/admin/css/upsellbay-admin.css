@@ -219,6 +219,92 @@
 	overflow: visible;
 }
 
+.upsellbay-offer-visibility-panel {
+	margin: 16px 0 20px;
+	padding: 0;
+}
+
+.upsellbay-offer-visibility-panel__summary {
+	align-items: center;
+	cursor: pointer;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	list-style: none;
+	padding: 12px 16px;
+	user-select: none;
+}
+
+.upsellbay-offer-visibility-panel__summary::-webkit-details-marker {
+	display: none;
+}
+
+.upsellbay-offer-visibility-panel__summary::before {
+	color: #646970;
+	content: "\25B6";
+	display: inline-block;
+	font-size: 10px;
+	line-height: 1;
+	transition: transform 0.2s ease;
+}
+
+.upsellbay-offer-visibility-panel[open] > .upsellbay-offer-visibility-panel__summary::before {
+	transform: rotate(90deg);
+}
+
+.upsellbay-offer-visibility-panel__badge {
+	border-radius: 999px;
+	display: inline-flex;
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 1.2;
+	padding: 4px 10px;
+}
+
+.upsellbay-offer-visibility-panel__badge--success {
+	background: #d7f1e3;
+	color: #007017;
+}
+
+.upsellbay-offer-visibility-panel__badge--warning {
+	background: #fff5d7;
+	color: #8a6300;
+}
+
+.upsellbay-offer-visibility-panel__badge--blocked {
+	background: #fcf0f1;
+	color: #a00;
+}
+
+.upsellbay-offer-visibility-panel__row-badge {
+	border-radius: 999px;
+	display: inline-flex;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 1.2;
+	padding: 3px 8px;
+	text-transform: uppercase;
+}
+
+.upsellbay-offer-visibility-panel__row-badge--success {
+	background: #d7f1e3;
+	color: #007017;
+}
+
+.upsellbay-offer-visibility-panel__row-badge--warning {
+	background: #fff5d7;
+	color: #8a6300;
+}
+
+.upsellbay-offer-visibility-panel__row-badge--blocked {
+	background: #fcf0f1;
+	color: #a00;
+}
+
+.upsellbay-offer-visibility-panel > .inside {
+	padding: 0 12px 12px;
+}
+
 .upsellbay-overview-header {
 	align-items: center;
 	display: flex;
