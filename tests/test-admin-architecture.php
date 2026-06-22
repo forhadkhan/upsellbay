@@ -327,6 +327,7 @@ function upsellbay_admin_architecture_tests(): array {
 			assert_true( false === str_contains( $html, '<details id="upsellbay-offer-visibility-panel" class="postbox upsellbay-offer-visibility-panel" open>' ) );
 			assert_contains( 'upsellbay-offer-visibility-panel__badge', $html );
 			assert_contains( 'upsellbay-offer-visibility-panel__row-badge', $html );
+			assert_true( strpos( $html, 'woocommerce-help-tip' ) < strpos( $html, 'View Live' ) );
 			assert_true( strpos( $html, 'Offer saved successfully.' ) < strpos( $html, 'Visibility Inspector' ) );
 		},
 		'settings save notice renders above the attached header instead of inside tab content' => static function (): void {

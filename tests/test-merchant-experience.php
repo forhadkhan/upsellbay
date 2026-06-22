@@ -123,7 +123,7 @@ function upsellbay_merchant_experience_tests(): array {
 				new OfferDefaults()
 			);
 
-			assert_same( array( 'basics', 'targeting', 'recommendations', 'discount', 'placement', 'schedule', 'advanced' ), array_keys( $page->sections() ) );
+			assert_same( array( 'basics', 'targeting', 'discount', 'placement', 'schedule', 'advanced' ), array_keys( $page->sections() ) );
 			assert_true( in_array( '_ub_section_heading', $page->sections()['basics']['fields'], true ) );
 			assert_false( $page->sections()['advanced']['collapsed'] );
 			assert_contains( 'server-side', $page->help_tips()['discount'] );

@@ -277,11 +277,6 @@ final class OfferEditPage {
 				'collapsed' => false,
 				'fields'    => array( '_ub_rules_match', '_ub_rules' ),
 			),
-			'recommendations' => array(
-				'label'     => __( 'Recommendations', 'upsellbay' ),
-				'collapsed' => false,
-				'fields'    => array( '_ub_recommendations' ),
-			),
 			'discount'        => array(
 				'label'     => __( 'Discount', 'upsellbay' ),
 				'collapsed' => false,
@@ -428,6 +423,9 @@ final class OfferEditPage {
 			echo '<p class="description" style="margin-top: 0;">' . esc_html__( 'You can modify and save data', 'upsellbay' ) . '</p>';
 			echo '</div>';
 			echo '<div style="display: flex; align-items: center; gap: 4px;">';
+			if ( '' !== $preview_info && function_exists( 'wc_help_tip' ) ) {
+				echo wp_kses_post( wc_help_tip( $preview_info ) );
+			}
 			if ( $preview['available'] ) {
 				printf(
 					'<a href="%1$s" target="_blank" class="button button-secondary" title="%2$s">%3$s <span class="dashicons dashicons-external" style="line-height: inherit; font-size: 14px; margin-left: 2px;"></span></a>',
@@ -441,9 +439,6 @@ final class OfferEditPage {
 					esc_attr( $preview['message'] ),
 					esc_html__( 'View Live', 'upsellbay' )
 				);
-			}
-			if ( '' !== $preview_info && function_exists( 'wc_help_tip' ) ) {
-				echo wp_kses_post( wc_help_tip( $preview_info ) );
 			}
 			echo '</div>';
 			echo '</div>';
@@ -606,7 +601,6 @@ final class OfferEditPage {
 			'_ub_offer_goal'               => __( 'Offer goal', 'upsellbay' ),
 			'_ub_reason_label'             => __( 'Reason label', 'upsellbay' ),
 			'_ub_section_heading'          => __( 'Section heading', 'upsellbay' ),
-			'_ub_recommendations'          => __( 'Assistant suggestions', 'upsellbay' ),
 			'_ub_conflict_override'        => __( 'Conflict override', 'upsellbay' ),
 			'_ub_conflict_override_reason' => __( 'Conflict override reason', 'upsellbay' ),
 		);
@@ -620,11 +614,7 @@ final class OfferEditPage {
 		}
 		echo '</label></th><td>';
 
-		if ( '_ub_recommendations' === $field ) {
-			echo '<div id="upsellbay-recommendations-container" data-nonce="' . esc_attr( wp_create_nonce( 'wp_rest' ) ) . '">';
-			echo '<p class="description">' . esc_html__( 'Select a primary target product above to see AI/WooCommerce product recommendations here.', 'upsellbay' ) . '</p>';
-			echo '</div>';
-		} elseif ( '_ub_stats_summary' === $field ) {
+		if ( '_ub_stats_summary' === $field ) {
 			$this->render_stats_summary();
 		} elseif ( '_ub_offer_type' === $field ) {
 			$descriptions = $this->offer_type_descriptions();
