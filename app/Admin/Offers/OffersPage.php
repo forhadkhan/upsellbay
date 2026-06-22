@@ -200,6 +200,7 @@ final class OffersPage {
 
 		echo '<div class="upsellbay-overview-header">';
 		echo '<h3 class="upsellbay-overview-title">' . esc_html__( 'Offers Overview', 'upsellbay' ) . '</h3>';
+		echo '<p class="description">' . esc_html( $this->overview_summary_text( $total_offers, $active_offers, $paused_offers, $draft_offers ) ) . '</p>';
 		echo '</div>';
 		echo '<div class="upsellbay-card-grid upsellbay-card-grid--metrics">';
 		$this->summary_item( __( 'Total offers', 'upsellbay' ), (string) $total_offers, __( 'All published UpsellBay offers stored in the private offer library.', 'upsellbay' ) );
