@@ -32,7 +32,7 @@ final class SettingsSectionNavigation {
 		$sections = $this->sections();
 		$last_key = array_key_last( $sections );
 
-		echo '<ul class="subsubsub upsellbay-settings-section-menu" aria-label="' . esc_attr__( 'Settings sections', 'upsellbay' ) . '">';
+		echo '<ul id="upsellbay-settings-section-menu" class="subsubsub upsellbay-settings-section-menu" aria-label="' . esc_attr__( 'Settings sections', 'upsellbay' ) . '">';
 		foreach ( $sections as $section_id => $section ) {
 			$is_active = $section_id === $active_section;
 			echo '<li><a href="' . esc_url( $section['url'] ) . '"';

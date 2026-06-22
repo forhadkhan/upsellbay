@@ -157,9 +157,9 @@ final class TabFactory {
 							}
 
 							if ( true === $result['success'] ) {
-								$redirect_url = add_query_arg( 'wc_message', rawurlencode( __( 'Offer saved successfully.', 'upsellbay' ) ), $redirect_url );
+								$redirect_url = add_query_arg( 'ub_message', rawurlencode( __( 'Offer saved successfully.', 'upsellbay' ) ), $redirect_url );
 							} else {
-								$redirect_url = add_query_arg( 'wc_error', rawurlencode( $result['message'] ), $redirect_url );
+								$redirect_url = add_query_arg( 'ub_error', rawurlencode( $result['message'] ), $redirect_url );
 							}
 
 							wp_safe_redirect( $redirect_url );

@@ -55,7 +55,7 @@ final class OfferVisibilityPanel {
 			default => 'notice-success',
 		};
 
-		echo '<div class="postbox upsellbay-offer-visibility-panel">';
+		echo '<div id="upsellbay-offer-visibility-panel" class="postbox upsellbay-offer-visibility-panel">';
 		echo '<h2 style="padding-left: 12px;"><span>' . esc_html__( 'Visibility Inspector', 'upsellbay' ) . '</span></h2>';
 		echo '<div class="inside">';
 		echo '<div class="notice inline ' . esc_attr( $notice_class ) . '"><p>' . esc_html( $report['summary'] ) . '</p></div>';

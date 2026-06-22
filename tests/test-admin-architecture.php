@@ -284,6 +284,46 @@ function upsellbay_admin_architecture_tests(): array {
 			assert_true( strpos( $html, 'License check failed: inactive.' ) > strpos( $html, 'upsellbay-tab-content' ) );
 			assert_true( strpos( $html, 'upsellbay-tab-content' ) < strpos( $html, 'Tools content' ) );
 		},
+		'offer edit redirect notices render before the visibility inspector section' => static function (): void {
+			$offer      = upsellbay_phase4_offer( 88, 'checkout_bump', 25, 1 );
+			$repository = upsellbay_test_offer_repository( array( 88 => $offer ) );
+			$validator  = new OfferValidator( new OfferSchema(), static fn (): bool => true );
+			$service    = new OfferService( $repository, $validator );
+			$panel      = new OfferVisibilityPanel(
+				new OfferVisibilityInspector(
+					new Settings( static fn (): array => array(), static fn (): bool => true ),
+					$validator,
+					new OfferPrioritizer( new RuleEvaluator( new RuleParser() ), static fn (): bool => true ),
+					$repository
+				)
+			);
+			$page       = new OfferEditPage(
+				$service,
+				$validator,
+				static fn (): bool => true,
+				static fn ( string $nonce ): bool => 'good' === $nonce,
+				null,
+				null,
+				null,
+				null,
+				$panel
+			);
+			$previous_get = $_GET;
+			$_GET         = array(
+				'offer_id'   => 88,
+				'ub_message' => 'Offer saved successfully.',
+			);
+
+			ob_start();
+			$page->render_content();
+			$html = (string) ob_get_clean();
+
+			$_GET = $previous_get;
+
+			assert_contains( 'Offer saved successfully.', $html );
+			assert_contains( 'Visibility Inspector', $html );
+			assert_true( strpos( $html, 'Offer saved successfully.' ) < strpos( $html, 'Visibility Inspector' ) );
+		},
 		'settings save notice renders above the attached header instead of inside tab content' => static function (): void {
 			$settings = new Settings( static fn (): array => array(), static fn (): bool => true );
 			$page     = new SettingsPage(

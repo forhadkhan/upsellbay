@@ -116,7 +116,9 @@ final class AdminPage {
 		 */
 		echo '<div class="upsellbay-page-notices">';
 		do_action( 'upsellbay_admin_page_heading_before' );
-		$this->render_redirect_notices();
+		if ( ! $this->should_defer_redirect_notices( $active_tab, $request ) ) {
+			$this->render_redirect_notices();
+		}
 		echo '</div>';
 
 		$active_tab->render( $request );
@@ -163,7 +165,7 @@ final class AdminPage {
 	 * @param AdminTab $active_tab Active tab.
 	 */
 	private function render_header( AdminTab $active_tab ): void {
-		echo '<div class="upsellbay-layout-header upsellbay-admin">';
+		echo '<div id="upsellbay-header" class="upsellbay-layout-header upsellbay-admin">';
 		echo '<div class="upsellbay-layout-header__wrapper">';
 		echo '<h1 class="upsellbay-layout-header__heading">' . esc_html__( 'UpsellBay', 'upsellbay' ) . '</h1>';
 		echo '<div class="upsellbay-layout-header__actions">';
@@ -194,6 +196,27 @@ final class AdminPage {
 			echo '<div class="notice notice-error upsellbay-page-notice"><p>' . esc_html( $error ) . '</p></div>';
 		}
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+	}
+
+	/**
+	 * Determine whether redirect notices should be rendered within the active tab content.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param AdminTab             $active_tab Active tab.
+	 * @param array<string, mixed> $request    Request data.
+	 * @return bool
+	 */
+	private function should_defer_redirect_notices( AdminTab $active_tab, array $request ): bool {
+		if ( 'offers' !== $active_tab->id() ) {
+			return false;
+		}
+
+		if ( 'edit' === $this->request_key( $request['action'] ?? '' ) ) {
+			return true;
+		}
+
+		return isset( $request['offer_id'] ) || isset( $request['id'] );
 	}
 
 	/**

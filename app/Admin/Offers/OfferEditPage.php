@@ -364,8 +364,7 @@ final class OfferEditPage {
 	 * @since 1.0.0
 	 */
 	public function render_content(): void {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$offer_id = isset( $_GET['offer_id'] ) ? (int) sanitize_text_field( wp_unslash( $_GET['offer_id'] ) ) : ( isset( $_GET['id'] ) ? (int) sanitize_text_field( wp_unslash( $_GET['id'] ) ) : 0 );
+		$offer_id = $this->current_offer_id();
 		$offer    = null;
 
 		if ( $offer_id > 0 ) {
@@ -373,6 +372,7 @@ final class OfferEditPage {
 		}
 
 		$this->section_navigation->render( null !== $offer ? '' : 'add_offer' );
+		$this->render_notices( $offer );
 
 		$meta  = null !== $offer ? $offer['meta'] : $this->new_offer_meta();
 		$title = null !== $offer ? $offer['title'] : '';
@@ -421,7 +421,7 @@ final class OfferEditPage {
 				$preview_info = __( 'Links directly to your checkout page. You must have an item in your cart to view checkout.', 'upsellbay' );
 			}
 
-			echo '<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">';
+			echo '<div id="upsellbay-offer-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">';
 			echo '<div>';
 			/* translators: %d: offer ID */
 			echo '<h2 class="wp-heading-inline" style="margin-bottom: 4px;">' . esc_html( sprintf( __( 'UpsellBay Offer: ID - %d', 'upsellbay' ), $offer_id ) ) . '</h2>';
@@ -448,17 +448,11 @@ final class OfferEditPage {
 			echo '</div>';
 			echo '</div>';
 
-			if ( null !== $this->conflict_detector ) {
-				$warnings = $this->conflict_detector->detect( $offer_id, $meta );
-				foreach ( $warnings as $warning ) {
-					echo '<div class="notice notice-warning inline"><p>' . esc_html( $warning ) . '</p></div>';
-				}
-			}
 			if ( null !== $this->visibility_panel ) {
 				$this->visibility_panel->render( $offer );
 			}
 		} else {
-			echo '<h2 class="wp-heading-inline">' . esc_html__( 'Add UpsellBay Offer', 'upsellbay' ) . '</h2>';
+			echo '<h2 id="upsellbay-offer-header" class="wp-heading-inline">' . esc_html__( 'Add UpsellBay Offer', 'upsellbay' ) . '</h2>';
 		}
 		echo '<hr class="wp-header-end">';
 		echo '<form method="post" id="upsellbay-offer-editor-form">';
@@ -497,6 +491,87 @@ final class OfferEditPage {
 
 		echo '</p>';
 		echo '</form>';
+	}
+
+	/**
+	 * Render all page notices between the section menu and the offer header.
+	 *
+	 * Outputs redirect success/error messages and conflict warnings in a single
+	 * region so every notice appears consistently between
+	 * #upsellbay-offers-section-menu and #upsellbay-offer-header.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array{id: int, title: string, meta: array<string, mixed>}|null $offer Current offer data, or null for new offers.
+	 */
+	private function render_notices( ?array $offer ): void {
+		$has_redirect_notices = false;
+
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		if ( isset( $_GET['ub_message'] ) || isset( $_GET['ub_error'] ) || isset( $_GET['wc_message'] ) || isset( $_GET['wc_error'] ) ) {
+			$has_redirect_notices = true;
+		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		$conflict_warnings = array();
+		if ( null !== $offer && null !== $this->conflict_detector ) {
+			$conflict_warnings = $this->conflict_detector->detect( $offer['id'], $offer['meta'] );
+		}
+
+		if ( ! $has_redirect_notices && array() === $conflict_warnings ) {
+			return;
+		}
+
+		echo '<div class="upsellbay-page-notices">';
+
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		if ( isset( $_GET['ub_message'] ) ) {
+			$message = sanitize_text_field( wp_unslash( $_GET['ub_message'] ) );
+			echo '<div class="notice notice-success upsellbay-page-notice"><p>' . esc_html( $message ) . '</p></div>';
+		}
+
+		if ( isset( $_GET['wc_message'] ) ) {
+			$message = sanitize_text_field( wp_unslash( $_GET['wc_message'] ) );
+			echo '<div class="notice notice-success upsellbay-page-notice"><p>' . esc_html( $message ) . '</p></div>';
+		}
+
+		if ( isset( $_GET['ub_error'] ) ) {
+			$error = sanitize_text_field( wp_unslash( $_GET['ub_error'] ) );
+			echo '<div class="notice notice-error upsellbay-page-notice"><p>' . esc_html( $error ) . '</p></div>';
+		}
+
+		if ( isset( $_GET['wc_error'] ) ) {
+			$error = sanitize_text_field( wp_unslash( $_GET['wc_error'] ) );
+			echo '<div class="notice notice-error upsellbay-page-notice"><p>' . esc_html( $error ) . '</p></div>';
+		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		foreach ( $conflict_warnings as $warning ) {
+			echo '<div class="notice notice-warning upsellbay-page-notice"><p>' . esc_html( $warning ) . '</p></div>';
+		}
+
+		echo '</div>';
+	}
+
+	/**
+	 * Resolve the current offer ID from the request.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return int
+	 */
+	private function current_offer_id(): int {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( isset( $_GET['offer_id'] ) ) {
+			return function_exists( 'absint' ) ? absint( $_GET['offer_id'] ) : (int) $_GET['offer_id'];
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( isset( $_GET['id'] ) ) {
+			return function_exists( 'absint' ) ? absint( $_GET['id'] ) : (int) $_GET['id'];
+		}
+
+		return 0;
 	}
 
 	/**
@@ -912,8 +987,7 @@ final class OfferEditPage {
 	 * @since 1.0.0
 	 */
 	private function render_stats_summary(): void {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$offer_id = isset( $_GET['offer_id'] ) ? (int) sanitize_text_field( wp_unslash( $_GET['offer_id'] ) ) : ( isset( $_GET['id'] ) ? (int) sanitize_text_field( wp_unslash( $_GET['id'] ) ) : 0 );
+		$offer_id = $this->current_offer_id();
 
 		if ( $offer_id <= 0 ) {
 			echo '<p class="description">' . esc_html__( 'Performance stats will appear here after the offer is saved and starts receiving traffic.', 'upsellbay' ) . '</p>';
