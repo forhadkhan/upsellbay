@@ -171,6 +171,18 @@ final class CartSession {
 	 */
 	public function validate_token( string $token ): bool {
 		$state = $this->state();
+
+		// If the session has no token yet (e.g. empty cart on a cached product page),
+		// accept the provided token as the initial token for this session.
+		if ( '' === $state['token_hash'] && '' !== $token ) {
+			$state['token_raw']       = $token;
+			$state['token_hash']      = $this->tokens->hash( $token );
+			$state['token_issued_at'] = time();
+			$this->save( $state );
+
+			return true;
+		}
+
 		return '' !== $state['token_hash'] && $this->tokens->verify( $token, $state['token_hash'] );
 	}
 

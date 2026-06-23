@@ -79,7 +79,10 @@ final class ProductPageRenderer extends AbstractOfferRenderer {
 			$heading_rendered = true;
 		}
 
-		$html .= '<div class="' . $this->esc_attr( implode( ' ', $classes ) ) . '" data-upsellbay-placement="product_upsell" data-upsellbay-offer-id="' . $this->esc_attr( (string) $offer_id ) . '">'
+		$viewed_product_attr = (int) ( $context['viewed_product_id'] ?? 0 ) > 0 ? ' data-upsellbay-viewed-product-id="' . $this->esc_attr( (string) (int) $context['viewed_product_id'] ) . '"' : '';
+		$source_order_attr = (int) ( $context['source_order_id'] ?? 0 ) > 0 ? ' data-upsellbay-source-order-id="' . $this->esc_attr( (string) (int) $context['source_order_id'] ) . '"' : '';
+
+		$html .= '<div class="' . $this->esc_attr( implode( ' ', $classes ) ) . '" data-upsellbay-placement="product_upsell" data-upsellbay-offer-id="' . $this->esc_attr( (string) $offer_id ) . '"' . $source_order_attr . $viewed_product_attr . '>'
 			. $image_html
 			. '<div class="upsellbay-offer__content">'
 			. '<div class="upsellbay-offer__text">'

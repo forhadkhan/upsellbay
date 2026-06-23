@@ -75,6 +75,7 @@ abstract class AbstractOfferRenderer implements OfferRendererInterface {
 			: '<button type="button" class="button wp-element-button wc-block-components-button upsellbay-offer__button" data-upsellbay-offer-id="' . $this->esc_attr( (string) $offer_id ) . '">' . $this->esc_html( $button_text ) . '</button>';
 
 		$source_order_attr = (int) ( $context['source_order_id'] ?? 0 ) > 0 ? ' data-upsellbay-source-order-id="' . $this->esc_attr( (string) (int) $context['source_order_id'] ) . '"' : '';
+		$viewed_product_attr = (int) ( $context['viewed_product_id'] ?? 0 ) > 0 ? ' data-upsellbay-viewed-product-id="' . $this->esc_attr( (string) (int) $context['viewed_product_id'] ) . '"' : '';
 
 		$classes = array(
 			'upsellbay-offer',
@@ -88,7 +89,7 @@ abstract class AbstractOfferRenderer implements OfferRendererInterface {
 			$classes[] = $placement_classes;
 		}
 
-		$html = '<div class="' . $this->esc_attr( implode( ' ', $classes ) ) . '" data-upsellbay-placement="' . $this->esc_attr( $placement ) . '" data-upsellbay-offer-id="' . $this->esc_attr( (string) $offer_id ) . '"' . $source_order_attr . '>'
+		$html = '<div class="' . $this->esc_attr( implode( ' ', $classes ) ) . '" data-upsellbay-placement="' . $this->esc_attr( $placement ) . '" data-upsellbay-offer-id="' . $this->esc_attr( (string) $offer_id ) . '"' . $source_order_attr . $viewed_product_attr . '>'
 			. $image_html
 			. '<div class="upsellbay-offer__content">'
 			. '<div class="upsellbay-offer__text">'

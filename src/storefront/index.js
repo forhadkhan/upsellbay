@@ -66,6 +66,7 @@ document.addEventListener('click', async (event) => {
 			placement: card.dataset.upsellbayPlacement || 'product_upsell',
 			source_order_id: Number(card.dataset.upsellbaySourceOrderId || 0),
 			source_order_key: card.dataset.upsellbaySourceOrderKey || '',
+			viewed_product_id: Number(card.dataset.upsellbayViewedProductId || 0),
 		}, card);
 
 		if (result?.ok) {
@@ -105,6 +106,7 @@ document.addEventListener('click', async (event) => {
 		placement: card.dataset.upsellbayPlacement || 'cart_crosssell',
 		source_order_id: Number(card.dataset.upsellbaySourceOrderId || 0),
 		source_order_key: card.dataset.upsellbaySourceOrderKey || '',
+		viewed_product_id: Number(card.dataset.upsellbayViewedProductId || 0),
 	}, card);
 
 	card.classList.remove('is-loading');

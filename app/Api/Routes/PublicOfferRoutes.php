@@ -146,6 +146,12 @@ final class PublicOfferRoutes {
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
 					),
+					'viewed_product_id' => array(
+						'required'          => false,
+						'type'              => 'integer',
+						'default'           => 0,
+						'sanitize_callback' => 'absint',
+					),
 				),
 			)
 		);
@@ -192,6 +198,12 @@ final class PublicOfferRoutes {
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
 					),
+					'viewed_product_id' => array(
+						'required'          => false,
+						'type'              => 'integer',
+						'default'           => 0,
+						'sanitize_callback' => 'absint',
+					),
 				),
 			)
 		);
@@ -233,6 +245,12 @@ final class PublicOfferRoutes {
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
 					),
+					'viewed_product_id' => array(
+						'required'          => false,
+						'type'              => 'integer',
+						'default'           => 0,
+						'sanitize_callback' => 'absint',
+					),
 				),
 			)
 		);
@@ -264,8 +282,11 @@ final class PublicOfferRoutes {
 			);
 		}
 
+		$placement = (string) ( $params['placement'] ?? 'checkout_bump' );
+		$context   = $this->build_request_context( $params, $placement );
+
 		$result = true === ( $params['accepted'] ?? false )
-			? $this->cart->accept( $offer, (string) ( $params['placement'] ?? 'checkout_bump' ), array( 'source_context' => 'checkout' ) )
+			? $this->cart->accept( $offer, $placement, $context )
 			: $this->cart->remove( (int) $params['offer_id'] );
 
 		if ( true === ( $params['accepted'] ?? false ) && true === ( $result['success'] ?? false ) ) {
@@ -307,14 +328,10 @@ final class PublicOfferRoutes {
 		}
 
 		$placement = (string) ( $params['placement'] ?? 'cart_crosssell' );
-		$context   = array(
-			'source_context'  => $placement,
-			'source_order_id' => (int) ( $params['source_order_id'] ?? 0 ),
-		);
-
+		
 		if ( 'thankyou_offer' === $placement ) {
-			$source_order_context = $this->source_order_context( $params );
-			if ( null === $source_order_context ) {
+			$context = $this->source_order_context( $params );
+			if ( null === $context ) {
 				return $this->response(
 					400,
 					array(
@@ -324,8 +341,8 @@ final class PublicOfferRoutes {
 					)
 				);
 			}
-
-			$context = array_replace( $context, $source_order_context );
+		} else {
+			$context = $this->build_request_context( $params, $placement );
 		}
 
 		$result = $this->cart->accept(
@@ -407,6 +424,59 @@ final class PublicOfferRoutes {
 			'source_order_id'     => $order_id,
 			'source_order_status' => method_exists( $order, 'get_status' ) ? (string) $order->get_status() : '',
 		);
+	}
+
+	/**
+	 * Build a cart-like rule context from the current session.
+	 *
+	 * @param array<string, mixed> $params Request params.
+	 * @param string               $placement Placement key.
+	 * @return array<string, mixed>
+	 */
+	private function build_request_context( array $params, string $placement ): array {
+		$context = array(
+			'source_context'      => $placement,
+			'source_order_id'     => (int) ( $params['source_order_id'] ?? 0 ),
+			'viewed_product_id'   => (int) ( $params['viewed_product_id'] ?? 0 ),
+			'cart_product_ids'    => array(),
+			'cart_category_ids'   => array(),
+			'cart_tag_ids'        => array(),
+			'viewed_category_ids' => array(),
+			'viewed_tag_ids'      => array(),
+			'cart_subtotal'       => '0',
+		);
+
+		if ( $context['viewed_product_id'] > 0 ) {
+			$context['viewed_category_ids'] = $this->product_term_ids( $context['viewed_product_id'], 'product_cat' );
+			$context['viewed_tag_ids']      = $this->product_term_ids( $context['viewed_product_id'], 'product_tag' );
+		}
+
+		if ( function_exists( 'WC' ) && WC()->cart ) {
+			$context['cart_subtotal'] = (string) WC()->cart->get_subtotal();
+			foreach ( WC()->cart->get_cart() as $cart_item ) {
+				$product_id = (int) ( $cart_item['product_id'] ?? 0 );
+				if ( $product_id > 0 ) {
+					$context['cart_product_ids'][] = $product_id;
+					$context['cart_category_ids']  = array_merge( $context['cart_category_ids'], $this->product_term_ids( $product_id, 'product_cat' ) );
+					$context['cart_tag_ids']       = array_merge( $context['cart_tag_ids'], $this->product_term_ids( $product_id, 'product_tag' ) );
+				}
+			}
+		}
+
+		if ( function_exists( 'wp_get_current_user' ) ) {
+			$user                  = wp_get_current_user();
+			$context['user_roles'] = $user->roles;
+		}
+
+		if ( function_exists( 'get_current_user_id' ) ) {
+			$customer_id = get_current_user_id();
+			if ( $customer_id > 0 ) {
+				$context['customer_order_count']    = function_exists( 'wc_get_customer_order_count' ) ? wc_get_customer_order_count( $customer_id ) : 0;
+				$context['customer_lifetime_spend'] = function_exists( 'wc_get_customer_total_spent' ) ? wc_get_customer_total_spent( $customer_id ) : '0';
+			}
+		}
+
+		return $context;
 	}
 
 	/**
