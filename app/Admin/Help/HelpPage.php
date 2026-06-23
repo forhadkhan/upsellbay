@@ -87,10 +87,19 @@ final class HelpPage {
 	public function render(): void {
 		echo '<div class="wrap woocommerce upsellbay-admin">';
 		
-		$logo_url = plugins_url( 'assets/admin/upsellbay-logo.svg', Constants::plugin_file() );
+		$logo_path = dirname( Constants::plugin_file() ) . '/assets/admin/upsellbay-logo.svg';
 		echo '<div style="margin-bottom: 20px; margin-top: 10px;">';
-		echo '<a href="' . esc_url( Constants::PLUGIN_URL ) . '" target="_blank">';
-		echo '<img src="' . esc_url( $logo_url ) . '" alt="UpsellBay" style="max-width: 200px; height: auto;" />';
+		echo '<a href="' . esc_url( Constants::PLUGIN_URL ) . '" target="_blank" style="display:inline-block; max-width: 200px;">';
+		if ( file_exists( $logo_path ) ) {
+			$svg = file_get_contents( $logo_path );
+			// Remove XML declaration if it exists so it embeds cleanly.
+			$svg = preg_replace( '/^<\?xml[^>]+>\s*/i', '', $svg );
+			// Enforce max width directly on the SVG element for safety
+			$svg = str_replace( '<svg ', '<svg style="max-width: 100%; height: auto; display: block;" ', $svg );
+			echo $svg; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		} else {
+			echo '<strong>UpsellBay</strong>';
+		}
 		echo '</a>';
 		echo '</div>';
 
