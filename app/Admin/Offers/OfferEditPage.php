@@ -1321,6 +1321,7 @@ final class OfferEditPage {
 		$category_ids = array();
 		$tag_ids      = array();
 		$role_keys    = array();
+		$product_ids  = array();
 
 		foreach ( $rules as $rule ) {
 			$type = (string) ( $rule['type'] ?? '' );
@@ -1334,7 +1335,7 @@ final class OfferEditPage {
 			}
 
 			$value_type = (string) ( $definition['value_type'] ?? '' );
-			if ( ! in_array( $value_type, array( 'categories', 'tags', 'roles' ), true ) ) {
+			if ( ! in_array( $value_type, array( 'categories', 'tags', 'roles', 'products' ), true ) ) {
 				continue;
 			}
 
@@ -1349,6 +1350,36 @@ final class OfferEditPage {
 				$tag_ids = array_merge( $tag_ids, $rule_value );
 			} elseif ( 'roles' === $value_type ) {
 				$role_keys = array_merge( $role_keys, $rule_value );
+			} elseif ( 'products' === $value_type ) {
+				$product_ids = array_merge( $product_ids ?? array(), $rule_value );
+			}
+		}
+
+		if ( ! empty( $product_ids ) && function_exists( 'wc_get_products' ) ) {
+			$products = wc_get_products(
+				array(
+					'include' => array_filter( array_map( 'intval', array_unique( $product_ids ) ) ),
+					'limit'   => -1,
+				)
+			);
+			foreach ( $products as $product ) {
+				$text   = $product->get_name();
+				$extras = array( 'ID: ' . $product->get_id() );
+
+				if ( method_exists( $product, 'get_price_html' ) ) {
+					$price_html = $product->get_price_html();
+					if ( '' !== $price_html ) {
+						$extras[] = html_entity_decode( wp_strip_all_tags( $price_html ), ENT_QUOTES, 'UTF-8' );
+					} elseif ( method_exists( $product, 'get_price' ) && '' !== $product->get_price() ) {
+						$extras[] = $product->get_price();
+					}
+				}
+
+				if ( array() !== $extras ) {
+					$text .= ' (' . implode( ' - ', $extras ) . ')';
+				}
+
+				$entities[ (string) $product->get_id() ] = $text;
 			}
 		}
 

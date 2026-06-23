@@ -804,14 +804,6 @@ window.jQuery(function ($) {
     }
 
     function normalizeRuleValue(definition, value) {
-      if (definition.valueType === 'products') {
-        if (Array.isArray(value)) {
-          return String(value[0] || '');
-        }
-
-        return value === undefined || value === null ? '' : String(value);
-      }
-
       if (definition.valueType === 'number' || definition.valueType === 'stock_status') {
         return value === undefined || value === null ? '' : String(value);
       }
@@ -824,13 +816,20 @@ window.jQuery(function ($) {
         return rawValues.map((item) => String(item).trim()).filter(Boolean);
       }
 
-      return rawValues
+      const parsedIds = rawValues
         .map((item) => Number.parseInt(item, 10))
         .filter((item) => Number.isFinite(item) && item > 0);
+
+      if (!definition.multiple) {
+        return parsedIds.length ? String(parsedIds[0]) : '';
+      }
+
+      return parsedIds;
     }
 
     function endpointForValueType(valueType) {
       const endpoints = {
+        products: 'products',
         categories: 'categories',
         tags: 'tags',
         roles: 'roles',
@@ -863,44 +862,7 @@ window.jQuery(function ($) {
       const value = item.value;
       const values = Array.isArray(value) ? value : (value ? [value] : []);
 
-      if (definition.valueType === 'products') {
-        const selectedId = values.length ? String(values[0] || '') : '';
-        const isActive = '' !== selectedId && '0' !== selectedId;
-
-        return `
-          <div class="upsellbay-product-selector upsellbay-product-selector--rule" data-upsellbay-product-selector>
-            <div class="upsellbay-product-selector__input-wrapper" ${isActive ? 'style="display:none;"' : ''}>
-              <input
-                id="upsellbay-rule-product-${index}-search"
-                type="text"
-                class="regular-text"
-                placeholder="${escapeHtml('Search for a product...')}"
-                autocomplete="off"
-              >
-              <button type="button" class="upsellbay-product-selector__clear" style="display: none;" title="${escapeHtml('Clear search')}">&times;</button>
-            </div>
-            <input
-              type="hidden"
-              id="upsellbay-rule-product-${index}"
-              class="upsellbay-vb-val"
-              data-index="${index}"
-              value="${escapeHtml(selectedId)}"
-            >
-            <div class="upsellbay-product-selector__results" data-upsellbay-results></div>
-            <div class="upsellbay-product-selector__selection${isActive ? ' is-active' : ''}" data-upsellbay-selection>
-              ${isActive ? `
-                <div class="upsellbay-product-selector__result-info">
-                  <span class="upsellbay-product-selector__result-name">Product ID: ${escapeHtml(selectedId)}</span>
-                  <span class="upsellbay-product-selector__result-meta">(Selected for this rule)</span>
-                </div>
-                <span class="upsellbay-product-selector__selection-remove">&times;</span>
-              ` : ''}
-            </div>
-          </div>
-        `;
-      }
-
-      if (['categories', 'tags', 'roles'].includes(definition.valueType)) {
+      if (['products', 'categories', 'tags', 'roles'].includes(definition.valueType)) {
         const endpoint = endpointForValueType(definition.valueType);
         let preloaded = {};
         try {
@@ -967,13 +929,38 @@ window.jQuery(function ($) {
                 page: params.page || 1,
               };
             },
-            processResults(response) {
-              const results = Array.isArray(response) ? response.map((item) => ({
-                id: item.id,
-                text: item.name || item.slug || item.id,
-              })) : [];
+            processResults(response, params) {
+              const results = Array.isArray(response) ? response.map((item) => {
+                let text = item.name || item.slug || item.id;
+                
+                if (endpoint === 'products') {
+                  const extras = [];
+                  if (item.id) {
+                    extras.push(`ID: ${item.id}`);
+                  }
+                  if (item.price) {
+                    const priceText = $('<div>').html(item.price).text();
+                    if (priceText) {
+                      extras.push(priceText);
+                    }
+                  }
+                  if (extras.length > 0) {
+                    text += ` (${extras.join(' - ')})`;
+                  }
+                }
 
-              return { results };
+                return {
+                  id: item.id,
+                  text: text,
+                };
+              }) : [];
+
+              return {
+                results,
+                pagination: {
+                  more: Array.isArray(response) && response.length === 10
+                }
+              };
             },
           },
         });
@@ -1059,7 +1046,7 @@ window.jQuery(function ($) {
           items.push({
             type: firstRuleType,
             operator: definition.defaultOperator || 'contains',
-            value: definition.valueType === 'products' || definition.valueType === 'number' || definition.valueType === 'stock_status' ? '' : [],
+            value: !definition.multiple ? '' : [],
           });
         } else {
           items.push({ key: '', value: '' });
@@ -1086,7 +1073,7 @@ window.jQuery(function ($) {
             items[idx] = {
               type: nextType,
               operator: definition.defaultOperator || '',
-              value: definition.valueType === 'number' || definition.valueType === 'stock_status' ? '' : [],
+              value: !definition.multiple ? '' : [],
             };
             updateTextarea();
             render();
