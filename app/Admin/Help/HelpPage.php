@@ -86,7 +86,15 @@ final class HelpPage {
 	 */
 	public function render(): void {
 		echo '<div class="wrap woocommerce upsellbay-admin">';
-		echo '<h2>' . esc_html__( 'Help', 'upsellbay' ) . '</h2>';
+		
+		$logo_url = plugins_url( 'assets/admin/upsellbay-logo.svg', Constants::plugin_file() );
+		echo '<div style="margin-bottom: 20px; margin-top: 10px;">';
+		echo '<a href="' . esc_url( Constants::PLUGIN_URL ) . '" target="_blank">';
+		echo '<img src="' . esc_url( $logo_url ) . '" alt="UpsellBay" style="max-width: 200px; height: auto;" />';
+		echo '</a>';
+		echo '</div>';
+
+		echo '<h2 style="display:none;">' . esc_html__( 'Help', 'upsellbay' ) . '</h2>'; // Kept for screen readers/admin notice positioning
 		$this->render_content();
 		echo '</div>';
 	}
