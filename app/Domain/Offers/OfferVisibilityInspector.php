@@ -321,6 +321,7 @@ final class OfferVisibilityInspector {
 			'inactive_offer' => __( 'The offer is not active yet.', 'upsellbay' ),
 			'dismissed_in_session' => __( 'This offer was dismissed in the current session.', 'upsellbay' ),
 			'product_already_in_cart' => __( 'The offered product is already in the cart, so the bump is hidden.', 'upsellbay' ),
+			'viewing_offered_product' => __( 'The offered product is the same as the product currently being viewed.', 'upsellbay' ),
 			'not_started' => __( 'The offer start date is in the future.', 'upsellbay' ),
 			'expired' => __( 'The offer end date has passed.', 'upsellbay' ),
 			'missing_product' => __( 'The offered product is missing.', 'upsellbay' ),

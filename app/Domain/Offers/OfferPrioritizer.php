@@ -145,6 +145,10 @@ final class OfferPrioritizer {
 			$reasons[] = 'product_already_in_cart';
 		}
 
+		if ( 'product_upsell' === $placement && $product_id > 0 && (int) ( $context['viewed_product_id'] ?? 0 ) === $product_id ) {
+			$reasons[] = 'viewing_offered_product';
+		}
+
 		$start_at     = $this->datetime_to_timestamp( $meta['_ub_start_at'] ?? null );
 		$end_at       = $this->datetime_to_timestamp( $meta['_ub_end_at'] ?? null );
 		$current      = ( $this->clock )();
