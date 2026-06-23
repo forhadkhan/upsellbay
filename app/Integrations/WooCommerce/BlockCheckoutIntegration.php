@@ -164,7 +164,7 @@ final class BlockCheckoutIntegration {
 		$css .= '--upsellbay-accent-text:' . esc_attr( $text_color ) . ';}';
 
 		if ( 'outline' === $button_style ) {
-			$css .= '.upsellbay-offer .upsellbay-offer__button{background:transparent;color:var(--upsellbay-accent);border:1px solid var(--upsellbay-accent);}';
+			$css .= '.upsellbay-offer .upsellbay-offer__button{background:transparent;color:var(--upsellbay-text);border:1px solid var(--upsellbay-accent);}';
 			$css .= '.upsellbay-offer .upsellbay-offer__button:hover,.upsellbay-offer .upsellbay-offer__button:focus{background:var(--upsellbay-accent);color:var(--upsellbay-accent-text);}';
 		}
 
