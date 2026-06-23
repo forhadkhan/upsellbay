@@ -461,6 +461,17 @@ window.jQuery(function ($) {
       }
     });
 
+    if ($('#upsellbay-_ub_conflict_override').is(':checked')) {
+      const $reason = $('#upsellbay-_ub_conflict_override_reason');
+      if ($reason.length && !$reason.val().trim()) {
+        isValid = false;
+        errorMessages.push(`Please provide a reason for the conflict override.`);
+        $reason.css('border-color', 'red');
+      } else if ($reason.length) {
+        $reason.css('border-color', '');
+      }
+    }
+
     // JSON parsing check
     jsonFields.forEach(fieldName => {
       const $field = $form.find(`[name="${fieldName}"]`);
@@ -1321,4 +1332,27 @@ window.jQuery(function ($) {
 
   // Initial render
   updateSummary();
+});
+/**
+ * UpsellBay conflict override toggler.
+ */
+window.jQuery(function ($) {
+  const $checkbox = $('#upsellbay-_ub_conflict_override');
+  const $reasonWrapper = $('#upsellbay-conflict-override-reason-wrapper');
+  const $reasonInput = $('#upsellbay-_ub_conflict_override_reason');
+
+  if (!$checkbox.length || !$reasonWrapper.length || !$reasonInput.length) {
+    return;
+  }
+
+  $checkbox.on('change', function () {
+    const isChecked = $(this).is(':checked');
+    if (isChecked) {
+      $reasonWrapper.show();
+      $reasonInput.prop('required', true);
+    } else {
+      $reasonWrapper.hide();
+      $reasonInput.prop('required', false);
+    }
+  });
 });

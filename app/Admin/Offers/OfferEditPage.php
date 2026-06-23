@@ -334,7 +334,7 @@ final class OfferEditPage {
 			'advanced'  => array(
 				'label'     => __( 'Advanced metadata', 'upsellbay' ),
 				'collapsed' => false,
-				'fields'    => array( '_ub_stats_summary', '_ub_trigger_product_ids', '_ub_trigger_category_ids', '_ub_conflict_override', '_ub_conflict_override_reason' ),
+				'fields'    => array( '_ub_stats_summary', '_ub_trigger_product_ids', '_ub_trigger_category_ids', '_ub_conflict_override' ),
 			),
 		);
 	}
@@ -644,7 +644,6 @@ final class OfferEditPage {
 			'_ub_reason_label'             => __( 'Reason label', 'upsellbay' ),
 			'_ub_section_heading'          => __( 'Section heading', 'upsellbay' ),
 			'_ub_conflict_override'        => __( 'Conflict override', 'upsellbay' ),
-			'_ub_conflict_override_reason' => __( 'Conflict override reason', 'upsellbay' ),
 		);
 		$label     = $labels[ $field ] ?? $field;
 		$label_for = '_ub_placement_config' === $field ? 'upsellbay-_ub_placement_config-position' : 'upsellbay-' . $field;
@@ -727,6 +726,15 @@ final class OfferEditPage {
 		} elseif ( '_ub_conflict_override' === $field ) {
 			echo '<label><input id="upsellbay-' . esc_attr( $field ) . '" name="' . esc_attr( $field ) . '" type="checkbox" value="1" ' . checked( $value, true, false ) . '> ' . esc_html__( 'Override conflict prevention (advanced)', 'upsellbay' ) . '</label>';
 			echo '<p class="description">' . esc_html__( 'If checked, this offer may show even if it conflicts with another offer or the current cart state. Use with caution.', 'upsellbay' ) . '</p>';
+
+			$reason_value = $this->current_meta['_ub_conflict_override_reason'] ?? '';
+			$is_checked   = (bool) $value;
+
+			echo '<div id="upsellbay-conflict-override-reason-wrapper" style="margin-top: 8px;' . ( $is_checked ? '' : ' display: none;' ) . '">';
+			echo '<label for="upsellbay-_ub_conflict_override_reason" class="screen-reader-text">' . esc_html__( 'Conflict override reason', 'upsellbay' ) . '</label>';
+			echo '<input type="text" id="upsellbay-_ub_conflict_override_reason" name="_ub_conflict_override_reason" class="regular-text" placeholder="' . esc_attr__( 'Write a reason (required)', 'upsellbay' ) . '" value="' . esc_attr( (string) $reason_value ) . '"' . ( $is_checked ? ' required' : '' ) . '>';
+			echo ' <span class="required" style="color: #d63638;" title="' . esc_attr__( 'Required', 'upsellbay' ) . '">*</span>';
+			echo '</div>';
 		} elseif ( '_ub_offer_product_id' === $field ) {
 			$selection_price = '';
 			$selection_min   = '';
