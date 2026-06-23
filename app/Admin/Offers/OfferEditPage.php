@@ -447,7 +447,7 @@ final class OfferEditPage {
 
 			$preview_info = '';
 			if ( 'product_upsell' === $offer_type ) {
-				$preview_info = __( 'To ensure reliable previews, this links to the offered product\'s page. The actual offer will appear on your targeted products based on active rules.', 'upsellbay' );
+				$preview_info = __( 'To ensure reliable previews, this links to the first targeted product in your rules. If you only target categories instead of specific products, the automated preview link will be unavailable.', 'upsellbay' );
 			} elseif ( 'thankyou_offer' === $offer_type ) {
 				$preview_info = __( 'Previews use your most recent WooCommerce order. If you haven\'t placed an order yet, you may need to complete a test checkout first.', 'upsellbay' );
 			} elseif ( 'cart_crosssell' === $offer_type ) {
@@ -1129,9 +1129,9 @@ final class OfferEditPage {
 	 */
 	private function offer_type_options(): array {
 		return array(
-			OfferSchema::TYPE_CHECKOUT_BUMP  => __( 'Checkout bump', 'upsellbay' ),
 			OfferSchema::TYPE_PRODUCT_UPSELL => __( 'Product page offer', 'upsellbay' ),
 			OfferSchema::TYPE_CART_CROSSSELL => __( 'Cart offer', 'upsellbay' ),
+			OfferSchema::TYPE_CHECKOUT_BUMP  => __( 'Checkout bump', 'upsellbay' ),
 			OfferSchema::TYPE_THANKYOU_OFFER => __( 'Thank-you follow-on offer', 'upsellbay' ),
 		);
 	}

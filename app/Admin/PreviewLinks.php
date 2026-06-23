@@ -79,9 +79,37 @@ final class PreviewLinks {
 			return $this->available( (string) ( $context['cart_url'] ?? '/cart/' ), $offer_id, $placement );
 		}
 
-		if ( 'product_upsell' === $placement && $product_id > 0 ) {
-			$template = (string) ( $context['product_url'] ?? '/?p=%d' );
-			return $this->available( sprintf( $template, $product_id ), $offer_id, $placement );
+		if ( 'product_upsell' === $placement ) {
+			$target_id   = 0;
+			$trigger_ids = is_array( $meta['_ub_trigger_product_ids'] ?? null ) ? $meta['_ub_trigger_product_ids'] : array();
+
+			if ( ! empty( $trigger_ids ) ) {
+				$target_id = (int) current( $trigger_ids );
+			} else {
+				$rules = is_string( $meta['_ub_rules'] ?? null ) ? json_decode( $meta['_ub_rules'], true ) : ( $meta['_ub_rules'] ?? array() );
+				if ( is_array( $rules ) ) {
+					foreach ( $rules as $rule ) {
+						if ( is_array( $rule ) && 'viewed_product' === ( $rule['type'] ?? '' ) ) {
+							$values = is_array( $rule['value'] ?? null ) ? $rule['value'] : array( $rule['value'] ?? 0 );
+							if ( ! empty( $values ) ) {
+								$target_id = (int) current( $values );
+								break;
+							}
+						}
+					}
+				}
+			}
+
+			if ( $target_id > 0 ) {
+				$template = (string) ( $context['product_url'] ?? '/?p=%d' );
+				return $this->available( sprintf( $template, $target_id ), $offer_id, $placement );
+			}
+
+			return array(
+				'available' => false,
+				'url'       => '',
+				'message'   => __( 'To preview this offer automatically, you must target at least one specific product in your rules.', 'upsellbay' ),
+			);
 		}
 
 		if ( 'thankyou_offer' === $placement && isset( $context['order_received_url'] ) && '' !== (string) $context['order_received_url'] ) {
