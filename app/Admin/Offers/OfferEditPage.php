@@ -1050,6 +1050,10 @@ final class OfferEditPage {
 			&& false !== $request['_ub_show_image']
 			&& '' !== (string) $request['_ub_show_image'];
 
+		$hide_if_in_cart = array_key_exists( '_ub_hide_if_in_cart', $request )
+			&& false !== $request['_ub_hide_if_in_cart']
+			&& '' !== (string) $request['_ub_hide_if_in_cart'];
+
 		$parse_ids = function ( $val ): array {
 			if ( is_array( $val ) ) {
 				return array_map( array( $this, 'positive_int' ), $val );
@@ -1095,6 +1099,7 @@ final class OfferEditPage {
 				'_ub_rules_match'              => $this->sanitize_key( (string) ( $request['_ub_rules_match'] ?? 'all' ) ),
 				'_ub_placement_config'         => array_map( array( $this, 'sanitize_text' ), $parse_json( $request['_ub_placement_config'] ?? null, $defaults['_ub_placement_config'] ) ),
 				'_ub_show_image'               => $show_image,
+				'_ub_hide_if_in_cart'          => $hide_if_in_cart,
 				'_ub_start_at'                 => $this->sanitize_text( (string) ( $request['_ub_start_at'] ?? '' ) ),
 				'_ub_end_at'                   => $this->sanitize_text( (string) ( $request['_ub_end_at'] ?? '' ) ),
 				'_ub_priority'                 => (int) ( $request['_ub_priority'] ?? 0 ),
