@@ -117,7 +117,8 @@ final class HelpPage {
 		echo '<div class="upsellbay-card" style="flex: 1; min-width: 300px; background: #fff; padding: 20px; border: 1px solid #c3c4c7; box-shadow: 0 1px 1px rgba(0,0,0,.04);">';
 		echo '<h2 style="margin-top:0;">' . esc_html__( 'Contact Support', 'upsellbay' ) . '</h2>';
 		echo '<p>' . esc_html__( 'Need help with UpsellBay? Our support team is here to assist you.', 'upsellbay' ) . '</p>';
-		echo '<p><strong>' . esc_html__( 'Email us at:', 'upsellbay' ) . '</strong> <a href="mailto:support@wpanchorbay.com">support@wpanchorbay.com</a></p>';
+		echo '<p><a href="' . esc_url( Constants::SUPPORT_URL ) . '" target="_blank" class="button button-primary">' . esc_html__( 'Visit Support Portal', 'upsellbay' ) . '</a></p>';
+		echo '<p style="margin-top: 15px;"><strong>' . esc_html__( 'Or email us directly:', 'upsellbay' ) . '</strong> <a href="mailto:support@wpanchorbay.com">support@wpanchorbay.com</a></p>';
 		echo '</div>';
 
 		echo '</div>';
