@@ -116,6 +116,17 @@ final class HelpPage {
 		echo '<p style="margin-top: 15px;"><strong>' . esc_html__( 'Or email us directly:', 'upsellbay' ) . '</strong> <a href="mailto:support@wpanchorbay.com">support@wpanchorbay.com</a></p>';
 		echo '</div>';
 
+		// Logs & Diagnostics Card
+		echo '<div class="upsellbay-card" style="flex: 1; min-width: 300px; background: #fff; padding: 20px; border: 1px solid #c3c4c7; box-shadow: 0 1px 1px rgba(0,0,0,.04);">';
+		echo '<h2 style="margin-top:0;">' . esc_html__( 'Logs & Diagnostics', 'upsellbay' ) . '</h2>';
+		echo '<p>' . esc_html__( 'Access system logs to troubleshoot issues or review plugin activity.', 'upsellbay' ) . '</p>';
+		echo '<table class="widefat striped upsellbay-help-table" style="margin-top: 15px;"><tbody>';
+		echo '<tr><td><a href="' . esc_url( admin_url( 'admin.php?page=upsellbay&tab=settings&section=logs' ) ) . '">' . esc_html__( 'UpsellBay Logs', 'upsellbay' ) . '</a></td></tr>';
+		echo '<tr><td><a href="' . esc_url( admin_url( 'admin.php?page=wc-status&tab=logs' ) ) . '">' . esc_html__( 'WooCommerce Logs', 'upsellbay' ) . '</a></td></tr>';
+		echo '<tr><td><a href="' . esc_url( admin_url( 'site-health.php' ) ) . '">' . esc_html__( 'WordPress Site Health & Logs', 'upsellbay' ) . '</a></td></tr>';
+		echo '</tbody></table>';
+		echo '</div>';
+
 		echo '</div>';
 	}
 }
