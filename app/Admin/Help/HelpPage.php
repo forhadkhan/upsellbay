@@ -106,11 +106,6 @@ final class HelpPage {
 		echo '<h2 style="margin-top:0;">' . esc_html__( 'Documentation', 'upsellbay' ) . '</h2>';
 		echo '<p>' . esc_html( $empty['message'] ) . '</p>';
 		echo '<p><a href="' . esc_url( Constants::DOCS_URL ) . '" target="_blank" class="button button-primary">' . esc_html__( 'View Full Documentation', 'upsellbay' ) . '</a></p>';
-		echo '<table class="widefat striped upsellbay-help-table" style="margin-top: 15px;"><tbody>';
-		foreach ( $this->links() as $link ) {
-			echo '<tr><td><a href="' . esc_url( $link['url'] ) . '" target="_blank">' . esc_html( $link['label'] ) . '</a></td></tr>';
-		}
-		echo '</tbody></table>';
 		echo '</div>';
 
 		// Support Card
