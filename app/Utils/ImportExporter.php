@@ -1,6 +1,6 @@
 <?php
 /**
- * Offer import/export schema foundation.
+ * Whole data import/export helper.
  *
  * @package UpsellBay\Utils
  */
@@ -14,18 +14,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-
 use WPAnchorBay\UpsellBay\Core\Hooks;
+use WPAnchorBay\UpsellBay\Core\Settings;
+use WPAnchorBay\UpsellBay\Data\OfferRepository;
 use WPAnchorBay\UpsellBay\Domain\Offers\OfferValidator;
 use WPAnchorBay\UpsellBay\Domain\Offers\ValidationResult;
 
 /**
- * Validates portable offer JSON and exports site-safe offer definitions.
+ * Validates and handles exporting and importing of all settings and offers.
  *
  * @since 1.0.0
  */
 final class ImportExporter {
-	private const TYPE    = 'upsellbay_offer_export';
+	private const TYPE    = 'upsellbay_full_export';
 	private const VERSION = 1;
 
 	/**
@@ -38,45 +39,65 @@ final class ImportExporter {
 	private OfferValidator $validator;
 
 	/**
+	 * Offer repository.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var OfferRepository
+	 */
+	private OfferRepository $offers;
+
+	/**
+	 * Settings service.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var Settings
+	 */
+	private Settings $settings;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param OfferValidator $validator Offer validator.
+	 * @param OfferValidator  $validator Offer validator.
+	 * @param OfferRepository $offers    Offer repository.
+	 * @param Settings        $settings  Settings service.
 	 */
-	public function __construct( OfferValidator $validator ) {
+	public function __construct( OfferValidator $validator, OfferRepository $offers, Settings $settings ) {
 		$this->validator = $validator;
+		$this->offers    = $offers;
+		$this->settings  = $settings;
 	}
 
 	/**
-	 * Export offers as portable JSON.
+	 * Export all data (settings and offers) as JSON.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param array<int, array<string, mixed>> $offers Offers.
+	 * @return string JSON string.
 	 */
-	public function export( array $offers ): string {
-		$payload = array(
-			'type'    => self::TYPE,
-			'version' => self::VERSION,
-			'offers'  => array(),
+	public function export_all(): string {
+		$offers_data = $this->offers->query( array( 'limit' => -1 ) );
+		$payload     = array(
+			'type'     => self::TYPE,
+			'version'  => self::VERSION,
+			'settings' => $this->settings->all(),
+			'offers'   => array(),
 		);
 
-		foreach ( $offers as $offer ) {
+		foreach ( $offers_data as $offer ) {
 			$meta = $this->validator->normalize( is_array( $offer['meta'] ?? null ) ? $offer['meta'] : array() );
-			unset( $meta['_ub_offer_product_id'], $meta['_ub_trigger_product_ids'], $meta['_ub_trigger_category_ids'] );
 
 			$payload['offers'][] = array(
-				'title'           => (string) ( $offer['title'] ?? '' ),
-				'meta'            => $meta,
-				'product_mapping' => array(
-					'sku'  => (string) ( $offer['product_sku'] ?? '' ),
-					'name' => (string) ( $offer['product_name'] ?? '' ),
-				),
+				'title'  => (string) ( $offer['title'] ?? '' ),
+				'status' => (string) ( $offer['status'] ?? 'publish' ),
+				'meta'   => $meta,
 			);
 		}
 
-		$payload = Hooks::filter( 'export_payload', $payload, $offers );
+		$payload = Hooks::filter( 'export_all_payload', $payload );
 
 		if ( function_exists( 'wp_json_encode' ) ) {
 			return (string) wp_json_encode( $payload );
@@ -87,60 +108,86 @@ final class ImportExporter {
 	}
 
 	/**
-	 * Validate imported JSON.
+	 * Import all data (settings and offers) from JSON.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param string $json Raw JSON.
+	 * @param string               $json        Raw JSON string.
+	 * @param array<string, mixed> $preferences Import preferences.
+	 * @return ValidationResult
 	 */
-	public function validate_json( string $json ): ValidationResult {
+	public function import_all( string $json, array $preferences = array() ): ValidationResult {
 		$payload = json_decode( $json, true );
 		if ( ! is_array( $payload ) ) {
 			return new ValidationResult( false, array( 'json' => 'Invalid JSON.' ) );
 		}
 
 		if ( self::TYPE !== ( $payload['type'] ?? null ) || self::VERSION !== (int) ( $payload['version'] ?? 0 ) ) {
-			return new ValidationResult( false, $this->filter_import_errors( array( 'schema' => 'Unsupported import schema.' ), $payload ) );
+			return new ValidationResult( false, array( 'schema' => 'Unsupported import schema or file format.' ) );
 		}
 
-		if ( ! is_array( $payload['offers'] ?? null ) ) {
-			return new ValidationResult( false, $this->filter_import_errors( array( 'offers' => 'Offers must be an array.' ), $payload ) );
+		$import_settings    = (bool) ( $preferences['import_settings'] ?? true );
+		$append_text        = (bool) ( $preferences['append_text'] ?? false );
+		$duplicate_handling = (string) ( $preferences['duplicate_handling'] ?? 'duplicate' );
+
+		if ( $import_settings && isset( $payload['settings'] ) && is_array( $payload['settings'] ) ) {
+			$this->settings->update( $payload['settings'] );
 		}
 
-		foreach ( $payload['offers'] as $index => $offer ) {
-			if ( ! is_array( $offer ) || ! is_array( $offer['meta'] ?? null ) ) {
-				return new ValidationResult( false, $this->filter_import_errors( array( 'offers' => 'Offer item is malformed.' ), $payload ) );
-			}
-
-			$normalized = $this->validator->normalize( $offer['meta'] );
-			if ( ! is_array( $offer['product_mapping'] ?? null ) ) {
-				return new ValidationResult( false, $this->filter_import_errors( array( 'offer_' . $index => 'Product mapping must be present.' ), $payload ) );
-			}
-
-			$mapping = Hooks::filter( 'import_mapping', $offer['product_mapping'], $offer, $index );
-			if ( is_array( $mapping ) ) {
-				$payload['offers'][ $index ]['product_mapping'] = $mapping;
-				$matched_product_id                             = (int) Hooks::filter( 'import_sku_match', 0, (string) ( $mapping['sku'] ?? '' ), $mapping, $offer );
-				if ( $matched_product_id > 0 ) {
-					$normalized['_ub_offer_product_id'] = $matched_product_id;
+		if ( isset( $payload['offers'] ) && is_array( $payload['offers'] ) ) {
+			// Build a map of existing titles to IDs for duplicate detection.
+			$existing_offers = $this->offers->query( array( 'limit' => -1 ) );
+			$existing_titles = array();
+			foreach ( $existing_offers as $existing ) {
+				if ( ! empty( $existing['title'] ) ) {
+					$existing_titles[ $existing['title'] ] = $existing['id'];
 				}
 			}
 
-			$payload['offers'][ $index ]['meta']        = $normalized;
-			$payload['offers'][ $index ]['post_status'] = (string) Hooks::filter( 'import_post_status', 'draft', $offer, $index );
+			foreach ( $payload['offers'] as $offer ) {
+				if ( ! is_array( $offer ) || ! is_array( $offer['meta'] ?? null ) ) {
+					continue;
+				}
+
+				$normalized = $this->validator->normalize( $offer['meta'] );
+				$title      = (string) ( $offer['title'] ?? '' );
+				$final_title= $title;
+
+				if ( $append_text ) {
+					$final_title = trim( $title . ' (Import)' );
+				}
+
+				// Duplicate handling based on original title match
+				if ( isset( $existing_titles[ $title ] ) ) {
+					if ( 'skip' === $duplicate_handling ) {
+						continue;
+					}
+
+					if ( 'overwrite' === $duplicate_handling ) {
+						$this->offers->update(
+							$existing_titles[ $title ],
+							array(
+								'title' => $final_title,
+								'meta'  => $normalized,
+							)
+						);
+						continue;
+					}
+					
+					// 'duplicate' strategy will just fall through and create a new one.
+					// If append text wasn't checked, we might want to append " Copy" or similar,
+					// but user opted for "duplicate", so we just create it.
+				}
+
+				$this->offers->create(
+					array(
+						'title' => $final_title,
+						'meta'  => $normalized,
+					)
+				);
+			}
 		}
 
 		return new ValidationResult( true, array(), $payload );
-	}
-
-	/**
-	 * Filter import validation errors without bypassing validation.
-	 *
-	 * @param array<string, string> $errors  Validation errors.
-	 * @param array<string, mixed>  $payload Import payload.
-	 * @return array<string, string>
-	 */
-	private function filter_import_errors( array $errors, array $payload ): array {
-		return Hooks::filter( 'import_validation_errors', $errors, $payload );
 	}
 }

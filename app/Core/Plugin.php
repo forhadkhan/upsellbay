@@ -244,7 +244,7 @@ final class Plugin {
 		$this->container->set( BlockCheckoutIntegration::class, static fn ( Container $container ): BlockCheckoutIntegration => new BlockCheckoutIntegration( $container->get( Settings::class ), $container->get( CartSession::class ) ) );
 		$this->container->set( StorefrontController::class, static fn ( Container $container ): StorefrontController => new StorefrontController( $container->get( OfferRepository::class ), $container->get( PlacementRenderer::class ), $container->get( CartSession::class ), $container->get( Settings::class ), $container->get( TokenHelper::class ) ) );
 		$this->container->set( CouponLimiter::class, static fn (): CouponLimiter => new CouponLimiter() );
-		$this->container->set( ImportExporter::class, static fn ( Container $container ): ImportExporter => new ImportExporter( $container->get( OfferValidator::class ) ) );
+		$this->container->set( ImportExporter::class, static fn ( Container $container ): ImportExporter => new ImportExporter( $container->get( OfferValidator::class ), $container->get( OfferRepository::class ), $container->get( Settings::class ) ) );
 		$this->container->set( LogRepository::class, static fn (): LogRepository => new LogRepository() );
 		$this->container->set( LoggerInterface::class, static fn ( Container $container ): DatabaseLogger => new DatabaseLogger( $container->get( LogRepository::class ) ) );
 		$this->container->set( TokenHelper::class, static fn (): TokenHelper => new TokenHelper() );
@@ -337,6 +337,9 @@ final class Plugin {
 		add_action( 'admin_post_upsellbay_check_license', array( $this, 'handle_check_license' ) );
 		add_action( 'admin_post_upsellbay_delete_offer', array( $this, 'handle_delete_offer' ) );
 		add_action( 'admin_post_upsellbay_clear_all_data', array( $this, 'handle_clear_all_data' ) );
+		add_action( 'admin_post_upsellbay_export_data', array( $this, 'handle_export_data' ) );
+		add_action( 'admin_post_upsellbay_import_data', array( $this, 'handle_import_data' ) );
+		add_action( 'admin_post_upsellbay_confirm_import', array( $this, 'handle_confirm_import' ) );
 
 		$this->container->get( AdminAssets::class )->register_hooks();
 		$this->container->get( AdminBar::class )->register_hooks();
@@ -702,6 +705,114 @@ final class Plugin {
 
 		$redirect_url = admin_url( 'admin.php?page=upsellbay&tab=settings&section=data' );
 		$redirect_url = add_query_arg( 'wc_message', rawurlencode( __( 'All UpsellBay data has been permanently deleted and reset to defaults.', 'upsellbay' ) ), $redirect_url );
+
+		wp_safe_redirect( $redirect_url );
+		exit;
+	}
+
+	/**
+	 * Handle exporting all data from the admin-post action.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return void
+	 */
+	public function handle_export_data(): void {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) { // phpcs:ignore WordPress.WP.Capabilities.Unknown
+			wp_die( esc_html__( 'You do not have permission to manage data.', 'upsellbay' ) );
+		}
+
+		check_admin_referer( 'upsellbay_export_data' );
+
+		$json = $this->container->get( ImportExporter::class )->export_all();
+
+		header( 'Content-Type: application/json' );
+		header( 'Content-Disposition: attachment; filename="upsellbay-export-' . ( function_exists( 'current_time' ) ? current_time( 'Y-m-d' ) : gmdate( 'Y-m-d' ) ) . '.json"' );
+		echo $json; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		exit;
+	}
+
+	/**
+	 * Handle importing whole data from the admin-post action.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return void
+	 */
+	public function handle_import_data(): void {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) { // phpcs:ignore WordPress.WP.Capabilities.Unknown
+			wp_die( esc_html__( 'You do not have permission to manage data.', 'upsellbay' ) );
+		}
+
+		check_admin_referer( 'upsellbay_import_data' );
+
+		$redirect_url = admin_url( 'admin.php?page=upsellbay&tab=tools' );
+
+		if ( empty( $_FILES['import_file']['tmp_name'] ) ) {
+			$redirect_url = add_query_arg( 'wc_error', rawurlencode( __( 'Please upload a valid JSON file.', 'upsellbay' ) ), $redirect_url );
+			wp_safe_redirect( $redirect_url );
+			exit;
+		}
+
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		$json = file_get_contents( $_FILES['import_file']['tmp_name'] );
+		
+		// Validate JSON lightly before storing it.
+		$payload = json_decode( (string) $json, true );
+		if ( ! is_array( $payload ) || empty( $payload['type'] ) ) {
+			$redirect_url = add_query_arg( 'wc_error', rawurlencode( __( 'Invalid or unsupported JSON file.', 'upsellbay' ) ), $redirect_url );
+			wp_safe_redirect( $redirect_url );
+			exit;
+		}
+
+		$hash = wp_generate_password( 12, false );
+		set_transient( 'upsellbay_import_' . $hash, $json, HOUR_IN_SECONDS );
+
+		$redirect_url = add_query_arg( 'preview_import', $hash, $redirect_url );
+		wp_safe_redirect( $redirect_url );
+		exit;
+	}
+
+	/**
+	 * Handle confirming the import after preview.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return void
+	 */
+	public function handle_confirm_import(): void {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) { // phpcs:ignore WordPress.WP.Capabilities.Unknown
+			wp_die( esc_html__( 'You do not have permission to manage data.', 'upsellbay' ) );
+		}
+
+		check_admin_referer( 'upsellbay_confirm_import' );
+
+		$hash = isset( $_POST['import_hash'] ) ? sanitize_key( wp_unslash( $_POST['import_hash'] ) ) : '';
+		$json = get_transient( 'upsellbay_import_' . $hash );
+
+		$redirect_url = admin_url( 'admin.php?page=upsellbay&tab=tools' );
+
+		if ( empty( $json ) ) {
+			$redirect_url = add_query_arg( 'wc_error', rawurlencode( __( 'Import session expired. Please upload the file again.', 'upsellbay' ) ), $redirect_url );
+			wp_safe_redirect( $redirect_url );
+			exit;
+		}
+
+		$preferences = array(
+			'import_settings'    => isset( $_POST['import_settings'] ),
+			'append_text'        => isset( $_POST['append_text'] ),
+			'duplicate_handling' => isset( $_POST['duplicate_handling'] ) ? sanitize_text_field( wp_unslash( $_POST['duplicate_handling'] ) ) : 'duplicate',
+		);
+
+		$result = $this->container->get( ImportExporter::class )->import_all( (string) $json, $preferences );
+		delete_transient( 'upsellbay_import_' . $hash );
+
+		if ( $result->is_valid() ) {
+			$redirect_url = add_query_arg( 'wc_message', rawurlencode( __( 'Data imported successfully.', 'upsellbay' ) ), $redirect_url );
+		} else {
+			$errors       = implode( ' ', $result->errors() );
+			$redirect_url = add_query_arg( 'wc_error', rawurlencode( $errors ), $redirect_url );
+		}
 
 		wp_safe_redirect( $redirect_url );
 		exit;
