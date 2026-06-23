@@ -149,7 +149,7 @@ final class ToolsPage {
 		$has_settings = isset( $payload['settings'] ) && is_array( $payload['settings'] );
 		$offers_count = isset( $payload['offers'] ) && is_array( $payload['offers'] ) ? count( $payload['offers'] ) : 0;
 
-		echo '<div class="upsellbay-card" style="max-width: 600px; background: #fff; padding: 20px; border: 1px solid #c3c4c7; box-shadow: 0 1px 1px rgba(0,0,0,.04);">';
+		echo '<div class="upsellbay-card" style="background: #fff; padding: 20px; border: 1px solid #c3c4c7; box-shadow: 0 1px 1px rgba(0,0,0,.04);">';
 		echo '<h2 style="margin-top:0;">' . esc_html__( 'Import Preview', 'upsellbay' ) . '</h2>';
 		
 		echo '<div style="background: #f0f0f1; padding: 15px; margin-bottom: 20px; border-left: 4px solid #3858e9;">';
