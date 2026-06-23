@@ -537,7 +537,7 @@ final class LicenseClient {
 			return __( 'The license server is temporarily unavailable. Please try again shortly.', 'upsellbay' );
 		}
 
-		if ( $response_code > 0 && ( empty( $data ) || ! $this->response_is_json( $headers, $body ) ) ) {
+		if ( $response_code > 0 && ( array() === $data || ! $this->response_is_json( $headers, $body ) ) ) {
 			return __( 'The license server returned an unexpected non-JSON response. Please try again shortly.', 'upsellbay' );
 		}
 
@@ -574,11 +574,11 @@ final class LicenseClient {
 		}
 
 		if ( isset( $data['error'] ) && is_array( $data['error'] ) && isset( $data['error']['code'] ) && is_string( $data['error']['code'] ) ) {
-			return sanitize_key( (string) $data['error']['code'] );
+			return sanitize_key( $data['error']['code'] );
 		}
 
 		if ( isset( $data['code'] ) && is_string( $data['code'] ) ) {
-			return sanitize_key( (string) $data['code'] );
+			return sanitize_key( $data['code'] );
 		}
 
 		if ( $response_code >= 500 || 429 === $response_code || 403 === $response_code ) {
@@ -642,12 +642,12 @@ final class LicenseClient {
 			'headers'     => $headers,
 		);
 
-		if ( ! empty( $data ) ) {
+		if ( array() !== $data ) {
 			$context['body'] = $data;
 			return $context;
 		}
 
-		$excerpt = trim( strip_tags( substr( $body, 0, 200 ) ) );
+		$excerpt = trim( wp_strip_all_tags( substr( $body, 0, 200 ) ) );
 
 		if ( '' !== $excerpt ) {
 			$context['body_excerpt'] = sanitize_text_field( $excerpt );

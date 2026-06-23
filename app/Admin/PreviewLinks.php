@@ -83,7 +83,7 @@ final class PreviewLinks {
 			$target_id   = 0;
 			$trigger_ids = is_array( $meta['_ub_trigger_product_ids'] ?? null ) ? $meta['_ub_trigger_product_ids'] : array();
 
-			if ( ! empty( $trigger_ids ) ) {
+			if ( array() !== $trigger_ids ) {
 				$target_id = (int) current( $trigger_ids );
 			} else {
 				$rules = is_string( $meta['_ub_rules'] ?? null ) ? json_decode( $meta['_ub_rules'], true ) : ( $meta['_ub_rules'] ?? array() );
@@ -91,7 +91,7 @@ final class PreviewLinks {
 					foreach ( $rules as $rule ) {
 						if ( is_array( $rule ) && 'viewed_product' === ( $rule['type'] ?? '' ) ) {
 							$values = is_array( $rule['value'] ?? null ) ? $rule['value'] : array( $rule['value'] ?? 0 );
-							if ( ! empty( $values ) ) {
+							if ( array() !== $values ) {
 								$target_id = (int) current( $values );
 								break;
 							}

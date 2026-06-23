@@ -54,12 +54,12 @@ final class OfferVisibilityPanel {
 			'warning' => 'notice-warning',
 			default => 'notice-success',
 		};
-		$badge_class  = match ( $report['status'] ) {
+		$badge_class = match ( $report['status'] ) {
 			'blocked' => 'upsellbay-offer-visibility-panel__badge--blocked',
 			'warning' => 'upsellbay-offer-visibility-panel__badge--warning',
 			default => 'upsellbay-offer-visibility-panel__badge--success',
 		};
-		$badge_label  = match ( $report['status'] ) {
+		$badge_label = match ( $report['status'] ) {
 			'blocked' => __( 'Blocked', 'upsellbay' ),
 			'warning' => __( 'Issues found', 'upsellbay' ),
 			default => __( 'All clear', 'upsellbay' ),

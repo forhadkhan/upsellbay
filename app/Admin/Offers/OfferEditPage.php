@@ -437,7 +437,7 @@ final class OfferEditPage {
 						'status'  => array( 'wc-processing', 'wc-completed', 'wc-on-hold' ),
 					)
 				);
-				if ( ! empty( $latest_orders ) ) {
+				if ( is_array( $latest_orders ) && array() !== $latest_orders ) {
 					$context['order_received_url'] = $latest_orders[0]->get_checkout_order_received_url();
 				}
 			}
@@ -599,12 +599,12 @@ final class OfferEditPage {
 	private function current_offer_id(): int {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['offer_id'] ) ) {
-			return function_exists( 'absint' ) ? absint( $_GET['offer_id'] ) : (int) $_GET['offer_id'];
+			return function_exists( 'absint' ) ? absint( $_GET['offer_id'] ) : (int) $_GET['offer_id']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		}
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['id'] ) ) {
-			return function_exists( 'absint' ) ? absint( $_GET['id'] ) : (int) $_GET['id'];
+			return function_exists( 'absint' ) ? absint( $_GET['id'] ) : (int) $_GET['id']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		}
 
 		return 0;
@@ -620,30 +620,30 @@ final class OfferEditPage {
 	 */
 	private function render_field_row( string $field, $value = '' ): void {
 		$labels    = array(
-			'title'                        => __( 'Offer name', 'upsellbay' ),
-			'_ub_status'                   => __( 'Status', 'upsellbay' ),
-			'_ub_offer_type'               => __( 'Offer type', 'upsellbay' ),
-			'_ub_offer_product_id'         => __( 'Offer product', 'upsellbay' ),
-			'_ub_headline'                 => __( 'Headline', 'upsellbay' ),
-			'_ub_body'                     => __( 'Body text', 'upsellbay' ),
-			'_ub_button_text'              => __( 'Button text', 'upsellbay' ),
-			'_ub_rules_match'              => __( 'Rule matching', 'upsellbay' ),
-			'_ub_rules'                    => __( 'Rules', 'upsellbay' ),
-			'_ub_discount_type'            => __( 'Discount type', 'upsellbay' ),
-			'_ub_discount_value'           => __( 'Discount value', 'upsellbay' ),
-			'_ub_show_image'               => __( 'Show product image', 'upsellbay' ),
-			'_ub_hide_if_in_cart'          => __( 'Hide if in cart', 'upsellbay' ),
-			'_ub_placement_config'         => __( 'Display position', 'upsellbay' ),
-			'_ub_start_at'                 => __( 'Start date', 'upsellbay' ),
-			'_ub_end_at'                   => __( 'End date', 'upsellbay' ),
-			'_ub_priority'                 => __( 'Priority', 'upsellbay' ),
-			'_ub_stats_summary'            => __( 'Performance', 'upsellbay' ),
-			'_ub_trigger_product_ids'      => __( 'Trigger product IDs', 'upsellbay' ),
-			'_ub_trigger_category_ids'     => __( 'Trigger category IDs', 'upsellbay' ),
-			'_ub_offer_goal'               => __( 'Offer goal', 'upsellbay' ),
-			'_ub_reason_label'             => __( 'Reason label', 'upsellbay' ),
-			'_ub_section_heading'          => __( 'Section heading', 'upsellbay' ),
-			'_ub_conflict_override'        => __( 'Conflict override', 'upsellbay' ),
+			'title'                    => __( 'Offer name', 'upsellbay' ),
+			'_ub_status'               => __( 'Status', 'upsellbay' ),
+			'_ub_offer_type'           => __( 'Offer type', 'upsellbay' ),
+			'_ub_offer_product_id'     => __( 'Offer product', 'upsellbay' ),
+			'_ub_headline'             => __( 'Headline', 'upsellbay' ),
+			'_ub_body'                 => __( 'Body text', 'upsellbay' ),
+			'_ub_button_text'          => __( 'Button text', 'upsellbay' ),
+			'_ub_rules_match'          => __( 'Rule matching', 'upsellbay' ),
+			'_ub_rules'                => __( 'Rules', 'upsellbay' ),
+			'_ub_discount_type'        => __( 'Discount type', 'upsellbay' ),
+			'_ub_discount_value'       => __( 'Discount value', 'upsellbay' ),
+			'_ub_show_image'           => __( 'Show product image', 'upsellbay' ),
+			'_ub_hide_if_in_cart'      => __( 'Hide if in cart', 'upsellbay' ),
+			'_ub_placement_config'     => __( 'Display position', 'upsellbay' ),
+			'_ub_start_at'             => __( 'Start date', 'upsellbay' ),
+			'_ub_end_at'               => __( 'End date', 'upsellbay' ),
+			'_ub_priority'             => __( 'Priority', 'upsellbay' ),
+			'_ub_stats_summary'        => __( 'Performance', 'upsellbay' ),
+			'_ub_trigger_product_ids'  => __( 'Trigger product IDs', 'upsellbay' ),
+			'_ub_trigger_category_ids' => __( 'Trigger category IDs', 'upsellbay' ),
+			'_ub_offer_goal'           => __( 'Offer goal', 'upsellbay' ),
+			'_ub_reason_label'         => __( 'Reason label', 'upsellbay' ),
+			'_ub_section_heading'      => __( 'Section heading', 'upsellbay' ),
+			'_ub_conflict_override'    => __( 'Conflict override', 'upsellbay' ),
 		);
 		$label     = $labels[ $field ] ?? $field;
 		$label_for = '_ub_placement_config' === $field ? 'upsellbay-_ub_placement_config-position' : 'upsellbay-' . $field;
@@ -965,7 +965,7 @@ final class OfferEditPage {
 
 		if ( method_exists( $product, 'is_type' ) && $product->is_type( 'variable' ) && method_exists( $product, 'get_variation_prices' ) ) {
 			$variation_prices = $product->get_variation_prices( false );
-			if ( ! empty( $variation_prices['price'] ) && is_array( $variation_prices['price'] ) ) {
+			if ( isset( $variation_prices['price'] ) && is_array( $variation_prices['price'] ) && array() !== $variation_prices['price'] ) {
 				$filtered = array_filter(
 					$variation_prices['price'],
 					static fn ( $price ): bool => is_numeric( $price )
@@ -976,7 +976,7 @@ final class OfferEditPage {
 					$max = (float) max( $filtered );
 				}
 			}
-			if ( ! empty( $variation_prices['regular_price'] ) && is_array( $variation_prices['regular_price'] ) ) {
+			if ( isset( $variation_prices['regular_price'] ) && is_array( $variation_prices['regular_price'] ) && array() !== $variation_prices['regular_price'] ) {
 				$filtered_regular = array_filter(
 					$variation_prices['regular_price'],
 					static fn ( $price ): bool => is_numeric( $price )
@@ -1351,11 +1351,11 @@ final class OfferEditPage {
 			} elseif ( 'roles' === $value_type ) {
 				$role_keys = array_merge( $role_keys, $rule_value );
 			} elseif ( 'products' === $value_type ) {
-				$product_ids = array_merge( $product_ids ?? array(), $rule_value );
+				$product_ids = array_merge( $product_ids, $rule_value );
 			}
 		}
 
-		if ( ! empty( $product_ids ) && function_exists( 'wc_get_products' ) ) {
+		if ( array() !== $product_ids && function_exists( 'wc_get_products' ) ) {
 			$products = wc_get_products(
 				array(
 					'include' => array_filter( array_map( 'intval', array_unique( $product_ids ) ) ),
@@ -1375,15 +1375,13 @@ final class OfferEditPage {
 					}
 				}
 
-				if ( array() !== $extras ) {
-					$text .= ' (' . implode( ' - ', $extras ) . ')';
-				}
+				$text .= ' (' . implode( ' - ', $extras ) . ')';
 
 				$entities[ (string) $product->get_id() ] = $text;
 			}
 		}
 
-		if ( ! empty( $category_ids ) && function_exists( 'get_terms' ) ) {
+		if ( array() !== $category_ids && function_exists( 'get_terms' ) ) {
 			$terms = get_terms(
 				array(
 					'taxonomy'   => 'product_cat',
@@ -1398,7 +1396,7 @@ final class OfferEditPage {
 			}
 		}
 
-		if ( ! empty( $tag_ids ) && function_exists( 'get_terms' ) ) {
+		if ( array() !== $tag_ids && function_exists( 'get_terms' ) ) {
 			$terms = get_terms(
 				array(
 					'taxonomy'   => 'product_tag',
@@ -1413,9 +1411,9 @@ final class OfferEditPage {
 			}
 		}
 
-		if ( ! empty( $role_keys ) && function_exists( 'get_editable_roles' ) ) {
+		if ( array() !== $role_keys && function_exists( 'get_editable_roles' ) ) {
 			$roles = get_editable_roles();
-			if ( empty( $roles ) && function_exists( 'wp_roles' ) ) {
+			if ( ( ! isset( $roles ) || ! is_array( $roles ) || array() === $roles ) && function_exists( 'wp_roles' ) ) {
 				$roles = wp_roles()->roles;
 			}
 			if ( is_array( $roles ) ) {

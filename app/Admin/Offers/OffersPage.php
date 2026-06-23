@@ -159,7 +159,7 @@ final class OffersPage {
 			echo '<td><strong>' . esc_html( (string) $row['title'] ) . '</strong><div class="row-actions">';
 			echo '<span><a href="' . esc_url( $edit_url ) . '">' . esc_html__( 'Edit', 'upsellbay' ) . '</a> | </span>';
 
-			if ( ! empty( $row['preview_url'] ) ) {
+			if ( isset( $row['preview_url'] ) && '' !== $row['preview_url'] ) {
 				echo '<span class="view"><a href="' . esc_url( $row['preview_url'] ) . '" target="_blank" title="' . esc_attr( $row['preview_msg'] ) . '">' . esc_html__( 'View Live', 'upsellbay' ) . '</a> | </span>';
 			} else {
 				echo '<span class="view"><span style="color: #a7aaad; cursor: help;" title="' . esc_attr( $row['preview_msg'] ) . '">' . esc_html__( 'View Live', 'upsellbay' ) . '</span> | </span>';

@@ -47,7 +47,7 @@ final class PluginActionLinks {
 	 * @return array<string, string>
 	 */
 	public function add_action_links( array $actions ): array {
-		if ( function_exists( 'current_user_can' ) && ! current_user_can( 'manage_woocommerce' ) ) {
+		if ( function_exists( 'current_user_can' ) && ! current_user_can( 'manage_woocommerce' ) ) { // phpcs:ignore WordPress.WP.Capabilities.Unknown
 			return $actions;
 		}
 

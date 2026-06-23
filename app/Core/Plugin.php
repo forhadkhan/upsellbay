@@ -158,6 +158,7 @@ final class Plugin {
 		$this->container->get( Updater::class )->init();
 
 		if ( function_exists( 'do_action' ) ) {
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
 			do_action( Constants::hook_name( 'loaded' ), $this );
 		}
 	}
@@ -748,18 +749,21 @@ final class Plugin {
 
 		$redirect_url = admin_url( 'admin.php?page=upsellbay&tab=tools' );
 
-		if ( empty( $_FILES['import_file']['tmp_name'] ) ) {
+		if ( ! isset( $_FILES['import_file']['tmp_name'] ) || '' === $_FILES['import_file']['tmp_name'] ) {
 			$redirect_url = add_query_arg( 'wc_error', rawurlencode( __( 'Please upload a valid JSON file.', 'upsellbay' ) ), $redirect_url );
 			wp_safe_redirect( $redirect_url );
 			exit;
 		}
 
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		$tmp_name = isset( $_FILES['import_file']['tmp_name'] ) ? sanitize_text_field( wp_unslash( $_FILES['import_file']['tmp_name'] ) ) : '';
+
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
-		$json = file_get_contents( $_FILES['import_file']['tmp_name'] );
-		
+		$json = file_get_contents( $tmp_name );
+
 		// Validate JSON lightly before storing it.
 		$payload = json_decode( (string) $json, true );
-		if ( ! is_array( $payload ) || empty( $payload['type'] ) ) {
+		if ( ! is_array( $payload ) || ! isset( $payload['type'] ) || '' === $payload['type'] ) {
 			$redirect_url = add_query_arg( 'wc_error', rawurlencode( __( 'Invalid or unsupported JSON file.', 'upsellbay' ) ), $redirect_url );
 			wp_safe_redirect( $redirect_url );
 			exit;
@@ -792,7 +796,7 @@ final class Plugin {
 
 		$redirect_url = admin_url( 'admin.php?page=upsellbay&tab=tools' );
 
-		if ( empty( $json ) ) {
+		if ( false === $json || '' === $json ) {
 			$redirect_url = add_query_arg( 'wc_error', rawurlencode( __( 'Import session expired. Please upload the file again.', 'upsellbay' ) ), $redirect_url );
 			wp_safe_redirect( $redirect_url );
 			exit;
@@ -1141,7 +1145,7 @@ final class Plugin {
 			),
 		);
 
-		if ( is_wp_error( $error_obj ) && method_exists( $error_obj, 'get_error_messages' ) ) {
+		if ( is_wp_error( $error_obj ) ) {
 			$context['metadata'] = array_merge(
 				$context['metadata'],
 				array(
@@ -1150,7 +1154,7 @@ final class Plugin {
 			);
 		}
 
-		if ( is_wp_error( $error_obj ) && method_exists( $error_obj, 'get_error_data' ) ) {
+		if ( is_wp_error( $error_obj ) ) {
 			$error_data = $error_obj->get_error_data();
 
 			if ( is_array( $error_data ) ) {
@@ -1187,13 +1191,13 @@ final class Plugin {
 			'user_id' => 0,
 		);
 
-		if ( is_wp_error( $error_obj ) && method_exists( $error_obj, 'get_error_messages' ) ) {
+		if ( is_wp_error( $error_obj ) ) {
 			$context['metadata'] = array(
 				'error_messages' => $error_obj->get_error_messages(),
 			);
 		}
 
-		if ( is_wp_error( $error_obj ) && method_exists( $error_obj, 'get_error_data' ) ) {
+		if ( is_wp_error( $error_obj ) ) {
 			$error_data = $error_obj->get_error_data();
 
 			if ( is_array( $error_data ) ) {

@@ -94,7 +94,7 @@ final class OfferConflictDetector {
 				++$placement_count;
 				if ( array_key_exists( '_ub_priority', $meta ) && array_key_exists( '_ub_priority', $other_meta ) && $priority === (int) $other_meta['_ub_priority'] ) {
 					$other_title = (string) ( $other_offer['title'] ?? $this->fallback_title( $other_id ) );
-					$warnings[] = sprintf(
+					$warnings[]  = sprintf(
 						/* translators: %s: offer title link */
 						__( 'Priority tie: This offer has the same priority as %s. Lower priority numbers win, and matching numbers fall back to offer ID.', 'upsellbay' ),
 						$this->offer_link( $other_id, $other_title )
@@ -107,7 +107,7 @@ final class OfferConflictDetector {
 
 				// Funnel overlap: Same placement, same goal, and overlapping triggers.
 				if ( $goal === $other_goal && $this->schedules_overlap( $meta, $other_meta ) && $this->targeting_overlaps( $product_ids, $category_ids, $meta['_ub_rules'] ?? array(), $other_product_ids, $other_category_ids, $other_meta['_ub_rules'] ?? array() ) ) {
-					$other_title = (string) ( $other_offer['title'] ?? $this->fallback_title( $other_id ) );
+					$other_title       = (string) ( $other_offer['title'] ?? $this->fallback_title( $other_id ) );
 					$funnel_overlaps[] = $this->offer_link( $other_id, $other_title );
 				}
 			}

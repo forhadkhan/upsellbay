@@ -257,7 +257,7 @@ final class ProductsController {
 				$regular_price_max = $regular_price;
 			}
 			$regular_min = $regular_price;
-			$regular_max = null !== $regular_price_max ? $regular_price_max : $regular_price;
+			$regular_max = $regular_price_max;
 		}
 
 		return array(
@@ -266,8 +266,8 @@ final class ProductsController {
 			'sku'                => $product->get_sku(),
 			'price'              => $product->get_price_html(),
 			'price_raw'          => (string) $product->get_price(),
-			'regular_price_raw'  => (string) $regular_min,
-			'base_price_raw'     => (string) $regular_min,
+			'regular_price_raw'  => $regular_min,
+			'base_price_raw'     => $regular_min,
 			'price_min_raw'      => $price_min,
 			'price_max_raw'      => $price_max,
 			'base_price_min_raw' => $regular_min,

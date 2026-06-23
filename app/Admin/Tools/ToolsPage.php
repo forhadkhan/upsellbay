@@ -30,6 +30,7 @@ final class ToolsPage {
 	 * @since 1.0.0
 	 *
 	 * @var ImportExporter
+	 * @phpstan-ignore property.onlyWritten
 	 */
 	private ImportExporter $import_exporter;
 
@@ -39,6 +40,7 @@ final class ToolsPage {
 	 * @since 1.0.0
 	 *
 	 * @var Settings
+	 * @phpstan-ignore property.onlyWritten
 	 */
 	private Settings $settings;
 
@@ -48,6 +50,7 @@ final class ToolsPage {
 	 * @since 1.0.0
 	 *
 	 * @var CompatibilityScanner
+	 * @phpstan-ignore property.onlyWritten
 	 */
 	private CompatibilityScanner $scanner;
 
@@ -86,21 +89,22 @@ final class ToolsPage {
 	 */
 	public function render_content( array $request = array() ): void {
 		unset( $request );
-		
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$preview_hash = isset( $_GET['preview_import'] ) ? sanitize_key( wp_unslash( $_GET['preview_import'] ) ) : '';
 
-		if ( ! empty( $preview_hash ) ) {
+		if ( '' !== $preview_hash ) {
 			$this->render_preview( $preview_hash );
 			return;
 		}
 
 		echo '<div class="upsellbay-tools-container" style="display: flex; gap: 20px; flex-wrap: wrap;">';
 
-		// Export Data Card
+		// Export Data Card.
 		echo '<div class="upsellbay-card" style="flex: 1; min-width: 300px; background: #fff; padding: 20px; border: 1px solid #c3c4c7; box-shadow: 0 1px 1px rgba(0,0,0,.04);">';
 		echo '<h2 style="margin-top:0;">' . esc_html__( 'Export Data', 'upsellbay' ) . '</h2>';
 		echo '<p>' . esc_html__( 'Download all UpsellBay data including your active/paused offers and global settings. This JSON file can be used as a backup or to migrate your setup to another store.', 'upsellbay' ) . '</p>';
-		
+
 		$export_url = admin_url( 'admin-post.php' );
 		echo '<form method="post" action="' . esc_url( $export_url ) . '">';
 		wp_nonce_field( 'upsellbay_export_data' );
@@ -109,11 +113,11 @@ final class ToolsPage {
 		echo '</form>';
 		echo '</div>';
 
-		// Import Data Card
+		// Import Data Card.
 		echo '<div class="upsellbay-card" style="flex: 1; min-width: 300px; background: #fff; padding: 20px; border: 1px solid #c3c4c7; box-shadow: 0 1px 1px rgba(0,0,0,.04);">';
 		echo '<h2 id="import" style="margin-top:0;">' . esc_html__( 'Import Data', 'upsellbay' ) . '</h2>';
 		echo '<p>' . esc_html__( 'Upload a previously exported JSON file. This will restore all your settings and append the imported offers to your store.', 'upsellbay' ) . '</p>';
-		
+
 		$import_url = admin_url( 'admin-post.php' );
 		echo '<form method="post" enctype="multipart/form-data" action="' . esc_url( $import_url ) . '">';
 		wp_nonce_field( 'upsellbay_import_data' );
@@ -135,7 +139,7 @@ final class ToolsPage {
 	 */
 	private function render_preview( string $hash ): void {
 		$json = get_transient( 'upsellbay_import_' . $hash );
-		if ( empty( $json ) ) {
+		if ( false === $json || '' === $json ) {
 			echo '<div class="notice notice-error"><p>' . esc_html__( 'Import session expired or invalid. Please try uploading the file again.', 'upsellbay' ) . '</p></div>';
 			echo '<p><a href="' . esc_url( admin_url( 'admin.php?page=upsellbay&tab=tools' ) ) . '" class="button">' . esc_html__( 'Go Back', 'upsellbay' ) . '</a></p>';
 			return;
@@ -151,14 +155,16 @@ final class ToolsPage {
 
 		echo '<div class="upsellbay-card" style="background: #fff; padding: 20px; border: 1px solid #c3c4c7; box-shadow: 0 1px 1px rgba(0,0,0,.04);">';
 		echo '<h2 style="margin-top:0;">' . esc_html__( 'Import Preview', 'upsellbay' ) . '</h2>';
-		
+
 		echo '<div style="background: #f0f0f1; padding: 15px; margin-bottom: 20px; border-left: 4px solid #3858e9;">';
 		echo '<p style="margin: 0 0 10px 0;"><strong>' . esc_html__( 'Found in file:', 'upsellbay' ) . '</strong></p>';
 		echo '<ul style="margin: 0; padding-left: 20px;">';
 		if ( $has_settings ) {
 			echo '<li>' . esc_html__( 'Global Settings', 'upsellbay' ) . '</li>';
 		}
-		echo '<li>' . esc_html( sprintf( _n( '%s Offer', '%s Offers', $offers_count, 'upsellbay' ), number_format_i18n( $offers_count ) ) ) . '</li>';
+		/* translators: %s: number of offers */
+		$offers_text = _n( '%s Offer', '%s Offers', $offers_count, 'upsellbay' );
+		echo '<li>' . esc_html( sprintf( $offers_text, number_format_i18n( $offers_count ) ) ) . '</li>';
 		echo '</ul>';
 		echo '</div>';
 
@@ -169,7 +175,7 @@ final class ToolsPage {
 		echo '<input type="hidden" name="import_hash" value="' . esc_attr( $hash ) . '">';
 
 		echo '<table class="form-table" role="presentation"><tbody>';
-		
+
 		if ( $has_settings ) {
 			echo '<tr>';
 			echo '<th scope="row">' . esc_html__( 'Settings', 'upsellbay' ) . '</th>';

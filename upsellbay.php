@@ -11,6 +11,8 @@
  * Text Domain: upsellbay
  * Domain Path: /languages
  * Requires Plugins: woocommerce
+ * License: GPLv2 or later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  *
  * @package UpsellBay
  */
@@ -87,6 +89,7 @@ add_action(
 	'plugins_loaded',
 	static function (): void {
 		if ( function_exists( 'load_plugin_textdomain' ) ) {
+			// phpcs:ignore PluginCheck.CodeAnalysis.DiscouragedFunctions.load_plugin_textdomainFound
 			load_plugin_textdomain( 'upsellbay', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 		}
 

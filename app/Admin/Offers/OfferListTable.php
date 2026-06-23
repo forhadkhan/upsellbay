@@ -105,7 +105,7 @@ final class OfferListTable {
 					'status'  => array( 'wc-processing', 'wc-completed', 'wc-on-hold' ),
 				)
 			);
-			if ( ! empty( $latest_orders ) ) {
+			if ( is_array( $latest_orders ) && array() !== $latest_orders ) {
 				$context['order_received_url'] = $latest_orders[0]->get_checkout_order_received_url();
 			}
 		}

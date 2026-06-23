@@ -45,6 +45,18 @@ if (! function_exists('esc_sql')) {
 	}
 }
 
+if (! function_exists('is_cart')) {
+	function is_cart(): bool { return false; }
+}
+
+if (! function_exists('is_checkout')) {
+	function is_checkout(): bool { return false; }
+}
+
+if (! function_exists('is_order_received_page')) {
+	function is_order_received_page(): bool { return false; }
+}
+
 if (! class_exists('WC_Product')) {
 	class WC_Product {}
 }

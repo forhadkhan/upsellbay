@@ -118,14 +118,14 @@ final class PublicOfferRoutes {
 				'callback'            => array( $this, 'bump_toggle' ),
 				'permission_callback' => '__return_true',
 				'args'                => array(
-					'offer_id'  => array(
+					'offer_id'          => array(
 						'required'          => true,
 						'type'              => 'integer',
 						'minimum'           => 1,
 						'sanitize_callback' => 'absint',
 						'validate_callback' => static fn( $value ) => absint( $value ) > 0,
 					),
-					'placement' => array(
+					'placement'         => array(
 						'required'          => false,
 						'type'              => 'string',
 						'default'           => 'checkout_bump',
@@ -136,12 +136,12 @@ final class PublicOfferRoutes {
 							true
 						),
 					),
-					'accepted'  => array(
+					'accepted'          => array(
 						'required'          => true,
 						'type'              => 'boolean',
 						'sanitize_callback' => 'rest_sanitize_boolean',
 					),
-					'token'     => array(
+					'token'             => array(
 						'required'          => true,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
@@ -163,14 +163,14 @@ final class PublicOfferRoutes {
 				'callback'            => array( $this, 'cart_offer_add' ),
 				'permission_callback' => '__return_true',
 				'args'                => array(
-					'offer_id'         => array(
+					'offer_id'          => array(
 						'required'          => true,
 						'type'              => 'integer',
 						'minimum'           => 1,
 						'sanitize_callback' => 'absint',
 						'validate_callback' => static fn( $value ) => absint( $value ) > 0,
 					),
-					'placement'        => array(
+					'placement'         => array(
 						'required'          => false,
 						'type'              => 'string',
 						'default'           => 'cart_crosssell',
@@ -181,19 +181,19 @@ final class PublicOfferRoutes {
 							true
 						),
 					),
-					'source_order_id'  => array(
+					'source_order_id'   => array(
 						'required'          => false,
 						'type'              => 'integer',
 						'default'           => 0,
 						'sanitize_callback' => 'absint',
 					),
-					'source_order_key' => array(
+					'source_order_key'  => array(
 						'required'          => false,
 						'type'              => 'string',
 						'default'           => '',
 						'sanitize_callback' => 'sanitize_text_field',
 					),
-					'token'            => array(
+					'token'             => array(
 						'required'          => true,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
@@ -215,32 +215,32 @@ final class PublicOfferRoutes {
 				'callback'            => array( $this, 'dismiss' ),
 				'permission_callback' => '__return_true',
 				'args'                => array(
-					'offer_id'         => array(
+					'offer_id'          => array(
 						'required'          => true,
 						'type'              => 'integer',
 						'minimum'           => 1,
 						'sanitize_callback' => 'absint',
 						'validate_callback' => static fn( $value ) => absint( $value ) > 0,
 					),
-					'placement'        => array(
+					'placement'         => array(
 						'required'          => false,
 						'type'              => 'string',
 						'default'           => '',
 						'sanitize_callback' => 'sanitize_key',
 					),
-					'source_order_id'  => array(
+					'source_order_id'   => array(
 						'required'          => false,
 						'type'              => 'integer',
 						'default'           => 0,
 						'sanitize_callback' => 'absint',
 					),
-					'source_order_key' => array(
+					'source_order_key'  => array(
 						'required'          => false,
 						'type'              => 'string',
 						'default'           => '',
 						'sanitize_callback' => 'sanitize_text_field',
 					),
-					'token'            => array(
+					'token'             => array(
 						'required'          => true,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
@@ -328,7 +328,7 @@ final class PublicOfferRoutes {
 		}
 
 		$placement = (string) ( $params['placement'] ?? 'cart_crosssell' );
-		
+
 		if ( 'thankyou_offer' === $placement ) {
 			$context = $this->source_order_context( $params );
 			if ( null === $context ) {

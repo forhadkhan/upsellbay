@@ -139,7 +139,7 @@ final class ImportExporter {
 			$existing_offers = $this->offers->query( array( 'limit' => -1 ) );
 			$existing_titles = array();
 			foreach ( $existing_offers as $existing ) {
-				if ( ! empty( $existing['title'] ) ) {
+				if ( isset( $existing['title'] ) && '' !== $existing['title'] ) {
 					$existing_titles[ $existing['title'] ] = $existing['id'];
 				}
 			}
@@ -149,15 +149,15 @@ final class ImportExporter {
 					continue;
 				}
 
-				$normalized = $this->validator->normalize( $offer['meta'] );
-				$title      = (string) ( $offer['title'] ?? '' );
-				$final_title= $title;
+				$normalized  = $this->validator->normalize( $offer['meta'] );
+				$title       = (string) ( $offer['title'] ?? '' );
+				$final_title = $title;
 
 				if ( $append_text ) {
 					$final_title = trim( $title . ' (Import)' );
 				}
 
-				// Duplicate handling based on original title match
+				// Duplicate handling based on original title match.
 				if ( isset( $existing_titles[ $title ] ) ) {
 					if ( 'skip' === $duplicate_handling ) {
 						continue;
@@ -173,7 +173,7 @@ final class ImportExporter {
 						);
 						continue;
 					}
-					
+
 					// 'duplicate' strategy will just fall through and create a new one.
 					// If append text wasn't checked, we might want to append " Copy" or similar,
 					// but user opted for "duplicate", so we just create it.

@@ -178,23 +178,23 @@ final class StoreApiExtender {
 			'type'       => 'object',
 			'context'    => array( 'view' ),
 			'properties' => array(
-				'id'           => array(
+				'id'              => array(
 					'type'    => 'integer',
 					'context' => array( 'view' ),
 				),
-				'title'        => array(
+				'title'           => array(
 					'type'    => 'string',
 					'context' => array( 'view' ),
 				),
-				'headline'     => array(
+				'headline'        => array(
 					'type'    => 'string',
 					'context' => array( 'view' ),
 				),
-				'body'         => array(
+				'body'            => array(
 					'type'    => 'string',
 					'context' => array( 'view' ),
 				),
-				'button_text'  => array(
+				'button_text'     => array(
 					'type'    => 'string',
 					'context' => array( 'view' ),
 				),
@@ -202,27 +202,27 @@ final class StoreApiExtender {
 					'type'    => 'string',
 					'context' => array( 'view' ),
 				),
-				'product_id'   => array(
+				'product_id'      => array(
 					'type'    => 'integer',
 					'context' => array( 'view' ),
 				),
-				'product_name' => array(
+				'product_name'    => array(
 					'type'    => 'string',
 					'context' => array( 'view' ),
 				),
-				'image_url'    => array(
+				'image_url'       => array(
 					'type'    => 'string',
 					'context' => array( 'view' ),
 				),
-				'price_html'   => array(
+				'price_html'      => array(
 					'type'    => 'string',
 					'context' => array( 'view' ),
 				),
-				'reason_label' => array(
+				'reason_label'    => array(
 					'type'    => 'string',
 					'context' => array( 'view' ),
 				),
-				'in_cart'      => array(
+				'in_cart'         => array(
 					'type'    => 'boolean',
 					'context' => array( 'view' ),
 				),
@@ -311,18 +311,18 @@ final class StoreApiExtender {
 		$in_cart          = in_array( $product_id, $cart_product_ids, true );
 
 		return array(
-			'id'           => (int) ( $offer['id'] ?? 0 ),
-			'title'        => (string) ( $offer['title'] ?? '' ),
-			'headline'     => (string) ( $meta['_ub_headline'] ?? ( $offer['title'] ?? '' ) ),
-			'body'         => function_exists( 'wp_kses_post' ) ? wp_kses_post( (string) ( $meta['_ub_body'] ?? '' ) ) : strip_tags( (string) ( $meta['_ub_body'] ?? '' ), '<a><br><em><strong>' ),
-			'button_text'    => (string) ( $meta['_ub_button_text'] ?? __( 'Add', 'upsellbay' ) ),
+			'id'              => (int) ( $offer['id'] ?? 0 ),
+			'title'           => (string) ( $offer['title'] ?? '' ),
+			'headline'        => (string) ( $meta['_ub_headline'] ?? ( $offer['title'] ?? '' ) ),
+			'body'            => function_exists( 'wp_kses_post' ) ? wp_kses_post( (string) ( $meta['_ub_body'] ?? '' ) ) : strip_tags( (string) ( $meta['_ub_body'] ?? '' ), '<a><br><em><strong>' ),
+			'button_text'     => (string) ( $meta['_ub_button_text'] ?? __( 'Add', 'upsellbay' ) ),
 			'section_heading' => (string) ( $meta['_ub_section_heading'] ?? '' ),
 			'product_id'      => $product_id,
-			'product_name' => $product_name,
-			'image_url'    => $image_url,
-			'price_html'   => $this->get_offer_price_html( $product, $meta ),
-			'reason_label' => $reason_lbl_text,
-			'in_cart'      => $in_cart,
+			'product_name'    => $product_name,
+			'image_url'       => $image_url,
+			'price_html'      => $this->get_offer_price_html( $product, $meta ),
+			'reason_label'    => $reason_lbl_text,
+			'in_cart'         => $in_cart,
 		);
 	}
 
@@ -409,7 +409,7 @@ final class StoreApiExtender {
 		}
 
 		// Merchant previews should remain inspectable even after a local dismiss action.
-		if ( true === ( $context['is_preview'] ?? false ) || ( function_exists( 'current_user_can' ) && current_user_can( 'manage_woocommerce' ) ) ) { // phpcs:ignore WordPress.WP.Capabilities.Unknown
+		if ( true === $context['is_preview'] || ( function_exists( 'current_user_can' ) && current_user_can( 'manage_woocommerce' ) ) ) { // phpcs:ignore WordPress.WP.Capabilities.Unknown
 			$context['dismissed_offer_ids'] = array();
 		}
 

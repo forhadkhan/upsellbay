@@ -36,6 +36,7 @@ final class Hooks {
 			return $value;
 		}
 
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
 		return apply_filters( Constants::hook_name( $suffix ), $value, ...$args );
 	}
 
@@ -49,6 +50,7 @@ final class Hooks {
 	 */
 	public static function action( string $suffix, ...$args ): void {
 		if ( function_exists( 'do_action' ) ) {
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
 			do_action( Constants::hook_name( $suffix ), ...$args );
 		}
 	}

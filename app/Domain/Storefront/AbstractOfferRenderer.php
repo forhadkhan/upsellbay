@@ -74,7 +74,7 @@ abstract class AbstractOfferRenderer implements OfferRendererInterface {
 			? '<label class="upsellbay-offer__toggle"><input type="checkbox" class="upsellbay-offer__checkbox" data-upsellbay-offer-id="' . $this->esc_attr( (string) $offer_id ) . '"> <span class="upsellbay-offer__button-text">' . $this->esc_html( $button_text ) . '</span></label>'
 			: '<button type="button" class="button wp-element-button wc-block-components-button upsellbay-offer__button" data-upsellbay-offer-id="' . $this->esc_attr( (string) $offer_id ) . '">' . $this->esc_html( $button_text ) . '</button>';
 
-		$source_order_attr = (int) ( $context['source_order_id'] ?? 0 ) > 0 ? ' data-upsellbay-source-order-id="' . $this->esc_attr( (string) (int) $context['source_order_id'] ) . '"' : '';
+		$source_order_attr   = (int) ( $context['source_order_id'] ?? 0 ) > 0 ? ' data-upsellbay-source-order-id="' . $this->esc_attr( (string) (int) $context['source_order_id'] ) . '"' : '';
 		$viewed_product_attr = (int) ( $context['viewed_product_id'] ?? 0 ) > 0 ? ' data-upsellbay-viewed-product-id="' . $this->esc_attr( (string) (int) $context['viewed_product_id'] ) . '"' : '';
 
 		$classes = array(
