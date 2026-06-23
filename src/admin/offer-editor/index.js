@@ -1355,4 +1355,7 @@ window.jQuery(function ($) {
       $reasonInput.prop('required', false);
     }
   });
+
+  // Sync state on load, particularly to handle cached drafts
+  $checkbox.trigger('change');
 });
