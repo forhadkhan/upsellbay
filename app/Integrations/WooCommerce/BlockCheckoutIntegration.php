@@ -157,11 +157,15 @@ final class BlockCheckoutIntegration {
 
 		$tokens       = $this->settings->all()['style_tokens'] ?? array();
 		$accent_color = (string) ( $tokens['accent_color'] ?? Settings::DEFAULT_ACCENT_COLOR );
+		$text_color   = \WPAnchorBay\UpsellBay\Utils\ColorHelper::get_contrasting_text_color( $accent_color );
 		$button_style = (string) ( $tokens['button_style'] ?? 'theme' );
-		$css          = '.upsellbay-offer{--upsellbay-accent:' . esc_attr( $accent_color ) . ';}';
+
+		$css  = '.upsellbay-offer{--upsellbay-accent:' . esc_attr( $accent_color ) . ';';
+		$css .= '--upsellbay-accent-text:' . esc_attr( $text_color ) . ';}';
+
 		if ( 'outline' === $button_style ) {
 			$css .= '.upsellbay-offer .upsellbay-offer__button{background:transparent;color:var(--upsellbay-accent);border:1px solid var(--upsellbay-accent);}';
-			$css .= '.upsellbay-offer .upsellbay-offer__button:hover,.upsellbay-offer .upsellbay-offer__button:focus{background:var(--upsellbay-accent);color:#fff;}';
+			$css .= '.upsellbay-offer .upsellbay-offer__button:hover,.upsellbay-offer .upsellbay-offer__button:focus{background:var(--upsellbay-accent);color:var(--upsellbay-accent-text);}';
 		}
 
 		wp_add_inline_style( $handle, $css );

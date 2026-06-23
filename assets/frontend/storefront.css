@@ -1,5 +1,6 @@
 .upsellbay-offer {
 	--upsellbay-accent: #2271b1;
+	--upsellbay-accent-text: #fff;
 	--upsellbay-surface: var(--wp--preset--color--base, #fff);
 	--upsellbay-text: var(--wp--preset--color--contrast, currentColor);
 	--upsellbay-muted: rgba(0, 0, 0, 0.72);
@@ -92,7 +93,7 @@
 	border: 1px solid var(--upsellbay-accent);
 	border-radius: 999px;
 	box-shadow: none;
-	color: #fff;
+	color: var(--upsellbay-accent-text);
 	font-size: 0.92rem;
 	font-weight: 600;
 	line-height: 1.2;
@@ -104,7 +105,7 @@
 
 .upsellbay-offer__button:hover,
 .upsellbay-offer__button:focus {
-	color: #fff;
+	color: var(--upsellbay-accent-text);
 	filter: brightness(0.95);
 	outline: none;
 	transform: translateY(-1px);
@@ -164,7 +165,7 @@
 .upsellbay-offer__reason {
 	background: var(--upsellbay-accent);
 	border-radius: 2px;
-	color: #fff;
+	color: var(--upsellbay-accent-text);
 	display: inline-block;
 	font-size: 0.75em;
 	margin-bottom: 6px;
@@ -182,7 +183,7 @@
 .upsellbay-offer__badge {
 	background: color-mix(in srgb, var(--upsellbay-accent) 92%, #111 8%);
 	border-radius: 999px;
-	color: #fff;
+	color: var(--upsellbay-accent-text);
 	display: inline-flex;
 	font-size: 0.65rem;
 	font-weight: 700;
