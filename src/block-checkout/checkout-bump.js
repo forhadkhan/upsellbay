@@ -2,6 +2,7 @@ import { registerPlugin } from '@wordpress/plugins';
 const { ExperimentalOrderMeta } = window.wc.blocksCheckout;
 import { useState } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
+import { __ } from '@wordpress/i18n';
 
 const refreshBlockCart = () => {
 	if ( window.wp && window.wp.data && window.wp.data.dispatch ) {
@@ -70,7 +71,7 @@ const CheckoutBumpOffer = ( { offer } ) => {
 							/>
 							<strong className="upsellbay-offer__headline">
 								{ offer.headline }
-								<span className="upsellbay-offer__badge">One-Time Offer</span>
+								<span className="upsellbay-offer__badge">{ __( 'One-Time Offer', 'upsellbay' ) }</span>
 							</strong>
 						</label>
 					{ offer.price_html && (

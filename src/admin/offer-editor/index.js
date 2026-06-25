@@ -1,6 +1,8 @@
 /**
  * UpsellBay offer editor entry.
  */
+const __ = window.wp && window.wp.i18n ? window.wp.i18n.__ : (text) => text;
+
 document.addEventListener("click", (event) => {
   const button = event.target.closest("[data-upsellbay-add-rule]");
 
@@ -62,11 +64,11 @@ function initProductSelector($selector, options) {
     if (!append) {
       $results.empty();
       $results.append(
-        '<div class="upsellbay-product-selector__message">Loading...</div>',
+        '<div class="upsellbay-product-selector__message">' + __('Loading...', 'upsellbay') + '</div>',
       );
     } else {
       $results.append(
-        '<div class="upsellbay-product-selector__loading-more">Loading more...</div>',
+        '<div class="upsellbay-product-selector__loading-more">' + __('Loading more...', 'upsellbay') + '</div>',
       );
     }
 
@@ -117,13 +119,13 @@ function initProductSelector($selector, options) {
             });
           } else if (!append) {
             $results.append(
-              '<div class="upsellbay-product-selector__message">No products found.</div>',
+              '<div class="upsellbay-product-selector__message">' + __('No products found.', 'upsellbay') + '</div>',
             );
           }
         } else {
           if (!append) {
             $results.append(
-              '<div class="upsellbay-product-selector__message upsellbay-product-selector__message--error">Error loading products.</div>',
+              '<div class="upsellbay-product-selector__message upsellbay-product-selector__message--error">' + __('Error loading products.', 'upsellbay') + '</div>',
             );
           }
         }
@@ -137,7 +139,7 @@ function initProductSelector($selector, options) {
           .remove();
         if (!append) {
           $results.append(
-            '<div class="upsellbay-product-selector__message upsellbay-product-selector__message--error">Error loading products.</div>',
+            '<div class="upsellbay-product-selector__message upsellbay-product-selector__message--error">' + __('Error loading products.', 'upsellbay') + '</div>',
           );
         }
       },
@@ -390,8 +392,8 @@ window.jQuery(function ($) {
          $form.find('.upsellbay-product-selector__input-wrapper').hide();
          $form.find('[data-upsellbay-selection]').html(`
             <div class="upsellbay-product-selector__result-info">
-              <span class="upsellbay-product-selector__result-name">Product ID: ${productId}</span>
-              <span class="upsellbay-product-selector__result-meta">(Restored from draft)</span>
+              <span class="upsellbay-product-selector__result-name">${__('Product ID:', 'upsellbay')} ${productId}</span>
+              <span class="upsellbay-product-selector__result-meta">(${__('Restored from draft', 'upsellbay')})</span>
             </div>
             <span class="upsellbay-product-selector__selection-remove">&times;</span>
          `).addClass("is-active");
@@ -454,7 +456,7 @@ window.jQuery(function ($) {
       const $field = $form.find(`[name="${fieldName}"]`);
       if ($field.length && !$field.val().trim()) {
         isValid = false;
-        errorMessages.push(`Please fill out the required field: ${fieldName.replace('_ub_', '').replace(/_/g, ' ')}`);
+        errorMessages.push(`${__('Please fill out the required field:', 'upsellbay')} ${fieldName.replace('_ub_', '').replace(/_/g, ' ')}`);
         $field.css('border-color', 'red');
       } else if ($field.length) {
         $field.css('border-color', '');
@@ -465,7 +467,7 @@ window.jQuery(function ($) {
       const $reason = $('#upsellbay-_ub_conflict_override_reason');
       if ($reason.length && !$reason.val().trim()) {
         isValid = false;
-        errorMessages.push(`Please provide a reason for the conflict override.`);
+        errorMessages.push(__(`Please provide a reason for the conflict override.`, 'upsellbay'));
         $reason.css('border-color', 'red');
       } else if ($reason.length) {
         $reason.css('border-color', '');
@@ -481,7 +483,7 @@ window.jQuery(function ($) {
           $field.css('border-color', '');
         } catch (err) {
           isValid = false;
-          errorMessages.push(`Invalid JSON format in field: ${fieldName.replace('_ub_', '').replace(/_/g, ' ')}`);
+          errorMessages.push(`${__('Invalid JSON format in field:', 'upsellbay')} ${fieldName.replace('_ub_', '').replace(/_/g, ' ')}`);
           $field.css('border-color', 'red');
         }
       }
@@ -499,20 +501,20 @@ window.jQuery(function ($) {
 
             if (!definition) {
               isValid = false;
-              errorMessages.push(`Rule ${index + 1} is not supported.`);
+              errorMessages.push(`${__('Rule', 'upsellbay')} ${index + 1} ${__('is not supported.', 'upsellbay')}`);
               return;
             }
 
             const hasValue = Array.isArray(value) ? value.length > 0 : String(value || '').trim() !== '';
             if (!hasValue) {
               isValid = false;
-              errorMessages.push(`Rule ${index + 1} needs a value.`);
+              errorMessages.push(`${__('Rule', 'upsellbay')} ${index + 1} ${__('needs a value.', 'upsellbay')}`);
               return;
             }
 
             if (definition.valueType === 'number' && !Number.isFinite(Number.parseFloat(value))) {
               isValid = false;
-              errorMessages.push(`Rule ${index + 1} needs a numeric value.`);
+              errorMessages.push(`${__('Rule', 'upsellbay')} ${index + 1} ${__('needs a numeric value.', 'upsellbay')}`);
             }
           });
         }
@@ -524,7 +526,7 @@ window.jQuery(function ($) {
     if (!isValid) {
       e.preventDefault();
       isSubmitting = false;
-      alert("Please fix the following errors:\n\n- " + errorMessages.join("\n- "));
+      alert(__("Please fix the following errors:", "upsellbay") + "\n\n- " + errorMessages.join("\n- "));
       return false;
     }
 
@@ -696,7 +698,7 @@ window.jQuery(function ($) {
       $position.prepend(
         $('<option></option>')
           .val(position)
-          .text('Custom saved position'),
+          .text(__('Custom saved position', 'upsellbay')),
       );
     }
 
@@ -847,7 +849,7 @@ window.jQuery(function ($) {
 
     function renderOperatorControl(item, definition, index) {
       if (!definition.operatorVisible) {
-        return `<input type="hidden" class="upsellbay-vb-op" data-index="${index}" value="${escapeHtml(definition.defaultOperator || '')}"><span class="description">Not required</span>`;
+        return `<input type="hidden" class="upsellbay-vb-op" data-index="${index}" value="${escapeHtml(definition.defaultOperator || '')}"><span class="description">${__('Not required', 'upsellbay')}</span>`;
       }
 
       const operators = definition.operators || [];
@@ -890,7 +892,7 @@ window.jQuery(function ($) {
       if (definition.valueType === 'stock_status') {
         return `
           <select class="upsellbay-vb-val" data-index="${index}" aria-label="Rule value">
-            <option value="">Select stock status</option>
+            <option value="">${__('Select stock status', 'upsellbay')}</option>
             ${stockStatuses.map((status) => `<option value="${escapeHtml(status.value)}" ${status.value === value ? 'selected' : ''}>${escapeHtml(status.label)}</option>`).join('')}
           </select>
         `;
@@ -973,16 +975,16 @@ window.jQuery(function ($) {
 
       if (items.length > 0) {
         if (isRules) {
-          $table.append('<thead><tr><th style="padding: 15px 10px;">Rule type <span class="woocommerce-help-tip" data-tip="The condition to check before the offer appears."></span></th><th style="padding: 15px 10px;">Operator <span class="woocommerce-help-tip" data-tip="Shown only when the selected rule needs a comparison."></span></th><th style="padding: 15px 10px;">Value <span class="woocommerce-help-tip" data-tip="Use the selector or input required by the chosen rule type."></span></th><th style="padding: 15px 10px;"></th></tr></thead>');
+          $table.append('<thead><tr><th style="padding: 15px 10px;">' + __('Rule type', 'upsellbay') + ' <span class="woocommerce-help-tip" data-tip="' + __('The condition to check before the offer appears.', 'upsellbay') + '"></span></th><th style="padding: 15px 10px;">' + __('Operator', 'upsellbay') + ' <span class="woocommerce-help-tip" data-tip="' + __('Shown only when the selected rule needs a comparison.', 'upsellbay') + '"></span></th><th style="padding: 15px 10px;">' + __('Value', 'upsellbay') + ' <span class="woocommerce-help-tip" data-tip="' + __('Use the selector or input required by the chosen rule type.', 'upsellbay') + '"></span></th><th style="padding: 15px 10px;"></th></tr></thead>');
         } else {
-          $table.append('<thead><tr><th style="padding: 15px 10px;">Setting Key</th><th colspan="2" style="padding: 15px 10px;">Value</th><th style="padding: 15px 10px;"></th></tr></thead>');
+          $table.append('<thead><tr><th style="padding: 15px 10px;">' + __('Setting Key', 'upsellbay') + '</th><th colspan="2" style="padding: 15px 10px;">' + __('Value', 'upsellbay') + '</th><th style="padding: 15px 10px;"></th></tr></thead>');
         }
       }
 
       const $tbody = $('<tbody></tbody>');
 
       if (items.length === 0) {
-        $tbody.append('<tr><td colspan="4" style="text-align:center;">No items configured. Leave empty for default behavior.</td></tr>');
+        $tbody.append('<tr><td colspan="4" style="text-align:center;">' + __('No items configured. Leave empty for default behavior.', 'upsellbay') + '</td></tr>');
       } else {
         items.forEach((item, index) => {
           const $tr = $('<tr></tr>');
@@ -1018,14 +1020,14 @@ window.jQuery(function ($) {
             `);
           }
 
-          $tr.append(`<td><button type="button" class="button button-link-delete upsellbay-vb-remove" data-index="${index}">Remove</button></td>`);
+          $tr.append(`<td><button type="button" class="button button-link-delete upsellbay-vb-remove" data-index="${index}">${__('Remove', 'upsellbay')}</button></td>`);
           $tbody.append($tr);
         });
       }
 
       $table.append($tbody);
       $builder.append($table);
-      $builder.append(`<button type="button" class="button upsellbay-vb-add">Add ${isRules ? 'Rule' : 'Setting'}</button>`);
+      $builder.append(`<button type="button" class="button upsellbay-vb-add">${__('Add', 'upsellbay')} ${isRules ? __('Rule', 'upsellbay') : __('Setting', 'upsellbay')}</button>`);
 
       $builder.find('.woocommerce-help-tip').each(function () {
         if ($.fn.tipTip) {
@@ -1189,8 +1191,8 @@ window.jQuery(function ($) {
     if (!Number.isFinite(productPrice)) {
       return {
         state: 'empty',
-        valueHtml: 'Select a product to preview the updated price.',
-        note: 'The discount preview uses the selected product base price.',
+        valueHtml: __('Select a product to preview the updated price.', 'upsellbay'),
+        note: __('The discount preview uses the selected product base price.', 'upsellbay'),
       };
     }
 
@@ -1222,7 +1224,7 @@ window.jQuery(function ($) {
       return {
         state: 'regular',
         valueHtml: `<strong>${formatPrice(priceContext.min)} - ${formatPrice(priceContext.max)}</strong>`,
-        note: 'Variable products show the lowest and highest variation prices until a variation is selected on the storefront.',
+        note: __('Variable products show the lowest and highest variation prices until a variation is selected on the storefront.', 'upsellbay'),
       };
     }
 
@@ -1230,7 +1232,7 @@ window.jQuery(function ($) {
       return {
         state: 'regular',
         valueHtml: `<strong>${formatPrice(productPrice)}</strong>`,
-        note: 'No discount is applied, so the current product price is shown here.',
+        note: __('No discount is applied, so the current product price is shown here.', 'upsellbay'),
       };
     }
 
@@ -1240,15 +1242,15 @@ window.jQuery(function ($) {
         ? `<del>${formatPrice(priceContext.min)} - ${formatPrice(priceContext.max)}</del> <strong>${formatPrice(offerMin)} - ${formatPrice(offerMax)}</strong>`
         : `<del>${formatPrice(productPrice)}</del> <strong>${formatPrice(offerMin)}</strong>`,
       note: priceContext.isRange
-        ? 'Variable products show the lowest and highest variation prices until a variation is selected on the storefront.'
-        : 'This is the price shoppers will see after the selected discount is applied.',
+        ? __('Variable products show the lowest and highest variation prices until a variation is selected on the storefront.', 'upsellbay')
+        : __('This is the price shoppers will see after the selected discount is applied.', 'upsellbay'),
     };
   }
 
   function renderDiscountPreview() {
     const preview = getDiscountPreview();
     const html = [
-      '<span class="upsellbay-discount-preview__label">Updated price</span>',
+      '<span class="upsellbay-discount-preview__label">' + __('Updated price', 'upsellbay') + '</span>',
       `<span class="upsellbay-discount-preview__value" data-upsellbay-discount-preview-value>${preview.valueHtml}</span>`,
       `<span class="description upsellbay-discount-preview__note" data-upsellbay-discount-preview-note>${preview.note}</span>`,
     ].join('');
@@ -1269,33 +1271,33 @@ window.jQuery(function ($) {
     const discountType = $('#upsellbay-_ub_discount_type').val();
     const discountVal = parseFloat($('#upsellbay-_ub_discount_value').val()) || 0;
 
-    let discountText = 'None';
+    let discountText = __('None', 'upsellbay');
     let isHighRisk = false;
 
     if (discountType === 'percent') {
-      discountText = discountVal + '% OFF';
+      discountText = discountVal + '% ' + __('OFF', 'upsellbay');
       if (discountVal > 50) isHighRisk = true;
     } else if (discountType === 'fixed_amount') {
       discountText = window.upsellbay_data && window.upsellbay_data.currency_symbol
-        ? window.upsellbay_data.currency_symbol + discountVal + ' OFF'
-        : discountVal + ' OFF (Fixed)';
+        ? window.upsellbay_data.currency_symbol + discountVal + ' ' + __('OFF', 'upsellbay')
+        : discountVal + ' ' + __('OFF (Fixed)', 'upsellbay');
     } else if (discountType === 'fixed_price') {
       discountText = window.upsellbay_data && window.upsellbay_data.currency_symbol
-        ? 'Fixed Price: ' + window.upsellbay_data.currency_symbol + discountVal
-        : 'Fixed Price: ' + discountVal;
+        ? __('Fixed Price:', 'upsellbay') + ' ' + window.upsellbay_data.currency_symbol + discountVal
+        : __('Fixed Price:', 'upsellbay') + ' ' + discountVal;
     }
 
     let html = '<p style="margin: 0.5em 0;">';
-    html += `<strong>Status:</strong> ${status.charAt(0).toUpperCase() + status.slice(1)} | `;
-    html += `<strong>Placement:</strong> ${placement} | `;
+    html += `<strong>${__('Status:', 'upsellbay')}</strong> ${status.charAt(0).toUpperCase() + status.slice(1)} | `;
+    html += `<strong>${__('Placement:', 'upsellbay')}</strong> ${placement} | `;
 
     if (isHighRisk) {
-      html += `<strong>Discount:</strong> <span style="color: #d63638; font-weight: bold;">⚠️ ${discountText} (High)</span> | `;
+      html += `<strong>${__('Discount:', 'upsellbay')}</strong> <span style="color: #d63638; font-weight: bold;">⚠️ ${discountText} (${__('High', 'upsellbay')})</span> | `;
     } else {
-      html += `<strong>Discount:</strong> ${discountText} | `;
+      html += `<strong>${__('Discount:', 'upsellbay')}</strong> ${discountText} | `;
     }
 
-    html += `<strong>Updated price:</strong> ${preview.valueHtml}`;
+    html += `<strong>${__('Updated price:', 'upsellbay')}</strong> ${preview.valueHtml}`;
     html += '</p>';
 
     $summaryContainer.html(html).show();
