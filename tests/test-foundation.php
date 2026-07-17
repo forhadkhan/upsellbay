@@ -103,7 +103,7 @@ function upsellbay_foundation_tests(): array {
 		'platform dependency checks return actionable failures' => static function (): void {
 			$result = Platform::check(
 				'8.0.0',
-				'6.8',
+				'6.7',
 				false,
 				array(
 					'wc_get_order'   => false,

@@ -4,7 +4,7 @@
  * Plugin URI: https://wpanchorbay.com/upsellbay/
  * Description: WooCommerce-native order bumps and AOV offers for product, cart, checkout, and thank-you journeys.
  * Version: 1.0.0
- * Requires at least: 6.9
+ * Requires at least: 6.8
  * Requires PHP: 8.1
  * Author: WPAnchorBay
  * Author URI: https://wpanchorbay.com/

@@ -52,7 +52,7 @@ final class Constants {
 	public const SETTINGS_URL                    = 'admin.php?page=upsellbay&tab=settings';
 	public const SETTINGS_LICENSE_ACTIVATION_URL = 'admin.php?page=upsellbay&tab=settings&section=license';
 	public const MIN_PHP_VERSION                 = '8.1';
-	public const MIN_WP_VERSION                  = '6.9';
+	public const MIN_WP_VERSION                  = '6.8';
 	public const MIN_WC_VERSION                  = '10.8';
 	public const MIN_HOST_VERSION                = '1.0.0';
 	public const ATTRIBUTION_OFFER_ID            = '_ub_offer_id';
