@@ -84,6 +84,7 @@ cache/
 .qwen/
 .letta/
 .playwright/
+/test-results/
 .meta/PRDs/
 .meta/WORKPLAN.md
 .meta/architecture/index.md
