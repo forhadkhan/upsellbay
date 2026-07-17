@@ -12,23 +12,24 @@ if (!defined('ABSPATH')) {
 }
 
 
-use WPAnchorBay\UpsellBay\Core\Constants;
-use WPAnchorBay\UpsellBay\Data\OfferRepository;
-use WPAnchorBay\UpsellBay\Data\StatsRepository;
-use WPAnchorBay\UpsellBay\Domain\Analytics\AnalyticsRecorder;
-use WPAnchorBay\UpsellBay\Domain\Analytics\AnalyticsService;
-use WPAnchorBay\UpsellBay\Domain\Analytics\StatsReconciler;
-use WPAnchorBay\UpsellBay\Domain\Attribution\AttributionWriter;
-use WPAnchorBay\UpsellBay\Domain\Discounts\DiscountCalculator;
-use WPAnchorBay\UpsellBay\Domain\Offers\OfferPrioritizer;
-use WPAnchorBay\UpsellBay\Domain\Offers\OfferSchema;
-use WPAnchorBay\UpsellBay\Domain\Offers\OfferService;
-use WPAnchorBay\UpsellBay\Domain\Offers\OfferValidator;
-use WPAnchorBay\UpsellBay\Domain\Rules\RuleEvaluator;
-use WPAnchorBay\UpsellBay\Domain\Rules\RuleParser;
-use WPAnchorBay\UpsellBay\Domain\Storefront\ClassicCheckoutBump;
-use WPAnchorBay\UpsellBay\Domain\Storefront\PlacementRenderer;
-use WPAnchorBay\UpsellBay\Utils\ImportExporter;
+use WPAnchorBay\UpsellBayPro\Core\Constants;
+use WPAnchorBay\UpsellBayPro\Core\Settings;
+use WPAnchorBay\UpsellBayPro\Data\OfferRepository;
+use WPAnchorBay\UpsellBayPro\Data\StatsRepository;
+use WPAnchorBay\UpsellBayPro\Domain\Analytics\AnalyticsRecorder;
+use WPAnchorBay\UpsellBayPro\Domain\Analytics\AnalyticsService;
+use WPAnchorBay\UpsellBayPro\Domain\Analytics\StatsReconciler;
+use WPAnchorBay\UpsellBayPro\Domain\Attribution\AttributionWriter;
+use WPAnchorBay\UpsellBayPro\Domain\Discounts\DiscountCalculator;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferPrioritizer;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferSchema;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferService;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferValidator;
+use WPAnchorBay\UpsellBayPro\Domain\Rules\RuleEvaluator;
+use WPAnchorBay\UpsellBayPro\Domain\Rules\RuleParser;
+use WPAnchorBay\UpsellBayPro\Domain\Storefront\ClassicCheckoutBump;
+use WPAnchorBay\UpsellBayPro\Domain\Storefront\PlacementRenderer;
+use WPAnchorBay\UpsellBayPro\Utils\ImportExporter;
 
 if ( ! function_exists( 'add_filter' ) ) {
 	/**
@@ -256,61 +257,68 @@ function upsellbay_developer_extensibility_tests(): array {
 			assert_true( in_array( 'attribution_written', $observed, true ) );
 			assert_true( in_array( 'daily_stats_reconciled', $observed, true ) );
 		},
-		'import export filters preserve validation while allowing portable mapping' => static function (): void {
+		'export all payload can be extended via the export_all_payload filter' => static function (): void {
 			upsellbay_reset_test_hooks();
 
 			add_filter(
-				Constants::hook_name( 'export_payload' ),
+				Constants::hook_name( 'export_all_payload' ),
 				static function ( array $payload ): array {
 					$payload['agency'] = 'example';
 					return $payload;
 				}
 			);
-			add_filter(
-				Constants::hook_name( 'import_mapping' ),
-				static function ( array $mapping ): array {
-					$mapping['sku'] = 'MAPPED-SKU';
-					return $mapping;
+
+			$posts      = array();
+			$repository = new OfferRepository(
+				new OfferValidator( new OfferSchema(), static fn (): bool => true ),
+				static function ( array $post_data ) use ( &$posts ): int {
+					$id           = count( $posts ) + 1;
+					$posts[ $id ] = $post_data + array( 'ID' => $id );
+					return $id;
+				},
+				static function ( int $post_id, array $post_data ) use ( &$posts ): bool {
+					$posts[ $post_id ] = array_replace( $posts[ $post_id ], $post_data );
+					return true;
+				},
+				static function ( int $post_id ) use ( &$posts ): ?array {
+					return $posts[ $post_id ] ?? null;
+				},
+				static function ( array $query ) use ( &$posts ): array {
+					unset( $query );
+					return array_values( $posts );
+				},
+				static function ( int $post_id, string $meta_key, $meta_value ) use ( &$posts ): bool {
+					$posts[ $post_id ]['meta'][ $meta_key ] = $meta_value;
+					return true;
+				},
+				static function ( int $post_id, string $meta_key ) use ( &$posts ) {
+					return $posts[ $post_id ]['meta'][ $meta_key ] ?? null;
+				},
+				static function ( int $post_id ) use ( &$posts ): bool {
+					$posts[ $post_id ]['post_status'] = 'trash';
+					return true;
 				}
-			);
-			add_filter(
-				Constants::hook_name( 'import_sku_match' ),
-				static fn (): int => 91
-			);
-			add_filter(
-				Constants::hook_name( 'import_validation_errors' ),
-				static function ( array $errors ): array {
-					$errors['agency'] = 'Agency validation remains enforced.';
-					return $errors;
-				}
-			);
-			add_filter(
-				Constants::hook_name( 'import_post_status' ),
-				static fn (): string => 'draft'
 			);
 
-			$exporter = new ImportExporter( new OfferValidator( new OfferSchema(), static fn (): bool => true ) );
-			$json     = $exporter->export(
+			$repository->create(
 				array(
-					array(
-						'title'       => 'Portable offer',
-						'product_sku' => 'ORIGINAL-SKU',
-						'meta'        => array( '_ub_offer_product_id' => 50 ),
-					),
+					'title' => 'Portable offer',
+					'meta'  => array( '_ub_offer_product_id' => 50 ),
 				)
 			);
 
+			$settings = new Settings( static fn (): array => array(), static fn (): bool => true );
+			$exporter = new ImportExporter( new OfferValidator( new OfferSchema(), static fn (): bool => true ), $repository, $settings );
+
+			$json = $exporter->export_all();
 			assert_contains( '"agency":"example"', $json );
 
-			$result = $exporter->validate_json( $json );
+			$result = $exporter->import_all( $json );
 			assert_true( $result->is_valid() );
-			assert_same( 'MAPPED-SKU', $result->data()['offers'][0]['product_mapping']['sku'] );
-			assert_same( 91, $result->data()['offers'][0]['meta']['_ub_offer_product_id'] );
-			assert_same( 'draft', $result->data()['offers'][0]['post_status'] );
+			assert_same( 'example', $result->data()['agency'] );
 
-			$invalid = $exporter->validate_json( '{"type":"upsellbay_offer_export","version":1,"offers":[{"meta":[]}]}');
+			$invalid = $exporter->import_all( '{bad json' );
 			assert_false( $invalid->is_valid() );
-			assert_same( 'Agency validation remains enforced.', $invalid->errors()['agency'] );
 		},
 		'prd hook names are documented in developer reference' => static function (): void {
 			$docs = (string) file_get_contents( __DIR__ . '/../docs/developer/hooks.md' );

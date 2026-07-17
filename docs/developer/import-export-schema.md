@@ -1,35 +1,29 @@
 # Import and Export Schema
 
-UpsellBay offer exports use this envelope:
+UpsellBay's full data export uses this envelope:
 
 ```json
 {
-  "type": "upsellbay_offer_export",
+  "type": "upsellbay_full_export",
   "version": 1,
+  "settings": {
+    "enabled": true
+  },
   "offers": [
     {
       "title": "Checkout bump",
+      "status": "draft",
       "meta": {
         "_ub_offer_type": "checkout_bump",
         "_ub_status": "draft"
-      },
-      "product_mapping": {
-        "sku": "optional-sku",
-        "name": "Optional product name"
       }
     }
   ]
 }
 ```
 
-Phase 6 adds narrow import/export extension filters for agencies:
+`ImportExporter::export_all()` fires one extension filter:
 
-- `upsellbay_export_payload`
-- `upsellbay_import_mapping`
-- `upsellbay_import_sku_match`
-- `upsellbay_import_validation_errors`
-- `upsellbay_import_post_status`
+- `upsellbay_export_all_payload` — adjust the assembled payload before it is JSON-encoded.
 
-These filters can adapt portable templates, but they cannot bypass authorization, nonce checks, JSON shape validation, or server-side product validation.
-
-Exports omit site-specific product and taxonomy IDs. Imports must map products through SKU or deliberate admin mapping before offers are activated.
+Exports omit each offer's post ID; imports always create new offers (or update an existing one matched by title, depending on the chosen duplicate-handling preference) rather than reusing site-specific IDs. `ImportExporter::import_all()` rejects any payload whose `type`/`version` don't match the envelope above.

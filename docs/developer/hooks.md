@@ -33,12 +33,6 @@ UpsellBay exposes hooks only at stable service boundaries. Hook callbacks must n
 
 ## Import/Export Filters
 
-These filters support portable agency templates. They do not bypass JSON shape validation, capability checks, nonce checks, or product validation.
-
 | Hook | Purpose |
 | --- | --- |
-| `upsellbay_export_payload` | Adjust a generated export envelope after site-specific product IDs are stripped. |
-| `upsellbay_import_mapping` | Normalize product mapping data before SKU/name matching. |
-| `upsellbay_import_sku_match` | Resolve a product ID from a portable SKU mapping. |
-| `upsellbay_import_validation_errors` | Add integration-specific validation messages while keeping the import invalid. |
-| `upsellbay_import_post_status` | Choose the post status used for imported draft offers. |
+| `upsellbay_export_all_payload` | Adjust the full settings-and-offers export envelope before it is JSON-encoded. Offer post IDs are already stripped by this point. |

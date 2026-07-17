@@ -12,19 +12,19 @@ if (!defined('ABSPATH')) {
 }
 
 
-use WPAnchorBay\UpsellBay\Core\Constants;
-use WPAnchorBay\UpsellBay\Core\Installer;
-use WPAnchorBay\UpsellBay\Core\Scheduler;
-use WPAnchorBay\UpsellBay\Core\Settings;
-use WPAnchorBay\UpsellBay\Data\CartSession;
-use WPAnchorBay\UpsellBay\Data\OfferRepository;
-use WPAnchorBay\UpsellBay\Data\StatsRepository;
-use WPAnchorBay\UpsellBay\Domain\Analytics\AnalyticsRecorder;
-use WPAnchorBay\UpsellBay\Domain\Analytics\StatsReconciler;
-use WPAnchorBay\UpsellBay\Domain\Offers\OfferSchema;
-use WPAnchorBay\UpsellBay\Domain\Offers\OfferValidator;
-use WPAnchorBay\UpsellBay\Utils\ImportExporter;
-use WPAnchorBay\UpsellBay\Utils\TokenHelper;
+use WPAnchorBay\UpsellBayPro\Core\Constants;
+use WPAnchorBay\UpsellBayPro\Core\Installer;
+use WPAnchorBay\UpsellBayPro\Core\Scheduler;
+use WPAnchorBay\UpsellBayPro\Core\Settings;
+use WPAnchorBay\UpsellBayPro\Data\CartSession;
+use WPAnchorBay\UpsellBayPro\Data\OfferRepository;
+use WPAnchorBay\UpsellBayPro\Data\StatsRepository;
+use WPAnchorBay\UpsellBayPro\Domain\Analytics\AnalyticsRecorder;
+use WPAnchorBay\UpsellBayPro\Domain\Analytics\StatsReconciler;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferSchema;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferValidator;
+use WPAnchorBay\UpsellBayPro\Utils\ImportExporter;
+use WPAnchorBay\UpsellBayPro\Utils\TokenHelper;
 
 /**
  * Returns Phase 2 test cases.
@@ -252,28 +252,72 @@ function upsellbay_data_architecture_tests(): array {
 			assert_same( '_ub_source_order_id', Constants::ATTRIBUTION_SOURCE_ORDER_ID );
 			assert_same( '_ub_follow_on_order', Constants::ATTRIBUTION_FOLLOW_ON_ORDER );
 		},
-		'import exporter validates json schema and strips site specific ids' => static function (): void {
-			$exporter = new ImportExporter( new OfferValidator( new OfferSchema(), static fn (): bool => true ) );
-			$payload  = $exporter->export(
+		'import exporter exports and imports full payloads while stripping post specific offer ids' => static function (): void {
+			$posts      = array();
+			$repository = new OfferRepository(
+				new OfferValidator( new OfferSchema(), static fn (): bool => true ),
+				static function ( array $post_data ) use ( &$posts ): int {
+					$id           = count( $posts ) + 1;
+					$posts[ $id ] = $post_data + array( 'ID' => $id );
+					return $id;
+				},
+				static function ( int $post_id, array $post_data ) use ( &$posts ): bool {
+					$posts[ $post_id ] = array_replace( $posts[ $post_id ], $post_data );
+					return true;
+				},
+				static function ( int $post_id ) use ( &$posts ): ?array {
+					return $posts[ $post_id ] ?? null;
+				},
+				static function ( array $query ) use ( &$posts ): array {
+					unset( $query );
+					return array_values( $posts );
+				},
+				static function ( int $post_id, string $meta_key, $meta_value ) use ( &$posts ): bool {
+					$posts[ $post_id ]['meta'][ $meta_key ] = $meta_value;
+					return true;
+				},
+				static function ( int $post_id, string $meta_key ) use ( &$posts ) {
+					return $posts[ $post_id ]['meta'][ $meta_key ] ?? null;
+				},
+				static function ( int $post_id ) use ( &$posts ): bool {
+					$posts[ $post_id ]['post_status'] = 'trash';
+					return true;
+				}
+			);
+
+			$repository->create(
 				array(
-					array(
-						'title' => 'Offer',
-						'meta'  => array(
-							'_ub_offer_type'       => 'checkout_bump',
-							'_ub_offer_product_id' => 55,
-							'_ub_headline'         => 'Add this',
-						),
+					'title' => 'Offer',
+					'meta'  => array(
+						'_ub_offer_type'       => 'checkout_bump',
+						'_ub_offer_product_id' => 55,
+						'_ub_headline'         => 'Add this',
+						'_ub_button_text'      => 'Add',
 					),
 				)
 			);
 
-			assert_false( str_contains( $payload, '"_ub_offer_product_id":55' ) );
+			$settings = new Settings( static fn (): array => array(), static fn (): bool => true );
+			$exporter = new ImportExporter( new OfferValidator( new OfferSchema(), static fn (): bool => true ), $repository, $settings );
 
-			$result = $exporter->validate_json( $payload );
+			$payload = $exporter->export_all();
+			$decoded = json_decode( $payload, true );
+
+			assert_same( 'upsellbay_full_export', $decoded['type'] );
+			assert_same( 1, $decoded['version'] );
+			assert_same( 1, count( $decoded['offers'] ) );
+			assert_false( isset( $decoded['offers'][0]['id'] ) );
+			assert_same( 55, $decoded['offers'][0]['meta']['_ub_offer_product_id'] );
+
+			$result = $exporter->import_all( $payload );
 			assert_true( $result->is_valid() );
-			assert_same( 'upsellbay_offer_export', $result->data()['type'] );
+			assert_same( 2, count( $repository->query( array( 'limit' => -1 ) ) ) );
 
-			assert_false( $exporter->validate_json( '{bad json' )->is_valid() );
+			$invalid = $exporter->import_all( '{bad json' );
+			assert_false( $invalid->is_valid() );
+
+			$wrong_schema = $exporter->import_all( (string) wp_json_encode( array( 'type' => 'not_upsellbay', 'version' => 1 ) ) );
+			assert_false( $wrong_schema->is_valid() );
 		},
 		'settings retain merchant choices while adding data defaults' => static function (): void {
 			$settings = new Settings(
