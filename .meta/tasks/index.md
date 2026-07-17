@@ -128,12 +128,12 @@ Goal: correct the post-Phase 6 admin UX gap before QA by replacing placeholder a
 ## [Phase 7 — Quality Assurance](07-quality-assurance.md)
 Goal: prove UpsellBay is secure, stable, performant, Woo-native, HPOS-safe, Block Checkout-safe, and marketplace-ready before release.
 
-- [ ] UB-P7-001 — PHPUnit and Test Harness
-- [ ] UB-P7-002 — Unit Test Coverage
-- [ ] UB-P7-003 — Integration Tests
-- [ ] UB-P7-004 — Classic Checkout E2E Suite
-- [ ] UB-P7-005 — Block Checkout E2E Suite
-- [ ] UB-P7-006 — Storefront Placement E2E Suite
+- [x] UB-P7-001 — PHPUnit and Test Harness (hand-rolled runner against a stubbed WP environment, not literally PHPUnit — acceptance criteria "runs and produces deterministic results" is met: 83/83 passing)
+- [ ] UB-P7-002 — Unit Test Coverage (broad but not audited item-by-item against the full listed scope)
+- [ ] UB-P7-003 — Integration Tests (real-WP integration testing not done as a general harness; see launch-gates.md for the specific outcomes that substitute)
+- [x] UB-P7-004 — Classic Checkout E2E Suite (passed in the 2026-07-17 full-suite run)
+- [x] UB-P7-005 — Block Checkout E2E Suite (7/7, real evidence — see launch-gates.md)
+- [x] UB-P7-006 — Storefront Placement E2E Suite (product/cart/thank-you matrix passed in the 2026-07-17 full-suite run)
 - [ ] UB-P7-007 — WooCommerce Compatibility Matrix Tests
 - [ ] UB-P7-008 — Performance Tests
 - [ ] UB-P7-009 — Security Review
