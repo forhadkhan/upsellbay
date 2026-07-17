@@ -287,8 +287,8 @@ final class OfferValidator {
 			}
 
 			$product_type = (string) ( $product['type'] ?? 'simple' );
-			if ( in_array( $meta['_ub_offer_type'], array( OfferSchema::TYPE_CHECKOUT_BUMP, OfferSchema::TYPE_THANKYOU_OFFER ), true ) && ! in_array( $product_type, array( 'simple', 'variation' ), true ) ) {
-				$errors['_ub_offer_product_id_type'] = 'Checkout and thank-you offers require a simple product or variation.';
+			if ( ! in_array( $product_type, array( 'simple', 'variation' ), true ) ) {
+				$errors['_ub_offer_product_id_type'] = 'Offers require a simple product or variation. Composite, bundle, grouped, and variable-parent products are not supported as offer targets on any placement.';
 			}
 
 			if ( true === ( $product['subscription'] ?? false ) && 'none' !== $meta['_ub_discount_type'] ) {

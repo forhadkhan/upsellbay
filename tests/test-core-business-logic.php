@@ -340,6 +340,23 @@ function upsellbay_core_business_logic_tests(): array {
 			assert_true( $mutator->remove( 9 )['success'] );
 			assert_same( 0, count( $cart_items ) );
 		},
+		'offer validator rejects unsupported product types on every placement' => static function (): void {
+			$product_context = static fn ( int $product_id ): array => array(
+				'purchasable' => true,
+				'in_stock'    => true,
+				'visible'     => true,
+				'type'        => 'variable',
+			);
+
+			foreach ( array( 'checkout_bump', 'product_upsell', 'cart_crosssell', 'thankyou_offer' ) as $placement ) {
+				$validator = new OfferValidator( new OfferSchema(), static fn (): bool => true, $product_context );
+				$meta      = upsellbay_phase4_offer( 1, $placement, 42, 1 )['meta'];
+				$result    = $validator->validate( $meta );
+
+				assert_false( $result->is_valid() );
+				assert_true( isset( $result->errors()['_ub_offer_product_id_type'] ) );
+			}
+		},
 		'placement renderers record views and keep placement logic separate' => static function (): void {
 			$GLOBALS['upsellbay_test_products'][50] = new UpsellBay_Test_Storefront_Product( 50, 'Warranty', '25.00', 12 );
 			$events      = array();
