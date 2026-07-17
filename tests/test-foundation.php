@@ -371,7 +371,7 @@ function upsellbay_foundation_tests(): array {
 
 			assert_true( true === $result );
 			assert_same( 'WPAB-VALIDKEY-123456789012', $request_body['license_key'] );
-			assert_same( 'upsellbay-pro', $request_body['slug'] );
+			assert_same( 'upsellbay', $request_body['slug'] );
 			assert_same( 'store.test', $request_body['domain'] );
 			assert_same( 'active', $stored['status'] );
 			assert_same( 'WPAB-VALIDKEY-123456789012', $stored['key'] );

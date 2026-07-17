@@ -40,7 +40,7 @@ final class Constants {
 	public const LOGS_TABLE_SUFFIX               = 'upsellbay_pro_logs';
 	public const ACTION_SCHEDULER_GROUP          = 'upsellbay-pro';
 	public const ASSET_HANDLE_PREFIX             = 'upsellbay-pro-';
-	public const LICENSE_PRODUCT_SLUG            = 'upsellbay-pro';
+	public const LICENSE_PRODUCT_SLUG            = 'upsellbay';
 	public const LICENSE_DATA_OPTION             = 'upsellbay_pro_license_data';
 	public const LICENSE_VALID_TRANSIENT         = 'upsellbay_pro_license_valid';
 	public const PLUGIN_URL                      = 'https://wpanchorbay.com/plugins/upsellbay/';
