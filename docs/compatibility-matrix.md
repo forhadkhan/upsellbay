@@ -14,7 +14,7 @@ UpsellBay is built as an additive WooCommerce AOV offer layer. It preserves the 
 | PayPal Payments | QA required | Normal checkout compatibility only. |
 | WooCommerce Subscriptions | Limited until tested | Subscription products must not receive recurring discount leakage. |
 | Multicurrency plugins | Deferred broad support | v1 attribution reports store currency only unless a specific integration is tested and documented. |
-| Product bundles/composites | Deferred advanced behavior | v1 focuses on simple and variable product offer paths. |
+| Product bundles/composites | Not supported as offer targets | Offers may only target a simple product or a specific variation, on every placement (product page, cart, checkout, thank-you). Composite, bundle, grouped, and variable-parent products are rejected at save time. A third-party bundle/composite product's own price-recalculation logic can run after UpsellBay's on a shared cart line and silently overwrite an applied discount, so this is a correctness guard, not an arbitrary restriction. |
 | Checkout replacement plugins | Warning-only | UpsellBay detects known replacement checkout plugins where possible and avoids unsafe injection. |
 | CartBay | Coexistence guidance only | UpsellBay does not require CartBay and must not read or write CartBay options, sessions, metadata, routes, jobs, or recovery state. |
 
