@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Admin\Dashboard;
+namespace WPAnchorBay\UpsellBayPro\Admin\Dashboard;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,8 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
-use WPAnchorBay\UpsellBay\Admin\OverviewSummary;
-use WPAnchorBay\UpsellBay\Data\StatsRepository;
+use WPAnchorBay\UpsellBayPro\Admin\OverviewSummary;
+use WPAnchorBay\UpsellBayPro\Data\StatsRepository;
 
 /**
  * Renders the default UpsellBay overview tab with analytics.
@@ -87,13 +87,26 @@ final class DashboardPage {
 	}
 
 	/**
+	 * Attach to the host plugin's Dashboard tab extension seam.
+	 *
+	 * @since 1.0.0
+	 */
+	public function register_hooks(): void {
+		if ( ! function_exists( 'add_action' ) ) {
+			return;
+		}
+
+		add_action( 'upsellbay_dashboard_after', array( $this, 'render_analytics' ) );
+	}
+
+	/**
 	 * Render the analytics performance section.
 	 *
 	 * @since 1.0.0
 	 *
 	 * @param array<string, mixed> $request Request data.
 	 */
-	private function render_analytics( array $request = array() ): void {
+	public function render_analytics( array $request = array() ): void {
 		$day_seconds = defined( 'DAY_IN_SECONDS' ) ? DAY_IN_SECONDS : 86400;
 		$range       = $this->selected_range( $request );
 		$summary     = $this->analytics_summary( gmdate( 'Y-m-d', time() - $day_seconds * $range ), gmdate( 'Y-m-d' ) );
@@ -102,9 +115,11 @@ final class DashboardPage {
 		/* translators: %d: number of days in the selected analytics range. */
 		echo '<h3 class="upsellbay-overview-title">' . esc_html( sprintf( __( 'Performance (Last %d days)', 'upsellbay' ), $range ) ) . '</h3>';
 		echo '<div class="upsellbay-button-group" role="group" aria-label="' . esc_attr__( 'Performance date range', 'upsellbay' ) . '">';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : 'upsellbay';
 		foreach ( $this->range_options() as $days => $label ) {
 			$is_selected = $range === $days;
-			$url         = 'admin.php?page=upsellbay&tab=dashboard&range=' . $days;
+			$url         = 'admin.php?page=' . $page . '&tab=dashboard&range=' . $days;
 			echo '<a href="' . esc_url( $url ) . '" class="button' . ( $is_selected ? ' button-primary' : '' ) . '"' . ( $is_selected ? ' aria-current="true"' : '' ) . '>';
 			echo esc_html( $label );
 			echo '</a>';

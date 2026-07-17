@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Admin;
+namespace WPAnchorBay\UpsellBayPro\Admin;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,8 +15,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
-use WPAnchorBay\UpsellBay\Core\Constants;
-use WPAnchorBay\UpsellBay\Domain\Rules\RuleDefinitions;
+use WPAnchorBay\UpsellBayPro\Core\Constants;
+use WPAnchorBay\UpsellBayPro\Core\Hooks;
+use WPAnchorBay\UpsellBayPro\Domain\Rules\RuleDefinitions;
 
 /**
  * Enqueues admin assets only for UpsellBay screens.
@@ -32,6 +33,7 @@ final class AdminAssets {
 	public function register_hooks(): void {
 		if ( function_exists( 'add_action' ) ) {
 			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
+			add_action( 'upsellbay_enqueue_admin_assets', array( $this, 'enqueue' ) );
 		}
 	}
 
@@ -45,10 +47,6 @@ final class AdminAssets {
 	 * @return array<string, array<string, mixed>>
 	 */
 	public function assets_for_screen( string $screen_id, array $request = array() ): array {
-		if ( ! str_starts_with( $screen_id, 'woocommerce_page_upsellbay' ) ) {
-			return array();
-		}
-
 		if ( 'woocommerce_page_upsellbay' !== $screen_id ) {
 			return array();
 		}
@@ -142,12 +140,12 @@ final class AdminAssets {
 					$rule_definitions = new RuleDefinitions();
 					wp_localize_script(
 						$handle,
-						'upsellbay_data',
+						'upsellbay_pro_data',
 						array(
 							'rest_url'           => get_rest_url( null, '/' ),
 							'ajax_url'           => admin_url( 'admin-ajax.php' ),
 							'nonce'              => wp_create_nonce( 'wp_rest' ),
-							'ajax_nonce'         => wp_create_nonce( 'upsellbay_admin_ajax' ),
+							'ajax_nonce'         => wp_create_nonce( 'upsellbay_pro_admin_ajax' ),
 							'currency_symbol'    => function_exists( 'get_woocommerce_currency_symbol' ) ? get_woocommerce_currency_symbol() : '$',
 							'currency_position'  => function_exists( 'get_option' ) ? (string) get_option( 'woocommerce_currency_pos', 'left' ) : 'left',
 							'decimal_separator'  => function_exists( 'get_option' ) ? (string) get_option( 'woocommerce_price_decimal_sep', '.' ) : '.',

@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Admin\Settings;
+namespace WPAnchorBay\UpsellBayPro\Admin\Settings;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,8 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
-use WPAnchorBay\UpsellBay\Core\Settings;
-use WPAnchorBay\UpsellBay\Integrations\Licensing\LicenseClient;
+use WPAnchorBay\UpsellBayPro\Core\Settings;
+use WPAnchorBay\UpsellBayPro\Integrations\Licensing\LicenseClient;
 
 /**
  * Handles Woo-style settings sections and saves.
@@ -141,7 +141,7 @@ final class SettingsPage {
 		$this->settings           = $settings;
 		$this->license_client     = $license_client ?? new LicenseClient();
 		$this->can_manage         = $can_manage ?? static fn (): bool => function_exists( 'current_user_can' ) && current_user_can( 'manage_woocommerce' ); // phpcs:ignore WordPress.WP.Capabilities.Unknown
-		$this->verify_nonce       = is_callable( $verify_nonce ) ? $verify_nonce : static fn ( string $nonce ): bool => function_exists( 'wp_verify_nonce' ) && (bool) wp_verify_nonce( $nonce, 'upsellbay_save_settings' );
+		$this->verify_nonce       = is_callable( $verify_nonce ) ? $verify_nonce : static fn ( string $nonce ): bool => function_exists( 'wp_verify_nonce' ) && (bool) wp_verify_nonce( $nonce, 'upsellbay_pro_save_settings' );
 		$this->sections           = array();
 		$this->section_navigation = $section_navigation ?? new SettingsSectionNavigation();
 		$this->logs_renderer      = $logs_renderer;
@@ -160,6 +160,74 @@ final class SettingsPage {
 	 */
 	public function sections(): array {
 		return $this->sections;
+	}
+
+	/**
+	 * Attach to the host plugin's settings-page extension seams.
+	 *
+	 * @since 1.0.0
+	 */
+	public function register_hooks(): void {
+		if ( ! function_exists( 'add_filter' ) ) {
+			return;
+		}
+
+		add_filter( 'upsellbay_settings_sections', array( $this, 'add_host_sections' ) );
+		add_action( 'upsellbay_settings_section_content', array( $this, 'render_host_section_content' ), 10, 2 );
+		add_action( 'upsellbay_settings_section_save', array( $this, 'handle_host_section_save' ), 10, 2 );
+	}
+
+	/**
+	 * Handle saving a non-native Settings section submitted via the host's page.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string               $section Active section id.
+	 * @param array<string, mixed> $request Request data.
+	 */
+	public function handle_host_section_save( string $section, array $request ): void {
+		unset( $section );
+
+		$this->maybe_activate_license_from_request( $request );
+	}
+
+	/**
+	 * Add the License and Logs sections to the host's Settings tab.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<string, array{label: string, url: string}> $sections Host section map.
+	 * @return array<string, array{label: string, url: string}>
+	 */
+	public function add_host_sections( array $sections ): array {
+		$sections['license'] = array(
+			'label' => __( 'License', 'upsellbay' ),
+			'url'   => 'admin.php?page=upsellbay&tab=settings&section=license',
+		);
+		$sections['logs']    = array(
+			'label' => __( 'Logs', 'upsellbay' ),
+			'url'   => 'admin.php?page=upsellbay&tab=settings&section=logs',
+		);
+
+		return $sections;
+	}
+
+	/**
+	 * Render License/Logs content when the host's Settings tab requests it.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string               $section  Active section id.
+	 * @param array<string, mixed> $settings Normalized settings.
+	 */
+	public function render_host_section_content( string $section, array $settings ): void {
+		unset( $settings );
+
+		if ( 'license' === $section ) {
+			$this->render_license_settings_section();
+		} elseif ( 'logs' === $section && null !== $this->logs_renderer ) {
+			$this->logs_renderer->render();
+		}
 	}
 
 	/**
@@ -275,7 +343,7 @@ final class SettingsPage {
 		if ( 'logs' !== $active_section ) {
 			echo '<form method="post">';
 			if ( function_exists( 'wp_nonce_field' ) ) {
-				wp_nonce_field( 'upsellbay_save_settings', 'nonce' );
+				wp_nonce_field( 'upsellbay_pro_save_settings', 'nonce' );
 			}
 		}
 
@@ -410,8 +478,8 @@ final class SettingsPage {
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo '<tr><th scope="row">' . esc_html__( 'Reset Application', 'upsellbay' ) . ' ' . $this->help_tip( __( 'This will permanently delete all UpsellBay data and reset the plugin to a fresh installation state.', 'upsellbay' ) ) . '</th>';
 		echo '<td>';
-		$clear_nonce = wp_create_nonce( 'upsellbay_clear_all_data' );
-		$clear_url   = admin_url( 'admin-post.php?action=upsellbay_clear_all_data&_wpnonce=' . $clear_nonce );
+		$clear_nonce = wp_create_nonce( 'upsellbay_pro_clear_all_data' );
+		$clear_url   = admin_url( 'admin-post.php?action=upsellbay_pro_clear_all_data&_wpnonce=' . $clear_nonce );
 
 		echo '<a href="' . esc_url( $clear_url ) . '" class="button button-secondary upsellbay-button-danger upsellbay-modal-trigger" data-modal-title="' . esc_attr__( 'Clear All Data', 'upsellbay' ) . '" data-modal-message="' . esc_attr__( 'Are you sure you want to permanently delete all records, configurations, settings, generated data, analytics, offers and any other data stored by UpsellBay? This action is irreversible.', 'upsellbay' ) . '" data-modal-confirm="' . esc_attr__( 'Yes, Clear All Data', 'upsellbay' ) . '" data-modal-cancel="' . esc_attr__( 'Cancel', 'upsellbay' ) . '">' . esc_html__( 'Clear All Data', 'upsellbay' ) . '</a>';
 		echo '<p class="description">' . esc_html__( 'Warning: This action will permanently delete all offers, configurations, analytics, and session data. It cannot be undone.', 'upsellbay' ) . '</p>';
@@ -424,7 +492,7 @@ final class SettingsPage {
 	 *
 	 * @since 1.0.0
 	 */
-	private function render_license_settings_section(): void {
+	public function render_license_settings_section(): void {
 		echo '<h2>' . esc_html__( 'License', 'upsellbay' ) . '</h2>';
 		echo '<table class="form-table upsellbay-settings-table" role="presentation"><tbody>';
 		$this->render_license_section();
@@ -581,10 +649,10 @@ final class SettingsPage {
 			}
 
 			// Check and Remove actions.
-			$check_nonce  = wp_create_nonce( 'upsellbay_check_license' );
-			$remove_nonce = wp_create_nonce( 'upsellbay_remove_license' );
-			$check_url    = admin_url( 'admin-post.php?action=upsellbay_check_license&_wpnonce=' . $check_nonce );
-			$remove_url   = admin_url( 'admin-post.php?action=upsellbay_remove_license&_wpnonce=' . $remove_nonce );
+			$check_nonce  = wp_create_nonce( 'upsellbay_pro_check_license' );
+			$remove_nonce = wp_create_nonce( 'upsellbay_pro_remove_license' );
+			$check_url    = admin_url( 'admin-post.php?action=upsellbay_pro_check_license&_wpnonce=' . $check_nonce );
+			$remove_url   = admin_url( 'admin-post.php?action=upsellbay_pro_remove_license&_wpnonce=' . $remove_nonce );
 
 			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			echo '<tr><th scope="row">' . esc_html__( 'Actions', 'upsellbay' ) . ' ' . $this->help_tip( __( 'Use these tools to verify the current license status or remove a stored key from this site.', 'upsellbay' ) ) . '</th>';
@@ -604,7 +672,7 @@ final class SettingsPage {
 		echo '<tr id="upsellbay_license_activate"><th scope="row"><label for="upsellbay_new_license_key">' . esc_html__( 'Activate New Key', 'upsellbay' ) . '</label> ' . $this->help_tip( __( 'Paste a new UpsellBay license key here to replace the currently stored key without exposing it in normal option fields.', 'upsellbay' ) ) . '</th>';
 		echo '<td>';
 		echo '<input type="text" name="upsellbay_new_license_key" id="upsellbay_new_license_key" value="" placeholder="WPAB-XXXXXXXXXXXX-XXXXXXXXXXXX" class="regular-text" autocomplete="off" />';
-		echo ' <button type="submit" name="upsellbay_activate_license" value="1" class="button button-primary">' . esc_html__( 'Activate License', 'upsellbay' ) . '</button>';
+		echo ' <button type="submit" name="upsellbay_pro_activate_license" value="1" class="button button-primary">' . esc_html__( 'Activate License', 'upsellbay' ) . '</button>';
 		echo '<p class="description">' . esc_html__( 'Leave blank to keep the existing key unchanged.', 'upsellbay' ) . '</p>';
 		echo '</td></tr>';
 	}

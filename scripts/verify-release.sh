@@ -22,7 +22,7 @@ REQUIRED=(
 	"uninstall.php"
 	"app/Core/Plugin.php"
 	"app/Core/Constants.php"
-	"app/Admin/Offers/OfferListTable.php"
+	"app/Integrations/OffersListColumnsIntegration.php"
 	"app/Api/Routes/LicenseRoute.php"
 	"app/Integrations/Licensing/LicenseClient.php"
 	"app/Data/OfferRepository.php"

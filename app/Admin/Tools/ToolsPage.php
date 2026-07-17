@@ -7,16 +7,16 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Admin\Tools;
+namespace WPAnchorBay\UpsellBayPro\Admin\Tools;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use WPAnchorBay\UpsellBay\Core\Settings;
-use WPAnchorBay\UpsellBay\Domain\Compatibility\CompatibilityScanner;
-use WPAnchorBay\UpsellBay\Utils\ImportExporter;
+use WPAnchorBay\UpsellBayPro\Core\Settings;
+use WPAnchorBay\UpsellBayPro\Domain\Compatibility\CompatibilityScanner;
+use WPAnchorBay\UpsellBayPro\Utils\ImportExporter;
 
 /**
  * Provides full data import and export.
@@ -70,6 +70,19 @@ final class ToolsPage {
 	}
 
 	/**
+	 * Attach to the host plugin's Tools tab extension seam.
+	 *
+	 * @since 1.0.0
+	 */
+	public function register_hooks(): void {
+		if ( ! function_exists( 'add_action' ) ) {
+			return;
+		}
+
+		add_action( 'upsellbay_tools_tab_content', array( $this, 'render_content' ) );
+	}
+
+	/**
 	 * Render tools shell.
 	 *
 	 * @since 1.0.0
@@ -107,8 +120,8 @@ final class ToolsPage {
 
 		$export_url = admin_url( 'admin-post.php' );
 		echo '<form method="post" action="' . esc_url( $export_url ) . '">';
-		wp_nonce_field( 'upsellbay_export_data' );
-		echo '<input type="hidden" name="action" value="upsellbay_export_data">';
+		wp_nonce_field( 'upsellbay_pro_export_data' );
+		echo '<input type="hidden" name="action" value="upsellbay_pro_export_data">';
 		echo '<p><button type="submit" class="button button-primary">' . esc_html__( 'Export Whole Data', 'upsellbay' ) . '</button></p>';
 		echo '</form>';
 		echo '</div>';
@@ -120,8 +133,8 @@ final class ToolsPage {
 
 		$import_url = admin_url( 'admin-post.php' );
 		echo '<form method="post" enctype="multipart/form-data" action="' . esc_url( $import_url ) . '">';
-		wp_nonce_field( 'upsellbay_import_data' );
-		echo '<input type="hidden" name="action" value="upsellbay_import_data">';
+		wp_nonce_field( 'upsellbay_pro_import_data' );
+		echo '<input type="hidden" name="action" value="upsellbay_pro_import_data">';
 		echo '<p><input type="file" name="import_file" accept=".json" required></p>';
 		echo '<p><button type="submit" class="button">' . esc_html__( 'Upload and Preview', 'upsellbay' ) . '</button></p>';
 		echo '</form>';
@@ -170,8 +183,8 @@ final class ToolsPage {
 
 		$confirm_url = admin_url( 'admin-post.php' );
 		echo '<form method="post" action="' . esc_url( $confirm_url ) . '">';
-		wp_nonce_field( 'upsellbay_confirm_import' );
-		echo '<input type="hidden" name="action" value="upsellbay_confirm_import">';
+		wp_nonce_field( 'upsellbay_pro_confirm_import' );
+		echo '<input type="hidden" name="action" value="upsellbay_pro_confirm_import">';
 		echo '<input type="hidden" name="import_hash" value="' . esc_attr( $hash ) . '">';
 
 		echo '<table class="form-table" role="presentation"><tbody>';

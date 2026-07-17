@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Data;
+namespace WPAnchorBay\UpsellBayPro\Data;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
-use WPAnchorBay\UpsellBay\Core\Constants;
+use WPAnchorBay\UpsellBayPro\Core\Constants;
 
 /**
  * Encapsulates non-PII daily aggregate stats reads and writes.
@@ -209,17 +209,24 @@ final class StatsRepository {
 		$wpdb       = $GLOBALS['wpdb'];
 		$table_name = $wpdb->prefix . Constants::STATS_TABLE_SUFFIX;
 
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$where  = 'stat_date >= %s AND stat_date <= %s';
+		$params = array( (string) $filters['start_date'], (string) $filters['end_date'] );
+
+		if ( isset( $filters['offer_id'] ) ) {
+			$where   .= ' AND offer_id = %d';
+			$params[] = (int) $filters['offer_id'];
+		}
+
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT views, accepts, dismissals, orders, revenue, discount_total FROM {$table_name} WHERE stat_date >= %s AND stat_date <= %s",
-				(string) $filters['start_date'],
-				(string) $filters['end_date']
+				"SELECT views, accepts, dismissals, orders, revenue, discount_total FROM {$table_name} WHERE {$where}",
+				...$params
 			),
 			ARRAY_A
 		);
-		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
 
 		return is_array( $rows ) ? $rows : array();
 	}

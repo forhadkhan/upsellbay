@@ -7,17 +7,19 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Admin;
+namespace WPAnchorBay\UpsellBayPro\Admin;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use WPAnchorBay\UpsellBay\Core\Constants;
+use WPAnchorBay\UpsellBayPro\Core\Constants;
 
 /**
- * Adds quick links for managing UpsellBay from the plugins list.
+ * Adds a Docs quick link to the Pro plugin's row on the plugins list.
+ *
+ * The Manage link lives in the free host plugin (upsellbay-order-bump-for-woocommerce).
  *
  * @since 1.0.0
  */
@@ -39,7 +41,7 @@ final class PluginActionLinks {
 	}
 
 	/**
-	 * Add Manage and Docs links beside the default plugin actions.
+	 * Add Docs link beside the default plugin actions.
 	 *
 	 * @since 1.0.0
 	 *
@@ -52,12 +54,7 @@ final class PluginActionLinks {
 		}
 
 		$links = array(
-			'manage' => sprintf(
-				'<a href="%1$s">%2$s</a>',
-				esc_url( $this->dashboard_url() ),
-				esc_html__( 'Manage', 'upsellbay' )
-			),
-			'docs'   => sprintf(
+			'docs' => sprintf(
 				'<a href="%1$s" target="_blank" rel="noopener noreferrer">%2$s</a>',
 				esc_url( Constants::DOCS_URL ),
 				esc_html__( 'Docs', 'upsellbay' )
@@ -65,18 +62,5 @@ final class PluginActionLinks {
 		);
 
 		return array_merge( $links, $actions );
-	}
-
-	/**
-	 * Build the internal admin dashboard URL.
-	 *
-	 * @since 1.0.0
-	 */
-	private function dashboard_url(): string {
-		if ( function_exists( 'admin_url' ) ) {
-			return admin_url( 'admin.php?page=' . Constants::PLUGIN_SLUG );
-		}
-
-		return 'admin.php?page=' . Constants::PLUGIN_SLUG;
 	}
 }

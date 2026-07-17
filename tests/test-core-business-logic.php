@@ -12,37 +12,37 @@ if (!defined('ABSPATH')) {
 }
 
 
-use WPAnchorBay\UpsellBay\Api\Routes\PublicOfferRoutes;
-use WPAnchorBay\UpsellBay\Core\Constants;
-use WPAnchorBay\UpsellBay\Core\Settings;
-use WPAnchorBay\UpsellBay\Data\CartSession;
-use WPAnchorBay\UpsellBay\Data\OfferRepository;
-use WPAnchorBay\UpsellBay\Data\StatsRepository;
-use WPAnchorBay\UpsellBay\Domain\Analytics\AnalyticsRecorder;
-use WPAnchorBay\UpsellBay\Domain\Analytics\AnalyticsService;
-use WPAnchorBay\UpsellBay\Domain\Attribution\AttributionReader;
-use WPAnchorBay\UpsellBay\Domain\Attribution\AttributionWriter;
-use WPAnchorBay\UpsellBay\Domain\Cart\CartMutator;
-use WPAnchorBay\UpsellBay\Domain\Cart\CartValidator;
-use WPAnchorBay\UpsellBay\Domain\Compatibility\CompatibilityScanner;
-use WPAnchorBay\UpsellBay\Domain\Discounts\DiscountApplier;
-use WPAnchorBay\UpsellBay\Domain\Discounts\DiscountCalculator;
-use WPAnchorBay\UpsellBay\Domain\Offers\OfferPrioritizer;
-use WPAnchorBay\UpsellBay\Domain\Offers\OfferSchema;
-use WPAnchorBay\UpsellBay\Domain\Offers\OfferService;
-use WPAnchorBay\UpsellBay\Domain\Offers\OfferValidator;
-use WPAnchorBay\UpsellBay\Domain\Offers\OfferVisibilityInspector;
-use WPAnchorBay\UpsellBay\Domain\Rules\RuleEvaluator;
-use WPAnchorBay\UpsellBay\Domain\Rules\RuleDefinitions;
-use WPAnchorBay\UpsellBay\Domain\Rules\RuleParser;
-use WPAnchorBay\UpsellBay\Domain\Storefront\CartCrossSellRenderer;
-use WPAnchorBay\UpsellBay\Domain\Storefront\ClassicCheckoutBump;
-use WPAnchorBay\UpsellBay\Domain\Storefront\PlacementRenderer;
-use WPAnchorBay\UpsellBay\Domain\Storefront\ProductPageRenderer;
-use WPAnchorBay\UpsellBay\Domain\Storefront\StorefrontController;
-use WPAnchorBay\UpsellBay\Domain\Storefront\ThankYouOfferRenderer;
-use WPAnchorBay\UpsellBay\Integrations\WooCommerce\StoreApiExtender;
-use WPAnchorBay\UpsellBay\Utils\TokenHelper;
+use WPAnchorBay\UpsellBayPro\Api\Routes\PublicOfferRoutes;
+use WPAnchorBay\UpsellBayPro\Core\Constants;
+use WPAnchorBay\UpsellBayPro\Core\Settings;
+use WPAnchorBay\UpsellBayPro\Data\CartSession;
+use WPAnchorBay\UpsellBayPro\Data\OfferRepository;
+use WPAnchorBay\UpsellBayPro\Data\StatsRepository;
+use WPAnchorBay\UpsellBayPro\Domain\Analytics\AnalyticsRecorder;
+use WPAnchorBay\UpsellBayPro\Domain\Analytics\AnalyticsService;
+use WPAnchorBay\UpsellBayPro\Domain\Attribution\AttributionReader;
+use WPAnchorBay\UpsellBayPro\Domain\Attribution\AttributionWriter;
+use WPAnchorBay\UpsellBayPro\Domain\Cart\CartMutator;
+use WPAnchorBay\UpsellBayPro\Domain\Cart\CartValidator;
+use WPAnchorBay\UpsellBayPro\Domain\Compatibility\CompatibilityScanner;
+use WPAnchorBay\UpsellBayPro\Domain\Discounts\DiscountApplier;
+use WPAnchorBay\UpsellBayPro\Domain\Discounts\DiscountCalculator;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferPrioritizer;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferSchema;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferService;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferValidator;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferVisibilityInspector;
+use WPAnchorBay\UpsellBayPro\Domain\Rules\RuleEvaluator;
+use WPAnchorBay\UpsellBayPro\Domain\Rules\RuleDefinitions;
+use WPAnchorBay\UpsellBayPro\Domain\Rules\RuleParser;
+use WPAnchorBay\UpsellBayPro\Domain\Storefront\CartCrossSellRenderer;
+use WPAnchorBay\UpsellBayPro\Domain\Storefront\ClassicCheckoutBump;
+use WPAnchorBay\UpsellBayPro\Domain\Storefront\PlacementRenderer;
+use WPAnchorBay\UpsellBayPro\Domain\Storefront\ProductPageRenderer;
+use WPAnchorBay\UpsellBayPro\Domain\Storefront\StorefrontController;
+use WPAnchorBay\UpsellBayPro\Domain\Storefront\ThankYouOfferRenderer;
+use WPAnchorBay\UpsellBayPro\Integrations\WooCommerce\StoreApiExtender;
+use WPAnchorBay\UpsellBayPro\Utils\TokenHelper;
 
 /**
  * Returns Phase 4 test cases.
@@ -203,19 +203,19 @@ function upsellbay_core_business_logic_tests(): array {
 			assert_true( in_array( 'product_already_in_cart', $result['reasons'], true ) );
 		},
 		'rule aliases and trigger ids are applied to storefront eligibility' => static function (): void {
-			$page  = new \WPAnchorBay\UpsellBay\Admin\Offers\OfferEditPage(
-				new OfferService( upsellbay_test_offer_repository( array() ), new OfferValidator( new OfferSchema(), static fn (): bool => true ) ),
-				new OfferValidator( new OfferSchema(), static fn (): bool => true )
-			);
-			$rules = $page->normalize_rules(
+			// Legacy rule type aliases are resolved by the shared rule definitions
+			// that the offer-save flow (owned by the host plugin) relies on.
+			$definitions = new RuleDefinitions();
+			assert_same( 'customer_lifetime_spend', $definitions->normalize_type( 'lifetime_spend' ) );
+			assert_same( 'exclude_if_product_in_cart', $definitions->normalize_type( 'exclude_product_in_cart' ) );
+
+			$rules = ( new RuleParser() )->parse(
 				array(
 					array( 'type' => 'lifetime_spend', 'operator' => 'gte', 'value' => '100' ),
-					array( 'type' => 'exclude_product_in_cart', 'operator' => 'in', 'value' => array( 99 ) ),
 				)
 			);
 
 			assert_same( 'customer_lifetime_spend', $rules[0]['type'] );
-			assert_same( 'exclude_if_product_in_cart', $rules[1]['type'] );
 			assert_true( ( new RuleEvaluator( new RuleParser() ) )->matches( $rules, 'all', array( 'customer_lifetime_spend' => '125.00', 'cart_product_ids' => array( 10 ) ) ) );
 
 			$prioritizer = new OfferPrioritizer( new RuleEvaluator( new RuleParser() ), static fn (): bool => true, static fn (): int => 100 );

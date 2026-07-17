@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Core;
+namespace WPAnchorBay\UpsellBayPro\Core;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,73 +15,67 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
-use WPAnchorBay\UpsellBay\Admin\AdminAssets;
-use WPAnchorBay\UpsellBay\Admin\AdminBar;
-use WPAnchorBay\UpsellBay\Admin\AdminPage;
-use WPAnchorBay\UpsellBay\Admin\AdminPageRegistrar;
-use WPAnchorBay\UpsellBay\Admin\CompatibilityNotice;
-use WPAnchorBay\UpsellBay\Admin\Coexistence;
-use WPAnchorBay\UpsellBay\Admin\PluginActionLinks;
-use WPAnchorBay\UpsellBay\Admin\Dashboard\DashboardPage;
-use WPAnchorBay\UpsellBay\Admin\Help\HelpPage;
-use WPAnchorBay\UpsellBay\Admin\Navigation\TabFactory;
-use WPAnchorBay\UpsellBay\Admin\Navigation\TabRegistry;
-use WPAnchorBay\UpsellBay\Admin\Navigation\TabRouter;
-use WPAnchorBay\UpsellBay\Admin\Offers\OfferEditPage;
-use WPAnchorBay\UpsellBay\Admin\Offers\OfferListTable;
-use WPAnchorBay\UpsellBay\Admin\Offers\OffersPage;
-use WPAnchorBay\UpsellBay\Admin\Offers\OfferVisibilityPanel;
-use WPAnchorBay\UpsellBay\Admin\OverviewSummary;
-use WPAnchorBay\UpsellBay\Admin\PreviewLinks;
-use WPAnchorBay\UpsellBay\Admin\Settings\LogsSectionRenderer;
-use WPAnchorBay\UpsellBay\Admin\Settings\SettingsPage;
-use WPAnchorBay\UpsellBay\Admin\Tools\ToolsPage;
-use WPAnchorBay\UpsellBay\Admin\Wizard\WizardController;
-use WPAnchorBay\UpsellBay\Api\ProductsController;
-use WPAnchorBay\UpsellBay\Api\Routes\LicenseRoute;
-use WPAnchorBay\UpsellBay\Api\Routes\OfferPreviewRoute;
-use WPAnchorBay\UpsellBay\Api\Routes\ProductsRoute;
-use WPAnchorBay\UpsellBay\Api\Routes\PublicOfferRoutes;
-use WPAnchorBay\UpsellBay\Data\CartSession;
-use WPAnchorBay\UpsellBay\Data\OfferRepository;
-use WPAnchorBay\UpsellBay\Data\StatsRepository;
-use WPAnchorBay\UpsellBay\Domain\Analytics\AnalyticsRecorder;
-use WPAnchorBay\UpsellBay\Domain\Analytics\AnalyticsService;
-use WPAnchorBay\UpsellBay\Domain\Analytics\StatsReconciler;
-use WPAnchorBay\UpsellBay\Domain\Cart\CartMutator;
-use WPAnchorBay\UpsellBay\Domain\Cart\CartValidator;
-use WPAnchorBay\UpsellBay\Domain\Compatibility\CompatibilityScanner;
-use WPAnchorBay\UpsellBay\Domain\Discounts\DiscountApplier;
-use WPAnchorBay\UpsellBay\Domain\Discounts\DiscountCalculator;
-use WPAnchorBay\UpsellBay\Domain\Attribution\AttributionReader;
-use WPAnchorBay\UpsellBay\Domain\Attribution\AttributionWriter;
-use WPAnchorBay\UpsellBay\Domain\Offers\OfferPrioritizer;
-use WPAnchorBay\UpsellBay\Domain\Offers\OfferConflictDetector;
-use WPAnchorBay\UpsellBay\Domain\Offers\OfferDefaults;
-use WPAnchorBay\UpsellBay\Domain\Offers\OfferSchema;
-use WPAnchorBay\UpsellBay\Domain\Offers\OfferService;
-use WPAnchorBay\UpsellBay\Domain\Offers\OfferValidator;
-use WPAnchorBay\UpsellBay\Domain\Offers\OfferVisibilityInspector;
-use WPAnchorBay\UpsellBay\Domain\Offers\ProductRecommendationAssistant;
-use WPAnchorBay\UpsellBay\Domain\Rules\RuleEvaluator;
-use WPAnchorBay\UpsellBay\Domain\Rules\RuleParser;
-use WPAnchorBay\UpsellBay\Domain\Storefront\CartCrossSellRenderer;
-use WPAnchorBay\UpsellBay\Domain\Storefront\ClassicCheckoutBump;
-use WPAnchorBay\UpsellBay\Domain\Storefront\PlacementRenderer;
-use WPAnchorBay\UpsellBay\Domain\Storefront\ProductPageRenderer;
-use WPAnchorBay\UpsellBay\Domain\Storefront\StorefrontController;
-use WPAnchorBay\UpsellBay\Domain\Storefront\ThankYouOfferRenderer;
-use WPAnchorBay\UpsellBay\Integrations\WooCommerce\BlockCheckoutIntegration;
-use WPAnchorBay\UpsellBay\Integrations\WooCommerce\CheckoutFields;
-use WPAnchorBay\UpsellBay\Integrations\WooCommerce\CouponLimiter;
-use WPAnchorBay\UpsellBay\Integrations\WooCommerce\StoreApiExtender;
-use WPAnchorBay\UpsellBay\Integrations\Licensing\LicenseClient;
-use WPAnchorBay\UpsellBay\Utils\ImportExporter;
-use WPAnchorBay\UpsellBay\Utils\RateLimiter;
-use WPAnchorBay\UpsellBay\Utils\TokenHelper;
-use WPAnchorBay\UpsellBay\Data\LogRepository;
-use WPAnchorBay\UpsellBay\Domain\Logging\LoggerInterface;
-use WPAnchorBay\UpsellBay\Domain\Logging\DatabaseLogger;
+use WPAnchorBay\UpsellBayPro\Admin\AdminAssets;
+use WPAnchorBay\UpsellBayPro\Admin\AdminBar;
+use WPAnchorBay\UpsellBayPro\Admin\CompatibilityNotice;
+use WPAnchorBay\UpsellBayPro\Admin\Coexistence;
+use WPAnchorBay\UpsellBayPro\Admin\PluginActionLinks;
+use WPAnchorBay\UpsellBayPro\Admin\Dashboard\DashboardPage;
+use WPAnchorBay\UpsellBayPro\Admin\Help\HelpPage;
+use WPAnchorBay\UpsellBayPro\Admin\Offers\OfferVisibilityPanel;
+use WPAnchorBay\UpsellBayPro\Admin\OverviewSummary;
+use WPAnchorBay\UpsellBayPro\Admin\PreviewLinks;
+use WPAnchorBay\UpsellBayPro\Admin\Settings\LogsSectionRenderer;
+use WPAnchorBay\UpsellBayPro\Admin\Settings\SettingsPage;
+use WPAnchorBay\UpsellBayPro\Admin\Tools\ToolsPage;
+use WPAnchorBay\UpsellBayPro\Admin\Wizard\WizardController;
+use WPAnchorBay\UpsellBayPro\Api\ProductsController;
+use WPAnchorBay\UpsellBayPro\Api\Routes\LicenseRoute;
+use WPAnchorBay\UpsellBayPro\Api\Routes\OfferPreviewRoute;
+use WPAnchorBay\UpsellBayPro\Api\Routes\ProductsRoute;
+use WPAnchorBay\UpsellBayPro\Api\Routes\PublicOfferRoutes;
+use WPAnchorBay\UpsellBayPro\Data\CartSession;
+use WPAnchorBay\UpsellBayPro\Data\OfferRepository;
+use WPAnchorBay\UpsellBayPro\Data\StatsRepository;
+use WPAnchorBay\UpsellBayPro\Domain\Analytics\AnalyticsRecorder;
+use WPAnchorBay\UpsellBayPro\Domain\Analytics\AnalyticsService;
+use WPAnchorBay\UpsellBayPro\Domain\Analytics\StatsReconciler;
+use WPAnchorBay\UpsellBayPro\Domain\Cart\CartMutator;
+use WPAnchorBay\UpsellBayPro\Domain\Cart\CartValidator;
+use WPAnchorBay\UpsellBayPro\Domain\Compatibility\CompatibilityScanner;
+use WPAnchorBay\UpsellBayPro\Domain\Discounts\DiscountApplier;
+use WPAnchorBay\UpsellBayPro\Domain\Discounts\DiscountCalculator;
+use WPAnchorBay\UpsellBayPro\Domain\Attribution\AttributionReader;
+use WPAnchorBay\UpsellBayPro\Domain\Attribution\AttributionWriter;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferPrioritizer;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferConflictDetector;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferDefaults;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferSchema;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferService;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferValidator;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferVisibilityInspector;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\ProductRecommendationAssistant;
+use WPAnchorBay\UpsellBayPro\Domain\Rules\RuleEvaluator;
+use WPAnchorBay\UpsellBayPro\Domain\Rules\RuleParser;
+use WPAnchorBay\UpsellBayPro\Domain\Storefront\CartCrossSellRenderer;
+use WPAnchorBay\UpsellBayPro\Domain\Storefront\ClassicCheckoutBump;
+use WPAnchorBay\UpsellBayPro\Domain\Storefront\PlacementRenderer;
+use WPAnchorBay\UpsellBayPro\Domain\Storefront\ProductPageRenderer;
+use WPAnchorBay\UpsellBayPro\Domain\Storefront\StorefrontController;
+use WPAnchorBay\UpsellBayPro\Domain\Storefront\ThankYouOfferRenderer;
+use WPAnchorBay\UpsellBayPro\Integrations\WooCommerce\BlockCheckoutIntegration;
+use WPAnchorBay\UpsellBayPro\Integrations\WooCommerce\CheckoutFields;
+use WPAnchorBay\UpsellBayPro\Integrations\WooCommerce\CouponLimiter;
+use WPAnchorBay\UpsellBayPro\Integrations\WooCommerce\StoreApiExtender;
+use WPAnchorBay\UpsellBayPro\Integrations\Licensing\LicenseClient;
+use WPAnchorBay\UpsellBayPro\Integrations\OffersListColumnsIntegration;
+use WPAnchorBay\UpsellBayPro\Integrations\OfferEditDiagnosticsIntegration;
+use WPAnchorBay\UpsellBayPro\Utils\ImportExporter;
+use WPAnchorBay\UpsellBayPro\Utils\RateLimiter;
+use WPAnchorBay\UpsellBayPro\Utils\TokenHelper;
+use WPAnchorBay\UpsellBayPro\Data\LogRepository;
+use WPAnchorBay\UpsellBayPro\Domain\Logging\LoggerInterface;
+use WPAnchorBay\UpsellBayPro\Domain\Logging\DatabaseLogger;
 
 /**
  * Owns service registration, hook topology, and startup order.
@@ -202,6 +196,8 @@ final class Plugin {
 		$this->container->set( DiscountCalculator::class, static fn (): DiscountCalculator => new DiscountCalculator() );
 		$this->container->set( DiscountApplier::class, static fn (): DiscountApplier => new DiscountApplier() );
 		$this->container->set( StatsRepository::class, static fn (): StatsRepository => new StatsRepository() );
+		$this->container->set( OffersListColumnsIntegration::class, static fn ( Container $container ): OffersListColumnsIntegration => new OffersListColumnsIntegration( $container->get( OfferRepository::class ), $container->get( OfferConflictDetector::class ), $container->get( StatsRepository::class ) ) );
+		$this->container->set( OfferEditDiagnosticsIntegration::class, static fn ( Container $container ): OfferEditDiagnosticsIntegration => new OfferEditDiagnosticsIntegration( $container->get( OfferConflictDetector::class ), $container->get( OfferVisibilityPanel::class ) ) );
 		$this->container->set( CartSession::class, static fn ( Container $container ): CartSession => new CartSession( null, null, $container->get( TokenHelper::class ) ) );
 		$this->container->set( CartValidator::class, static fn ( Container $container ): CartValidator => new CartValidator( $container->get( RuleEvaluator::class ), $container->get( DiscountCalculator::class ) ) );
 		$this->container->set( CartMutator::class, static fn ( Container $container ): CartMutator => new CartMutator( $container->get( CartSession::class ), $container->get( CartValidator::class ), $container->get( DiscountCalculator::class ) ) );
@@ -250,9 +246,6 @@ final class Plugin {
 		$this->container->set( LoggerInterface::class, static fn ( Container $container ): DatabaseLogger => new DatabaseLogger( $container->get( LogRepository::class ) ) );
 		$this->container->set( TokenHelper::class, static fn (): TokenHelper => new TokenHelper() );
 		$this->container->set( RateLimiter::class, static fn (): RateLimiter => new RateLimiter() );
-		$this->container->set( OfferListTable::class, static fn ( Container $container ): OfferListTable => new OfferListTable( $container->get( OfferRepository::class ), $container->get( OfferService::class ), $container->get( OfferConflictDetector::class ) ) );
-		$this->container->set( OffersPage::class, static fn ( Container $container ): OffersPage => new OffersPage( $container->get( OfferListTable::class ) ) );
-		$this->container->set( OfferEditPage::class, static fn ( Container $container ): OfferEditPage => new OfferEditPage( $container->get( OfferService::class ), $container->get( OfferValidator::class ), null, null, $container->get( OfferDefaults::class ), null, $container->get( OfferConflictDetector::class ), $container->get( LoggerInterface::class ), $container->get( OfferVisibilityPanel::class ) ) );
 		$this->container->set( WizardController::class, static fn ( Container $container ): WizardController => new WizardController( $container->get( OfferService::class ), $container->get( Settings::class ), $container->get( OfferDefaults::class ), null, null, $container->get( LoggerInterface::class ) ) );
 		$this->container->set( PreviewLinks::class, static fn (): PreviewLinks => new PreviewLinks() );
 		$this->container->set(
@@ -283,38 +276,11 @@ final class Plugin {
 		$this->container->set( HelpPage::class, static fn (): HelpPage => new HelpPage() );
 		$this->container->set( OverviewSummary::class, static fn ( Container $container ): OverviewSummary => new OverviewSummary( $container->get( OfferRepository::class ), $container->get( StatsRepository::class ), $container->get( Settings::class ) ) );
 		$this->container->set( DashboardPage::class, static fn ( Container $container ): DashboardPage => new DashboardPage( $container->get( OverviewSummary::class ), $container->get( StatsRepository::class ) ) );
-		$this->container->set(
-			TabFactory::class,
-			static fn ( Container $container ): TabFactory => new TabFactory(
-				$container->get( DashboardPage::class ),
-				$container->get( OffersPage::class ),
-				$container->get( OfferEditPage::class ),
-				$container->get( SettingsPage::class ),
-				$container->get( ToolsPage::class ),
-				$container->get( WizardController::class ),
-				$container->get( HelpPage::class )
-			)
-		);
-		$this->container->set(
-			TabRegistry::class,
-			static fn ( Container $container ): TabRegistry => $container->get( TabFactory::class )->registry()
-		);
-		$this->container->set( TabRouter::class, static fn ( Container $container ): TabRouter => new TabRouter( $container->get( TabRegistry::class ) ) );
-		$this->container->set( AdminPage::class, static fn ( Container $container ): AdminPage => new AdminPage( $container->get( TabRegistry::class ), $container->get( TabRouter::class ) ) );
 		$this->container->set( Coexistence::class, static fn (): Coexistence => new Coexistence() );
 		$this->container->set( CompatibilityNotice::class, static fn ( Container $container ): CompatibilityNotice => new CompatibilityNotice( $container->get( Settings::class ), $container->get( CompatibilityScanner::class ) ) );
 		$this->container->set( PluginActionLinks::class, static fn (): PluginActionLinks => new PluginActionLinks() );
 		$this->container->set( AdminAssets::class, static fn (): AdminAssets => new AdminAssets() );
 		$this->container->set( AdminBar::class, static fn ( Container $container ): AdminBar => new AdminBar( $container->get( Settings::class ) ) );
-		$this->container->set(
-			AdminPageRegistrar::class,
-			static fn ( Container $container ): AdminPageRegistrar => new AdminPageRegistrar(
-				null,
-				array(
-					'upsellbay' => array( $container->get( AdminPage::class ), 'render' ),
-				)
-			)
-		);
 	}
 
 	/**
@@ -332,19 +298,23 @@ final class Plugin {
 		add_action( 'admin_notices', array( $this, 'render_dependency_notices' ) );
 		add_action( 'admin_notices', array( $this, 'render_license_banner' ) );
 		add_action( 'upsellbay_admin_page_license_banner', array( $this, 'render_page_license_banner' ) );
-		add_action( 'admin_menu', array( $this, 'register_admin_pages' ) );
-		add_action( 'admin_post_upsellbay_activate_license', array( $this, 'handle_activate_license' ) );
-		add_action( 'admin_post_upsellbay_remove_license', array( $this, 'handle_remove_license' ) );
-		add_action( 'admin_post_upsellbay_check_license', array( $this, 'handle_check_license' ) );
-		add_action( 'admin_post_upsellbay_delete_offer', array( $this, 'handle_delete_offer' ) );
-		add_action( 'admin_post_upsellbay_clear_all_data', array( $this, 'handle_clear_all_data' ) );
-		add_action( 'admin_post_upsellbay_export_data', array( $this, 'handle_export_data' ) );
-		add_action( 'admin_post_upsellbay_import_data', array( $this, 'handle_import_data' ) );
-		add_action( 'admin_post_upsellbay_confirm_import', array( $this, 'handle_confirm_import' ) );
+		add_action( 'admin_post_upsellbay_pro_activate_license', array( $this, 'handle_activate_license' ) );
+		add_action( 'admin_post_upsellbay_pro_remove_license', array( $this, 'handle_remove_license' ) );
+		add_action( 'admin_post_upsellbay_pro_check_license', array( $this, 'handle_check_license' ) );
+		add_action( 'admin_post_upsellbay_pro_delete_offer', array( $this, 'handle_delete_offer' ) );
+		add_action( 'admin_post_upsellbay_pro_clear_all_data', array( $this, 'handle_clear_all_data' ) );
+		add_action( 'admin_post_upsellbay_pro_export_data', array( $this, 'handle_export_data' ) );
+		add_action( 'admin_post_upsellbay_pro_import_data', array( $this, 'handle_import_data' ) );
+		add_action( 'admin_post_upsellbay_pro_confirm_import', array( $this, 'handle_confirm_import' ) );
 
 		$this->container->get( AdminAssets::class )->register_hooks();
 		$this->container->get( AdminBar::class )->register_hooks();
 		$this->container->get( CompatibilityNotice::class )->register_hooks();
+		$this->container->get( SettingsPage::class )->register_hooks();
+		$this->container->get( ToolsPage::class )->register_hooks();
+		$this->container->get( OffersListColumnsIntegration::class )->register_hooks();
+		$this->container->get( OfferEditDiagnosticsIntegration::class )->register_hooks();
+		$this->container->get( DashboardPage::class )->register_hooks();
 		$this->container->get( PluginActionLinks::class )->register_hooks();
 		$this->container->get( StoreApiExtender::class )->register_hooks();
 		$this->container->get( BlockCheckoutIntegration::class )->register_hooks();
@@ -368,25 +338,16 @@ final class Plugin {
 		add_action( Constants::hook_name( 'daily_stats_reconciled' ), array( $this, 'log_daily_stats_reconciled' ), 10, 3 );
 		add_action( Constants::hook_name( 'prune_logs' ), array( $this, 'prune_logs' ) );
 
-		add_action( 'rest_api_init', array( $this->container->get( PublicOfferRoutes::class ), 'register_routes' ) );
-		add_action( 'rest_api_init', array( $this->container->get( ProductsRoute::class ), 'register' ) );
-		add_action( 'rest_api_init', array( $this->container->get( OfferPreviewRoute::class ), 'register_routes' ) );
-		add_action( 'rest_api_init', array( $this, 'register_license_routes' ) );
+		// PublicOfferRoutes and OfferPreviewRoute are registered by the host plugin;
+		// they operate on the same shared CPT/REST namespace, so Pro does not re-register them.
+		add_action( 'upsellbay_rest_routes', array( $this->container->get( ProductsRoute::class ), 'register' ) );
+		add_action( 'upsellbay_rest_routes', array( $this, 'register_license_routes' ) );
 		add_action( Constants::hook_name( 'check_license' ), array( $this, 'check_license' ) );
 		add_action( 'woocommerce_init', array( $this->container->get( CheckoutFields::class ), 'register' ) );
 		add_action( 'woocommerce_before_calculate_totals', array( $this, 'apply_offer_discounts' ) );
 		add_action( 'woocommerce_checkout_create_order_line_item', array( $this, 'write_offer_line_item_attribution' ), 10, 4 );
 		add_action( 'woocommerce_order_status_processing', array( $this, 'record_order_offer_analytics' ) );
 		add_action( 'woocommerce_order_status_completed', array( $this, 'record_order_offer_analytics' ) );
-	}
-
-	/**
-	 * Register admin pages after WordPress admin APIs and translations are ready.
-	 *
-	 * @since 1.0.0
-	 */
-	public function register_admin_pages(): void {
-		$this->container->get( AdminPageRegistrar::class )->register_pages();
 	}
 
 	/**
@@ -572,7 +533,7 @@ final class Plugin {
 		}
 
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		check_admin_referer( 'upsellbay_activate_license' );
+		check_admin_referer( 'upsellbay_pro_activate_license' );
 
 		$license_key = isset( $_POST['upsellbay_license_key'] ) ? sanitize_text_field( wp_unslash( $_POST['upsellbay_license_key'] ) ) : '';
 		if ( '' === $license_key && isset( $_POST['upsellbay_new_license_key'] ) ) {
@@ -604,7 +565,7 @@ final class Plugin {
 			wp_die( esc_html__( 'You do not have permission to manage licenses.', 'upsellbay' ) );
 		}
 
-		check_admin_referer( 'upsellbay_remove_license' );
+		check_admin_referer( 'upsellbay_pro_remove_license' );
 
 		$this->container->get( LoggerInterface::class )->info(
 			__( 'License removed by user', 'upsellbay' ),
@@ -638,7 +599,7 @@ final class Plugin {
 			wp_die( esc_html__( 'You do not have permission to manage licenses.', 'upsellbay' ) );
 		}
 
-		check_admin_referer( 'upsellbay_check_license' );
+		check_admin_referer( 'upsellbay_pro_check_license' );
 
 		$is_valid     = $this->container->get( LicenseClient::class )->is_valid();
 		$redirect_url = admin_url( Constants::SETTINGS_LICENSE_ACTIVATION_URL );
@@ -674,7 +635,7 @@ final class Plugin {
 			wp_die( esc_html__( 'You do not have permission to manage offers.', 'upsellbay' ) );
 		}
 
-		check_admin_referer( 'upsellbay_delete_offer' );
+		check_admin_referer( 'upsellbay_pro_delete_offer' );
 
 		$offer_id = isset( $_GET['offer_id'] ) ? (int) $_GET['offer_id'] : 0;
 		if ( $offer_id > 0 ) {
@@ -700,7 +661,7 @@ final class Plugin {
 			wp_die( esc_html__( 'You do not have permission to manage data.', 'upsellbay' ) );
 		}
 
-		check_admin_referer( 'upsellbay_clear_all_data' );
+		check_admin_referer( 'upsellbay_pro_clear_all_data' );
 
 		$this->container->get( Installer::class )->clear_all_data();
 
@@ -723,7 +684,7 @@ final class Plugin {
 			wp_die( esc_html__( 'You do not have permission to manage data.', 'upsellbay' ) );
 		}
 
-		check_admin_referer( 'upsellbay_export_data' );
+		check_admin_referer( 'upsellbay_pro_export_data' );
 
 		$json = $this->container->get( ImportExporter::class )->export_all();
 
@@ -745,7 +706,7 @@ final class Plugin {
 			wp_die( esc_html__( 'You do not have permission to manage data.', 'upsellbay' ) );
 		}
 
-		check_admin_referer( 'upsellbay_import_data' );
+		check_admin_referer( 'upsellbay_pro_import_data' );
 
 		$redirect_url = admin_url( 'admin.php?page=upsellbay&tab=tools' );
 
@@ -789,7 +750,7 @@ final class Plugin {
 			wp_die( esc_html__( 'You do not have permission to manage data.', 'upsellbay' ) );
 		}
 
-		check_admin_referer( 'upsellbay_confirm_import' );
+		check_admin_referer( 'upsellbay_pro_confirm_import' );
 
 		$hash = isset( $_POST['import_hash'] ) ? sanitize_key( wp_unslash( $_POST['import_hash'] ) ) : '';
 		$json = get_transient( 'upsellbay_import_' . $hash );
@@ -948,7 +909,7 @@ final class Plugin {
 		}
 
 		foreach ( $result['errors'] as $message ) {
-			echo '<div class="notice notice-error upsellbay-notice"><p>' . esc_html( $message ) . '</p></div>';
+			echo '<div class="notice notice-error upsellbay-pro-notice"><p>' . esc_html( $message ) . '</p></div>';
 		}
 	}
 

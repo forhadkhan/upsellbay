@@ -12,20 +12,15 @@ if (!defined('ABSPATH')) {
 }
 
 
-use WPAnchorBay\UpsellBay\Admin\Help\HelpPage;
-use WPAnchorBay\UpsellBay\Admin\Offers\OfferEditPage;
-use WPAnchorBay\UpsellBay\Admin\Offers\OfferListTable;
-use WPAnchorBay\UpsellBay\Admin\Offers\OffersPage;
-use WPAnchorBay\UpsellBay\Admin\PreviewLinks;
-use WPAnchorBay\UpsellBay\Admin\Tools\ToolsPage;
-use WPAnchorBay\UpsellBay\Admin\Wizard\WizardController;
-use WPAnchorBay\UpsellBay\Core\Settings;
-use WPAnchorBay\UpsellBay\Domain\Offers\OfferDefaults;
-use WPAnchorBay\UpsellBay\Domain\Offers\OfferSchema;
-use WPAnchorBay\UpsellBay\Domain\Offers\OfferService;
-use WPAnchorBay\UpsellBay\Domain\Offers\OfferValidator;
-use WPAnchorBay\UpsellBay\Domain\Offers\ProductRecommendationAssistant;
-use WPAnchorBay\UpsellBay\Utils\ImportExporter;
+use WPAnchorBay\UpsellBayPro\Admin\Help\HelpPage;
+use WPAnchorBay\UpsellBayPro\Admin\PreviewLinks;
+use WPAnchorBay\UpsellBayPro\Admin\Wizard\WizardController;
+use WPAnchorBay\UpsellBayPro\Core\Settings;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferDefaults;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferSchema;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferService;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferValidator;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\ProductRecommendationAssistant;
 
 /**
  * Returns Phase 5 test cases.
@@ -95,13 +90,9 @@ function upsellbay_merchant_experience_tests(): array {
 			assert_same( '0.000000', $meta['_ub_discount_value'] );
 			assert_true( $meta['_ub_show_image'] );
 		},
-		'admin pages expose native empty states with setup actions' => static function (): void {
-			$offers    = new OffersPage( new OfferListTable( upsellbay_test_offer_repository( array() ), new OfferService( upsellbay_test_offer_repository( array() ), new OfferValidator( new OfferSchema(), static fn (): bool => true ) ) ) );
-			$tools     = new ToolsPage( new ImportExporter( new OfferValidator( new OfferSchema(), static fn (): bool => true ) ), new Settings( static fn (): array => array(), static fn (): bool => true ) );
-			$help      = new HelpPage();
+		'help page exposes a native empty state with a setup action' => static function (): void {
+			$help = new HelpPage();
 
-			assert_contains( 'Create offer', $offers->empty_state()['actions'][0]['label'] );
-			assert_contains( 'Import offers', $tools->import_empty_state()['title'] );
 			assert_contains( 'First offer tutorial', $help->empty_state()['actions'][0]['label'] );
 		},
 		'preview links route known placements and explain unavailable previews' => static function (): void {
@@ -110,192 +101,13 @@ function upsellbay_merchant_experience_tests(): array {
 			assert_false( $links->for_offer( upsellbay_phase5_offer( 9, 'checkout_bump', 44 ), array( 'checkout_url' => '/checkout/' ) )['available'] );
 			assert_contains( 'at least one item in the cart', $links->for_offer( upsellbay_phase5_offer( 9, 'checkout_bump', 44 ), array( 'checkout_url' => '/checkout/' ) )['message'] );
 			assert_contains( 'upsellbay_preview=1', $links->for_offer( upsellbay_phase5_offer( 9, 'checkout_bump', 44 ), array( 'checkout_url' => '/checkout/', 'cart_product_ids' => array( 12 ) ) )['url'] );
-			assert_contains( '/product/44/', $links->for_offer( upsellbay_phase5_offer( 9, 'product_upsell', 44 ), array( 'product_url' => '/product/%d/' ) )['url'] );
+
+			$product_upsell_offer = upsellbay_phase5_offer( 9, 'product_upsell', 44 );
+			$product_upsell_offer['meta']['_ub_trigger_product_ids'] = array( 44 );
+			assert_contains( '/product/44/', $links->for_offer( $product_upsell_offer, array( 'product_url' => '/product/%d/' ) )['url'] );
+
 			assert_false( $links->for_offer( upsellbay_phase5_offer( 9, 'thankyou_offer', 44 ), array() )['available'] );
 			assert_contains( 'saved test order', $links->for_offer( upsellbay_phase5_offer( 9, 'thankyou_offer', 44 ), array() )['message'] );
-		},
-		'offer editor exposes help tips progressive sections and accessibility metadata' => static function (): void {
-			$page = new OfferEditPage(
-				new OfferService( upsellbay_test_offer_repository( array() ), new OfferValidator( new OfferSchema(), static fn (): bool => true ) ),
-				new OfferValidator( new OfferSchema(), static fn (): bool => true ),
-				static fn (): bool => true,
-				static fn (): bool => true,
-				new OfferDefaults()
-			);
-
-			assert_same( array( 'basics', 'targeting', 'discount', 'placement', 'schedule', 'advanced' ), array_keys( $page->sections() ) );
-			assert_true( in_array( '_ub_section_heading', $page->sections()['basics']['fields'], true ) );
-			assert_false( $page->sections()['advanced']['collapsed'] );
-			assert_contains( 'server-side', $page->help_tips()['discount'] );
-			assert_same( 'upsellbay-offer-product-id', $page->accessibility()['offer_product_id']['label_for'] );
-			assert_same( 'button', $page->accessibility()['advanced_toggle']['role'] );
-		},
-		'offer editor preview shows the updated price and falls back to the actual price when no discount is set' => static function (): void {
-			$offer_id = 88;
-			$GLOBALS['upsellbay_test_products'][321] = new class() {
-				public function get_price() {
-					return '80';
-				}
-
-				public function get_price_html() {
-					return '$80.00';
-				}
-
-				public function get_name() {
-					return 'Demo Product';
-				}
-
-				public function get_image_id() {
-					return 0;
-				}
-			};
-			$GLOBALS['upsellbay_test_products'][322] = new class() {
-				public function is_type( string $type ): bool {
-					return 'variable' === $type;
-				}
-
-				public function get_variation_prices( bool $for_display = false ): array {
-					unset( $for_display );
-					return array(
-						'price' => array(
-							101 => '12',
-							102 => '30',
-						),
-					);
-				}
-
-				public function get_price() {
-					return '12';
-				}
-
-				public function get_price_html() {
-					return '$12.00 - $30.00';
-				}
-
-				public function get_name() {
-					return 'Variable Demo';
-				}
-
-				public function get_image_id() {
-					return 0;
-				}
-			};
-			$GLOBALS['upsellbay_test_products'][323] = new class() {
-				public function get_price() {
-					return '80';
-				}
-
-				public function get_regular_price() {
-					return '100';
-				}
-
-				public function get_price_html() {
-					return '$80.00';
-				}
-
-				public function get_name() {
-					return 'Sale Product';
-				}
-
-				public function get_image_id() {
-					return 0;
-				}
-			};
-
-			$offers = array(
-				88 => array(
-					'id'    => 88,
-					'title' => 'Discounted offer',
-					'meta'  => array(
-						'_ub_offer_type'       => 'checkout_bump',
-						'_ub_offer_product_id' => 321,
-						'_ub_discount_type'    => 'percent',
-						'_ub_discount_value'   => '25',
-					),
-				),
-				89 => array(
-					'id'    => 89,
-					'title' => 'Regular price offer',
-					'meta'  => array(
-						'_ub_offer_type'       => 'checkout_bump',
-						'_ub_offer_product_id' => 321,
-						'_ub_discount_type'    => 'none',
-						'_ub_discount_value'   => '0.000000',
-					),
-				),
-				90 => array(
-					'id'    => 90,
-					'title' => 'Variable range offer',
-					'meta'  => array(
-						'_ub_offer_type'       => 'checkout_bump',
-						'_ub_offer_product_id' => 322,
-						'_ub_discount_type'    => 'none',
-						'_ub_discount_value'   => '0.000000',
-					),
-				),
-				91 => array(
-					'id'    => 91,
-					'title' => 'Sale-priced offer',
-					'meta'  => array(
-						'_ub_offer_type'       => 'checkout_bump',
-						'_ub_offer_product_id' => 323,
-						'_ub_discount_type'    => 'percent',
-						'_ub_discount_value'   => '10',
-					),
-				),
-			);
-			$service = new OfferService(
-				upsellbay_test_offer_repository( $offers ),
-				new OfferValidator( new OfferSchema(), static fn (): bool => true )
-			);
-			$page    = new OfferEditPage(
-				$service,
-				new OfferValidator( new OfferSchema(), static fn (): bool => true ),
-				static fn (): bool => true,
-				static fn (): bool => true,
-				new OfferDefaults()
-			);
-
-			$_GET['offer_id'] = (string) $offer_id;
-			ob_start();
-			$page->render_content();
-			$discounted_html = (string) ob_get_clean();
-
-			$_GET['offer_id'] = '89';
-			ob_start();
-			$page->render_content();
-			$regular_html = (string) ob_get_clean();
-
-			$_GET['offer_id'] = '90';
-			ob_start();
-			$page->render_content();
-			$variable_html = (string) ob_get_clean();
-
-			$_GET['offer_id'] = '91';
-			ob_start();
-			$page->render_content();
-			$sale_html = (string) ob_get_clean();
-			unset( $_GET['offer_id'] );
-
-			assert_contains( 'upsellbay-discount-preview--discounted', $discounted_html );
-			assert_contains( 'Updated price', $discounted_html );
-			assert_contains( '<del>$80.00</del>', $discounted_html );
-			assert_contains( '<strong>$60.00</strong>', $discounted_html );
-			assert_contains( 'upsellbay-_ub_offer_product_id-price', $discounted_html );
-			assert_contains( 'data-upsellbay-product-price="80"', $discounted_html );
-
-			assert_contains( 'upsellbay-discount-preview--regular', $regular_html );
-			assert_contains( '<strong>$80.00</strong>', $regular_html );
-			assert_contains( 'No discount is applied', $regular_html );
-
-			assert_contains( 'upsellbay-discount-preview--regular', $variable_html );
-			assert_contains( '$12.00 - $30.00', $variable_html );
-			assert_contains( 'Variable products show the lowest and highest variation prices', $variable_html );
-
-			assert_contains( 'upsellbay-discount-preview--discounted', $sale_html );
-			assert_contains( '<del>$100.00</del>', $sale_html );
-			assert_contains( '<strong>$90.00</strong>', $sale_html );
-			assert_contains( 'This is the price shoppers will see after the selected discount is applied.', $sale_html );
 		},
 		'local recommendation assistant ranks explainable optional product suggestions' => static function (): void {
 			$assistant = new ProductRecommendationAssistant(

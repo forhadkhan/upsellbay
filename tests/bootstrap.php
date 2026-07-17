@@ -165,6 +165,23 @@ if ( ! function_exists( 'wp_nonce_url' ) ) {
 	}
 }
 
+if ( ! function_exists( 'wp_nonce_field' ) ) {
+	function wp_nonce_field( $action = -1, string $name = '_wpnonce', bool $referer = true, bool $display = true ): string {
+		unset( $referer );
+		$field = '<input type="hidden" name="' . esc_attr( $name ) . '" value="' . esc_attr( wp_create_nonce( (string) $action ) ) . '">';
+		if ( $display ) {
+			echo $field; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		}
+		return $field;
+	}
+}
+
+if ( ! function_exists( 'wp_strip_all_tags' ) ) {
+	function wp_strip_all_tags( string $value ): string {
+		return trim( strip_tags( $value ) );
+	}
+}
+
 if ( ! function_exists( 'admin_url' ) ) {
 	function admin_url( string $path = '' ): string {
 		return 'https://store.test/wp-admin/' . ltrim( $path, '/' );
