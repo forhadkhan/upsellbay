@@ -49,13 +49,21 @@ at the bottom of this file.
       primary order. — Code-verified 2026-07-18: `write_follow_on_order()` writes meta
       only onto the new follow-on `$order` object; the source order is referenced only by
       its integer ID (`ATTRIBUTION_SOURCE_ORDER_ID`) and is never loaded or mutated.
-- [ ] Subscription product discounts cannot leak into recurring renewals. — **Not done,
-      blocked.** WooCommerce Subscriptions is not installed in this environment (paid
-      extension). `DiscountApplier` already has subscription-aware bailout logic (per
-      earlier session review), but this hasn't been exercised against a real subscription
-      renewal. Needs either a WC Subscriptions license/install, or explicit sign-off to
-      defer to v1.1 with the existing code-level bailout as the interim mitigation — open
-      question for the user/Opus, not yet resolved.
+- [~] Subscription product discounts cannot leak into recurring renewals. — **Bug found
+      and fixed 2026-07-18, live verification still open.** `DiscountApplier`'s bailout
+      guard checked `wcs_is_subscription( $product )`, which per WooCommerce Subscriptions'
+      own docs only returns true for a `WC_Subscription` object (the recurring-billing
+      entity that exists only after checkout) or a subscription order ID — never for a
+      cart item's product, which is always a `WC_Product`. The bailout could not have
+      actually triggered from this call site since it shipped; it was also completely
+      untested, which is how this went unnoticed. Fixed to use
+      `WC_Subscriptions_Product::is_subscription( $product )`, the extension's documented
+      API for checking whether a *product* is a subscription type, and added a unit test
+      exercising the bailout (commit `ffaefd1`). **Still open**: WooCommerce Subscriptions
+      itself is not installed in this environment (paid extension), so the fix has not
+      been proven against a real subscription renewal — only unit-tested against a stub.
+      Needs either a WC Subscriptions license/install here, or explicit sign-off to ship
+      on the unit-tested fix alone and verify live post-launch.
 - [x] License server outage does not disable live offers. — **Checked, with the accurate
       reason recorded** (see finding below): license state does not gate offer rendering
       anywhere in the runtime path — `LicenseClient::can_show_live_offers()` has zero
