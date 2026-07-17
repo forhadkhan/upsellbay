@@ -17,6 +17,7 @@ require_once __DIR__ . '/test-core-business-logic.php';
 require_once __DIR__ . '/test-merchant-experience.php';
 require_once __DIR__ . '/test-developer-extensibility.php';
 require_once __DIR__ . '/test-quality-assurance.php';
+require_once __DIR__ . '/test-offer-conflict-detector.php';
 
 $tests  = array_merge(
 	upsellbay_foundation_tests(),
@@ -25,7 +26,8 @@ $tests  = array_merge(
 	upsellbay_core_business_logic_tests(),
 	upsellbay_merchant_experience_tests(),
 	upsellbay_developer_extensibility_tests(),
-	upsellbay_quality_assurance_tests()
+	upsellbay_quality_assurance_tests(),
+	upsellbay_offer_conflict_detector_tests()
 );
 $passed = 0;
 $failed = 0;
