@@ -122,8 +122,16 @@ const CartCrossSellOffer = ( { offer, onDismiss } ) => {
 };
 
 const CartCrossSellsList = ( { extensions } ) => {
-	const offers = extensions?.upsellbay?.cart_crosssell || [];
 	const [ dismissedOfferIds, setDismissedOfferIds ] = useState( [] );
+
+	// The same ExperimentalOrderMeta slot mounts on both the Cart and
+	// Checkout blocks, so this must only render on the cart page —
+	// otherwise it would also appear on the checkout page.
+	if ( ! document.body.classList.contains( 'woocommerce-cart' ) ) {
+		return null;
+	}
+
+	const offers = extensions?.upsellbay?.cart_crosssell || [];
 
 	if ( ! offers || offers.length === 0 ) {
 		return null;
@@ -158,11 +166,13 @@ const CartCrossSellsList = ( { extensions } ) => {
 
 export const registerCartCrossSells = () => {
 	registerPlugin( 'upsellbay-cart-cross-sells', {
-		render: ( { extensions } ) => (
-			<ExperimentalOrderMeta>
-				<CartCrossSellsList extensions={ extensions } />
-			</ExperimentalOrderMeta>
-		),
+		render: ( { extensions } ) => {
+			return (
+				<ExperimentalOrderMeta>
+					<CartCrossSellsList extensions={ extensions } />
+				</ExperimentalOrderMeta>
+			);
+		},
 		scope: 'woocommerce-checkout',
 	} );
 };

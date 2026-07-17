@@ -87,6 +87,18 @@ const CheckoutBumpOffer = ( { offer } ) => {
 };
 
 const CheckoutBumpList = ( { extensions } ) => {
+	// checkout_bump data is registered on the Store API Cart schema (see
+	// StoreApiExtender's register_endpoint_data() for why), and the same
+	// ExperimentalOrderMeta slot mounts on both the Cart and Checkout
+	// blocks, so this must only render on the checkout page — otherwise it
+	// would also appear on the cart page. is_cart()/is_checkout() are not
+	// reliable this early in the block-registration hook lifecycle, so use
+	// WooCommerce's own standard body classes instead, which are resolved
+	// at template-render time.
+	if ( ! document.body.classList.contains( 'woocommerce-checkout' ) ) {
+		return null;
+	}
+
 	const offers = extensions?.upsellbay?.checkout_bump || [];
 
 	if ( ! offers || offers.length === 0 ) {
