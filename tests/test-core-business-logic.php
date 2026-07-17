@@ -323,6 +323,20 @@ function upsellbay_core_business_logic_tests(): array {
 			( new DiscountApplier() )->apply_to_cart_item( $item );
 			assert_same( '21.000000', $product->price );
 
+			// Subscription products must never have their price mutated here — a
+			// discounted price on the initial cart item would carry forward into
+			// every recurring renewal, not just the first charge.
+			$subscription_product        = new UpsellBay_Test_Product( '30.000000' );
+			WC_Subscriptions_Product::$is_subscription_result = true;
+			( new DiscountApplier() )->apply_to_cart_item(
+				array(
+					'data'            => $subscription_product,
+					'_ub_offer_price' => '21.000000',
+				)
+			);
+			assert_same( '30.000000', $subscription_product->price );
+			WC_Subscriptions_Product::$is_subscription_result = false;
+
 			assert_true( $mutator->remove( 9 )['success'] );
 			assert_same( 0, count( $cart_items ) );
 		},
@@ -749,6 +763,32 @@ final class UpsellBay_Test_Product {
 	 */
 	public function set_price( string $price ): void {
 		$this->price = $price;
+	}
+}
+
+if ( ! class_exists( 'WC_Subscriptions_Product' ) ) {
+	/**
+	 * Stub matching the real WooCommerce Subscriptions class the discount
+	 * applier checks for, so the bailout branch is testable without the
+	 * actual extension installed.
+	 */
+	final class WC_Subscriptions_Product {
+		/**
+		 * Controls what is_subscription() returns for the next check.
+		 *
+		 * @var bool
+		 */
+		public static bool $is_subscription_result = false;
+
+		/**
+		 * Mirrors the real static API.
+		 *
+		 * @param mixed $product Product.
+		 */
+		public static function is_subscription( $product ): bool {
+			unset( $product );
+			return self::$is_subscription_result;
+		}
 	}
 }
 

@@ -38,7 +38,7 @@ final class DiscountApplier {
 			return;
 		}
 
-		if ( function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $product ) ) {
+		if ( class_exists( '\WC_Subscriptions_Product' ) && \WC_Subscriptions_Product::is_subscription( $product ) ) {
 			return;
 		}
 
