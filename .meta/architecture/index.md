@@ -17,12 +17,23 @@ Runtime application architecture is implemented through Phase 6.5 (86 of 121 tas
 ## Phase 0 Foundation Decisions
 
 - [Initial repository and PRD baseline audit](./initial-audit.md)
-- [Identifier contract and product isolation ADR](./identifier-contract.md)
+- [Identifier contract and product isolation ADR](./identifier-contract.md) — **note: hook/nonce/asset identifiers have since diverged from this ADR by design; see the divergence note inside**
 - [Block Checkout proof plan](./block-checkout-poc.md) — **E2E proof passed, compatibility enabled**
 - [HPOS and CRUD compliance proof plan](./hpos-crud-compliance.md) — **HPOS compatibility declared**
 - [Dependency and tooling plan](./development-tooling.md)
-- [File ownership map](./file-ownership-map.md)
+- [File ownership map](./file-ownership-map.md) — updated for the Phase 6.5 admin integration refactor
 - [Documentation and decision logging standards](./documentation-standards.md)
+
+## Free Plugin and Free↔Pro Coupling
+
+Pro (`upsellbay`) requires and extends the free plugin
+(`upsellbay-order-bump-for-woocommerce`), which owns the CPT/postmeta schema and the
+entire admin page shell. These two documents cover the host plugin's own architecture and
+the exact, verified mechanism by which Pro attaches to it — required reading before
+adding any Pro feature that touches admin UI, offers, or storefront rendering:
+
+- [Free plugin architecture](./free-plugin-architecture.md)
+- [Free↔Pro coupling](./free-pro-coupling.md) — full hook inventory, the admin-integration pattern that replaced Pro's deleted duplicate admin pages, a confirmed dead-hook-wiring bug, and a double-registration risk
 
 ## Phase 1–6 Implemented Architecture
 
@@ -33,7 +44,7 @@ Runtime application architecture is implemented through Phase 6.5 (86 of 121 tas
 - [Admin information architecture](./admin-information-architecture.md)
 - [Admin heading hierarchy](./admin-heading-hierarchy.md)
 - [Merchant experience](./merchant-experience.md)
-- [Developer extensibility](./developer-extensibility.md)
+- [Developer extensibility](./developer-extensibility.md) — documents Pro's own (`upsellbay_pro_`-prefixed) hooks; see [free-pro-coupling.md](./free-pro-coupling.md) for the host's hooks Pro actually attaches to
 - [Logging system](./logging-system.md)
 - [Backward compatibility policy](./backward-compatibility-policy.md)
 - [WP-CLI utilities](./wp-cli-utilities.md) — planned, not registered in v1

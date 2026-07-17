@@ -2,6 +2,13 @@
 
 UpsellBay admin surfaces live under WooCommerce -> UpsellBay. Runtime code must not register a top-level WordPress admin menu.
 
+This describes the merchant-visible, merged admin experience. The host (free) plugin
+renders and owns every tab/page described below; Pro adds no pages of its own and
+contributes content only through the free plugin's public hooks. See
+[file-ownership-map.md](./file-ownership-map.md) and
+[free-pro-coupling.md](./free-pro-coupling.md) for exactly which plugin owns which file
+and which hook wires each Pro contribution in.
+
 ## Surfaces
 
 - Dashboard / Overview: default landing tab with operational status, health status, primary next actions, and aggregate offer performance loaded from `StatsRepository`.

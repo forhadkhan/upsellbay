@@ -10,6 +10,18 @@ All UpsellBay runtime identifiers must be defined once in `app/Core/Constants.ph
 
 UpsellBay is a standalone product. It may coexist with CartBay, but it must not require CartBay or depend on CartBay private state.
 
+**Note — divergence from this ADR in the shipped Pro plugin**: this table below was
+written to apply identically to both the free and Pro plugins. The implementation has
+since diverged for hook/nonce/asset identifiers to avoid Pro colliding with free at
+runtime. Pro's actual values (`app/Core/Constants.php`) are: namespace root
+`WPAnchorBay\UpsellBayPro`, hook prefix `upsellbay_pro_`, nonce prefix `upsellbay_pro_`,
+asset handle prefix `upsellbay-pro-`, admin menu slug `upsellbay-pro`. Only the option
+prefix, settings option, meta prefix, offer CPT, and REST namespace are genuinely shared
+between the two plugins as this ADR originally intended. This is treated as an accepted,
+intentional divergence (it avoids hook-namespace collisions between two active plugins)
+rather than a defect — see [free-pro-coupling.md](./free-pro-coupling.md) for the full
+identifier-by-identifier comparison and its consequences for hook wiring.
+
 ## Required Identifiers
 
 | Identifier | Required value | Runtime constant expectation |

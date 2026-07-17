@@ -2,7 +2,15 @@
 
 Phase 6 exposes public hooks at stable inputs and outputs without making private internals part of the public contract.
 
-Runtime hook calls are centralized through `Core\Hooks` and use the `upsellbay_` prefix from `Core\Constants`. Hooks are placed around:
+**This file describes Pro's own hook facade** (`app/Core/Hooks.php`, prefix
+`upsellbay_pro_` — see the identifier divergence note in
+[identifier-contract.md](./identifier-contract.md)), i.e. the seams third parties can use
+to extend *Pro's* independent implementation. It is not the contract Pro itself uses to
+attach to the host (free) plugin — for the full inventory of the host's hooks, which of
+them Pro actually consumes, and the concrete coupling pattern, see
+[free-pro-coupling.md](./free-pro-coupling.md).
+
+Runtime hook calls are centralized through `Core\Hooks` and use the `upsellbay_pro_` prefix from `Core\Constants`. Hooks are placed around:
 
 - Offer schema defaults and placement labels.
 - Offer repository query arguments.

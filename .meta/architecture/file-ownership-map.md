@@ -8,6 +8,18 @@ Task: `UB-P0-006`.
 
 The implementation layout follows PRD v4, the folder structure plan, and the phase task files. Directories should be created only when a task needs files in them. Empty placeholder directories are not required.
 
+## Phase 6.5 Admin Integration Refactor
+
+Pro originally duplicated the host's entire admin shell: its own `app/Admin/AdminPage.php`,
+`app/Admin/AdminPageRegistrar.php`, `app/Admin/Navigation/{AdminTab,TabFactory,TabNavigation,TabRegistry,TabRouter}.php`,
+and `app/Admin/Offers/{OfferEditPage.php,OfferListTable.php,OffersPage.php}`. These files
+are **deleted** in the current working tree. Pro now owns no admin page shell at all — it
+attaches to the host's single admin page purely through the host's public hooks. See
+[free-pro-coupling.md](./free-pro-coupling.md) for the hook contract and
+`app/Integrations/OfferEditDiagnosticsIntegration.php` /
+`app/Integrations/OffersListColumnsIntegration.php` below for the pattern that replaced
+the deleted files.
+
 ## Runtime Ownership Map
 
 | Path or class group | Responsibility | Owning phase | Key dependencies |
@@ -22,16 +34,17 @@ The implementation layout follows PRD v4, the folder structure plan, and the pha
 | `app/Core/Platform.php` | Minimum runtime dependency checks (PHP, WP, Woo). | Phase 1 | - |
 | `app/Core/Hooks.php` | Wrapper for WordPress hooks. | Phase 1 | - |
 | `app/Core/Scheduler.php` | Action Scheduler wrapper. | Phase 2 | Action Scheduler. |
-| `app/Admin/Offers/*` | WP list table and offer editor surfaces. | Phase 3 | Offer repository and validator. |
-| `app/Admin/Settings/*` | Woo-native settings sections, section navigation (`SettingsSectionNavigation`), and tools. `BasicSection` replaces the former `GeneralSection`. | Phase 3 | Settings service, capability and nonce checks. |
+| `app/Admin/Offers/OfferSectionNavigation.php` | WooCommerce-style section links rendered inside the host's (free's) offer list/edit pages. | Phase 3 | Host `upsellbay_offers_header_after` seam. |
+| `app/Admin/Offers/OfferVisibilityPanel.php` | Merchant-facing offer visibility diagnostics, rendered by `OfferEditDiagnosticsIntegration` inside the host's offer editor. | Phase 6 | `OfferVisibilityInspector`. |
+| `app/Admin/Settings/*` | Woo-native settings sections, section navigation (`SettingsSectionNavigation`), and tools, all rendered inside the host's Settings tab via `upsellbay_settings_*` hooks. `BasicSection` replaces the former `GeneralSection`. | Phase 3 | Settings service, capability and nonce checks, [free-pro-coupling.md](./free-pro-coupling.md). |
 | `app/Admin/Wizard/*` | First-run wizard. | Phase 5 | Offer service and test mode. |
-| `app/Admin/Dashboard/*` | Dashboard overview and aggregate analytics section. | Phase 3 and Phase 4 | Overview summary, analytics service, and stats repository. |
+| `app/Admin/Dashboard/*` | Analytics section appended to the host's Dashboard tab via `upsellbay_dashboard_after`. Pro owns no independent Dashboard page. | Phase 3 and Phase 4 | Overview summary, analytics service, and stats repository. |
 | `app/Admin/Coexistence.php` | Optional CartBay coexistence guidance without data access. | Phase 3 | Identifier isolation rules. |
 | `app/Admin/CompatibilityNotice.php` | Known conflict notices. | Phase 3 and Phase 4 | Compatibility matrix. |
 | `app/Admin/AdminBar.php` | Admin-only test mode indicator. | Phase 3 and Phase 5 | Settings service. |
-| `app/Admin/AdminPage.php` | Unified WooCommerce submenu page shell with tab routing. Renders the layout header with `Get Started` and `Add Offer` action buttons, page notices, tab navigation, and active tab content. Owns the `admin_title` filter. | Phase 1 | Tab registry, tab router, tab navigation. |
-| `app/Admin/Navigation/TabFactory.php` | Registers all tabs. The setup tab is marked `is_visible = false` and labeled `Get started`. | Phase 1 | Dashboard, Offers, Settings, Tools, Wizard, Help page renderers. |
 | `app/Admin/PreviewLinks.php` | Shared preview link generator for frontend placements. | Phase 4 | WooCommerce products. |
+| `app/Integrations/OfferEditDiagnosticsIntegration.php` | Attaches to the host's `upsellbay_offer_edit_extra_sections` hook; renders `OfferVisibilityPanel` and `OfferConflictDetector` findings inside the host's own offer editor. Replaces the former standalone `OfferEditPage.php`. | Phase 6.5 refactor | Host hook contract, [free-pro-coupling.md](./free-pro-coupling.md). |
+| `app/Integrations/OffersListColumnsIntegration.php` | Attaches to the host's `upsellbay_bump_list_columns`, `upsellbay_bump_list_column_content`, and `upsellbay_offer_stats_summary_after` hooks; adds Health/Revenue columns and a stats table to the host's own offers list. Replaces the former standalone `OffersPage.php`/`OfferListTable.php`. | Phase 6.5 refactor | Host hook contract, [free-pro-coupling.md](./free-pro-coupling.md). |
 | `app/Api/Routes/*` | REST route registration, permissions, validation, safe responses. | Phase 4 | Domain services, rate limiter, nonces. |
 | `app/Api/ProductsController.php` | AJAX product/category search for the admin offer editor. | Phase 3 | WooCommerce product/term APIs. |
 | `app/Data/OfferRepository.php` | Private `upsellbay_offer` CPT and `_ub_` offer meta access. | Phase 2 | Constants and schema. |
