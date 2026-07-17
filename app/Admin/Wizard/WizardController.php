@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Admin\Wizard;
+namespace WPAnchorBay\UpsellBayPro\Admin\Wizard;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -16,10 +16,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 
 use Throwable;
-use WPAnchorBay\UpsellBay\Core\Settings;
-use WPAnchorBay\UpsellBay\Domain\Offers\OfferDefaults;
-use WPAnchorBay\UpsellBay\Domain\Offers\OfferService;
-use WPAnchorBay\UpsellBay\Domain\Logging\LoggerInterface;
+use WPAnchorBay\UpsellBayPro\Core\Settings;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferDefaults;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferService;
+use WPAnchorBay\UpsellBayPro\Domain\Logging\LoggerInterface;
 
 /**
  * Creates the first draft offer and stores onboarding completion.
@@ -87,7 +87,7 @@ final class WizardController {
 		$this->defaults     = $defaults ?? new OfferDefaults();
 		$this->logger       = $logger;
 		$this->can_manage   = $can_manage ?? static fn (): bool => function_exists( 'current_user_can' ) && current_user_can( 'manage_woocommerce' ); // phpcs:ignore WordPress.WP.Capabilities.Unknown
-		$this->verify_nonce = $verify_nonce ?? static fn ( string $nonce ): bool => function_exists( 'wp_verify_nonce' ) && (bool) wp_verify_nonce( $nonce, 'upsellbay_wizard' );
+		$this->verify_nonce = $verify_nonce ?? static fn ( string $nonce ): bool => function_exists( 'wp_verify_nonce' ) && (bool) wp_verify_nonce( $nonce, 'upsellbay_pro_wizard' );
 	}
 
 	/**
@@ -223,18 +223,48 @@ final class WizardController {
 	 * @return array<int, array<string, mixed>>
 	 */
 	private function rule_from_request( array $request ): array {
-		$type = $this->sanitize_key( (string) ( $request['rule_type'] ?? '' ) );
-		if ( '' === $type ) {
+		$rules_json = (string) ( $request['_ub_rules'] ?? '' );
+		$parsed     = json_decode( $rules_json, true );
+
+		if ( ! is_array( $parsed ) ) {
+			$type = $this->sanitize_key( (string) ( $request['rule_type'] ?? '' ) );
+			if ( '' !== $type ) {
+				return array(
+					array(
+						'type'     => $type,
+						'operator' => $this->sanitize_key( (string) ( $request['rule_operator'] ?? 'gte' ) ),
+						'value'    => $this->sanitize_text( (string) ( $request['rule_value'] ?? '' ) ),
+					),
+				);
+			}
 			return array();
 		}
 
-		return array(
-			array(
-				'type'     => $type,
-				'operator' => $this->sanitize_key( (string) ( $request['rule_operator'] ?? 'gte' ) ),
-				'value'    => $this->sanitize_text( (string) ( $request['rule_value'] ?? '' ) ),
-			),
-		);
+		$sanitized = array();
+		foreach ( $parsed as $rule ) {
+			if ( ! is_array( $rule ) || ! isset( $rule['type'] ) || '' === $rule['type'] ) {
+				continue;
+			}
+
+			$value = $rule['value'] ?? '';
+			if ( is_array( $value ) ) {
+				$sanitized_value = array();
+				foreach ( $value as $v ) {
+					$sanitized_value[] = $this->sanitize_text( (string) $v );
+				}
+				$value = $sanitized_value;
+			} else {
+				$value = $this->sanitize_text( (string) $value );
+			}
+
+			$sanitized[] = array(
+				'type'     => $this->sanitize_key( (string) $rule['type'] ),
+				'operator' => $this->sanitize_key( (string) ( $rule['operator'] ?? '' ) ),
+				'value'    => $value,
+			);
+		}
+
+		return $sanitized;
 	}
 
 	/**

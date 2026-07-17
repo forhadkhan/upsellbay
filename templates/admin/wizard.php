@@ -22,7 +22,7 @@ $upsellbay_help_tip = static function ( string $text ): string {
 				<p>
 					<?php echo esc_html( $result['message'] ); ?>
 					<?php if ( ! empty( $result['offer_id'] ) ) : ?>
-						<a href="<?php echo esc_url( admin_url( 'admin.php?page=upsellbay&tab=offers&action=edit&offer_id=' . (int) $result['offer_id'] ) ); ?>" style="margin-left: 10px;" class="button button-small"><?php esc_html_e( 'View / Edit Offer', 'upsellbay' ); ?></a>
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=upsellbay-pro&tab=offers&action=edit&offer_id=' . (int) $result['offer_id'] ) ); ?>" style="margin-left: 10px;" class="button button-small"><?php esc_html_e( 'View / Edit Offer', 'upsellbay' ); ?></a>
 					<?php endif; ?>
 				</p>
 			</div>
@@ -34,7 +34,7 @@ $upsellbay_help_tip = static function ( string $text ): string {
 	<?php endif; ?>
 
 	<form method="post" class="upsellbay-wizard__form">
-		<?php wp_nonce_field( 'upsellbay_wizard', 'nonce' ); ?>
+		<?php wp_nonce_field( 'upsellbay_pro_wizard', 'nonce' ); ?>
 		<table class="form-table" role="presentation">
 			<tbody>
 				<tr>
@@ -65,6 +65,25 @@ $upsellbay_help_tip = static function ( string $text ): string {
 				<tr>
 					<th scope="row"><label for="upsellbay-wizard-headline"><?php esc_html_e( 'Headline', 'upsellbay' ); ?></label> <?php echo $upsellbay_help_tip( __( 'Keep this short and specific. It appears next to the offer product in the selected placement.', 'upsellbay' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $upsellbay_help_tip returns escaped WooCommerce help tip markup. ?></th>
 					<td><input id="upsellbay-wizard-headline" name="headline" type="text" class="regular-text"></td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="upsellbay-wizard-discount-type"><?php esc_html_e( 'Discount', 'upsellbay' ); ?></label> <?php echo $upsellbay_help_tip( __( 'Optionally offer a discount to encourage shoppers to accept.', 'upsellbay' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $upsellbay_help_tip returns escaped WooCommerce help tip markup. ?></th>
+					<td>
+						<select id="upsellbay-wizard-discount-type" name="discount_type" style="vertical-align: top;">
+							<option value="none"><?php esc_html_e( 'No discount', 'upsellbay' ); ?></option>
+							<option value="percent"><?php esc_html_e( 'Percentage (%)', 'upsellbay' ); ?></option>
+							<option value="fixed_amount"><?php esc_html_e( 'Fixed amount', 'upsellbay' ); ?></option>
+							<option value="fixed_price"><?php esc_html_e( 'Fixed price', 'upsellbay' ); ?></option>
+						</select>
+						<input type="text" name="discount_value" class="regular-text" placeholder="0" style="width: 100px; vertical-align: top;" aria-label="<?php esc_attr_e( 'Discount value', 'upsellbay' ); ?>">
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="upsellbay-_ub_rules"><?php esc_html_e( 'Targeting rule', 'upsellbay' ); ?></label> <?php echo $upsellbay_help_tip( __( 'Optionally restrict when this offer appears. You can add more rules later.', 'upsellbay' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $upsellbay_help_tip returns escaped WooCommerce help tip markup. ?></th>
+					<td>
+						<textarea id="upsellbay-_ub_rules" name="_ub_rules" class="large-text code" rows="5" style="display: none;">[]</textarea>
+						<div id="upsellbay-builder-_ub_rules" class="upsellbay-builder"></div>
+					</td>
 				</tr>
 				<tr>
 					<th scope="row"><?php esc_html_e( 'Preview first', 'upsellbay' ); ?> <?php echo $upsellbay_help_tip( __( 'Test mode is admin-only and helps verify the offer before live shoppers can see it.', 'upsellbay' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $upsellbay_help_tip returns escaped WooCommerce help tip markup. ?></th>
