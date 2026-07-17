@@ -564,7 +564,7 @@ final class OfferValidator {
 			'in_stock'     => ! method_exists( $product, 'is_in_stock' ) || $product->is_in_stock(),
 			'stock_status' => method_exists( $product, 'get_stock_status' ) ? $product->get_stock_status() : '',
 			'type'         => method_exists( $product, 'get_type' ) ? $product->get_type() : 'simple',
-			'subscription' => function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $product ),
+			'subscription' => class_exists( '\WC_Subscriptions_Product' ) && \WC_Subscriptions_Product::is_subscription( $product ),
 		);
 	}
 }
