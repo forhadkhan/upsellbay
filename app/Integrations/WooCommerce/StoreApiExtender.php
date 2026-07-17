@@ -15,7 +15,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
-use WPAnchorBay\UpsellBayPro\Core\Constants;
 use WPAnchorBay\UpsellBayPro\Core\Settings;
 use WPAnchorBay\UpsellBayPro\Data\CartSession;
 use WPAnchorBay\UpsellBayPro\Data\OfferRepository;
@@ -23,7 +22,6 @@ use WPAnchorBay\UpsellBayPro\Domain\Analytics\AnalyticsRecorder;
 use WPAnchorBay\UpsellBayPro\Domain\Discounts\DiscountCalculator;
 use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferPrioritizer;
 use Automattic\WooCommerce\StoreApi\Schemas\V1\CartSchema;
-use Automattic\WooCommerce\StoreApi\Schemas\V1\CheckoutSchema;
 
 /**
  * Exposes eligible offers to the Cart and Checkout blocks via Store API.
@@ -104,6 +102,18 @@ final class StoreApiExtender {
 			return;
 		}
 
+		// Pro's own bootstrap runs on plugins_loaded at priority 20 (after the
+		// host plugin's default-priority init), by which point WooCommerce
+		// Blocks has already fired woocommerce_blocks_loaded on its own,
+		// earlier plugins_loaded callback. Registering a listener for an
+		// action that already fired means it never runs, so call directly
+		// when that has already happened instead of only ever attaching a
+		// listener for the future.
+		if ( function_exists( 'did_action' ) && did_action( 'woocommerce_blocks_loaded' ) > 0 ) {
+			$this->register_endpoint_data();
+			return;
+		}
+
 		add_action( 'woocommerce_blocks_loaded', array( $this, 'register_endpoint_data' ) );
 	}
 
@@ -117,23 +127,22 @@ final class StoreApiExtender {
 			return;
 		}
 
-		// Cart Endpoint Extender.
+		// ExperimentalOrderMeta's extensions prop, which both the checkout_bump
+		// and cart_crosssell React plugins read, is populated from the Store
+		// API Cart endpoint's extension data in both the Cart and Checkout
+		// blocks (the same slot renders in both, distinguished by the
+		// context prop each block passes at render time) — not from a
+		// per-block schema. Registering checkout_bump only on CheckoutSchema
+		// left it structurally unreachable, since nothing reads that
+		// endpoint's extension data for display; the Store API's checkout
+		// endpoint request/response cycle is for order processing, not the
+		// ExperimentalOrderMeta slot. Register both placements on
+		// CartSchema; the JS side gates which one renders by context.
 		woocommerce_store_api_register_endpoint_data(
 			array(
 				'endpoint'        => CartSchema::IDENTIFIER,
-				'namespace'       => Constants::ADMIN_MENU_SLUG,
+				'namespace'       => 'upsellbay',
 				'data_callback'   => array( $this, 'get_cart_offers_data' ),
-				'schema_callback' => array( $this, 'get_offers_schema' ),
-				'schema_type'     => ARRAY_A,
-			)
-		);
-
-		// Checkout Endpoint Extender.
-		woocommerce_store_api_register_endpoint_data(
-			array(
-				'endpoint'        => CheckoutSchema::IDENTIFIER,
-				'namespace'       => Constants::ADMIN_MENU_SLUG,
-				'data_callback'   => array( $this, 'get_checkout_offers_data' ),
 				'schema_callback' => array( $this, 'get_offers_schema' ),
 				'schema_type'     => ARRAY_A,
 			)
@@ -143,6 +152,9 @@ final class StoreApiExtender {
 	/**
 	 * Data callback for Cart schema.
 	 *
+	 * Covers both the cart_crosssell and checkout_bump placements — see the
+	 * note in register_endpoint_data() for why checkout_bump lives here too.
+	 *
 	 * @since 1.0.0
 	 *
 	 * @return array<string, mixed>
@@ -150,19 +162,7 @@ final class StoreApiExtender {
 	public function get_cart_offers_data(): array {
 		return array(
 			'cart_crosssell' => $this->get_offers_for_placement( 'cart_crosssell' ),
-		);
-	}
-
-	/**
-	 * Data callback for Checkout schema.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return array<string, mixed>
-	 */
-	public function get_checkout_offers_data(): array {
-		return array(
-			'checkout_bump' => $this->get_offers_for_placement( 'checkout_bump' ),
+			'checkout_bump'  => $this->get_offers_for_placement( 'checkout_bump' ),
 		);
 	}
 

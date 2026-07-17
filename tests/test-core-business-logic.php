@@ -610,7 +610,7 @@ function upsellbay_core_business_logic_tests(): array {
 				new Settings( static fn (): array => array(), static fn (): bool => true )
 			);
 
-			$data = $extender->get_checkout_offers_data();
+			$data = $extender->get_cart_offers_data();
 
 			assert_contains( '$100.00', $data['checkout_bump'][0]['price_html'] );
 			assert_contains( '$75.00', $data['checkout_bump'][0]['price_html'] );
