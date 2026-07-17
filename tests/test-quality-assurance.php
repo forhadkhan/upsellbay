@@ -86,6 +86,21 @@ function upsellbay_quality_assurance_tests(): array {
 			assert_true( str_contains( $plugin_file, 'declare_compatibility' ) );
 			assert_true( str_contains( $plugin_file, "'cart_checkout_blocks',\n\t\t\tConstants::plugin_file(),\n\t\t\ttrue" ) );
 			assert_contains( '| Block Checkout | Supported after E2E proof |', $docs );
+
+			// The declaration and docs claim are necessary but not sufficient: they can be
+			// hand-edited without ever running the suite. Require a real, current evidence
+			// file generated only by scripts/verify-block-checkout-proof.sh (see
+			// .meta/reviews/bundle-feature-and-release-readiness-2026-07-17.md for why this
+			// gate used to be satisfiable by editing this docs file alone).
+			$evidence_path = $root . '/tests/e2e/evidence/block-checkout-proof.json';
+			assert_true( file_exists( $evidence_path ), 'Run scripts/verify-block-checkout-proof.sh to generate real E2E evidence before claiming Block Checkout compatibility.' );
+
+			$evidence = json_decode( (string) file_get_contents( $evidence_path ), true );
+			assert_true( is_array( $evidence ) );
+			assert_same( 'tests/e2e/block-checkout.spec.js', $evidence['spec'] ?? null );
+			assert_true( ( $evidence['total'] ?? 0 ) > 0 );
+			assert_same( 0, $evidence['failed'] ?? -1 );
+			assert_same( $evidence['total'] ?? -1, $evidence['passed'] ?? -2 );
 		},
 		'package exposes first class playwright e2e commands' => static function (): void {
 			$root    = dirname( __DIR__ );
