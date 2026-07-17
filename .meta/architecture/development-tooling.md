@@ -9,7 +9,7 @@ Task: `UB-P0-005`.
 | Dependency | Minimum or target |
 | --- | --- |
 | PHP | 8.1 minimum; test against 8.1 through 8.4 where supported. |
-| WordPress | 6.9 minimum; WordPress 7.0-ready admin styling. |
+| WordPress | 6.8 minimum; WordPress 7.0-ready admin styling. |
 | WooCommerce | 10.8.x minimum target. |
 | JavaScript build | WordPress scripts and dependency extraction. |
 | Marketplace validation | QIT managed tests before submission. |
