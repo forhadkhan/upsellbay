@@ -2,7 +2,7 @@
 
 UpsellBay stores offer configuration in the private `upsellbay_offer` CPT and stores offer configuration meta with `_ub_` keys only.
 
-Order attribution keys are centralized in `WPAnchorBay\UpsellBay\Core\Constants`:
+Order attribution keys are centralized in `WPAnchorBay\UpsellBayPro\Core\Constants`:
 
 - `_ub_offer_id`
 - `_ub_offer_type`

@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Domain\Storefront;
+namespace WPAnchorBay\UpsellBayPro\Domain\Storefront;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,11 +15,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
-use WPAnchorBay\UpsellBay\Core\Constants;
-use WPAnchorBay\UpsellBay\Core\Settings;
-use WPAnchorBay\UpsellBay\Data\CartSession;
-use WPAnchorBay\UpsellBay\Data\OfferRepository;
-use WPAnchorBay\UpsellBay\Utils\TokenHelper;
+use WPAnchorBay\UpsellBayPro\Core\Constants;
+use WPAnchorBay\UpsellBayPro\Core\Settings;
+use WPAnchorBay\UpsellBayPro\Data\CartSession;
+use WPAnchorBay\UpsellBayPro\Data\OfferRepository;
+use WPAnchorBay\UpsellBayPro\Utils\TokenHelper;
 
 /**
  * Connects WooCommerce storefront hooks to the placement renderer.
@@ -429,7 +429,7 @@ final class StorefrontController {
 
 		$tokens       = $this->settings->all()['style_tokens'] ?? array();
 		$accent_color = (string) ( $tokens['accent_color'] ?? Settings::DEFAULT_ACCENT_COLOR );
-		$text_color   = \WPAnchorBay\UpsellBay\Utils\ColorHelper::get_contrasting_text_color( $accent_color );
+		$text_color   = \WPAnchorBay\UpsellBayPro\Utils\ColorHelper::get_contrasting_text_color( $accent_color );
 		$button_style = (string) ( $tokens['button_style'] ?? 'theme' );
 
 		$css  = '.upsellbay-offer{--upsellbay-accent:' . esc_attr( $accent_color ) . ';';

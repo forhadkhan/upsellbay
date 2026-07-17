@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Admin\Settings;
+namespace WPAnchorBay\UpsellBayPro\Admin\Settings;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
-use WPAnchorBay\UpsellBay\Core\Settings;
+use WPAnchorBay\UpsellBayPro\Core\Settings;
 
 /**
  * Normalizes theme-friendly presentation settings.

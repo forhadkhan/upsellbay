@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Api\Routes;
+namespace WPAnchorBay\UpsellBayPro\Api\Routes;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,8 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
-use WPAnchorBay\UpsellBay\Api\ProductsController;
-use WPAnchorBay\UpsellBay\Core\Constants;
+use WPAnchorBay\UpsellBayPro\Api\ProductsController;
+use WPAnchorBay\UpsellBayPro\Core\Constants;
 
 /**
  * Registers products and categories endpoints.

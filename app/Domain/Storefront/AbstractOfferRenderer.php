@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Domain\Storefront;
+namespace WPAnchorBay\UpsellBayPro\Domain\Storefront;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,8 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
-use WPAnchorBay\UpsellBay\Core\Hooks;
-use WPAnchorBay\UpsellBay\Domain\Discounts\DiscountCalculator;
+use WPAnchorBay\UpsellBayPro\Core\Hooks;
+use WPAnchorBay\UpsellBayPro\Domain\Discounts\DiscountCalculator;
 
 /**
  * Provides escaped native offer-card markup.

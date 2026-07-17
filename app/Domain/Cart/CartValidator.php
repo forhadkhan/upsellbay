@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Domain\Cart;
+namespace WPAnchorBay\UpsellBayPro\Domain\Cart;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,8 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
-use WPAnchorBay\UpsellBay\Domain\Discounts\DiscountCalculator;
-use WPAnchorBay\UpsellBay\Domain\Rules\RuleEvaluator;
+use WPAnchorBay\UpsellBayPro\Domain\Discounts\DiscountCalculator;
+use WPAnchorBay\UpsellBayPro\Domain\Rules\RuleEvaluator;
 
 /**
  * Validates offer products and rules before cart mutation.

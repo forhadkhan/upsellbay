@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Core;
+namespace WPAnchorBay\UpsellBayPro\Core;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -21,27 +21,28 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since 1.0.0
  */
 final class Constants {
-	public const VERSION                         = '0.1.0';
+	public const VERSION                         = '1.0.0';
 	public const DB_VERSION                      = '1';
-	public const NAMESPACE_ROOT                  = 'WPAnchorBay\\UpsellBay';
+	public const NAMESPACE_ROOT                  = 'WPAnchorBay\\UpsellBayPro';
 	public const TEXT_DOMAIN                     = 'upsellbay';
 	public const PLUGIN_SLUG                     = 'upsellbay';
+	public const ADMIN_MENU_SLUG                 = 'upsellbay-pro';
 	public const PLUGIN_ENTRY_FILE               = 'upsellbay.php';
 	public const REST_NAMESPACE                  = 'upsellbay/v1';
 	public const OPTION_PREFIX                   = 'upsellbay_';
 	public const SETTINGS_OPTION                 = 'upsellbay_settings';
 	public const DB_VERSION_OPTION               = 'upsellbay_db_version';
 	public const META_PREFIX                     = '_ub_';
-	public const HOOK_PREFIX                     = 'upsellbay_';
-	public const NONCE_PREFIX                    = 'upsellbay_';
+	public const HOOK_PREFIX                     = 'upsellbay_pro_';
+	public const NONCE_PREFIX                    = 'upsellbay_pro_';
 	public const OFFER_POST_TYPE                 = 'upsellbay_offer';
-	public const STATS_TABLE_SUFFIX              = 'upsellbay_offer_stats_daily';
-	public const LOGS_TABLE_SUFFIX               = 'upsellbay_logs';
-	public const ACTION_SCHEDULER_GROUP          = 'upsellbay';
-	public const ASSET_HANDLE_PREFIX             = 'upsellbay-';
-	public const LICENSE_PRODUCT_SLUG            = 'upsellbay';
-	public const LICENSE_DATA_OPTION             = 'upsellbay_license_data';
-	public const LICENSE_VALID_TRANSIENT         = 'upsellbay_license_valid';
+	public const STATS_TABLE_SUFFIX              = 'upsellbay_pro_offer_stats_daily';
+	public const LOGS_TABLE_SUFFIX               = 'upsellbay_pro_logs';
+	public const ACTION_SCHEDULER_GROUP          = 'upsellbay-pro';
+	public const ASSET_HANDLE_PREFIX             = 'upsellbay-pro-';
+	public const LICENSE_PRODUCT_SLUG            = 'upsellbay-pro';
+	public const LICENSE_DATA_OPTION             = 'upsellbay_pro_license_data';
+	public const LICENSE_VALID_TRANSIENT         = 'upsellbay_pro_license_valid';
 	public const PLUGIN_URL                      = 'https://wpanchorbay.com/plugins/upsellbay/';
 	public const AUTHOR_URL                      = 'https://wpanchorbay.com/';
 	public const GET_PRO_URL                     = 'https://wpanchorbay.com/plugins/upsellbay/';
@@ -53,6 +54,7 @@ final class Constants {
 	public const MIN_PHP_VERSION                 = '8.1';
 	public const MIN_WP_VERSION                  = '6.9';
 	public const MIN_WC_VERSION                  = '10.8';
+	public const MIN_HOST_VERSION                = '1.0.0';
 	public const ATTRIBUTION_OFFER_ID            = '_ub_offer_id';
 	public const ATTRIBUTION_OFFER_TYPE          = '_ub_offer_type';
 	public const ATTRIBUTION_OFFER_PLACEMENT     = '_ub_offer_placement';

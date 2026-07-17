@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Core;
+namespace WPAnchorBay\UpsellBayPro\Core;
 
 /**
  * Handles activation, deactivation, upgrades, and opt-in cleanup.

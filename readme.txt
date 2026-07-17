@@ -1,4 +1,4 @@
-=== UpsellBay ===
+=== UpsellBay Pro ===
 Contributors: wpanchorbay
 Tags: woocommerce, upsell, checkout bump, cross-sell, order bump
 Requires at least: 6.8

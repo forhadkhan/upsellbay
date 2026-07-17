@@ -13,8 +13,8 @@ if (!defined('ABSPATH')) {
 
 
 use PHPUnit\Framework\TestCase;
-use WPAnchorBay\UpsellBay\Domain\Offers\OfferConflictDetector;
-use WPAnchorBay\UpsellBay\Data\OfferRepository;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferConflictDetector;
+use WPAnchorBay\UpsellBayPro\Data\OfferRepository;
 
 /**
  * Tests for the OfferConflictDetector class.
@@ -25,7 +25,7 @@ class OfferConflictDetectorTest extends TestCase {
 	 */
 	public function setUp(): void {
 		parent::setUp();
-		if ( ! class_exists( 'WPAnchorBay\UpsellBay\Data\OfferRepository' ) ) {
+		if ( ! class_exists( 'WPAnchorBay\UpsellBayPro\Data\OfferRepository' ) ) {
 			$this->markTestSkipped( 'Classes not loaded.' );
 		}
 	}

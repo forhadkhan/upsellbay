@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Admin\Help;
+namespace WPAnchorBay\UpsellBayPro\Admin\Help;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
-use WPAnchorBay\UpsellBay\Core\Constants;
+use WPAnchorBay\UpsellBayPro\Core\Constants;
 
 /**
  * Routes merchants to UpsellBay AOV offer docs and support.

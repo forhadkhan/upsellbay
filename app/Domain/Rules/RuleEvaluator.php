@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Domain\Rules;
+namespace WPAnchorBay\UpsellBayPro\Domain\Rules;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
-use WPAnchorBay\UpsellBay\Core\Hooks;
+use WPAnchorBay\UpsellBayPro\Core\Hooks;
 
 /**
  * Evaluates normalized offer rules against a server-side context.

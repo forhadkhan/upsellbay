@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Domain\Compatibility;
+namespace WPAnchorBay\UpsellBayPro\Domain\Compatibility;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {

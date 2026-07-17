@@ -20,12 +20,12 @@
 	},
 	"autoload": {
 		"psr-4": {
-			"WPAnchorBay\\UpsellBay\\": "app/"
+			"WPAnchorBay\\UpsellBayPro\\": "app/"
 		}
 	},
 	"autoload-dev": {
 		"psr-4": {
-			"WPAnchorBay\\UpsellBay\\Tests\\": "tests/"
+			"WPAnchorBay\\UpsellBayPro\\Tests\\": "tests/"
 		}
 	},
 	"scripts": {

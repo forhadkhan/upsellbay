@@ -7,18 +7,18 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Utils;
+namespace WPAnchorBay\UpsellBayPro\Utils;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use WPAnchorBay\UpsellBay\Core\Hooks;
-use WPAnchorBay\UpsellBay\Core\Settings;
-use WPAnchorBay\UpsellBay\Data\OfferRepository;
-use WPAnchorBay\UpsellBay\Domain\Offers\OfferValidator;
-use WPAnchorBay\UpsellBay\Domain\Offers\ValidationResult;
+use WPAnchorBay\UpsellBayPro\Core\Hooks;
+use WPAnchorBay\UpsellBayPro\Core\Settings;
+use WPAnchorBay\UpsellBayPro\Data\OfferRepository;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferValidator;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\ValidationResult;
 
 /**
  * Validates and handles exporting and importing of all settings and offers.

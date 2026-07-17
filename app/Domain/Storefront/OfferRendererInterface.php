@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Domain\Storefront;
+namespace WPAnchorBay\UpsellBayPro\Domain\Storefront;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {

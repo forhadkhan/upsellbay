@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Admin;
+namespace WPAnchorBay\UpsellBayPro\Admin;
 
 /**
  * Detects adjacent products without reading private product state.

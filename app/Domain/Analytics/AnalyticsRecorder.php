@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Domain\Analytics;
+namespace WPAnchorBay\UpsellBayPro\Domain\Analytics;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
-use WPAnchorBay\UpsellBay\Data\StatsRepository;
+use WPAnchorBay\UpsellBayPro\Data\StatsRepository;
 
 /**
  * Records offer events into the non-PII aggregate stats table.

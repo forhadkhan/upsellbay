@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Domain\Offers;
+namespace WPAnchorBay\UpsellBayPro\Domain\Offers;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -16,8 +16,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 
 use RuntimeException;
-use WPAnchorBay\UpsellBay\Core\Hooks;
-use WPAnchorBay\UpsellBay\Data\OfferRepository;
+use WPAnchorBay\UpsellBayPro\Core\Hooks;
+use WPAnchorBay\UpsellBayPro\Data\OfferRepository;
 
 /**
  * Centralizes offer lifecycle behavior for admin and API callers.

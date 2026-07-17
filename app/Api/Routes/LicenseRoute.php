@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Api\Routes;
+namespace WPAnchorBay\UpsellBayPro\Api\Routes;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
-use WPAnchorBay\UpsellBay\Integrations\Licensing\LicenseClient;
+use WPAnchorBay\UpsellBayPro\Integrations\Licensing\LicenseClient;
 use WP_Error;
 use WP_REST_Request;
 use WP_REST_Response;

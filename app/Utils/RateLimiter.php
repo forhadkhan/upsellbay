@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Utils;
+namespace WPAnchorBay\UpsellBayPro\Utils;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
-use WPAnchorBay\UpsellBay\Core\Constants;
+use WPAnchorBay\UpsellBayPro\Core\Constants;
 
 /**
  * Rate limits public write endpoints by endpoint and client key.

@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Domain\Logging;
+namespace WPAnchorBay\UpsellBayPro\Domain\Logging;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {

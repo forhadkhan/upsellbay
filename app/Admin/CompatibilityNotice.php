@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Admin;
+namespace WPAnchorBay\UpsellBayPro\Admin;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,8 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
-use WPAnchorBay\UpsellBay\Core\Settings;
-use WPAnchorBay\UpsellBay\Domain\Compatibility\CompatibilityScanner;
+use WPAnchorBay\UpsellBayPro\Core\Settings;
+use WPAnchorBay\UpsellBayPro\Domain\Compatibility\CompatibilityScanner;
 
 /**
  * Builds dismissible compatibility and coexistence notices.
@@ -87,7 +87,7 @@ final class CompatibilityNotice {
 	public function render(): void {
 		foreach ( $this->notices() as $notice ) {
 			printf(
-				'<div class="notice notice-%1$s is-dismissible upsellbay-notice"><p>%2$s <a href="%3$s">%4$s</a></p></div>',
+				'<div class="notice notice-%1$s is-dismissible upsellbay-pro-notice"><p>%2$s <a href="%3$s">%4$s</a></p></div>',
 				esc_attr( $notice['type'] ),
 				esc_html( $notice['message'] ),
 				esc_url( $notice['url'] ),

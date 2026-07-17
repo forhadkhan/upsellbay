@@ -73,14 +73,14 @@ function initProductSelector($selector, options) {
     }
 
     $.ajax({
-      url: window.upsellbay_data.rest_url + "upsellbay/v1/products",
+      url: window.upsellbay_pro_data.rest_url + "upsellbay/v1/products",
       type: "GET",
       data: {
         search: currentSearch,
         page: page,
       },
       beforeSend: function (xhr) {
-        xhr.setRequestHeader("X-WP-Nonce", window.upsellbay_data.nonce);
+        xhr.setRequestHeader("X-WP-Nonce", window.upsellbay_pro_data.nonce);
       },
       success: (response) => {
         isLoading = false;
@@ -159,13 +159,13 @@ function initProductSelector($selector, options) {
     }
 
     $.ajax({
-      url: window.upsellbay_data.rest_url + "upsellbay/v1/products",
+      url: window.upsellbay_pro_data.rest_url + "upsellbay/v1/products",
       type: "GET",
       data: {
         include: productId,
       },
       beforeSend: function (xhr) {
-        xhr.setRequestHeader("X-WP-Nonce", window.upsellbay_data.nonce);
+        xhr.setRequestHeader("X-WP-Nonce", window.upsellbay_pro_data.nonce);
       },
       success: (response) => {
         if (Array.isArray(response) && response.length > 0) {
@@ -493,7 +493,7 @@ window.jQuery(function ($) {
     if ($rulesField.length && $rulesField.val().trim()) {
       try {
         const rules = JSON.parse($rulesField.val().trim());
-        const definitions = window.upsellbay_data?.rule_definitions?.rules || {};
+        const definitions = window.upsellbay_pro_data?.rule_definitions?.rules || {};
         if (Array.isArray(rules)) {
           rules.forEach((rule, index) => {
             const definition = definitions[rule.type];
@@ -764,7 +764,7 @@ window.jQuery(function ($) {
       return;
     }
 
-    const ruleConfig = window.upsellbay_data?.rule_definitions || {};
+    const ruleConfig = window.upsellbay_pro_data?.rule_definitions || {};
     const ruleDefinitions = ruleConfig.rules || {};
     const stockStatuses = ruleConfig.stockStatuses || [];
     const firstRuleType = Object.keys(ruleDefinitions)[0] || 'cart_product';
@@ -919,11 +919,11 @@ window.jQuery(function ($) {
           placeholder: $select.data('placeholder') || 'Search...',
           minimumInputLength: 0,
           ajax: {
-            url: `${window.upsellbay_data.rest_url}upsellbay/v1/${endpoint}`,
+            url: `${window.upsellbay_pro_data.rest_url}upsellbay/v1/${endpoint}`,
             dataType: 'json',
             delay: 250,
             beforeSend(xhr) {
-              xhr.setRequestHeader('X-WP-Nonce', window.upsellbay_data.nonce);
+              xhr.setRequestHeader('X-WP-Nonce', window.upsellbay_pro_data.nonce);
             },
             data(params) {
               return {
@@ -1128,16 +1128,16 @@ window.jQuery(function ($) {
   }
 
   function getCurrencySettings() {
-    const priceDecimals = window.upsellbay_data && Object.prototype.hasOwnProperty.call(window.upsellbay_data, 'price_decimals')
-      ? window.upsellbay_data.price_decimals
+    const priceDecimals = window.upsellbay_pro_data && Object.prototype.hasOwnProperty.call(window.upsellbay_pro_data, 'price_decimals')
+      ? window.upsellbay_pro_data.price_decimals
       : 2;
 
     return {
-      symbol: (window.upsellbay_data && window.upsellbay_data.currency_symbol) || '$',
-      position: (window.upsellbay_data && window.upsellbay_data.currency_position) || 'left',
+      symbol: (window.upsellbay_pro_data && window.upsellbay_pro_data.currency_symbol) || '$',
+      position: (window.upsellbay_pro_data && window.upsellbay_pro_data.currency_position) || 'left',
       decimals: Number.isFinite(Number.parseInt(priceDecimals, 10)) ? Number.parseInt(priceDecimals, 10) : 2,
-      decimalSeparator: (window.upsellbay_data && window.upsellbay_data.decimal_separator) || '.',
-      thousandSeparator: (window.upsellbay_data && window.upsellbay_data.thousand_separator) || ',',
+      decimalSeparator: (window.upsellbay_pro_data && window.upsellbay_pro_data.decimal_separator) || '.',
+      thousandSeparator: (window.upsellbay_pro_data && window.upsellbay_pro_data.thousand_separator) || ',',
     };
   }
 
@@ -1278,12 +1278,12 @@ window.jQuery(function ($) {
       discountText = discountVal + '% ' + __('OFF', 'upsellbay');
       if (discountVal > 50) isHighRisk = true;
     } else if (discountType === 'fixed_amount') {
-      discountText = window.upsellbay_data && window.upsellbay_data.currency_symbol
-        ? window.upsellbay_data.currency_symbol + discountVal + ' ' + __('OFF', 'upsellbay')
+      discountText = window.upsellbay_pro_data && window.upsellbay_pro_data.currency_symbol
+        ? window.upsellbay_pro_data.currency_symbol + discountVal + ' ' + __('OFF', 'upsellbay')
         : discountVal + ' ' + __('OFF (Fixed)', 'upsellbay');
     } else if (discountType === 'fixed_price') {
-      discountText = window.upsellbay_data && window.upsellbay_data.currency_symbol
-        ? __('Fixed Price:', 'upsellbay') + ' ' + window.upsellbay_data.currency_symbol + discountVal
+      discountText = window.upsellbay_pro_data && window.upsellbay_pro_data.currency_symbol
+        ? __('Fixed Price:', 'upsellbay') + ' ' + window.upsellbay_pro_data.currency_symbol + discountVal
         : __('Fixed Price:', 'upsellbay') + ' ' + discountVal;
     }
 

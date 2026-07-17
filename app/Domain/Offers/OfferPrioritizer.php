@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Domain\Offers;
+namespace WPAnchorBay\UpsellBayPro\Domain\Offers;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,8 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
-use WPAnchorBay\UpsellBay\Core\Hooks;
-use WPAnchorBay\UpsellBay\Domain\Rules\RuleEvaluator;
+use WPAnchorBay\UpsellBayPro\Core\Hooks;
+use WPAnchorBay\UpsellBayPro\Domain\Rules\RuleEvaluator;
 
 /**
  * Selects eligible offers for a storefront placement.

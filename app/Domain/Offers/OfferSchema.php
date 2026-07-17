@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Domain\Offers;
+namespace WPAnchorBay\UpsellBayPro\Domain\Offers;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
-use WPAnchorBay\UpsellBay\Core\Hooks;
+use WPAnchorBay\UpsellBayPro\Core\Hooks;
 
 /**
  * Defines supported offer types, placements, and meta defaults.

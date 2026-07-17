@@ -7,16 +7,16 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Domain\Offers;
+namespace WPAnchorBay\UpsellBayPro\Domain\Offers;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use WPAnchorBay\UpsellBay\Core\Settings;
-use WPAnchorBay\UpsellBay\Data\CartSession;
-use WPAnchorBay\UpsellBay\Data\OfferRepository;
+use WPAnchorBay\UpsellBayPro\Core\Settings;
+use WPAnchorBay\UpsellBayPro\Data\CartSession;
+use WPAnchorBay\UpsellBayPro\Data\OfferRepository;
 
 /**
  * Produces merchant-facing visibility diagnostics for storefront offers.

@@ -12,16 +12,16 @@ if (!defined('ABSPATH')) {
 }
 
 
-use WPAnchorBay\UpsellBay\Core\Constants;
-use WPAnchorBay\UpsellBay\Core\Container;
-use WPAnchorBay\UpsellBay\Core\Installer;
-use WPAnchorBay\UpsellBay\Core\Platform;
-use WPAnchorBay\UpsellBay\Core\Scheduler;
-use WPAnchorBay\UpsellBay\Core\Settings;
-use WPAnchorBay\UpsellBay\Integrations\Licensing\LicenseClient;
-use WPAnchorBay\UpsellBay\Utils\Logger;
-use WPAnchorBay\UpsellBay\Utils\RateLimiter;
-use WPAnchorBay\UpsellBay\Utils\TokenHelper;
+use WPAnchorBay\UpsellBayPro\Core\Constants;
+use WPAnchorBay\UpsellBayPro\Core\Container;
+use WPAnchorBay\UpsellBayPro\Core\Installer;
+use WPAnchorBay\UpsellBayPro\Core\Platform;
+use WPAnchorBay\UpsellBayPro\Core\Scheduler;
+use WPAnchorBay\UpsellBayPro\Core\Settings;
+use WPAnchorBay\UpsellBayPro\Integrations\Licensing\LicenseClient;
+use WPAnchorBay\UpsellBayPro\Utils\Logger;
+use WPAnchorBay\UpsellBayPro\Utils\RateLimiter;
+use WPAnchorBay\UpsellBayPro\Utils\TokenHelper;
 
 /**
  * Returns test cases.
@@ -37,10 +37,10 @@ function upsellbay_foundation_tests(): array {
 			assert_same( 'upsellbay', Constants::TEXT_DOMAIN );
 			assert_same( 'upsellbay/v1', Constants::REST_NAMESPACE );
 			assert_same( 'upsellbay_offer', Constants::OFFER_POST_TYPE );
-			assert_same( 'upsellbay_offer_stats_daily', Constants::STATS_TABLE_SUFFIX );
+			assert_same( 'upsellbay_pro_offer_stats_daily', Constants::STATS_TABLE_SUFFIX );
 			assert_same( 'upsellbay_settings', Constants::SETTINGS_OPTION );
 			assert_same( '_ub_', Constants::META_PREFIX );
-			assert_same( 'upsellbay-', Constants::ASSET_HANDLE_PREFIX );
+			assert_same( 'upsellbay-pro-', Constants::ASSET_HANDLE_PREFIX );
 		},
 		'container resolves singleton factories once'    => static function (): void {
 			$container = new Container();
@@ -135,8 +135,8 @@ function upsellbay_foundation_tests(): array {
 			$scheduler->ensure_recurring_jobs();
 
 			assert_same( 4, count( $scheduled ) );
-			assert_true( isset( $scheduled[ Constants::ACTION_SCHEDULER_GROUP . ':upsellbay_refresh_analytics' ] ) );
-			assert_true( isset( $scheduled[ Constants::ACTION_SCHEDULER_GROUP . ':upsellbay_prune_logs' ] ) );
+			assert_true( isset( $scheduled[ Constants::ACTION_SCHEDULER_GROUP . ':' . Constants::hook_name( 'refresh_analytics' ) ] ) );
+			assert_true( isset( $scheduled[ Constants::ACTION_SCHEDULER_GROUP . ':' . Constants::hook_name( 'prune_logs' ) ] ) );
 
 			$scheduler->unschedule_all();
 			assert_same( 0, count( $scheduled ) );
@@ -191,7 +191,7 @@ function upsellbay_foundation_tests(): array {
 			},
 			'license activation rejects invalid server responses without storing active state' => static function (): void {
 				$stored                                                    = array();
-				$GLOBALS['upsellbay_test_transients']['upsellbay_license_valid'] = true;
+				$GLOBALS['upsellbay_test_transients']['upsellbay_pro_license_valid'] = true;
 				$client = new LicenseClient(
 					static fn (): array => $stored,
 					static function ( array $state ) use ( &$stored ): bool {
@@ -217,7 +217,7 @@ function upsellbay_foundation_tests(): array {
 
 				assert_true( is_wp_error( $result ) );
 				assert_same( array(), $stored );
-				assert_false( isset( $GLOBALS['upsellbay_test_transients']['upsellbay_license_valid'] ) );
+				assert_false( isset( $GLOBALS['upsellbay_test_transients']['upsellbay_pro_license_valid'] ) );
 			},
 		'license activation requires a valid server license field before storing active state' => static function (): void {
 			$stored = array();
@@ -371,7 +371,7 @@ function upsellbay_foundation_tests(): array {
 
 			assert_true( true === $result );
 			assert_same( 'WPAB-VALIDKEY-123456789012', $request_body['license_key'] );
-			assert_same( 'upsellbay', $request_body['slug'] );
+			assert_same( 'upsellbay-pro', $request_body['slug'] );
 			assert_same( 'store.test', $request_body['domain'] );
 			assert_same( 'active', $stored['status'] );
 			assert_same( 'WPAB-VALIDKEY-123456789012', $stored['key'] );

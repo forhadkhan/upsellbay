@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Data;
+namespace WPAnchorBay\UpsellBayPro\Data;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -16,9 +16,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 
 use RuntimeException;
-use WPAnchorBay\UpsellBay\Core\Constants;
-use WPAnchorBay\UpsellBay\Core\Hooks;
-use WPAnchorBay\UpsellBay\Domain\Offers\OfferValidator;
+use WPAnchorBay\UpsellBayPro\Core\Constants;
+use WPAnchorBay\UpsellBayPro\Core\Hooks;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferValidator;
 
 /**
  * Encapsulates private offer CPT and `_ub_` offer meta access.

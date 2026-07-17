@@ -17,9 +17,9 @@ $root = dirname( __DIR__ );
 require_once $root . '/tests/bootstrap.php';
 require_once $root . '/tests/test-core-business-logic.php';
 
-use WPAnchorBay\UpsellBay\Domain\Offers\OfferPrioritizer;
-use WPAnchorBay\UpsellBay\Domain\Rules\RuleEvaluator;
-use WPAnchorBay\UpsellBay\Domain\Rules\RuleParser;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferPrioritizer;
+use WPAnchorBay\UpsellBayPro\Domain\Rules\RuleEvaluator;
+use WPAnchorBay\UpsellBayPro\Domain\Rules\RuleParser;
 
 $offers = array();
 for ( $i = 1; $i <= 50; ++$i ) {

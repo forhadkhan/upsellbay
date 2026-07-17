@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Domain\Offers;
+namespace WPAnchorBay\UpsellBayPro\Domain\Offers;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
-use WPAnchorBay\UpsellBay\Data\OfferRepository;
+use WPAnchorBay\UpsellBayPro\Data\OfferRepository;
 
 /**
  * Detects conflicts between offers based on placement crowding and funnel overlap.

@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Core;
+namespace WPAnchorBay\UpsellBayPro\Core;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
-use WPAnchorBay\UpsellBay\Integrations\Licensing\LicenseClient;
+use WPAnchorBay\UpsellBayPro\Integrations\Licensing\LicenseClient;
 use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 
 /**

@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Domain\Storefront;
+namespace WPAnchorBay\UpsellBayPro\Domain\Storefront;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,9 +15,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
-use WPAnchorBay\UpsellBay\Core\Hooks;
-use WPAnchorBay\UpsellBay\Domain\Analytics\AnalyticsRecorder;
-use WPAnchorBay\UpsellBay\Domain\Offers\OfferPrioritizer;
+use WPAnchorBay\UpsellBayPro\Core\Hooks;
+use WPAnchorBay\UpsellBayPro\Domain\Analytics\AnalyticsRecorder;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferPrioritizer;
 
 /**
  * Coordinates placement eligibility and delegates markup to renderers.

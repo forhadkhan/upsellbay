@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Integrations\WooCommerce;
+namespace WPAnchorBay\UpsellBayPro\Integrations\WooCommerce;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,13 +15,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
-use WPAnchorBay\UpsellBay\Core\Constants;
-use WPAnchorBay\UpsellBay\Core\Settings;
-use WPAnchorBay\UpsellBay\Data\CartSession;
-use WPAnchorBay\UpsellBay\Data\OfferRepository;
-use WPAnchorBay\UpsellBay\Domain\Analytics\AnalyticsRecorder;
-use WPAnchorBay\UpsellBay\Domain\Discounts\DiscountCalculator;
-use WPAnchorBay\UpsellBay\Domain\Offers\OfferPrioritizer;
+use WPAnchorBay\UpsellBayPro\Core\Constants;
+use WPAnchorBay\UpsellBayPro\Core\Settings;
+use WPAnchorBay\UpsellBayPro\Data\CartSession;
+use WPAnchorBay\UpsellBayPro\Data\OfferRepository;
+use WPAnchorBay\UpsellBayPro\Domain\Analytics\AnalyticsRecorder;
+use WPAnchorBay\UpsellBayPro\Domain\Discounts\DiscountCalculator;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferPrioritizer;
 use Automattic\WooCommerce\StoreApi\Schemas\V1\CartSchema;
 use Automattic\WooCommerce\StoreApi\Schemas\V1\CheckoutSchema;
 
@@ -121,7 +121,7 @@ final class StoreApiExtender {
 		woocommerce_store_api_register_endpoint_data(
 			array(
 				'endpoint'        => CartSchema::IDENTIFIER,
-				'namespace'       => 'upsellbay',
+				'namespace'       => Constants::ADMIN_MENU_SLUG,
 				'data_callback'   => array( $this, 'get_cart_offers_data' ),
 				'schema_callback' => array( $this, 'get_offers_schema' ),
 				'schema_type'     => ARRAY_A,
@@ -132,7 +132,7 @@ final class StoreApiExtender {
 		woocommerce_store_api_register_endpoint_data(
 			array(
 				'endpoint'        => CheckoutSchema::IDENTIFIER,
-				'namespace'       => 'upsellbay',
+				'namespace'       => Constants::ADMIN_MENU_SLUG,
 				'data_callback'   => array( $this, 'get_checkout_offers_data' ),
 				'schema_callback' => array( $this, 'get_offers_schema' ),
 				'schema_type'     => ARRAY_A,

@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Domain\Storefront;
+namespace WPAnchorBay\UpsellBayPro\Domain\Storefront;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -71,7 +71,7 @@ final class CartCrossSellRenderer extends AbstractOfferRenderer {
 		if ( ! $heading_rendered ) {
 			$heading_text = (string) ( $meta['_ub_section_heading'] ?? '' );
 			if ( '' === $heading_text ) {
-				$heading_text = \WPAnchorBay\UpsellBay\Core\Hooks::filter( 'upsellbay_cart_crosssell_heading', __( 'Recommended for you', 'upsellbay' ) );
+				$heading_text = \WPAnchorBay\UpsellBayPro\Core\Hooks::filter( 'upsellbay_cart_crosssell_heading', __( 'Recommended for you', 'upsellbay' ) );
 			}
 			if ( '' !== $heading_text ) {
 				$html .= '<h3 class="upsellbay-offer-section__heading">' . $this->esc_html( $heading_text ) . '</h3>';
@@ -99,6 +99,6 @@ final class CartCrossSellRenderer extends AbstractOfferRenderer {
 			. '</div>'
 			. '</div>';
 
-		return \WPAnchorBay\UpsellBay\Core\Hooks::filter( 'render_offer_html', $html, $offer, 'cart_crosssell', $context );
+		return \WPAnchorBay\UpsellBayPro\Core\Hooks::filter( 'render_offer_html', $html, $offer, 'cart_crosssell', $context );
 	}
 }

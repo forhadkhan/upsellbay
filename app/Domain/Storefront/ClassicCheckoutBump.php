@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Domain\Storefront;
+namespace WPAnchorBay\UpsellBayPro\Domain\Storefront;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -84,6 +84,6 @@ final class ClassicCheckoutBump extends AbstractOfferRenderer {
 			. '</div>'
 			. '</div>';
 
-		return \WPAnchorBay\UpsellBay\Core\Hooks::filter( 'render_offer_html', $html, $offer, 'checkout_bump', $context );
+		return \WPAnchorBay\UpsellBayPro\Core\Hooks::filter( 'render_offer_html', $html, $offer, 'checkout_bump', $context );
 	}
 }

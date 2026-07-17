@@ -15,10 +15,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
-use WPAnchorBay\UpsellBay\Core\Constants;
-use WPAnchorBay\UpsellBay\Core\Installer;
-use WPAnchorBay\UpsellBay\Core\Scheduler;
-use WPAnchorBay\UpsellBay\Core\Settings;
+use WPAnchorBay\UpsellBayPro\Core\Constants;
+use WPAnchorBay\UpsellBayPro\Core\Installer;
+use WPAnchorBay\UpsellBayPro\Core\Scheduler;
+use WPAnchorBay\UpsellBayPro\Core\Settings;
 
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	exit;

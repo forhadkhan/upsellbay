@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Api\Routes;
+namespace WPAnchorBay\UpsellBayPro\Api\Routes;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,12 +15,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
-use WPAnchorBay\UpsellBay\Core\Constants;
-use WPAnchorBay\UpsellBay\Core\Hooks;
-use WPAnchorBay\UpsellBay\Data\CartSession;
-use WPAnchorBay\UpsellBay\Domain\Analytics\AnalyticsService;
-use WPAnchorBay\UpsellBay\Domain\Cart\CartMutator;
-use WPAnchorBay\UpsellBay\Utils\TokenHelper;
+use WPAnchorBay\UpsellBayPro\Core\Constants;
+use WPAnchorBay\UpsellBayPro\Core\Hooks;
+use WPAnchorBay\UpsellBayPro\Data\CartSession;
+use WPAnchorBay\UpsellBayPro\Domain\Analytics\AnalyticsService;
+use WPAnchorBay\UpsellBayPro\Domain\Cart\CartMutator;
+use WPAnchorBay\UpsellBayPro\Utils\TokenHelper;
 
 /**
  * Shopper-safe public REST route handlers.

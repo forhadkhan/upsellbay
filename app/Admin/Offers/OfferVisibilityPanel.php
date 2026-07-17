@@ -7,14 +7,14 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Admin\Offers;
+namespace WPAnchorBay\UpsellBayPro\Admin\Offers;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use WPAnchorBay\UpsellBay\Domain\Offers\OfferVisibilityInspector;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferVisibilityInspector;
 
 /**
  * Renders merchant-facing offer visibility diagnostics.

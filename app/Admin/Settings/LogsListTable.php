@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Admin\Settings;
+namespace WPAnchorBay\UpsellBayPro\Admin\Settings;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 
 use WP_List_Table;
-use WPAnchorBay\UpsellBay\Data\LogRepository;
+use WPAnchorBay\UpsellBayPro\Data\LogRepository;
 
 if ( ! class_exists( 'WP_List_Table' ) ) {
 	require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
@@ -296,7 +296,7 @@ final class LogsListTable extends WP_List_Table {
 		$report  = "UpsellBay Log Report\n\n";
 		$report .= 'Log ID: ' . $log->id . "\n";
 		$report .= 'Date: ' . $log->created_at . "\n";
-		$report .= 'Plugin Version: ' . \WPAnchorBay\UpsellBay\Core\Constants::VERSION . "\n";
+		$report .= 'Plugin Version: ' . \WPAnchorBay\UpsellBayPro\Core\Constants::VERSION . "\n";
 		$report .= "Event:\nType: " . $log->log_type . "\nStatus: " . $log->status . "\n";
 		$report .= 'Title: ' . $log->title . "\n\n";
 

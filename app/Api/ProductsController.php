@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Api;
+namespace WPAnchorBay\UpsellBayPro\Api;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WP_REST_Request;
 use WP_REST_Response;
-use WPAnchorBay\UpsellBay\Domain\Offers\ProductRecommendationAssistant;
+use WPAnchorBay\UpsellBayPro\Domain\Offers\ProductRecommendationAssistant;
 
 /**
  * Handles product and category searching for the admin UI.

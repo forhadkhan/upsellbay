@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Integrations\Licensing;
+namespace WPAnchorBay\UpsellBayPro\Integrations\Licensing;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,8 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
-use WPAnchorBay\UpsellBay\Core\Constants;
-use WPAnchorBay\UpsellBay\Core\Hooks;
+use WPAnchorBay\UpsellBayPro\Core\Constants;
+use WPAnchorBay\UpsellBayPro\Core\Hooks;
 use WP_Error;
 
 /**
@@ -76,7 +76,7 @@ final class LicenseClient {
 	 *
 	 * @since 1.0.0
 	 */
-	private const TRANSIENT_KEY = 'upsellbay_license_valid';
+	private const TRANSIENT_KEY = 'upsellbay_pro_license_valid';
 
 	/**
 	 * Constructor.
@@ -777,7 +777,7 @@ final class LicenseClient {
 		 * @param bool   $bypass Whether to bypass the server.
 		 * @param string $domain Current site domain.
 		 */
-		return apply_filters( 'upsellbay_license_dev_domain_bypass', false, $this->get_domain() ); // phpcs:ignore Squiz.PHP.DisallowBooleanArgumentFound.Found
+		return apply_filters( 'upsellbay_pro_license_dev_domain_bypass', false, $this->get_domain() ); // phpcs:ignore Squiz.PHP.DisallowBooleanArgumentFound.Found
 	}
 
 	/**

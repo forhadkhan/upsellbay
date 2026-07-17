@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Domain\Rules;
+namespace WPAnchorBay\UpsellBayPro\Domain\Rules;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {

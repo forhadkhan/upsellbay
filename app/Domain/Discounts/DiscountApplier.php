@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace WPAnchorBay\UpsellBay\Domain\Discounts;
+namespace WPAnchorBay\UpsellBayPro\Domain\Discounts;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {

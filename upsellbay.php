@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: UpsellBay
+ * Plugin Name: UpsellBay Pro
  * Plugin URI: https://wpanchorbay.com/upsellbay/
  * Description: WooCommerce-native order bumps and AOV offers for product, cart, checkout, and thank-you journeys.
  * Version: 1.0.0
@@ -10,7 +10,7 @@
  * Author URI: https://wpanchorbay.com/
  * Text Domain: upsellbay
  * Domain Path: /languages
- * Requires Plugins: woocommerce
+ * Requires Plugins: woocommerce, upsellbay-order-bump-for-woocommerce
  * License: GPLv2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  *
@@ -19,10 +19,10 @@
 
 declare(strict_types=1);
 
-use WPAnchorBay\UpsellBay\Core\Constants;
-use WPAnchorBay\UpsellBay\Core\Installer;
-use WPAnchorBay\UpsellBay\Core\Platform;
-use WPAnchorBay\UpsellBay\Core\Plugin;
+use WPAnchorBay\UpsellBayPro\Core\Constants;
+use WPAnchorBay\UpsellBayPro\Core\Installer;
+use WPAnchorBay\UpsellBayPro\Core\Platform;
+use WPAnchorBay\UpsellBayPro\Core\Plugin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -93,6 +93,31 @@ add_action(
 			load_plugin_textdomain( 'upsellbay', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 		}
 
+		if ( ! defined( 'UPSELLBAY_VERSION' ) || version_compare( UPSELLBAY_VERSION, Constants::MIN_HOST_VERSION, '<' ) ) {
+			add_action(
+				'admin_notices',
+				static function (): void {
+					if ( ! function_exists( 'esc_html' ) ) {
+						return;
+					}
+
+					printf(
+						'<div class="notice notice-error upsellbay-pro-notice"><p>%s</p></div>',
+						esc_html(
+							sprintf(
+								/* translators: %s: minimum required UpsellBay version. */
+								__( 'UpsellBay Pro requires UpsellBay (Order Bump for WooCommerce) version %s or newer to be installed and active.', 'upsellbay' ),
+								Constants::MIN_HOST_VERSION
+							)
+						)
+					);
+				}
+			);
+
+			return;
+		}
+
 		Plugin::instance()->init();
-	}
+	},
+	20
 );
