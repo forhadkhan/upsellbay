@@ -71,9 +71,13 @@ schema-only in free; Pro supplies their renderers (see coupling doc).
 
 **Single-product constraint (foundational, and directly relevant to any future
 multi-product/bundle feature)**: `_ub_offer_product_id` is a single scalar integer
-everywhere — in the schema default, the validator (`OfferValidator.php:261-291`, which
-requires the product to be `simple` or `variation` type only, explicitly rejecting
-grouped/variable-parent products for `checkout_bump`/`thankyou_offer`), the cart mutator
+everywhere — in the schema default, the validator (`OfferValidator.php`, which requires
+the product to be `simple` or `variation` type only, explicitly rejecting
+grouped/composite/bundle/variable-parent products — as of 2026-07-18 this guard applies
+to all four placements, not just `checkout_bump`/`thankyou_offer` as it originally did;
+`product_upsell`/`cart_crosssell` previously had no such guard, which was a latent
+correctness bug fixed alongside a related third-party-bundle-interop investigation — see
+`.meta/reviews/bundle-feature-and-release-readiness-2026-07-17.md`), the cart mutator
 (`CartMutator::accept()`, quantity hardcoded to `1`), and every renderer. There is no
 array-of-products, no per-item quantity, and no cross-product bundle price anywhere in
 this schema.
