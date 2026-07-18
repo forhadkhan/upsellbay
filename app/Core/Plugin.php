@@ -70,6 +70,7 @@ use WPAnchorBay\UpsellBayPro\Integrations\WooCommerce\StoreApiExtender;
 use WPAnchorBay\UpsellBayPro\Integrations\Licensing\LicenseClient;
 use WPAnchorBay\UpsellBayPro\Integrations\OffersListColumnsIntegration;
 use WPAnchorBay\UpsellBayPro\Integrations\OfferEditDiagnosticsIntegration;
+use WPAnchorBay\UpsellBayPro\Integrations\OfferTypesIntegration;
 use WPAnchorBay\UpsellBayPro\Utils\ImportExporter;
 use WPAnchorBay\UpsellBayPro\Utils\RateLimiter;
 use WPAnchorBay\UpsellBayPro\Utils\TokenHelper;
@@ -198,6 +199,7 @@ final class Plugin {
 		$this->container->set( StatsRepository::class, static fn (): StatsRepository => new StatsRepository() );
 		$this->container->set( OffersListColumnsIntegration::class, static fn ( Container $container ): OffersListColumnsIntegration => new OffersListColumnsIntegration( $container->get( OfferRepository::class ), $container->get( OfferConflictDetector::class ), $container->get( StatsRepository::class ) ) );
 		$this->container->set( OfferEditDiagnosticsIntegration::class, static fn ( Container $container ): OfferEditDiagnosticsIntegration => new OfferEditDiagnosticsIntegration( $container->get( OfferConflictDetector::class ), $container->get( OfferVisibilityPanel::class ) ) );
+		$this->container->set( OfferTypesIntegration::class, static fn (): OfferTypesIntegration => new OfferTypesIntegration() );
 		$this->container->set( CartSession::class, static fn ( Container $container ): CartSession => new CartSession( null, null, $container->get( TokenHelper::class ) ) );
 		$this->container->set( CartValidator::class, static fn ( Container $container ): CartValidator => new CartValidator( $container->get( RuleEvaluator::class ), $container->get( DiscountCalculator::class ) ) );
 		$this->container->set( CartMutator::class, static fn ( Container $container ): CartMutator => new CartMutator( $container->get( CartSession::class ), $container->get( CartValidator::class ), $container->get( DiscountCalculator::class ) ) );
@@ -314,6 +316,7 @@ final class Plugin {
 		$this->container->get( ToolsPage::class )->register_hooks();
 		$this->container->get( OffersListColumnsIntegration::class )->register_hooks();
 		$this->container->get( OfferEditDiagnosticsIntegration::class )->register_hooks();
+		$this->container->get( OfferTypesIntegration::class )->register_hooks();
 		$this->container->get( DashboardPage::class )->register_hooks();
 		$this->container->get( PluginActionLinks::class )->register_hooks();
 		$this->container->get( StoreApiExtender::class )->register_hooks();
