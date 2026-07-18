@@ -85,6 +85,12 @@ final class OfferValidator {
 	 * @param array<string, mixed> $meta Raw meta.
 	 */
 	public function validate( array $meta ): ValidationResult {
+		// Check the raw discount value before normalize() clamps it to zero —
+		// otherwise a negative input always normalizes to a valid 0 first and
+		// this check can never fire, silently turning a merchant's mistake
+		// into "no discount" instead of a validation error.
+		$raw_discount_negative = isset( $meta['_ub_discount_value'] ) && (float) $meta['_ub_discount_value'] < 0;
+
 		$normalized = $this->normalize( $meta );
 		$errors     = array();
 
@@ -102,7 +108,7 @@ final class OfferValidator {
 			$errors['_ub_discount_type'] = 'Invalid discount type.';
 		}
 
-		if ( (float) $normalized['_ub_discount_value'] < 0 ) {
+		if ( $raw_discount_negative ) {
 			$errors['_ub_discount_value'] = 'Discount value cannot be negative.';
 		}
 

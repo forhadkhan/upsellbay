@@ -146,6 +146,12 @@ function upsellbay_core_business_logic_tests(): array {
 			assert_same( '0.000000', $calculator->calculate( '5', array( '_ub_discount_type' => 'fixed_amount', '_ub_discount_value' => '99' ) )['offer_price'] );
 			assert_same( null, $calculator->calculate( '-1', array( '_ub_discount_type' => 'percent', '_ub_discount_value' => '10' ) ) );
 			assert_same( null, $calculator->calculate( '100', array( '_ub_discount_type' => 'client_price', '_ub_discount_value' => '1' ) ) );
+			// A percent discount over 100 must clamp to 100 (never a negative offer price),
+			// and a negative discount value must clamp to 0 (never a discount that inflates the price).
+			// OfferValidator rejects both at save time, but the calculator must stay safe on its own
+			// in case a bad value ever reaches it another way (direct DB edit, a future caller, etc.).
+			assert_same( '0.000000', $calculator->calculate( '100', array( '_ub_discount_type' => 'percent', '_ub_discount_value' => '150' ) )['offer_price'] );
+			assert_same( '100.000000', $calculator->calculate( '100', array( '_ub_discount_type' => 'fixed_amount', '_ub_discount_value' => '-10' ) )['offer_price'] );
 		},
 		'prioritizer filters status schedule dismissal placement rules and limits' => static function (): void {
 			$prioritizer = new OfferPrioritizer( new RuleEvaluator( new RuleParser() ), static fn ( int $product_id ): bool => 50 === $product_id, static fn (): int => 100 );
@@ -356,6 +362,75 @@ function upsellbay_core_business_logic_tests(): array {
 				assert_false( $result->is_valid() );
 				assert_true( isset( $result->errors()['_ub_offer_product_id_type'] ) );
 			}
+		},
+		'offer validator rejects out-of-range discount values at save time' => static function (): void {
+			$product_context = static fn ( int $product_id ): array => array(
+				'purchasable' => true,
+				'in_stock'    => true,
+				'visible'     => true,
+				'type'        => 'simple',
+			);
+			$validator       = new OfferValidator( new OfferSchema(), static fn (): bool => true, $product_context );
+
+			$meta                        = upsellbay_phase4_offer( 1, 'checkout_bump', 42, 1 )['meta'];
+			$meta['_ub_discount_type']   = 'percent';
+			$meta['_ub_discount_value']  = '150';
+			$over_max                    = $validator->validate( $meta );
+			assert_false( $over_max->is_valid() );
+			assert_true( isset( $over_max->errors()['_ub_discount_value_percent'] ) );
+
+			$meta['_ub_discount_type']   = 'fixed_amount';
+			$meta['_ub_discount_value']  = '-10';
+			$negative                    = $validator->validate( $meta );
+			assert_false( $negative->is_valid() );
+			assert_true( isset( $negative->errors()['_ub_discount_value'] ) );
+
+			$meta['_ub_discount_type']   = 'percent';
+			$meta['_ub_discount_value']  = '100';
+			$at_max                      = $validator->validate( $meta );
+			assert_true( ! isset( $at_max->errors()['_ub_discount_value_percent'] ) );
+		},
+		'prioritizer resolves which offer wins when several are eligible for one placement' => static function (): void {
+			$prioritizer = new OfferPrioritizer( new RuleEvaluator( new RuleParser() ), static fn (): bool => true, static fn (): int => 100 );
+
+			// A single eligible offer is always the winner.
+			$single = array( upsellbay_phase4_offer( 1, 'checkout_bump', 50, 10 ) );
+			assert_same( array( 1 ), array_column( $prioritizer->select( $single, 'checkout_bump', array(), 1 ), 'id' ) );
+
+			// Lower _ub_priority number wins, per the documented convention
+			// ("lower numbers render first" — admin field help text and
+			// docs/developer/offer-schema.md agree).
+			$by_priority = array(
+				upsellbay_phase4_offer( 1, 'checkout_bump', 50, 10 ),
+				upsellbay_phase4_offer( 2, 'checkout_bump', 50, 20 ),
+			);
+			assert_same( 1, $prioritizer->select( $by_priority, 'checkout_bump', array(), 1 )[0]['id'] );
+
+			// Equal priority ties break on ascending offer id.
+			$by_id_tiebreak = array(
+				upsellbay_phase4_offer( 1, 'checkout_bump', 50, 10 ),
+				upsellbay_phase4_offer( 2, 'checkout_bump', 50, 10 ),
+			);
+			assert_same( 1, $prioritizer->select( $by_id_tiebreak, 'checkout_bump', array(), 1 )[0]['id'] );
+
+			// Offers on different placements never compete with each other —
+			// each placement gets its own eligible offer independently.
+			$cart_offer     = upsellbay_phase4_offer( 1, 'cart_crosssell', 50, 10 );
+			$checkout_offer = upsellbay_phase4_offer( 2, 'checkout_bump', 50, 10 );
+			$mixed          = array( $cart_offer, $checkout_offer );
+			assert_same( 1, $prioritizer->select( $mixed, 'cart_crosssell', array(), 1 )[0]['id'] );
+			assert_same( 2, $prioritizer->select( $mixed, 'checkout_bump', array(), 1 )[0]['id'] );
+
+			// _ub_conflict_override has no effect on runtime selection — it
+			// only suppresses an admin-side save-time advisory warning in
+			// OfferConflictDetector. Confirm setting it doesn't change the
+			// priority-based outcome above (a lower-priority, non-overridden
+			// offer still loses to a higher-priority one regardless).
+			$overridden_but_lower_priority        = upsellbay_phase4_offer( 1, 'checkout_bump', 50, 20 );
+			$overridden_but_lower_priority['meta']['_ub_conflict_override'] = true;
+			$higher_priority_no_override          = upsellbay_phase4_offer( 2, 'checkout_bump', 50, 10 );
+			$override_has_no_runtime_effect       = array( $overridden_but_lower_priority, $higher_priority_no_override );
+			assert_same( 2, $prioritizer->select( $override_has_no_runtime_effect, 'checkout_bump', array(), 1 )[0]['id'] );
 		},
 		'placement renderers record views and keep placement logic separate' => static function (): void {
 			$GLOBALS['upsellbay_test_products'][50] = new UpsellBay_Test_Storefront_Product( 50, 'Warranty', '25.00', 12 );
