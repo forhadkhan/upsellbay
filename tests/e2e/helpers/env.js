@@ -15,6 +15,7 @@ function getEnv() {
 		checkoutUrl: process.env.UPSELLBAY_E2E_CHECKOUT_URL || `${baseUrl}/checkout/`,
 		blockCheckoutUrl: process.env.UPSELLBAY_E2E_BLOCK_CHECKOUT_URL || '',
 		thankyouUrl: process.env.UPSELLBAY_E2E_THANKYOU_URL || '',
+		wpPath: process.env.UPSELLBAY_E2E_WP_PATH || '',
 		ready: Boolean(baseUrl && process.env.UPSELLBAY_E2E_ADMIN_USER && process.env.UPSELLBAY_E2E_ADMIN_PASS),
 	};
 }

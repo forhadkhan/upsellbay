@@ -27,7 +27,7 @@ test.describe('accessibility smoke', () => {
 		test.skip(!env.productUrl, 'Set UPSELLBAY_E2E_PRODUCT_URL.');
 		await page.goto(env.productUrl);
 		await page.keyboard.press('Tab');
-		await expect(page.locator(':focus, body')).toBeVisible();
+		await expect(page.locator(':focus')).toBeVisible();
 		await expectNoSeriousAxeViolations(page);
 	});
 });
