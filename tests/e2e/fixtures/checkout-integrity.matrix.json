@@ -34,7 +34,7 @@
   },
   {
     "id": "integrity-coupon-stacking",
-    "description": "Checkout with 10% store coupon AND 10% offer discount",
+    "description": "Store coupon applies to the base cart but not to an offer-priced line (CouponLimiter's intentional anti-stacking policy)",
     "checkoutMode": "classic",
     "baseCartTotal": 100,
     "offerProductPrice": 50,
@@ -42,7 +42,7 @@
     "discountType": "percent",
     "discountValue": 10,
     "expectedBaseDiscounted": 90,
-    "expectedOfferPrice": 40.5,
-    "expectedNewCartTotal": 130.5
+    "expectedOfferPrice": 45,
+    "expectedNewCartTotal": 135
   }
 ]

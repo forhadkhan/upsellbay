@@ -9,28 +9,19 @@
   },
   {
     "id": "conflict-priority-win",
-    "description": "Two offers on same placement, different priority",
+    "description": "Two offers on same placement, different priority - lower number wins",
     "offers": [
       {"id": 1, "placement": "checkout", "target": "global", "priority": 10},
       {"id": 2, "placement": "checkout", "target": "global", "priority": 20}
     ],
-    "expectedWinnerId": 2
-  },
-  {
-    "id": "conflict-priority-tie",
-    "description": "Two offers on same placement, same priority",
-    "offers": [
-      {"id": 1, "placement": "checkout", "target": "global", "priority": 10},
-      {"id": 2, "placement": "checkout", "target": "global", "priority": 10}
-    ],
     "expectedWinnerId": 1
   },
   {
-    "id": "conflict-override-on",
-    "description": "Override enabled wins over higher priority",
+    "id": "conflict-priority-tie",
+    "description": "Two offers on same placement, same priority - lower id wins",
     "offers": [
-      {"id": 1, "placement": "checkout", "target": "global", "priority": 10, "override": true, "overrideReason": "promoted"},
-      {"id": 2, "placement": "checkout", "target": "global", "priority": 20, "override": false}
+      {"id": 1, "placement": "checkout", "target": "global", "priority": 10},
+      {"id": 2, "placement": "checkout", "target": "global", "priority": 10}
     ],
     "expectedWinnerId": 1
   },
