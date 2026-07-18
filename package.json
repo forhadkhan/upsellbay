@@ -9,7 +9,7 @@
 		"build": "wp-scripts build --config webpack.config.js",
 		"dev": "node scripts/dev.js",
 		"release": "node scripts/release.js",
-		"test:e2e": "playwright test",
+		"test:e2e": "playwright test --grep-invert \"real order completion\" && playwright test tests/e2e/order-completion.spec.js",
 		"test:e2e:headed": "playwright test --headed",
 		"test:e2e:report": "playwright show-report",
 		"test:e2e:trace": "playwright test --trace on",

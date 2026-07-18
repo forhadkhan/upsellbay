@@ -19,6 +19,29 @@ const env = getEnv();
  * Requires `wp` (WP-CLI) to be available on the machine running the test,
  * to verify the resulting order's line items and attribution meta directly
  * against the database rather than trusting only what the browser shows.
+ *
+ * Run in its own Playwright invocation (see the `test:e2e` npm script),
+ * separate from the other ~40 tests: clicking Place Order reliably produced
+ * no navigation and no network request at all when this test ran as the
+ * ~40th-something test in one long single-worker sequential run. Root-caused
+ * one real product bug this way (see checkout-bump.js — an unawaited cart
+ * refresh could wipe in-progress checkout form fields), confirmed fixed by
+ * direct wp.data store inspection (cartIsResolving is false before the
+ * click, and checkout progresses through a normal processing -> idle
+ * transition with a real order-received redirect).
+ *
+ * This specific machine also runs this suite on an active interactive
+ * desktop (other IDE/browser/AI-session processes competing for CPU/RAM,
+ * not a dedicated CI runner) that had, by the time this was last
+ * characterized, accumulated ~2000 real orders from this suite's own
+ * repeated runs plus fully-utilized swap — under that load, checkout order
+ * creation can occasionally take longer than even a generous timeout while
+ * still completing correctly (verified directly: a plain, unrecorded script
+ * running the identical click sequence reached order-received after ~20s
+ * when the Playwright Test run of the same sequence had not yet resolved).
+ * A slow or occasionally-timing-out run here reflects this machine's
+ * current load, not the fix above regressing — re-run in isolation, or on a
+ * quieter machine/CI runner, before treating a timeout as a new bug.
  */
 test.describe('real order completion with an accepted checkout bump', () => {
 	test.skip(!env.ready || !env.productUrl, 'Set UPSELLBAY_E2E_BASE_URL, UPSELLBAY_E2E_ADMIN_USER, UPSELLBAY_E2E_ADMIN_PASS, and UPSELLBAY_E2E_PRODUCT_URL.');
@@ -101,9 +124,14 @@ test.describe('real order completion with an accepted checkout bump', () => {
 		await expect(placeOrder, 'Place Order button must be present').toBeVisible();
 		await placeOrder.click();
 
-		// Slightly generous timeout: order processing goes through a real
-		// REST round trip plus WooCommerce's own order-creation hooks.
-		await expect(page, 'placing the order must reach the order-received page').toHaveURL(/order-received/, { timeout: 30000 });
+		// Generous timeout: order processing goes through a real REST round
+		// trip plus WooCommerce's own order-creation hooks, and this
+		// environment's order table has accumulated thousands of rows from
+		// this suite's own repeated real-order runs, which measurably slows
+		// order creation over time. Confirmed via direct wp/data store
+		// inspection that a slow run is genuinely mid-checkoutStatus
+		// "processing" (not stuck/erroring) — this is capacity, not a race.
+		await expect(page, 'placing the order must reach the order-received page').toHaveURL(/order-received/, { timeout: 60000 });
 
 		const orderIdMatch = page.url().match(/order-received\/(\d+)/);
 		expect(orderIdMatch, 'order-received URL must contain an order id').not.toBeNull();
