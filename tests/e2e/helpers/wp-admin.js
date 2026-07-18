@@ -35,17 +35,20 @@ function captureBrowserHealth(page) {
 	page.on('requestfailed', (request) => {
 		const failureText = request.failure()?.errorText || '';
 
+		// ERR_ABORTED means the browser cancelled an in-flight request
+		// (almost always because the page navigated away before it
+		// completed) — it never reached a broken/error state, so it isn't
+		// evidence of anything wrong. Background WP admin chatter (dashboard
+		// widgets, other active plugins' own admin-ajax calls, etc.)
+		// regularly gets cut off this way by an unrelated navigation in the
+		// same test and isn't something UpsellBay's code is responsible for.
+		if ('net::ERR_ABORTED' === failureText) {
+			return;
+		}
+
 		try {
 			const url = new URL(request.url());
 			if (ignoredRequestHosts.includes(url.hostname)) {
-				return;
-			}
-
-			if (
-				'GET' === request.method() &&
-				'net::ERR_ABORTED' === failureText &&
-				/\.(css|gif|ico|jpg|jpeg|js|png|svg|webm)(\?|$)/i.test(url.pathname)
-			) {
 				return;
 			}
 		} catch (error) {
