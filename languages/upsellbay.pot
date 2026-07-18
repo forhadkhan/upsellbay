@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-16T12:12:44+00:00\n"
+"POT-Creation-Date: 2026-07-18T08:47:37+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: upsellbay\n"
@@ -1245,7 +1245,7 @@ msgstr ""
 #: src/admin/offer-editor/index.js:600
 #: src/admin/offer-editor/index.js:605
 #: src/admin/offer-editor/index.js:610
-#: src/block-checkout/cart-cross-sells.js:133
+#: src/block-checkout/cart-cross-sells.js:153
 msgid "Recommended for you"
 msgstr ""
 
@@ -1596,7 +1596,7 @@ msgstr ""
 
 #: app/Domain/Storefront/AbstractOfferRenderer.php:235
 #: assets/frontend/block-checkout.js:1
-#: src/block-checkout/cart-cross-sells.js:117
+#: src/block-checkout/cart-cross-sells.js:129
 msgid "No thanks"
 msgstr ""
 
@@ -1615,7 +1615,7 @@ msgstr ""
 
 #: app/Domain/Storefront/ClassicCheckoutBump.php:61
 #: assets/frontend/block-checkout.js:1
-#: src/block-checkout/checkout-bump.js:74
+#: src/block-checkout/checkout-bump.js:91
 msgid "One-Time Offer"
 msgstr ""
 
@@ -1788,7 +1788,7 @@ msgid "Create draft offer"
 msgstr ""
 
 #. translators: %s: minimum required UpsellBay version.
-#: upsellbay.php:109
+#: upsellbay.php:111
 #, php-format
 msgid "UpsellBay Pro requires UpsellBay (Order Bump for WooCommerce) version %s or newer to be installed and active."
 msgstr ""
@@ -2008,13 +2008,13 @@ msgid "Updated price"
 msgstr ""
 
 #: assets/frontend/block-checkout.js:1
-#: src/block-checkout/cart-cross-sells.js:100
+#: src/block-checkout/cart-cross-sells.js:112
 msgid "Added to cart"
 msgstr ""
 
 #: assets/frontend/block-checkout.js:1
 #: assets/frontend/storefront.js:1
-#: src/block-checkout/cart-cross-sells.js:108
+#: src/block-checkout/cart-cross-sells.js:120
 #: src/storefront/index.js:101
 msgid "Adding..."
 msgstr ""
