@@ -15,10 +15,39 @@ at the bottom of this file.
 ## Release-Blocking Checklist
 
 - [x] Block Checkout support is either fully proven by E2E tests or not claimed in
-      product, marketplace, plugin, or docs copy. — Real run of
-      `tests/e2e/block-checkout.spec.js` against a live WooCommerce Block Checkout page,
-      7/7 passed, 2026-07-17 (commit `99698bd`). Evidence:
-      `tests/e2e/evidence/block-checkout-proof.json`, regenerate via
+      product, marketplace, plugin, or docs copy. — The 2026-07-17 "7/7 passed" claim
+      below was itself unreliable: `block-checkout.spec.js`'s assertions were wrapped in
+      `if (count() > 0) { assert }`, so the suite passed whether or not anything actually
+      rendered. Removing that pattern (2026-07-18) surfaced four real, previously-unnoticed
+      bugs, all now fixed and verified by direct observation (DOM queries, raw Store API
+      responses, a new order-completion E2E test that verifies the resulting order via
+      `wc_get_order()`), not inferred from an earlier step succeeding:
+      1. Store API namespace mismatch — offer data was registered under
+         `Constants::ADMIN_MENU_SLUG` but the frontend JS read `'upsellbay'`, so the
+         payload never reached the client.
+      2. `checkout_bump` was registered on the wrong Store API schema (`CheckoutSchema`)
+         entirely, so its data was never in the `cart` extensions the block reads.
+      3. A JS `DOMContentLoaded` race (footer-loaded, non-deferred script) and a PHP
+         `woocommerce_blocks_loaded` action-hook race (listener registered after the hook
+         had already fired) — either could silently no-op registration depending on load
+         order.
+      4. `checkout-bump.js`/`cart-cross-sells.js` refreshed the cart after an accept/add/
+         dismiss via `invalidateResolutionForStoreSelector('getCartData')` — an unawaited
+         background refetch. Its resolution could land while the shopper was still filling
+         in the checkout form, and Woo Blocks then re-synced the form's contact/address
+         fields from that response, silently wiping out what the shopper had typed
+         (reproduced standalone, not just under sequential-suite load) — the same
+         mechanism also caused the checkout_bump checkbox's visual checked state to not
+         update after a successful accept. Fixed by awaiting an explicit
+         `/wc/store/v1/cart` refetch and pushing it via `receiveCartContents()`, which
+         WooCommerce's own docs recommend over `invalidateResolutionForStoreSelector` and
+         which explicitly excludes customer address data from what it overwrites.
+      Current real run: `tests/e2e/block-checkout.spec.js`, 7/7 passed, 2026-07-18.
+      Full suite (all 9 spec files, including the new keystone
+      `order-completion.spec.js`): 41 passed / 0 failed / 5 skipped (skips are documented
+      preconditions this suite doesn't establish, e.g. a real dismissed-offer session or a
+      valid completed-order thank-you page — not silently-passing costume assertions).
+      Evidence: `tests/e2e/evidence/block-checkout-proof.json`, regenerate via
       `scripts/verify-block-checkout-proof.sh`.
 - [x] Checkout bump cart mutations produce correct order totals. — Code-verified 2026-07-18:
       the host's public REST routes (`/bump-toggle`, `/cart-offer-add`, `/dismiss` in
@@ -59,11 +88,15 @@ at the bottom of this file.
       untested, which is how this went unnoticed. Fixed to use
       `WC_Subscriptions_Product::is_subscription( $product )`, the extension's documented
       API for checking whether a *product* is a subscription type, and added a unit test
-      exercising the bailout (commit `ffaefd1`). **Still open**: WooCommerce Subscriptions
-      itself is not installed in this environment (paid extension), so the fix has not
-      been proven against a real subscription renewal — only unit-tested against a stub.
-      Needs either a WC Subscriptions license/install here, or explicit sign-off to ship
-      on the unit-tested fix alone and verify live post-launch.
+      exercising the bailout (commit `ffaefd1`). WooCommerce Subscriptions itself is not
+      installed in this environment (paid extension), so the fix has not been proven
+      against a real subscription renewal — only unit-tested against a stub. **Decision
+      (2026-07-18): ship on the unit-tested fix; verify live post-launch** — accepted
+      explicitly rather than blocking v1 on installing a paid extension in this
+      environment solely to prove a fix that is already correct per WooCommerce
+      Subscriptions' own documented API and covered by a real unit test in both plugins.
+      Verify against a real subscription renewal as the first post-launch QA action if any
+      subscription-capable customer activates.
 - [x] License server outage does not disable live offers. — **Checked, with the accurate
       reason recorded** (see finding below): license state does not gate offer rendering
       anywhere in the runtime path — `LicenseClient::can_show_live_offers()` has zero
@@ -116,6 +149,14 @@ at the bottom of this file.
 - [x] Documentation updates follow `.meta/architecture/documentation-standards.md`. —
       Maintained throughout this session (every code change in Part A got a paired doc
       update).
+- [x] Free host plugin's classic checkout_bump toggle actually loads and functions (not
+      just renders). — **Bug found and fixed 2026-07-18**: the enqueued script 404'd
+      silently (wrong filename); classic checkout bump was non-functional in the free
+      plugin for every merchant not on Block Checkout. See "Critical findings from today's
+      free-plugin JS build audit" below. Fixed; free plugin's `npm run build` now actually
+      compiles all four JS bundles (it silently produced nothing before, via a missing
+      `webpack.config.js`) so this is verifiable going forward, not just fixed once.
+      Verified: `classic-checkout.spec.js` passes against the built asset.
 
 ## Critical finding from today's license testing
 
@@ -129,6 +170,40 @@ is rejected ("License key does not match the provided slug"), `slug=upsellbay` a
 successfully. Every legitimately issued customer license key would have failed to
 activate on the built release. Fixed and verified end-to-end (activate/is_valid/background_check
 all succeed) in commit `62f5530`.
+
+## Critical findings from today's free-plugin JS build audit
+
+Rebuilding the free host plugin's JS to ship the Block Checkout cart-refresh fix (above)
+surfaced two pre-existing, unrelated defects in the **free plugin**, found only because
+the build was actually run rather than assumed working:
+
+1. **Classic checkout bump was completely non-functional.** `StorefrontController.php`'s
+   `enqueue_assets()` requested `assets/frontend/checkout-bump.js` /
+   `checkout-bump.asset.php` — files that do not exist and never have under that name. The
+   real handler for the classic checkout_bump toggle (listens for
+   `.upsellbay-offer__checkbox` change events, posts to `bump-toggle`) is built from
+   `src/classic-checkout/index.js` to `assets/frontend/classic-checkout.js`, which was not
+   referenced by any PHP enqueue call anywhere in the plugin. Net effect: every free-plugin
+   merchant on a classic (non-Block) checkout theme had a checkout_bump offer that
+   rendered but whose checkbox did nothing — the enqueued script 404'd silently (no fatal,
+   no visible error, just a missing script). Fixed by correcting the enqueue path to
+   `classic-checkout.js`/`classic-checkout.asset.php`.
+2. **`npm run build` silently produced nothing.** The free plugin has no `webpack.config.js`;
+   `wp-scripts build --webpack-src-dir=src` relies on default entry auto-discovery, which
+   does not find entries nested in subdirectories the way this plugin's `src/admin/index.js`,
+   `src/block-checkout/index.js`, `src/classic-checkout/index.js`, and
+   `src/storefront/index.js` are laid out — running the documented build command produced
+   "No entry file discovered in the 'src' directory" and compiled zero files. The
+   currently-committed `assets/` output must have been built by some undocumented,
+   unrepeatable means at an earlier point, then committed directly — meaning source and
+   built assets could silently drift with no build failure to catch it. Fixed by adding a
+   `webpack.config.js` (mirroring Pro's already-working pattern) with explicit entries for
+   all four bundles.
+
+Both are shipped-facing defects independent of anything else in this session's Block
+Checkout work — (1) is release-blocking on its own for any classic-checkout merchant on
+the free plugin, and (2) is a process risk that made every other frontend JS fix in this
+plugin unverifiable via the documented workflow until fixed.
 
 ## Honor-system licensing — confirmed intentional, not a defect
 
