@@ -11,6 +11,8 @@
  * Text Domain: upsellbay
  * Domain Path: /languages
  * Requires Plugins: woocommerce, upsellbay-order-bump-for-woocommerce
+ * WC requires at least: 10.8
+ * WC tested up to: 10.9
  * License: GPLv2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  *
