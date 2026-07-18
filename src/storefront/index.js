@@ -99,6 +99,36 @@ document.addEventListener('click', async (event) => {
 	const originalText = button.textContent;
 	if (isThankYou) {
 		button.textContent = __('Adding...', 'upsellbay');
+
+		// Try a true one-click post-purchase charge on the saved payment method
+		// first. The server returns should_fall_back when the gateway can't do an
+		// off-session charge or it's declined — only then do we drop through to
+		// the standard separate-checkout flow below.
+		const oneClick = await postOffer('one-click-accept', {
+			offer_id: Number(card.dataset.upsellbayOfferId || 0),
+			placement: 'thankyou_offer',
+			source_order_id: Number(card.dataset.upsellbaySourceOrderId || 0),
+			source_order_key: card.dataset.upsellbaySourceOrderKey || '',
+		}, card);
+
+		if (oneClick?.ok) {
+			card.classList.remove('is-loading');
+			button.removeAttribute('aria-busy');
+			button.disabled = true;
+			button.textContent = __('Added to your order', 'upsellbay');
+			showNotice(oneClick?.body?.message || __('Added to your order — no need to check out again.', 'upsellbay'), 'message');
+			return;
+		}
+
+		if (!oneClick?.body?.should_fall_back) {
+			card.classList.remove('is-loading');
+			button.removeAttribute('aria-busy');
+			button.disabled = false;
+			button.textContent = originalText;
+			showNotice(oneClick?.body?.message || __('Unable to complete this offer. Please try again.', 'upsellbay'));
+			return;
+		}
+		// should_fall_back: continue to the separate-checkout flow below.
 	}
 
 	const result = await postOffer('cart-offer-add', {

@@ -69,8 +69,11 @@ use WPAnchorBay\UpsellBayPro\Integrations\WooCommerce\CouponLimiter;
 use WPAnchorBay\UpsellBayPro\Integrations\WooCommerce\StoreApiExtender;
 use WPAnchorBay\UpsellBayPro\Integrations\Licensing\LicenseClient;
 use WPAnchorBay\UpsellBayPro\Integrations\OffersListColumnsIntegration;
+use WPAnchorBay\UpsellBayPro\Domain\OneClick\OneClickCharger;
+use WPAnchorBay\UpsellBayPro\Domain\OneClick\PaymentChargeAdapterRegistry;
 use WPAnchorBay\UpsellBayPro\Integrations\OfferEditDiagnosticsIntegration;
 use WPAnchorBay\UpsellBayPro\Integrations\OfferTypesIntegration;
+use WPAnchorBay\UpsellBayPro\Integrations\OneClick\StripeChargeAdapter;
 use WPAnchorBay\UpsellBayPro\Utils\ImportExporter;
 use WPAnchorBay\UpsellBayPro\Utils\RateLimiter;
 use WPAnchorBay\UpsellBayPro\Utils\TokenHelper;
@@ -224,6 +227,32 @@ final class Plugin {
 		$this->container->set( AttributionReader::class, static fn (): AttributionReader => new AttributionReader() );
 		$this->container->set( CompatibilityScanner::class, static fn (): CompatibilityScanner => new CompatibilityScanner() );
 		$this->container->set(
+			PaymentChargeAdapterRegistry::class,
+			static function (): PaymentChargeAdapterRegistry {
+				$registry = new PaymentChargeAdapterRegistry();
+				if ( class_exists( '\WC_Stripe_API' ) ) {
+					$registry->register( new StripeChargeAdapter() );
+				}
+				/**
+				 * Register additional one-click payment charge adapters.
+				 *
+				 * @since 1.1.0
+				 *
+				 * @param PaymentChargeAdapterRegistry $registry Adapter registry.
+				 */
+				Hooks::action( 'register_one_click_adapters', $registry );
+				return $registry;
+			}
+		);
+		$this->container->set(
+			OneClickCharger::class,
+			static fn ( Container $container ): OneClickCharger => new OneClickCharger(
+				$container->get( PaymentChargeAdapterRegistry::class ),
+				$container->get( DiscountCalculator::class ),
+				$container->get( AttributionWriter::class )
+			)
+		);
+		$this->container->set(
 			PublicOfferRoutes::class,
 			static fn ( Container $container ): PublicOfferRoutes => new PublicOfferRoutes(
 				static fn ( int $offer_id ): ?array => $container->get( OfferService::class )->get( $offer_id ),
@@ -232,7 +261,8 @@ final class Plugin {
 				static fn ( string $endpoint, string $client_key ): bool => $container->get( RateLimiter::class )->hit( $endpoint, $client_key ),
 				null,
 				$container->get( AnalyticsService::class ),
-				$container->get( TokenHelper::class )
+				$container->get( TokenHelper::class ),
+				$container->get( OneClickCharger::class )
 			)
 		);
 		$this->container->set( ProductsController::class, static fn ( Container $container ): ProductsController => new ProductsController( $container->get( ProductRecommendationAssistant::class ) ) );
@@ -341,9 +371,11 @@ final class Plugin {
 		add_action( Constants::hook_name( 'daily_stats_reconciled' ), array( $this, 'log_daily_stats_reconciled' ), 10, 3 );
 		add_action( Constants::hook_name( 'prune_logs' ), array( $this, 'prune_logs' ) );
 
-		// PublicOfferRoutes and OfferPreviewRoute are registered by the host plugin;
-		// they operate on the same shared CPT/REST namespace, so Pro does not re-register them.
+		// The shared PublicOfferRoutes/OfferPreviewRoute endpoints are registered by the
+		// host plugin; they operate on the same shared CPT/REST namespace, so Pro does not
+		// re-register them. Pro's *additional* routes attach via the host's route action.
 		add_action( 'upsellbay_rest_routes', array( $this->container->get( ProductsRoute::class ), 'register' ) );
+		add_action( 'upsellbay_rest_routes', array( $this->container->get( PublicOfferRoutes::class ), 'register_one_click_route' ) );
 		add_action( 'upsellbay_rest_routes', array( $this, 'register_license_routes' ) );
 		add_action( Constants::hook_name( 'check_license' ), array( $this, 'check_license' ) );
 		add_action( 'woocommerce_init', array( $this->container->get( CheckoutFields::class ), 'register' ) );

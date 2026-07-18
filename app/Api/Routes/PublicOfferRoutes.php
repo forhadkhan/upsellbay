@@ -20,6 +20,8 @@ use WPAnchorBay\UpsellBayPro\Core\Hooks;
 use WPAnchorBay\UpsellBayPro\Data\CartSession;
 use WPAnchorBay\UpsellBayPro\Domain\Analytics\AnalyticsService;
 use WPAnchorBay\UpsellBayPro\Domain\Cart\CartMutator;
+use WPAnchorBay\UpsellBayPro\Domain\OneClick\OneClickCharger;
+use WPAnchorBay\UpsellBayPro\Domain\OneClick\OneClickResult;
 use WPAnchorBay\UpsellBayPro\Utils\TokenHelper;
 
 /**
@@ -78,19 +80,27 @@ final class PublicOfferRoutes {
 	private TokenHelper $tokens;
 
 	/**
+	 * One-click post-purchase charger (Pro flagship). Null disables the endpoint.
+	 *
+	 * @var OneClickCharger|null
+	 */
+	private ?OneClickCharger $one_click;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param callable         $offer_loader  Offer loader.
-	 * @param CartMutator      $cart          Cart mutator.
-	 * @param CartSession      $session       Cart session.
-	 * @param callable         $rate_limit    Rate limiter.
-	 * @param callable|null    $date_provider Date callback.
-	 * @param AnalyticsService $analytics     Analytics service.
-	 * @param TokenHelper|null $tokens         Token helper.
+	 * @param callable             $offer_loader  Offer loader.
+	 * @param CartMutator          $cart          Cart mutator.
+	 * @param CartSession          $session       Cart session.
+	 * @param callable             $rate_limit    Rate limiter.
+	 * @param callable|null        $date_provider Date callback.
+	 * @param AnalyticsService     $analytics     Analytics service.
+	 * @param TokenHelper|null     $tokens         Token helper.
+	 * @param OneClickCharger|null $one_click     One-click charger.
 	 */
-	public function __construct( callable $offer_loader, CartMutator $cart, CartSession $session, callable $rate_limit, ?callable $date_provider, AnalyticsService $analytics, ?TokenHelper $tokens = null ) {
+	public function __construct( callable $offer_loader, CartMutator $cart, CartSession $session, callable $rate_limit, ?callable $date_provider, AnalyticsService $analytics, ?TokenHelper $tokens = null, ?OneClickCharger $one_click = null ) {
 		$this->offer_loader  = $offer_loader;
 		$this->cart          = $cart;
 		$this->session       = $session;
@@ -98,6 +108,7 @@ final class PublicOfferRoutes {
 		$this->date_provider = $date_provider ?? static fn (): string => gmdate( 'Y-m-d' );
 		$this->analytics     = $analytics;
 		$this->tokens        = $tokens ?? new TokenHelper();
+		$this->one_click     = $one_click;
 	}
 
 	/**
@@ -257,6 +268,64 @@ final class PublicOfferRoutes {
 	}
 
 	/**
+	 * Register the Pro one-click accept route on the host's `upsellbay_rest_routes` hook.
+	 *
+	 * The free host owns `register_routes()` for the shared endpoints; Pro attaches its
+	 * extra routes (like this one) via the host's route-registration action, mirroring how
+	 * ProductsRoute and the license routes register. No-op unless the one-click charger is
+	 * present.
+	 *
+	 * @since 1.1.0
+	 */
+	public function register_one_click_route(): void {
+		if ( null === $this->one_click || ! function_exists( 'register_rest_route' ) ) {
+			return;
+		}
+
+		register_rest_route(
+			Constants::REST_NAMESPACE,
+			'/one-click-accept',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( $this, 'one_click_accept' ),
+				'permission_callback' => '__return_true',
+				'args'                => array(
+					'offer_id'         => array(
+						'required'          => true,
+						'type'              => 'integer',
+						'minimum'           => 1,
+						'sanitize_callback' => 'absint',
+						'validate_callback' => static fn( $value ) => absint( $value ) > 0,
+					),
+					'placement'        => array(
+						'required'          => false,
+						'type'              => 'string',
+						'default'           => 'thankyou_offer',
+						'sanitize_callback' => 'sanitize_key',
+						'validate_callback' => static fn( $value ) => 'thankyou_offer' === sanitize_key( $value ),
+					),
+					'source_order_id'  => array(
+						'required'          => true,
+						'type'              => 'integer',
+						'minimum'           => 1,
+						'sanitize_callback' => 'absint',
+					),
+					'source_order_key' => array(
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'token'            => array(
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+				),
+			)
+		);
+	}
+
+	/**
 	 * Toggle a checkout bump.
 	 *
 	 * @since 1.0.0
@@ -360,6 +429,96 @@ final class PublicOfferRoutes {
 		}
 
 		return $this->response( true === ( $result['success'] ?? false ) ? 200 : 400, $result + array( 'notices' => array() ) );
+	}
+
+	/**
+	 * Accept a thank-you offer and charge the saved payment method in one click.
+	 *
+	 * Falls back (via the `should_fall_back` flag the client honours) to the standard
+	 * separate-checkout flow when the order's gateway can't be charged off-session or the
+	 * charge is declined — so this never strands a shopper.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param mixed $request Request.
+	 * @return array<string, mixed>|\WP_REST_Response
+	 */
+	public function one_click_accept( $request ) {
+		if ( null === $this->one_click ) {
+			return $this->response( 404, array( 'success' => false ) );
+		}
+
+		$params = $this->params( $request );
+		$guard  = $this->guard( 'one_click_accept', $params );
+		if ( null !== $guard ) {
+			return $guard;
+		}
+
+		$order_id = (int) ( $params['source_order_id'] ?? 0 );
+		$order    = ( $order_id > 0 && function_exists( 'wc_get_order' ) ) ? wc_get_order( $order_id ) : null;
+		if ( ! is_object( $order ) || ! $this->can_use_source_order( $order, (string) ( $params['source_order_key'] ?? '' ) ) ) {
+			return $this->response(
+				400,
+				array(
+					'success' => false,
+					'message' => __( 'This order could not be verified for the follow-on offer.', 'upsellbay' ),
+				)
+			);
+		}
+
+		$offer = ( $this->offer_loader )( (int) $params['offer_id'] );
+		if ( null === $offer ) {
+			return $this->response(
+				404,
+				array(
+					'success' => false,
+					'message' => __( 'Offer not found.', 'upsellbay' ),
+				)
+			);
+		}
+
+		$result = $this->one_click->charge( $order, $offer, 'thankyou_offer' );
+
+		if ( in_array( $result->status(), array( OneClickResult::STATUS_CHARGED, OneClickResult::STATUS_DUPLICATE ), true ) ) {
+			if ( OneClickResult::STATUS_CHARGED === $result->status() ) {
+				$this->analytics->record_event( 'accept', (int) $params['offer_id'], 'thankyou_offer', ( $this->date_provider )(), '0.000000', '0.000000' );
+				Hooks::action( 'offer_accepted', (int) $params['offer_id'], 'thankyou_offer', array( 'one_click_order_id' => $result->order_id() ) );
+			}
+
+			return $this->response(
+				200,
+				array(
+					'success'  => true,
+					'status'   => $result->status(),
+					'order_id' => $result->order_id(),
+					'message'  => __( 'Added to your order — no need to check out again.', 'upsellbay' ),
+				)
+			);
+		}
+
+		if ( OneClickResult::STATUS_REQUIRES_ACTION === $result->status() ) {
+			return $this->response(
+				200,
+				array(
+					'success'       => false,
+					'status'        => $result->status(),
+					'order_id'      => $result->order_id(),
+					'client_secret' => $result->client_secret(),
+					'message'       => __( 'This purchase needs extra verification.', 'upsellbay' ),
+				)
+			);
+		}
+
+		// unsupported / declined -> tell the client to fall back to separate checkout.
+		return $this->response(
+			200,
+			array(
+				'success'          => false,
+				'status'           => $result->status(),
+				'should_fall_back' => true,
+				'message'          => __( 'We couldn\'t complete a one-click purchase. Continue to checkout instead.', 'upsellbay' ),
+			)
+		);
 	}
 
 	/**
@@ -623,7 +782,7 @@ final class PublicOfferRoutes {
 	 * @param string               $token    Submitted token.
 	 */
 	private function validate_thankyou_action_token( string $endpoint, array $params, string $token ): bool {
-		if ( ! in_array( $endpoint, array( 'cart_offer_add', 'dismiss' ), true ) ) {
+		if ( ! in_array( $endpoint, array( 'cart_offer_add', 'dismiss', 'one_click_accept' ), true ) ) {
 			return false;
 		}
 
