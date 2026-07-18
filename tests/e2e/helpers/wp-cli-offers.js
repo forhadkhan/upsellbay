@@ -127,15 +127,25 @@ function restoreProductPrice(env, productId, price) {
 	`);
 }
 
-/** Creates a real WooCommerce coupon and returns its code. */
-function createCoupon(env, { type, amount }) {
+/**
+ * Creates a real WooCommerce coupon and returns its code.
+ *
+ * @param {object} spec `{ type, value }` — matches the discounts/checkout
+ *   fixtures' field naming (`value`, not `amount`). Also accepts `amount` as
+ *   a fallback. A missing amount is an error rather than a silent 0% coupon.
+ */
+function createCoupon(env, { type, value, amount }) {
+	const couponAmount = value ?? amount;
+	if (couponAmount === undefined || couponAmount === null || `${couponAmount}` === '') {
+		throw new Error('createCoupon requires a numeric value/amount.');
+	}
 	const code = `e2etest${Date.now()}${Math.floor(Math.random() * 1000)}`;
 	const discountType = type === 'percent' ? 'percent' : 'fixed_cart';
 	const php = `
 		$coupon = new WC_Coupon();
 		$coupon->set_code( ${JSON.stringify(code)} );
 		$coupon->set_discount_type( ${JSON.stringify(discountType)} );
-		$coupon->set_amount( ${JSON.stringify(String(amount))} );
+		$coupon->set_amount( ${JSON.stringify(String(couponAmount))} );
 		$coupon->save();
 		echo json_encode( array( 'id' => $coupon->get_id(), 'code' => $coupon->get_code() ) );
 	`;

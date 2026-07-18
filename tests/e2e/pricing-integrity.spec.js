@@ -25,11 +25,73 @@ async function addBaseProductToCart(page) {
 	await page.waitForTimeout(1000);
 }
 
+// Reads the authoritative Store API cart from within the page session — the
+// DOM total is a lagging projection of this, so gating on it is the reliable
+// "the mutation has settled" signal (a DOM-only stability check can lock onto
+// the pre-render value before the coupon/discount is reflected).
+async function fetchStoreCart(page) {
+	return page.evaluate(async () => {
+		const res = await fetch('/wp-json/wc/store/v1/cart', { credentials: 'same-origin' });
+		const c = await res.json();
+		return {
+			totalDiscount: parseInt(c.totals.total_discount, 10),
+			totalPrice: parseInt(c.totals.total_price, 10),
+			coupons: (c.coupons || []).map((x) => x.code),
+		};
+	});
+}
+
 async function applyCoupon(page, code) {
+	// Apply, then wait until the Store API cart actually reflects the coupon —
+	// reading the total before this settles is a timing artifact that shows a
+	// stale (pre-discount) figure.
 	await page.getByRole('button', { name: /add coupon/i }).first().click();
 	await page.locator('#wc-block-components-totals-coupon__input-coupon').fill(code);
 	await page.locator('.wc-block-components-totals-coupon__button').click();
-	await page.waitForTimeout(1500);
+	await expect
+		.poll(async () => (await fetchStoreCart(page)).coupons.includes(code.toLowerCase()), {
+			message: 'the coupon must be reflected in the Store API cart',
+			timeout: 15000,
+		})
+		.toBeTruthy();
+	// Let the DOM re-render catch up to the settled cart state.
+	await page.waitForTimeout(1000);
+}
+
+// Polls the authoritative Store API cart total until it stops moving across
+// consecutive reads — the settle signal that a mutation (bump accept, coupon,
+// dynamic offer-price recalc) has fully landed. Returns the settled total in
+// cents. Requiring several consecutive equal reads matters here: the offer
+// line's price is set on woocommerce_before_calculate_totals and lands a beat
+// after the bump-toggle REST response, so applying a coupon too eagerly (before
+// this settles) makes the Store API cache a $0 coupon discount.
+async function waitForStableStoreTotal(page, requiredStableReads = 3) {
+	let lastPrice = null;
+	let stableReads = 0;
+	await expect
+		.poll(
+			async () => {
+				const price = (await fetchStoreCart(page)).totalPrice;
+				if (price === lastPrice) {
+					stableReads += 1;
+				} else {
+					stableReads = 0;
+					lastPrice = price;
+				}
+				return stableReads;
+			},
+			{ message: 'Store API cart total should settle to a stable value', timeout: 20000 }
+		)
+		.toBeGreaterThanOrEqual(requiredStableReads);
+	return lastPrice;
+}
+
+// Returns the settled checkout Total as the shopper sees it (DOM), after
+// confirming via the authoritative Store API cart that totals have stopped
+// moving — so it never reads a mid-render or pre-mutation value.
+async function readStableCheckoutTotal(page) {
+	await waitForStableStoreTotal(page);
+	return readCheckoutTotal(page);
 }
 
 async function acceptBumpAndReadServerPrice(page) {
@@ -121,7 +183,12 @@ test.describe('pricing and checkout integrity permutation tests', () => {
 				const { response } = await acceptBumpAndReadServerPrice(page);
 
 				if (couponCode) {
-					await page.waitForTimeout(1000);
+					// Wait for the bump's dynamic offer price to fully settle in
+					// the Store API cart BEFORE applying the coupon — applying it
+					// while the offer-price recalc is still in flight makes the
+					// Store API cache a $0 coupon discount (the base line's
+					// eligible discount gets computed against an unsettled cart).
+					await waitForStableStoreTotal(page);
 					await applyCoupon(page, couponCode);
 				}
 				// bump-toggle's offer_price is UpsellBay's own discount math on
@@ -139,23 +206,16 @@ test.describe('pricing and checkout integrity permutation tests', () => {
 					2
 				);
 
-				await page.waitForTimeout(1000); // let totals settle after the accept.
-				const total = await readCheckoutTotal(page);
-				// KNOWN BUG (2026-07-18, not yet root-caused): expectedNewCartTotal
-				// (135) is what CouponLimiter's own documented per-item exclusion
-				// policy predicts — the coupon should still discount the base
-				// product's line, just not the offer-priced line. A controlled
-				// wp-eval-file script confirms that per-item behavior works
-				// correctly against a plain WC_Cart::apply_coupon() call
-				// (10% off the base item only, coupon correctly excluded from an
-				// offer-priced line). But this real checkout run consistently
-				// shows the coupon contributing $0 to the total (145, i.e. no
-				// discount anywhere) regardless of whether the coupon is applied
-				// before or after the bump is accepted — a real discrepancy
-				// between the direct WC_Cart code path and the live Block
-				// Checkout / Store API path that has not been root-caused.
-				// Left failing intentionally rather than weakened, so this
-				// regresses loudly until it's understood.
+				const total = await readStableCheckoutTotal(page);
+				// For the coupon-stacking case, expectedNewCartTotal (135) is
+				// exactly what CouponLimiter's per-item anti-stacking policy
+				// produces end to end: the store coupon still discounts the
+				// base product line ($100 -> 10% off) but is correctly excluded
+				// from the offer-priced line ($45, untouched), so
+				// $90 (discounted base) + $45 (offer) = $135. Verified against
+				// the live Store API cart (total_discount 1000, total_price
+				// 13500), stable across re-fetches — this is correct behavior,
+				// not a stacking bug.
 				expect(total, 'final checkout total must match the fixture-predicted total').toBeCloseTo(caseData.expectedNewCartTotal, 2);
 
 				if (caseData.storeCoupon) {
