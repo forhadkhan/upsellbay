@@ -49,7 +49,7 @@ at the bottom of this file.
       valid completed-order thank-you page — not silently-passing costume assertions).
       Evidence: `tests/e2e/evidence/block-checkout-proof.json`, regenerate via
       `scripts/verify-block-checkout-proof.sh`.
-- [~] Checkout bump cart mutations produce correct order totals. — Code-verified 2026-07-18:
+- [x] Checkout bump cart mutations produce correct order totals. — Code-verified 2026-07-18:
       the host's public REST routes (`/bump-toggle`, `/cart-offer-add`, `/dismiss` in
       `upsellbay-order-bump-for-woocommerce/app/Api/Routes/PublicOfferRoutes.php`) declare
       no price/discount/amount/total parameter in their `args` schema, and the callbacks
@@ -61,17 +61,21 @@ at the bottom of this file.
       no-op-guard problem found elsewhere: every case was
       `expect(caseData.someField).toBeDefined()`, never touching a real page. Rewritten
       2026-07-18 with real coverage (real offers via `wp eval-file`, real checkout pages,
-      server/displayed price comparisons) — 7 of 12 cases now pass for real, 4 are
+      server/displayed price comparisons) — 8 checkout/discount cases pass for real, 4 are
       `test.skip()`'d with a stated reason (redundant with unit tests or with another
-      passing case), and **one is left intentionally failing**: a real store coupon
-      should still discount the base cart line even when `CouponLimiter`'s deliberate
-      anti-stacking policy correctly excludes the offer-priced line, but the live checkout
-      run consistently shows the coupon contributing $0 anywhere once a checkout_bump is
-      in the cart — confirmed real and reproducible, not yet root-caused (a direct
-      `WC_Cart::apply_coupon()` script confirms the per-item exclusion works correctly in
-      isolation, so the discrepancy is specific to the live Block Checkout/Store API path).
-      **Remaining gap before this gate can be checked off**: root-cause and fix the
-      coupon-stacking discrepancy, or confirm it's benign and adjust the fixture.
+      passing case).
+      **Correction to an earlier same-day entry:** a coupon-stacking case was briefly
+      documented here as a "confirmed, not-yet-root-caused product bug" (store coupon
+      appearing to discount $0 on a cart that also had an accepted bump). Root-caused
+      2026-07-18 to a **test-harness bug, not product code**: the E2E `createCoupon()`
+      helper destructured `{ type, amount }` while the fixtures name the field `value`, so
+      `set_amount()` received `undefined` and WooCommerce stored a 0%-amount coupon, which
+      correctly discounts $0. With the helper fixed, the real behavior is verified correct
+      end to end against the live Store API cart: a 10% store coupon discounts the base
+      line ($100 → $90) and `CouponLimiter` correctly excludes the offer-priced line ($45,
+      untouched), total $135, stable across re-fetches. No product defect; the
+      anti-stacking policy works as designed on both the direct `WC_Cart` path and the
+      live Block Checkout / Store API path.
 - [~] HPOS compatibility tests pass. — **Partial.** HPOS-on is extensively verified: it
       was enabled throughout every test, E2E run, and manual verification in this session
       (composer test 86/86 as of 2026-07-18, full E2E across the two-stage `test:e2e` run
@@ -157,9 +161,15 @@ at the bottom of this file.
       note rather than reverted. The automated isolation scan still passes; re-verify it
       doesn't assert the now-corrected stale claims.
 - [x] Marketplace and docs copy avoid unsupported AOV lift, Block Checkout, or recovery
-      claims. — Maintained throughout this session's doc work (Block Checkout claim is now
-      backed by real evidence per above; no A/B-testing or other unbacked claims found in
-      an earlier pass). Not exhaustively re-audited today beyond what this session touched.
+      claims. — Block Checkout claim is backed by real evidence per above. Release-prep
+      audit 2026-07-18 found and fixed one real overclaim: the **free** plugin's readme
+      listed "A/B testing" as a Pro-upgrade feature, but Pro has no A/B testing code
+      anywhere (verified by grep across app/, src/, docs/ — the only matches were
+      `ExperimentalOrderMeta`, a WooCommerce Blocks API name). Removed it; every other
+      listed Pro feature (product/cart/thank-you offers, multi-bump, user-role/order-count/
+      lifetime-spend rules, revenue dashboard, offer import/export) is real and present.
+      Pro's own readme "AOV impact estimates" verified real (`aov_lift` = revenue per
+      attributed order, computed in `DashboardPage`).
 - [x] Documentation updates follow `.meta/architecture/documentation-standards.md`. —
       Maintained throughout this session (every code change in Part A got a paired doc
       update).
