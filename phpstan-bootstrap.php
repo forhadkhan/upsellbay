@@ -65,6 +65,57 @@ if (! class_exists('WC_Coupon')) {
 	class WC_Coupon {}
 }
 
+if (! class_exists('WC_Stripe_API')) {
+	class WC_Stripe_API {
+		/**
+		 * @param array<string, mixed> $request Request.
+		 * @param string               $api     API resource.
+		 * @param string               $method  HTTP method.
+		 * @return object
+		 */
+		public static function request($request, $api = 'charges', $method = 'POST') {
+			return (object) array();
+		}
+	}
+}
+
+if (! class_exists('WC_Stripe_Helper')) {
+	class WC_Stripe_Helper {
+		/**
+		 * @param float|int|string $total    Amount.
+		 * @param string           $currency Currency.
+		 * @return int
+		 */
+		public static function get_stripe_amount($total, $currency = '') {
+			return 0;
+		}
+	}
+}
+
+if (! class_exists('WC_Payment_Tokens')) {
+	class WC_Payment_Tokens {
+		/**
+		 * @param int    $customer_id Customer.
+		 * @param string $gateway     Gateway id.
+		 * @return array<int, object>
+		 */
+		public static function get_customer_tokens($customer_id, $gateway = '') {
+			return array();
+		}
+	}
+}
+
+if (! function_exists('get_user_option')) {
+	/**
+	 * @param string $option  Option.
+	 * @param int    $user_id User.
+	 * @return mixed
+	 */
+	function get_user_option($option, $user_id = 0) {
+		return false;
+	}
+}
+
 }
 
 namespace Automattic\WooCommerce\StoreApi\Schemas\V1 {
