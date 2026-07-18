@@ -157,6 +157,36 @@ final class Installer {
 		$logs_table_sql = esc_sql( $logs_table );
 		$logs_sql       = self::logs_table_schema_sql( $logs_table_sql, $charset );
 		dbDelta( $logs_sql );
+
+		$fbt_table     = $wpdb->prefix . Constants::FBT_TABLE_SUFFIX;
+		$fbt_table_sql = esc_sql( $fbt_table );
+		$fbt_sql       = self::fbt_table_schema_sql( $fbt_table_sql, $charset );
+		dbDelta( $fbt_sql );
+	}
+
+	/**
+	 * Build the frequently-bought-together index table schema.
+	 *
+	 * Precomputed product-pair recommendations (see Domain\Recommendations\FbtMiner).
+	 * Stores only aggregate product-to-product counts and a score — no customer or
+	 * order PII — and is fully re-derivable from order history.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param string $table_name_sql Escaped table name.
+	 * @param string $charset        Charset clause.
+	 */
+	public static function fbt_table_schema_sql( string $table_name_sql, string $charset ): string {
+		return "CREATE TABLE {$table_name_sql} (
+			anchor_product_id bigint(20) unsigned NOT NULL,
+			recommended_product_id bigint(20) unsigned NOT NULL,
+			co_occurrence_count bigint(20) unsigned NOT NULL DEFAULT 0,
+			anchor_order_count bigint(20) unsigned NOT NULL DEFAULT 0,
+			score decimal(20,6) NOT NULL DEFAULT 0,
+			updated_at datetime NOT NULL,
+			PRIMARY KEY  (anchor_product_id, recommended_product_id),
+			KEY anchor_score (anchor_product_id, score)
+		) {$charset};";
 	}
 
 	/**

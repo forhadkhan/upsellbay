@@ -32,6 +32,8 @@ use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferSchema;
 use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferService;
 use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferValidator;
 use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferVisibilityInspector;
+use WPAnchorBay\UpsellBayPro\Data\FbtRepository;
+use WPAnchorBay\UpsellBayPro\Domain\Recommendations\FbtMiner;
 use WPAnchorBay\UpsellBayPro\Domain\Rules\RuleEvaluator;
 use WPAnchorBay\UpsellBayPro\Domain\Rules\RuleDefinitions;
 use WPAnchorBay\UpsellBayPro\Domain\Rules\RuleParser;
@@ -389,6 +391,51 @@ function upsellbay_core_business_logic_tests(): array {
 			$meta['_ub_discount_value']  = '100';
 			$at_max                      = $validator->validate( $meta );
 			assert_true( ! isset( $at_max->errors()['_ub_discount_value_percent'] ) );
+		},
+		'fbt miner scores, floors, and ranks co-occurring products' => static function (): void {
+			// Synthetic order history: product 1 appears in 5 orders; 1+2 co-occur 3
+			// times (meets the min-support floor of 3), 1+3 only once (floored out).
+			$orders = array(
+				array( 1, 2 ),
+				array( 1, 2 ),
+				array( 1, 2 ),
+				array( 1, 3 ),
+				array( 1 ),
+			);
+
+			$written = array();
+			$repository = new FbtRepository(
+				null,
+				static function ( array $rows ) use ( &$written ): int {
+					$written = $rows;
+					return count( $rows );
+				}
+			);
+
+			$miner  = new FbtMiner( $repository, static fn (): iterable => $orders );
+			$result = $miner->rebuild( 365, 8 );
+
+			assert_same( 5, $result['orders_scanned'] );
+
+			// Only the 1->2 pair survives the min-support floor; 1->3 (co=1) is dropped.
+			$pairs = array_map(
+				static fn ( array $row ): string => $row['anchor_product_id'] . '->' . $row['recommended_product_id'],
+				$written
+			);
+			assert_true( in_array( '1->2', $pairs, true ) );
+			assert_false( in_array( '1->3', $pairs, true ) );
+
+			// confidence = 3/5 = 0.6; score = 0.6 * ln(1 + 3).
+			$row = null;
+			foreach ( $written as $candidate ) {
+				if ( 1 === $candidate['anchor_product_id'] && 2 === $candidate['recommended_product_id'] ) {
+					$row = $candidate;
+				}
+			}
+			assert_true( null !== $row );
+			assert_same( 3, $row['co_occurrence_count'] );
+			assert_same( 5, $row['anchor_order_count'] );
+			assert_same( round( 0.6 * log( 4 ), 4 ), round( $row['score'], 4 ) );
 		},
 		'prioritizer resolves which offer wins when several are eligible for one placement' => static function (): void {
 			$prioritizer = new OfferPrioritizer( new RuleEvaluator( new RuleParser() ), static fn (): bool => true, static fn (): int => 100 );

@@ -38,6 +38,7 @@ final class Constants {
 	public const OFFER_POST_TYPE                 = 'upsellbay_offer';
 	public const STATS_TABLE_SUFFIX              = 'upsellbay_pro_offer_stats_daily';
 	public const LOGS_TABLE_SUFFIX               = 'upsellbay_pro_logs';
+	public const FBT_TABLE_SUFFIX                = 'upsellbay_pro_fbt_index';
 	public const ACTION_SCHEDULER_GROUP          = 'upsellbay-pro';
 	public const ASSET_HANDLE_PREFIX             = 'upsellbay-pro-';
 	public const LICENSE_PRODUCT_SLUG            = 'upsellbay';
