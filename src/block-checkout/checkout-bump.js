@@ -4,12 +4,29 @@ import { useState } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
 
-const refreshBlockCart = () => {
-	if ( window.wp && window.wp.data && window.wp.data.dispatch ) {
+// invalidateResolutionForStoreSelector() queues an async, unawaited
+// background refetch of the whole cart. Its resolution can land while the
+// shopper is still filling in the checkout form, and Woo Blocks then
+// re-syncs the form's contact/address fields from that response, silently
+// wiping out whatever the shopper had already typed (confirmed by direct
+// observation: email, name, and address fields cleared mid-fill with no
+// visible cause). receiveCartContents() applies a fetched cart snapshot
+// synchronously and explicitly excludes customer address data from what it
+// overwrites, so the offer's price/cart-item state still refreshes without
+// touching in-progress form input.
+const refreshBlockCart = async () => {
+	if ( ! ( window.wp && window.wp.data && window.wp.data.dispatch ) ) {
+		return;
+	}
+
+	try {
+		const cartData = await apiFetch( { path: '/wc/store/v1/cart' } );
 		const cartDispatcher = window.wp.data.dispatch( 'wc/store/cart' );
-		if ( cartDispatcher && typeof cartDispatcher.invalidateResolutionForStoreSelector === 'function' ) {
-			cartDispatcher.invalidateResolutionForStoreSelector( 'getCartData' );
+		if ( cartDispatcher && typeof cartDispatcher.receiveCartContents === 'function' ) {
+			cartDispatcher.receiveCartContents( cartData );
 		}
+	} catch ( error ) {
+		// A failed background refresh shouldn't block the accept/remove flow.
 	}
 };
 
@@ -32,7 +49,7 @@ const CheckoutBumpOffer = ( { offer } ) => {
 				},
 			} );
 
-			refreshBlockCart();
+			await refreshBlockCart();
 		} catch ( error ) {
 			console.error( 'UpsellBay Toggle Error:', error );
 			// If it fails, revert the checkbox visually by letting the React state or block refresh handle it.

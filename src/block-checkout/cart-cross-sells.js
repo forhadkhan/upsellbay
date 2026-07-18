@@ -4,12 +4,24 @@ import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 
-const refreshBlockCart = () => {
-	if ( window.wp && window.wp.data && window.wp.data.dispatch ) {
+// See the matching comment in checkout-bump.js: invalidateResolutionForStoreSelector()
+// queues an unawaited background refetch that can land mid-checkout-form-fill
+// and wipe customer-entered contact/address fields. receiveCartContents()
+// applies the fetched cart synchronously without touching customer address
+// data.
+const refreshBlockCart = async () => {
+	if ( ! ( window.wp && window.wp.data && window.wp.data.dispatch ) ) {
+		return;
+	}
+
+	try {
+		const cartData = await apiFetch( { path: '/wc/store/v1/cart' } );
 		const cartDispatcher = window.wp.data.dispatch( 'wc/store/cart' );
-		if ( cartDispatcher && typeof cartDispatcher.invalidateResolutionForStoreSelector === 'function' ) {
-			cartDispatcher.invalidateResolutionForStoreSelector( 'getCartData' );
+		if ( cartDispatcher && typeof cartDispatcher.receiveCartContents === 'function' ) {
+			cartDispatcher.receiveCartContents( cartData );
 		}
+	} catch ( error ) {
+		// A failed background refresh shouldn't block the add/dismiss flow.
 	}
 };
 
@@ -32,7 +44,7 @@ const CartCrossSellOffer = ( { offer, onDismiss } ) => {
 				},
 			} );
 
-			refreshBlockCart();
+			await refreshBlockCart();
 		} catch ( error ) {
 			console.error( 'UpsellBay Add Error:', error );
 		} finally {
@@ -54,7 +66,7 @@ const CartCrossSellOffer = ( { offer, onDismiss } ) => {
 				},
 			} );
 
-			refreshBlockCart();
+			await refreshBlockCart();
 			onDismiss( offer.id );
 		} catch ( error ) {
 			console.error( 'UpsellBay Dismiss Error:', error );
