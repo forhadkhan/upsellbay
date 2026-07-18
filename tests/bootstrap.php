@@ -219,6 +219,43 @@ if ( ! function_exists( 'wc_get_order' ) ) {
 	}
 }
 
+if ( ! class_exists( 'WC_Order' ) ) {
+	/**
+	 * Minimal WC_Order stub for domain tests that only need order identity and the
+	 * payment method (e.g. one-click capability/idempotency guards).
+	 */
+	class WC_Order {
+		/** @var int */
+		public $id;
+		/** @var string */
+		public $payment_method;
+		/** @var array<string, mixed> */
+		public $meta = array();
+		/** @var string */
+		public $status = 'completed';
+
+		public function __construct( int $id = 0, string $payment_method = '' ) {
+			$this->id             = $id;
+			$this->payment_method = $payment_method;
+		}
+		public function get_id(): int {
+			return $this->id;
+		}
+		public function get_payment_method(): string {
+			return $this->payment_method;
+		}
+		public function get_customer_id(): int {
+			return 0;
+		}
+		/**
+		 * @return mixed
+		 */
+		public function get_meta( string $key ) {
+			return $this->meta[ $key ] ?? '';
+		}
+	}
+}
+
 if ( ! function_exists( 'wp_get_post_terms' ) ) {
 	function wp_get_post_terms( int $post_id, string $taxonomy, array $args = array() ): array {
 		unset( $args );
@@ -512,6 +549,10 @@ foreach (
 		'app/Data/FbtRepository.php',
 		'app/Data/CartSession.php',
 		'app/Domain/Recommendations/FbtMiner.php',
+		'app/Domain/OneClick/OneClickResult.php',
+		'app/Domain/OneClick/PaymentChargeAdapter.php',
+		'app/Domain/OneClick/PaymentChargeAdapterRegistry.php',
+		'app/Domain/OneClick/OneClickCharger.php',
 		'app/Domain/Analytics/AnalyticsRecorder.php',
 		'app/Domain/Analytics/AnalyticsService.php',
 		'app/Domain/Analytics/StatsReconciler.php',

@@ -33,6 +33,9 @@ use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferService;
 use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferValidator;
 use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferVisibilityInspector;
 use WPAnchorBay\UpsellBayPro\Data\FbtRepository;
+use WPAnchorBay\UpsellBayPro\Domain\OneClick\OneClickCharger;
+use WPAnchorBay\UpsellBayPro\Domain\OneClick\OneClickResult;
+use WPAnchorBay\UpsellBayPro\Domain\OneClick\PaymentChargeAdapterRegistry;
 use WPAnchorBay\UpsellBayPro\Domain\Recommendations\FbtMiner;
 use WPAnchorBay\UpsellBayPro\Domain\Rules\RuleEvaluator;
 use WPAnchorBay\UpsellBayPro\Domain\Rules\RuleDefinitions;
@@ -391,6 +394,47 @@ function upsellbay_core_business_logic_tests(): array {
 			$meta['_ub_discount_value']  = '100';
 			$at_max                      = $validator->validate( $meta );
 			assert_true( ! isset( $at_max->errors()['_ub_discount_value_percent'] ) );
+		},
+		'one-click charger enforces idempotency and gateway-capability fallback' => static function (): void {
+			// Result value semantics.
+			assert_same( 'charged', OneClickResult::charged( 5 )->status() );
+			assert_same( 5, OneClickResult::charged( 5 )->order_id() );
+			assert_false( OneClickResult::charged( 5 )->should_fall_back() );
+			assert_true( OneClickResult::declined( 'x' )->should_fall_back() );
+			assert_true( OneClickResult::unsupported( 'x' )->should_fall_back() );
+			assert_same( 9, OneClickResult::duplicate( 9 )->order_id() );
+
+			$offer       = array( 'id' => 77, 'meta' => array( '_ub_offer_product_id' => 50 ) );
+			$source      = new WC_Order( 6001, 'some_gateway' );
+			$attribution = new class() {
+				public function write_follow_on_order( object $order, int $source_order_id, int $offer_id ): void {}
+			};
+
+			// Idempotency: an existing follow-on order for this (order, offer) returns
+			// duplicate and never reaches the charge path.
+			$duplicate = new OneClickCharger(
+				new PaymentChargeAdapterRegistry(),
+				new DiscountCalculator(),
+				$attribution,
+				null,
+				static fn ( int $src, int $off ): int => 5555
+			);
+			$dup = $duplicate->charge( $source, $offer, 'thankyou_offer' );
+			assert_same( 'duplicate', $dup->status() );
+			assert_same( 5555, $dup->order_id() );
+
+			// No adapter registered for the gateway -> unsupported (caller falls back to
+			// the standard separate-checkout offer flow).
+			$unsupported = new OneClickCharger(
+				new PaymentChargeAdapterRegistry(),
+				new DiscountCalculator(),
+				$attribution,
+				null,
+				static fn ( int $src, int $off ): int => 0
+			);
+			$uns = $unsupported->charge( $source, $offer, 'thankyou_offer' );
+			assert_same( 'unsupported', $uns->status() );
+			assert_true( $uns->should_fall_back() );
 		},
 		'fbt miner scores, floors, and ranks co-occurring products' => static function (): void {
 			// Synthetic order history: product 1 appears in 5 orders; 1+2 co-occur 3
