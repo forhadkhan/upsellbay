@@ -195,6 +195,43 @@ successfully. Every legitimately issued customer license key would have failed t
 activate on the built release. Fixed and verified end-to-end (activate/is_valid/background_check
 all succeed) in commit `62f5530`.
 
+## Free/Pro boundary audit (release prep, 2026-07-18)
+
+Preparing both plugins for first release surfaced two free/Pro leaks where the **free**
+plugin exposed Pro-only capabilities through its shared admin (Pro deleted its own admin
+in commit `a862d57` and now uses the free plugin's `OfferEditPage`, so free's hardcoded
+lists drive both tiers).
+
+1. **Offer types — FIXED.** Free's `OfferSchema::offer_types()` and admin
+   `offer_type_options()` hardcoded all four types (checkout_bump, product_upsell,
+   cart_crosssell, thankyou_offer) as selectable, but free only *renders* checkout_bump —
+   so a free-only user could create a product-page/cart/thank-you offer that saved but
+   never appeared, contradicting the readme's free/Pro split and the free plugin's own
+   (failing) `OfferSchemaTest::test_offer_types`. **Decision (expert panel: software
+   architect + WordPress freemium market expert; user chose "Option A"):** free is now the
+   single source of truth returning only `checkout_bump`, filtered via `upsellbay_offer_types`;
+   Pro (which renders the other three) hooks that filter to add them. Verified: shared
+   admin exposes all 4 with Pro active and only checkout_bump free-only (`wp eval` both
+   configs + admin E2E 10/10). Free unit tests now 30/30 (were 25/30 — the 5 failures were
+   4 stale `RuleParserTest` assertions from the `in`→`contains` operator rename plus this
+   `test_offer_types`).
+
+2. **Advanced targeting rules — OPEN, awaiting product decision.** Free's rule engine and
+   admin rule-builder (`RuleDefinitions::admin_config()`, unfiltered) expose all 10 rule
+   types, including `user_role`, `customer_order_count`, and `customer_lifetime_spend` —
+   which the free readme explicitly lists as Pro "advanced rules" ("Simple targeting rule:
+   cart contains product or category" is the free scope it claims). Unlike the offer-types
+   leak these advanced rules actually *function* in free (the shared `RuleEvaluator`
+   evaluates them), so this is a value-giveaway / positioning inconsistency, not broken
+   UX. **Recommended fix (same pattern as #1):** add an `upsellbay_rule_definitions`
+   filter to free's `RuleDefinitions`, restrict the free default to the simple cart
+   product/category (and likely cart_subtotal/tag/viewed_product) rules, and have Pro hook
+   the filter to add the advanced ones. Not done — the exact free/Pro rule line is a
+   product decision (which of the 10 belong to free) that the user should set, mirroring
+   the offer-types panel decision. Alternatively, broaden the readme to match the generous
+   free rule set. **Release-blocking? No** (it works; it's a positioning choice), but it
+   should be settled before or shortly after launch to protect the Pro value prop.
+
 ## Critical findings from today's free-plugin JS build audit
 
 Rebuilding the free host plugin's JS to ship the Block Checkout cart-refresh fix (above)
