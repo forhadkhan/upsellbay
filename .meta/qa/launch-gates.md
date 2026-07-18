@@ -49,7 +49,7 @@ at the bottom of this file.
       valid completed-order thank-you page — not silently-passing costume assertions).
       Evidence: `tests/e2e/evidence/block-checkout-proof.json`, regenerate via
       `scripts/verify-block-checkout-proof.sh`.
-- [x] Checkout bump cart mutations produce correct order totals. — Code-verified 2026-07-18:
+- [~] Checkout bump cart mutations produce correct order totals. — Code-verified 2026-07-18:
       the host's public REST routes (`/bump-toggle`, `/cart-offer-add`, `/dismiss` in
       `upsellbay-order-bump-for-woocommerce/app/Api/Routes/PublicOfferRoutes.php`) declare
       no price/discount/amount/total parameter in their `args` schema, and the callbacks
@@ -57,11 +57,25 @@ at the bottom of this file.
       server-side by `offer_id` only, and price is computed downstream entirely by
       `DiscountCalculator`/`DiscountApplier` from server-stored data. Client-sent pricing
       is structurally impossible to inject through this surface, not merely unvalidated.
-      Also covered functionally by `tests/e2e/pricing-integrity.spec.js` (passed in the
-      2026-07-17 full-suite run).
+      The 2026-07-17 "passed" claim for `tests/e2e/pricing-integrity.spec.js` was the same
+      no-op-guard problem found elsewhere: every case was
+      `expect(caseData.someField).toBeDefined()`, never touching a real page. Rewritten
+      2026-07-18 with real coverage (real offers via `wp eval-file`, real checkout pages,
+      server/displayed price comparisons) — 7 of 12 cases now pass for real, 4 are
+      `test.skip()`'d with a stated reason (redundant with unit tests or with another
+      passing case), and **one is left intentionally failing**: a real store coupon
+      should still discount the base cart line even when `CouponLimiter`'s deliberate
+      anti-stacking policy correctly excludes the offer-priced line, but the live checkout
+      run consistently shows the coupon contributing $0 anywhere once a checkout_bump is
+      in the cart — confirmed real and reproducible, not yet root-caused (a direct
+      `WC_Cart::apply_coupon()` script confirms the per-item exclusion works correctly in
+      isolation, so the discrepancy is specific to the live Block Checkout/Store API path).
+      **Remaining gap before this gate can be checked off**: root-cause and fix the
+      coupon-stacking discrepancy, or confirm it's benign and adjust the fixture.
 - [~] HPOS compatibility tests pass. — **Partial.** HPOS-on is extensively verified: it
       was enabled throughout every test, E2E run, and manual verification in this session
-      (composer test 83/83, full E2E 41/45 with only pre-existing unrelated failures,
+      (composer test 86/86 as of 2026-07-18, full E2E across the two-stage `test:e2e` run
+      with one intentional pricing-integrity failure documented above,
       live activation/CartBay-independence checks). HPOS-off could not be tested in this
       environment: WooCommerce itself refuses `woocommerce_custom_orders_table_enabled`
       toggling here ("the authoritative table for orders storage can't be changed while
