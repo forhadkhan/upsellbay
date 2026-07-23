@@ -812,6 +812,19 @@ final class PublicOfferRoutes {
 			wc_load_cart();
 		}
 
+		// Rate-limit before authorization so rejected requests (invalid tokens
+		// included) cannot run unthrottled token-validation work.
+		if ( ! ( $this->rate_limit )( $endpoint, $client_key ) ) {
+			Hooks::action( 'api_request_failed', $endpoint, 'rate_limited', $params );
+			return $this->response(
+				429,
+				array(
+					'success' => false,
+					'message' => __( 'Too many requests.', 'upsellbay' ),
+				)
+			);
+		}
+
 		$token = (string) ( $params['token'] ?? '' );
 		if ( '' === $token || ( ! $this->session->validate_token( $token ) && ! $this->validate_thankyou_action_token( $endpoint, $params, $token ) ) ) {
 			Hooks::action( 'api_request_failed', $endpoint, 'invalid_token', $params );
@@ -820,17 +833,6 @@ final class PublicOfferRoutes {
 				array(
 					'success' => false,
 					'message' => __( 'Invalid session token.', 'upsellbay' ),
-				)
-			);
-		}
-
-		if ( ! ( $this->rate_limit )( $endpoint, $client_key ) ) {
-			Hooks::action( 'api_request_failed', $endpoint, 'rate_limited', $params );
-			return $this->response(
-				429,
-				array(
-					'success' => false,
-					'message' => __( 'Too many requests.', 'upsellbay' ),
 				)
 			);
 		}
@@ -867,6 +869,12 @@ final class PublicOfferRoutes {
 	 * WooCommerce can rotate the cart session after checkout. Thank-you offers
 	 * therefore use an order-bound signed token and still verify the source
 	 * order before accepting the offer.
+	 *
+	 * Scope: the token authorizes follow-on actions for the verified ORDER (bound
+	 * to source_order_id + order_key), not a specific offer_id — one token covers
+	 * every thank-you offer shown for that order, and the one-click accept route
+	 * shares it. Per-offer authorization is enforced downstream by CartMutator
+	 * eligibility re-validation.
 	 *
 	 * @param string               $endpoint Endpoint key.
 	 * @param array<string, mixed> $params   Request params.
