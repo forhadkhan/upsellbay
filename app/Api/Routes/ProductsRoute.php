@@ -51,54 +51,9 @@ final class ProductsRoute {
 			return;
 		}
 
-		register_rest_route(
-			Constants::REST_NAMESPACE,
-			'/products',
-			array(
-				array(
-					'methods'             => 'GET',
-					'callback'            => array( $this->controller, 'index' ),
-					'permission_callback' => array( $this, 'can_manage' ),
-				),
-			)
-		);
-
-		register_rest_route(
-			Constants::REST_NAMESPACE,
-			'/categories',
-			array(
-				array(
-					'methods'             => 'GET',
-					'callback'            => array( $this->controller, 'categories' ),
-					'permission_callback' => array( $this, 'can_manage' ),
-				),
-			)
-		);
-
-		register_rest_route(
-			Constants::REST_NAMESPACE,
-			'/tags',
-			array(
-				array(
-					'methods'             => 'GET',
-					'callback'            => array( $this->controller, 'tags' ),
-					'permission_callback' => array( $this, 'can_manage' ),
-				),
-			)
-		);
-
-		register_rest_route(
-			Constants::REST_NAMESPACE,
-			'/roles',
-			array(
-				array(
-					'methods'             => 'GET',
-					'callback'            => array( $this->controller, 'roles' ),
-					'permission_callback' => array( $this, 'can_manage' ),
-				),
-			)
-		);
-
+		// The free host owns the shared /products, /categories, /tags, and /roles
+		// search endpoints used by the shared offer editor. Pro registers only its
+		// own recommendations endpoint here to avoid duplicate route registration.
 		register_rest_route(
 			Constants::REST_NAMESPACE,
 			'/recommendations',

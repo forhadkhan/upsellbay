@@ -21,7 +21,6 @@ use WPAnchorBay\UpsellBayPro\Data\OfferRepository;
 use WPAnchorBay\UpsellBayPro\Domain\Analytics\AnalyticsRecorder;
 use WPAnchorBay\UpsellBayPro\Domain\Discounts\DiscountCalculator;
 use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferPrioritizer;
-use Automattic\WooCommerce\StoreApi\Schemas\V1\CartSchema;
 
 /**
  * Exposes eligible offers to the Cart and Checkout blocks via Store API.
@@ -95,65 +94,67 @@ final class StoreApiExtender {
 	/**
 	 * Register hooks for extending Store API schemas.
 	 *
-	 * @since 1.0.0
-	 */
-	public function register_hooks(): void {
-		if ( ! function_exists( 'add_action' ) ) {
-			return;
-		}
-
-		// Pro's own bootstrap runs on plugins_loaded at priority 20 (after the
-		// host plugin's default-priority init), by which point WooCommerce
-		// Blocks has already fired woocommerce_blocks_loaded on its own,
-		// earlier plugins_loaded callback. Registering a listener for an
-		// action that already fired means it never runs, so call directly
-		// when that has already happened instead of only ever attaching a
-		// listener for the future.
-		if ( function_exists( 'did_action' ) && did_action( 'woocommerce_blocks_loaded' ) > 0 ) {
-			$this->register_endpoint_data();
-			return;
-		}
-
-		add_action( 'woocommerce_blocks_loaded', array( $this, 'register_endpoint_data' ) );
-	}
-
-	/**
-	 * Register endpoint data on cart and checkout endpoints.
+	 * The free host plugin (upsellbay-order-bump-for-woocommerce) owns the
+	 * `upsellbay` Store API endpoint-data namespace registration. WooCommerce
+	 * throws when the same namespace/endpoint pair is registered twice, so
+	 * when both plugins are active Pro must not call
+	 * woocommerce_store_api_register_endpoint_data itself — it instead
+	 * contributes its cart_crosssell placement through the free host's
+	 * `upsellbay_store_api_cart_offers` and `upsellbay_store_api_cart_offers_schema`
+	 * filters.
 	 *
 	 * @since 1.0.0
 	 */
-	public function register_endpoint_data(): void {
-		if ( ! function_exists( 'woocommerce_store_api_register_endpoint_data' ) ) {
+	public function register_hooks(): void {
+		if ( ! function_exists( 'add_filter' ) ) {
 			return;
 		}
 
-		// ExperimentalOrderMeta's extensions prop, which both the checkout_bump
-		// and cart_crosssell React plugins read, is populated from the Store
-		// API Cart endpoint's extension data in both the Cart and Checkout
-		// blocks (the same slot renders in both, distinguished by the
-		// context prop each block passes at render time) — not from a
-		// per-block schema. Registering checkout_bump only on CheckoutSchema
-		// left it structurally unreachable, since nothing reads that
-		// endpoint's extension data for display; the Store API's checkout
-		// endpoint request/response cycle is for order processing, not the
-		// ExperimentalOrderMeta slot. Register both placements on
-		// CartSchema; the JS side gates which one renders by context.
-		woocommerce_store_api_register_endpoint_data(
-			array(
-				'endpoint'        => CartSchema::IDENTIFIER,
-				'namespace'       => 'upsellbay',
-				'data_callback'   => array( $this, 'get_cart_offers_data' ),
-				'schema_callback' => array( $this, 'get_offers_schema' ),
-				'schema_type'     => ARRAY_A,
-			)
+		add_filter( 'upsellbay_store_api_cart_offers', array( $this, 'add_cart_crosssell_offers' ) );
+		add_filter( 'upsellbay_store_api_cart_offers_schema', array( $this, 'add_cart_crosssell_schema' ) );
+	}
+
+	/**
+	 * Add the cart_crosssell placement to the free host's Store API cart offers payload.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<string, mixed> $offers Offers keyed by placement, contributed by the free host and other add-ons.
+	 * @return array<string, mixed>
+	 */
+	public function add_cart_crosssell_offers( array $offers ): array {
+		$offers['cart_crosssell'] = $this->get_offers_for_placement( 'cart_crosssell' );
+
+		return $offers;
+	}
+
+	/**
+	 * Add the cart_crosssell schema entry to the free host's Store API cart offers schema.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<string, mixed> $schema Schema keyed by placement, contributed by the free host and other add-ons.
+	 * @return array<string, mixed>
+	 */
+	public function add_cart_crosssell_schema( array $schema ): array {
+		$schema['cart_crosssell'] = array(
+			'description' => __( 'Eligible Cart cross-sells for UpsellBay', 'upsellbay' ),
+			'type'        => 'array',
+			'context'     => array( 'view' ),
+			'items'       => $this->offer_item_schema(),
 		);
+
+		return $schema;
 	}
 
 	/**
 	 * Data callback for Cart schema.
 	 *
-	 * Covers both the cart_crosssell and checkout_bump placements — see the
-	 * note in register_endpoint_data() for why checkout_bump lives here too.
+	 * Retained for direct/unit-test use alongside get_offers_schema(); not
+	 * wired to a live WooCommerce registration — see register_hooks(). Live
+	 * checkout_bump data now comes from the free host plugin; live
+	 * cart_crosssell data comes from add_cart_crosssell_offers() via the
+	 * free host's upsellbay_store_api_cart_offers filter.
 	 *
 	 * @since 1.0.0
 	 *
@@ -169,12 +170,43 @@ final class StoreApiExtender {
 	/**
 	 * Retrieve schema for offers endpoint data.
 	 *
+	 * Retained for the direct data/schema-callback pairing tested against
+	 * get_cart_offers_data(); no longer wired to a live
+	 * woocommerce_store_api_register_endpoint_data() registration — see the
+	 * docblock on register_hooks().
+	 *
 	 * @since 1.0.0
 	 *
 	 * @return array<string, mixed>
 	 */
 	public function get_offers_schema(): array {
-		$offer_schema = array(
+		$offer_schema = $this->offer_item_schema();
+
+		return array(
+			'cart_crosssell' => array(
+				'description' => __( 'Eligible Cart cross-sells for UpsellBay', 'upsellbay' ),
+				'type'        => 'array',
+				'context'     => array( 'view' ),
+				'items'       => $offer_schema,
+			),
+			'checkout_bump'  => array(
+				'description' => __( 'Eligible Checkout bumps for UpsellBay', 'upsellbay' ),
+				'type'        => 'array',
+				'context'     => array( 'view' ),
+				'items'       => $offer_schema,
+			),
+		);
+	}
+
+	/**
+	 * Shared Store API offer item schema.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return array<string, mixed>
+	 */
+	private function offer_item_schema(): array {
+		return array(
 			'type'       => 'object',
 			'context'    => array( 'view' ),
 			'properties' => array(
@@ -226,21 +258,6 @@ final class StoreApiExtender {
 					'type'    => 'boolean',
 					'context' => array( 'view' ),
 				),
-			),
-		);
-
-		return array(
-			'cart_crosssell' => array(
-				'description' => __( 'Eligible Cart cross-sells for UpsellBay', 'upsellbay' ),
-				'type'        => 'array',
-				'context'     => array( 'view' ),
-				'items'       => $offer_schema,
-			),
-			'checkout_bump'  => array(
-				'description' => __( 'Eligible Checkout bumps for UpsellBay', 'upsellbay' ),
-				'type'        => 'array',
-				'context'     => array( 'view' ),
-				'items'       => $offer_schema,
 			),
 		);
 	}
