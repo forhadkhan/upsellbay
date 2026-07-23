@@ -268,6 +268,74 @@ final class PublicOfferRoutes {
 	}
 
 	/**
+	 * Register the cart/product/thank-you offer route on the shared REST namespace.
+	 *
+	 * The free host registers only the checkout-bump and dismiss routes; Pro owns
+	 * the cart-offer-add endpoint for its non-bump placements (cart cross-sell,
+	 * product upsell, thank-you follow-on), attaching via `upsellbay_rest_routes`.
+	 *
+	 * @since 1.2.0
+	 */
+	public function register_cart_offer_add_route(): void {
+		if ( ! function_exists( 'register_rest_route' ) ) {
+			return;
+		}
+
+		register_rest_route(
+			Constants::REST_NAMESPACE,
+			'/cart-offer-add',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( $this, 'cart_offer_add' ),
+				'permission_callback' => '__return_true',
+				'args'                => array(
+					'offer_id'          => array(
+						'required'          => true,
+						'type'              => 'integer',
+						'minimum'           => 1,
+						'sanitize_callback' => 'absint',
+						'validate_callback' => static fn( $value ) => absint( $value ) > 0,
+					),
+					'placement'         => array(
+						'required'          => false,
+						'type'              => 'string',
+						'default'           => 'cart_crosssell',
+						'sanitize_callback' => 'sanitize_key',
+						'validate_callback' => static fn( $value ) => in_array(
+							sanitize_key( $value ),
+							array( 'checkout_bump', 'cart_crosssell', 'product_upsell', 'thankyou_offer' ),
+							true
+						),
+					),
+					'source_order_id'   => array(
+						'required'          => false,
+						'type'              => 'integer',
+						'default'           => 0,
+						'sanitize_callback' => 'absint',
+					),
+					'source_order_key'  => array(
+						'required'          => false,
+						'type'              => 'string',
+						'default'           => '',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'token'             => array(
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'viewed_product_id' => array(
+						'required'          => false,
+						'type'              => 'integer',
+						'default'           => 0,
+						'sanitize_callback' => 'absint',
+					),
+				),
+			)
+		);
+	}
+
+	/**
 	 * Register the Pro one-click accept route on the host's `upsellbay_rest_routes` hook.
 	 *
 	 * The free host owns `register_routes()` for the shared endpoints; Pro attaches its
@@ -768,6 +836,29 @@ final class PublicOfferRoutes {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Authorize a host offer action carrying Pro's order-bound thank-you token.
+	 *
+	 * Hooked onto the free host's `upsellbay_offer_action_token_valid` filter so
+	 * host-owned endpoints (e.g. `/dismiss`) accept the post-purchase follow-on
+	 * token when the session token is unavailable. Preserves any prior true
+	 * result and never lowers it.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param bool                 $valid    Whether a prior check already authorized the action.
+	 * @param string               $endpoint Endpoint key.
+	 * @param array<string, mixed> $params   Request params.
+	 * @param string               $token    Submitted token.
+	 */
+	public function filter_action_token_valid( bool $valid, string $endpoint, array $params, string $token ): bool {
+		if ( $valid ) {
+			return true;
+		}
+
+		return $this->validate_thankyou_action_token( $endpoint, $params, $token );
 	}
 
 	/**

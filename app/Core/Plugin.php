@@ -371,12 +371,15 @@ final class Plugin {
 		add_action( Constants::hook_name( 'daily_stats_reconciled' ), array( $this, 'log_daily_stats_reconciled' ), 10, 3 );
 		add_action( Constants::hook_name( 'prune_logs' ), array( $this, 'prune_logs' ) );
 
-		// The shared PublicOfferRoutes/OfferPreviewRoute endpoints are registered by the
-		// host plugin; they operate on the same shared CPT/REST namespace, so Pro does not
-		// re-register them. Pro's *additional* routes attach via the host's route action.
+		// The free host registers only the shared checkout-bump and dismiss routes on the
+		// upsellbay/v1 namespace. Pro owns its non-bump placements: it registers the
+		// cart-offer-add and one-click-accept routes via the host's route action, and hooks
+		// the host's token seam so post-purchase thank-you actions authorize on host endpoints.
 		add_action( 'upsellbay_rest_routes', array( $this->container->get( ProductsRoute::class ), 'register' ) );
 		add_action( 'upsellbay_rest_routes', array( $this->container->get( PublicOfferRoutes::class ), 'register_one_click_route' ) );
+		add_action( 'upsellbay_rest_routes', array( $this->container->get( PublicOfferRoutes::class ), 'register_cart_offer_add_route' ) );
 		add_action( 'upsellbay_rest_routes', array( $this, 'register_license_routes' ) );
+		add_filter( 'upsellbay_offer_action_token_valid', array( $this->container->get( PublicOfferRoutes::class ), 'filter_action_token_valid' ), 10, 4 );
 		add_action( Constants::hook_name( 'check_license' ), array( $this, 'check_license' ) );
 		add_action( 'woocommerce_init', array( $this->container->get( CheckoutFields::class ), 'register' ) );
 		add_action( 'woocommerce_before_calculate_totals', array( $this, 'apply_offer_discounts' ) );
