@@ -256,8 +256,8 @@ final class ToolsPage {
 			echo '<th scope="row">' . esc_html__( 'Duplicates', 'upsellbay' ) . '</th>';
 			echo '<td>';
 			echo '<select name="duplicate_handling">';
-			echo '<option value="duplicate">' . esc_html__( 'Create duplicate offers', 'upsellbay' ) . '</option>';
 			echo '<option value="skip">' . esc_html__( 'Skip importing offers that already exist', 'upsellbay' ) . '</option>';
+			echo '<option value="duplicate">' . esc_html__( 'Create duplicate offers', 'upsellbay' ) . '</option>';
 			echo '<option value="overwrite">' . esc_html__( 'Overwrite existing offers with the same title', 'upsellbay' ) . '</option>';
 			echo '</select>';
 			echo '<p class="description">' . esc_html__( 'How to handle imported offers if an offer with the exact same title already exists on this store.', 'upsellbay' ) . '</p>';
