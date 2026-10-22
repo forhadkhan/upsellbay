@@ -448,7 +448,7 @@ final class PublicOfferRoutes {
 			: $this->cart->remove( (int) $params['offer_id'] );
 
 		if ( true === ( $params['accepted'] ?? false ) && true === ( $result['success'] ?? false ) ) {
-			$this->analytics->record_event( 'accept', (int) $params['offer_id'], (string) ( $params['placement'] ?? 'checkout_bump' ), ( $this->date_provider )(), (string) ( $result['offer_price'] ?? '0.000000' ), (string) ( $result['discount_amount'] ?? '0.000000' ) );
+			$this->analytics->record_event( 'accept', (int) $params['offer_id'], (string) ( $params['placement'] ?? 'checkout_bump' ), ( $this->date_provider )() );
 			Hooks::action( 'offer_accepted', (int) $params['offer_id'], (string) ( $params['placement'] ?? 'checkout_bump' ), $result );
 		}
 
@@ -543,7 +543,7 @@ final class PublicOfferRoutes {
 		$result = $this->accept_result( $accepted );
 
 		if ( true === ( $result['success'] ?? false ) ) {
-			$this->analytics->record_event( 'accept', (int) $params['offer_id'], $placement, ( $this->date_provider )(), (string) ( $result['offer_price'] ?? '0.000000' ), (string) ( $result['discount_amount'] ?? '0.000000' ) );
+			$this->analytics->record_event( 'accept', (int) $params['offer_id'], $placement, ( $this->date_provider )() );
 			Hooks::action( 'offer_accepted', (int) $params['offer_id'], $placement, $result );
 			$result['message'] = __( 'Offer added to your cart.', 'upsellbay' );
 		} elseif ( isset( $result['errors'] ) ) {
@@ -667,7 +667,7 @@ final class PublicOfferRoutes {
 
 		if ( in_array( $result->status(), array( OneClickResult::STATUS_CHARGED, OneClickResult::STATUS_DUPLICATE ), true ) ) {
 			if ( OneClickResult::STATUS_CHARGED === $result->status() ) {
-				$this->analytics->record_event( 'accept', (int) $params['offer_id'], 'thankyou_offer', ( $this->date_provider )(), '0.000000', '0.000000' );
+				$this->analytics->record_event( 'accept', (int) $params['offer_id'], 'thankyou_offer', ( $this->date_provider )() );
 				Hooks::action( 'offer_accepted', (int) $params['offer_id'], 'thankyou_offer', array( 'one_click_order_id' => $result->order_id() ) );
 			}
 

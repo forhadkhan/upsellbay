@@ -72,6 +72,7 @@ use WPAnchorBay\UpsellBayPro\Integrations\OffersListColumnsIntegration;
 use WPAnchorBay\UpsellBayPro\Domain\OneClick\OneClickCharger;
 use WPAnchorBay\UpsellBayPro\Domain\OneClick\PaymentChargeAdapterRegistry;
 use WPAnchorBay\UpsellBayPro\Integrations\OfferEditDiagnosticsIntegration;
+use WPAnchorBay\UpsellBayPro\Integrations\HostStatsBridge;
 use WPAnchorBay\UpsellBayPro\Integrations\OfferTypesIntegration;
 use WPAnchorBay\UpsellBayPro\Integrations\HostSettingsIntegration;
 use WPAnchorBay\UpsellBayPro\Integrations\OneClick\StripeChargeAdapter;
@@ -214,6 +215,7 @@ final class Plugin {
 			)
 		);
 		$this->container->set( HostSettingsIntegration::class, static fn ( Container $container ): HostSettingsIntegration => new HostSettingsIntegration( $container->get( Settings::class ) ) );
+		$this->container->set( HostStatsBridge::class, static fn ( Container $container ): HostStatsBridge => new HostStatsBridge( $container->get( AnalyticsService::class ) ) );
 		$this->container->set( OfferTypesIntegration::class, static fn ( Container $container ): OfferTypesIntegration => new OfferTypesIntegration( null, null, $container->get( PreviewLinks::class ) ) );
 		$this->container->set( CartSession::class, static fn ( Container $container ): CartSession => new CartSession( null, null, $container->get( TokenHelper::class ) ) );
 		$this->container->set( CartValidator::class, static fn ( Container $container ): CartValidator => new CartValidator( $container->get( RuleEvaluator::class ), $container->get( DiscountCalculator::class ) ) );
@@ -378,6 +380,7 @@ final class Plugin {
 		$this->container->get( OffersListColumnsIntegration::class )->register_hooks();
 		$this->container->get( OfferEditDiagnosticsIntegration::class )->register_hooks();
 		$this->container->get( OfferTypesIntegration::class )->register_hooks();
+		$this->container->get( HostStatsBridge::class )->register_hooks();
 		$this->container->get( HostSettingsIntegration::class )->register_hooks();
 		$this->container->get( DashboardPage::class )->register_hooks();
 		$this->container->get( PluginActionLinks::class )->register_hooks();

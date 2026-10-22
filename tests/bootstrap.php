@@ -662,6 +662,7 @@ foreach (
 		'app/Domain/Offers/ProductRecommendationAssistant.php',
 		'app/Core/ScheduledJobs.php',
 		'app/Integrations/HostSettingsIntegration.php',
+		'app/Integrations/HostStatsBridge.php',
 		'app/Integrations/OfferTypesIntegration.php',
 		'app/Integrations/OneClick/StripeChargeAdapter.php',
 	) as $file

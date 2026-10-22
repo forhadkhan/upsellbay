@@ -15,6 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
+use WPAnchorBay\UpsellBayPro\Core\Hooks;
 use WPAnchorBay\UpsellBayPro\Core\Settings;
 use WPAnchorBay\UpsellBayPro\Data\CartSession;
 use WPAnchorBay\UpsellBayPro\Data\OfferRepository;
@@ -287,6 +288,7 @@ final class StoreApiExtender {
 
 			// Record view analytics when exposed to the frontend via Store API.
 			$this->analytics->record_view( $offer_id, $placement, $date );
+			Hooks::action( 'offer_viewed', $offer_id, $placement );
 
 			$formatted_offers[] = $this->format_offer_for_api( $offer, $context );
 		}

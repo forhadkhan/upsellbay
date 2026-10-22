@@ -348,11 +348,11 @@ function upsellbay_data_architecture_tests(): array {
 			$reconciler = new StatsReconciler( $repository );
 
 			$recorder->record_view( 7, 'product_upsell', '2026-05-30' );
-			$recorder->record_accept( 7, 'product_upsell', '2026-05-30', '19.990000', '2.000000' );
+			$recorder->record_accept( 7, 'product_upsell', '2026-05-30' );
 			$reconciler->repair_missing_row( '2026-05-30', 7, 'product_upsell' );
 
 			assert_same( array( 'views' => 1 ), $events[0][1] );
-			assert_same( '19.990000', $events[1][1]['revenue'] );
+			assert_same( array( 'accepts' => 1 ), $events[1][1] );
 			assert_same( array(), $events[2][1] );
 		},
 		'installer schema contains exact aggregate stats columns' => static function (): void {

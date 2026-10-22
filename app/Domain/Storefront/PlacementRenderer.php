@@ -117,6 +117,7 @@ final class PlacementRenderer {
 		foreach ( $selected as $offer ) {
 			$offer_id = (int) ( $offer['id'] ?? 0 );
 			$this->analytics->record_view( $offer_id, $placement, $date );
+			Hooks::action( 'offer_viewed', $offer_id, $placement );
 			$offer_html = $this->renderers[ $placement ]->render_offer( $offer, $context );
 			/**
 			 * Filter escaped offer HTML for a rendered storefront placement.

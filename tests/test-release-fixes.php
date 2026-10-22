@@ -32,6 +32,7 @@ use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferService;
 use WPAnchorBay\UpsellBayPro\Domain\Offers\OfferValidator;
 use WPAnchorBay\UpsellBayPro\Domain\Rules\RuleEvaluator;
 use WPAnchorBay\UpsellBayPro\Domain\Rules\RuleParser;
+use WPAnchorBay\UpsellBayPro\Integrations\HostStatsBridge;
 use WPAnchorBay\UpsellBayPro\Utils\ImportExporter;
 
 if ( ! function_exists( 'wp_insert_post' ) ) {
@@ -388,6 +389,53 @@ function upsellbay_release_fixes_tests(): array {
 				$thrown = $exception->getMessage();
 			}
 			assert_same( 'The offer could not be saved.', $thrown );
+		},
+		'pro placement events reach the host counters and host bump events reach pro stats, each one way only' => static function (): void {
+			$GLOBALS['upsellbay_test_hooks'] = array();
+			$stats                           = array();
+			$bridge                          = new HostStatsBridge(
+				new AnalyticsService(
+					new AnalyticsRecorder(
+						new StatsRepository(
+							static function ( string $key, array $delta ) use ( &$stats ): void {
+								$stats[] = array( $key, $delta );
+							},
+							static fn (): array => array()
+						)
+					)
+				)
+			);
+			$bridge->register_hooks();
+
+			$host = array();
+			foreach ( array( 'accepted', 'dismissed', 'viewed' ) as $event ) {
+				add_action(
+					'upsellbay_offer_' . $event,
+					static function ( $offer_id, $placement = '' ) use ( &$host, $event ): void {
+						$host[] = $event . ':' . $offer_id . ':' . $placement;
+					},
+					5,
+					2
+				);
+			}
+
+			do_action( 'upsellbay_pro_offer_accepted', 30, 'cart_crosssell', array() );
+			do_action( 'upsellbay_pro_offer_viewed', 30, 'cart_crosssell' );
+			do_action( 'upsellbay_pro_offer_dismissed', 30, 'cart_crosssell' );
+			assert_same( array( 'accepted:30:cart_crosssell', 'viewed:30:cart_crosssell', 'dismissed:30:cart_crosssell' ), $host );
+			assert_same( array(), $stats );
+
+			$host = array();
+			do_action( 'upsellbay_offer_accepted', 23, 'checkout_bump', array() );
+			do_action( 'upsellbay_offer_viewed', 23, 'checkout_bump' );
+			assert_same( 2, count( $stats ) );
+			assert_same( array( 'accepts' => 1 ), $stats[0][1] );
+			assert_same( array( 'views' => 1 ), $stats[1][1] );
+
+			do_action( 'upsellbay_pro_offer_accepted', 23, 'checkout_bump', array() );
+			assert_same( array( 'accepted:23:checkout_bump', 'viewed:23:checkout_bump' ), $host );
+			assert_same( 2, count( $stats ) );
+			$GLOBALS['upsellbay_test_hooks'] = array();
 		},
 	);
 }

@@ -66,7 +66,7 @@ final class AnalyticsService {
 
 		match ( (string) $payload['event'] ) {
 			'view'    => $this->recorder->record_view( (int) $payload['offer_id'], (string) $payload['placement'], (string) $payload['date'] ),
-			'accept'  => $this->recorder->record_accept( (int) $payload['offer_id'], (string) $payload['placement'], (string) $payload['date'], (string) $payload['revenue'], (string) $payload['discount_total'] ),
+			'accept'  => $this->recorder->record_accept( (int) $payload['offer_id'], (string) $payload['placement'], (string) $payload['date'] ),
 			'dismiss' => $this->recorder->record_dismissal( (int) $payload['offer_id'], (string) $payload['placement'], (string) $payload['date'] ),
 			'order'   => $this->recorder->record_order( (int) $payload['offer_id'], (string) $payload['placement'], (string) $payload['date'], (string) $payload['revenue'], (string) $payload['discount_total'] ),
 			default   => null,

@@ -1296,7 +1296,7 @@ function upsellbay_core_business_logic_tests(): array {
 			$service->record_event( 'dismiss', 40, 'cart_crosssell', '2026-05-30' );
 			$service->record_event( 'order', 40, 'cart_crosssell', '2026-05-30', '30.000000', '5.000000' );
 
-			assert_same( array( 'accepts' => 1, 'revenue' => '30.000000', 'discount_total' => '5.000000' ), $events[0][1] );
+			assert_same( array( 'accepts' => 1 ), $events[0][1] );
 			assert_same( array( 'dismissals' => 1 ), $events[1][1] );
 			assert_same( array( 'orders' => 1, 'revenue' => '30.000000', 'discount_total' => '5.000000' ), $events[2][1] );
 		},
