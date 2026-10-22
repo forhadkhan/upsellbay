@@ -435,6 +435,14 @@ function upsellbay_release_fixes_tests(): array {
 			do_action( 'upsellbay_pro_offer_accepted', 23, 'checkout_bump', array() );
 			assert_same( array( 'accepted:23:checkout_bump', 'viewed:23:checkout_bump' ), $host );
 			assert_same( 2, count( $stats ) );
+
+			// The host renders a classic bump through the filter (twice per offer) with no view hook.
+			$offer = array( 'id' => 23 );
+			assert_same( '<p>x</p>', apply_filters( 'upsellbay_render_offer_html', '<p>x</p>', $offer, 'checkout_bump', array() ) );
+			apply_filters( 'upsellbay_render_offer_html', '<p>x</p>', $offer, 'checkout_bump', array() );
+			apply_filters( 'upsellbay_render_offer_html', '<p>y</p>', array( 'id' => 30 ), 'cart_crosssell', array() );
+			assert_same( 3, count( $stats ) );
+			assert_same( array( 'views' => 1 ), $stats[2][1] );
 			$GLOBALS['upsellbay_test_hooks'] = array();
 		},
 	);

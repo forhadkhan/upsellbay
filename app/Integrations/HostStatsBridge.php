@@ -40,6 +40,13 @@ final class HostStatsBridge {
 	private const HOST_PLACEMENT = 'checkout_bump';
 
 	/**
+	 * Offers already counted as rendered during this request.
+	 *
+	 * @var array<int, true>
+	 */
+	private array $rendered = array();
+
+	/**
 	 * Analytics service.
 	 *
 	 * @var AnalyticsService
@@ -70,6 +77,29 @@ final class HostStatsBridge {
 		add_action( 'upsellbay_offer_accepted', array( $this, 'record_host_accept' ), 10, 2 );
 		add_action( 'upsellbay_offer_dismissed', array( $this, 'record_host_dismiss' ), 10, 2 );
 		add_action( 'upsellbay_offer_viewed', array( $this, 'record_host_view' ), 10, 2 );
+		add_filter( 'upsellbay_render_offer_html', array( $this, 'record_host_render' ), 10, 3 );
+	}
+
+	/**
+	 * Count a classic checkout bump view, which the host counts without firing a hook.
+	 *
+	 * The host applies this filter twice per rendered offer, so count once per request.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param mixed $html      Escaped offer HTML, returned unchanged.
+	 * @param mixed $offer     Offer payload.
+	 * @param mixed $placement Placement key.
+	 * @return mixed
+	 */
+	public function record_host_render( $html, $offer = array(), $placement = '' ) {
+		$offer_id = is_array( $offer ) ? (int) ( $offer['id'] ?? 0 ) : 0;
+		if ( $offer_id > 0 && ! isset( $this->rendered[ $offer_id ] ) && self::HOST_PLACEMENT === $placement ) {
+			$this->rendered[ $offer_id ] = true;
+			$this->record( 'view', $offer_id, $placement );
+		}
+
+		return $html;
 	}
 
 	/**
