@@ -24,7 +24,7 @@ use WPAnchorBay\UpsellBayPro\Core\Constants;
  * indexed lookup — never a live order aggregation — so serving a recommendation on a
  * page request stays cheap on shared hosting. Writes happen only from the batch miner.
  *
- * @since 1.1.0
+ * @since 1.0.0
  */
 final class FbtRepository {
 	/**
@@ -44,7 +44,7 @@ final class FbtRepository {
 	/**
 	 * Constructor.
 	 *
-	 * @since 1.1.0
+	 * @since 1.0.0
 	 *
 	 * @param callable|null $reader Recommendation reader.
 	 * @param callable|null $writer Bulk index writer.
@@ -57,7 +57,7 @@ final class FbtRepository {
 	/**
 	 * Return the top recommended product IDs for an anchor product, highest score first.
 	 *
-	 * @since 1.1.0
+	 * @since 1.0.0
 	 *
 	 * @param int $anchor_product_id Anchor product.
 	 * @param int $limit             Max recommendations.
@@ -84,7 +84,7 @@ final class FbtRepository {
 	/**
 	 * Replace the entire index with a freshly-mined set of rows.
 	 *
-	 * @since 1.1.0
+	 * @since 1.0.0
 	 *
 	 * @param array<int, array<string, mixed>> $rows Mined index rows.
 	 * @return int Number of rows written.
@@ -96,7 +96,7 @@ final class FbtRepository {
 	/**
 	 * Upsert a batch of index rows without clearing the table.
 	 *
-	 * @since 1.1.0
+	 * @since 1.0.0
 	 *
 	 * @param array<int, array<string, mixed>> $rows Mined index rows.
 	 * @return int Number of rows written.

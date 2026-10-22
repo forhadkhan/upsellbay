@@ -124,11 +124,12 @@ final class OfferRepository {
 	 * @since 1.0.0
 	 *
 	 * @param array<string, mixed> $offer Offer data.
+	 * @throws RuntimeException When offer meta is invalid or the post cannot be created.
 	 */
 	public function create( array $offer ): int {
 		$meta       = $this->normalize_meta( $offer['meta'] ?? array() );
 		$post_title = (string) ( $offer['title'] ?? '' );
-		$post_id    = ( $this->insert_post )(
+		$post_id    = (int) ( $this->insert_post )(
 			array(
 				'post_type'   => Constants::OFFER_POST_TYPE,
 				'post_title'  => $post_title,
@@ -136,6 +137,9 @@ final class OfferRepository {
 				'menu_order'  => $meta['_ub_priority'],
 			)
 		);
+		if ( $post_id <= 0 ) {
+			throw new RuntimeException( 'The offer could not be saved.' );
+		}
 
 		foreach ( $meta as $key => $value ) {
 			( $this->update_meta )( $post_id, $key, $value );
@@ -320,7 +324,11 @@ final class OfferRepository {
 			return 0;
 		}
 
-		return (int) wp_insert_post( $post_data, true );
+		$post_id = wp_insert_post( $post_data, true );
+
+		// With $wp_error true a failed insert returns a WP_Error, which an int cast
+		// would turn into 1 and point the offer's meta at an unrelated post.
+		return is_wp_error( $post_id ) ? 0 : (int) $post_id;
 	}
 
 	/**

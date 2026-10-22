@@ -18,6 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use WPAnchorBay\UpsellBayPro\Core\Constants;
 use WPAnchorBay\UpsellBayPro\Data\CartSession;
 use WPAnchorBay\UpsellBayPro\Domain\Discounts\DiscountCalculator;
+use WP_Error;
 
 /**
  * Adds and removes accepted offer items while preserving session state.
@@ -103,9 +104,9 @@ final class CartMutator {
 	 * @param array<string, mixed> $offer     Offer.
 	 * @param string               $placement Placement.
 	 * @param array<string, mixed> $context   Context.
-	 * @return array<string, mixed>
+	 * @return array<string, mixed>|WP_Error WP_Error when WooCommerce refused to add the product.
 	 */
-	public function accept( array $offer, string $placement, array $context ): array {
+	public function accept( array $offer, string $placement, array $context ) {
 		$offer_id = (int) ( $offer['id'] ?? 0 );
 		$state    = $this->session->state();
 		$accepted = is_array( $state['accepted'][ $offer_id ] ?? null ) ? $state['accepted'][ $offer_id ] : array();
@@ -139,12 +140,28 @@ final class CartMutator {
 			'_ub_offer_price'                      => $discount['offer_price'],
 			'_ub_source_context'                   => (string) ( $context['source_context'] ?? $placement ),
 		);
-		if ( isset( $context['source_order_id'] ) && (int) $context['source_order_id'] > 0 ) {
-			$item_data[ Constants::ATTRIBUTION_SOURCE_ORDER_ID ] = (int) $context['source_order_id'];
+		// Only a thank-you offer has a source order, and the route sets it only after
+		// verifying the shopper may use that order. Any other placement drops it, so
+		// a client-sent ID can never become follow-on attribution on someone's order.
+		$source_order_id = 'thankyou_offer' === $placement ? (int) ( $context['source_order_id'] ?? 0 ) : 0;
+		if ( $source_order_id > 0 ) {
+			$item_data[ Constants::ATTRIBUTION_SOURCE_ORDER_ID ] = $source_order_id;
 		}
-		$cart_item_key = ( $this->add_to_cart )( $product_id, 1, $item_data );
+		// The repricer re-checks a product page offer's triggers against the product
+		// it was accepted on, on every totals run (OfferLineRepricer::cart_context()).
+		if ( 'product_upsell' === $placement && (int) ( $context['viewed_product_id'] ?? 0 ) > 0 ) {
+			$item_data['_ub_viewed_product_id'] = (int) $context['viewed_product_id'];
+		}
+		$cart_item_key = (string) ( $this->add_to_cart )( $product_id, 1, $item_data );
 
-		$this->session->accept_offer( $offer_id, $placement, $cart_item_key, array( 'source_order_id' => (int) ( $context['source_order_id'] ?? 0 ) ) );
+		// WC_Cart::add_to_cart() returns '' (or false) when WooCommerce refuses the
+		// product, for example a variable parent. Nothing was added, so nothing
+		// may be recorded as accepted.
+		if ( '' === $cart_item_key ) {
+			return new WP_Error( 'add_to_cart_failed', __( 'Unable to add this offer. Please try again.', 'upsellbay' ) );
+		}
+
+		$this->session->accept_offer( $offer_id, $placement, $cart_item_key, array( 'source_order_id' => $source_order_id ) );
 
 		return array(
 			'success'         => true,
@@ -152,6 +169,24 @@ final class CartMutator {
 			'offer_price'     => $discount['offer_price'],
 			'discount_amount' => $discount['discount_amount'],
 		);
+	}
+
+	/**
+	 * Run the claim-path validation (placement, active status, product, rules,
+	 * server-side discount) without mutating the cart.
+	 *
+	 * Lets paths that do not add to the cart, such as the one-click thank-you charge,
+	 * apply exactly the checks accept() applies.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<string, mixed> $offer     Offer.
+	 * @param string               $placement Placement.
+	 * @param array<string, mixed> $context   Context.
+	 * @return array<string, mixed>
+	 */
+	public function validate( array $offer, string $placement, array $context ): array {
+		return $this->validator->validate( $offer, $placement, $context );
 	}
 
 	/**

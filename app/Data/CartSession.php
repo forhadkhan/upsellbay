@@ -172,18 +172,23 @@ final class CartSession {
 	public function validate_token( string $token ): bool {
 		$state = $this->state();
 
-		// If the session has no token yet (e.g. empty cart on a cached product page),
-		// accept the provided token as the initial token for this session.
-		if ( '' === $state['token_hash'] && '' !== $token ) {
-			$state['token_raw']       = $token;
-			$state['token_hash']      = $this->tokens->hash( $token );
-			$state['token_issued_at'] = time();
-			$this->save( $state );
-
-			return true;
+		// Only a token this session issued is accepted. A session without one
+		// rejects every token: adopting the first token a client sends would let
+		// any caller mint its own. A page served from cache before the session
+		// existed gets a fresh token through the cart fragment
+		// (StorefrontController::add_token_fragment()) and on its next render.
+		if ( '' === $token || '' === $state['token_hash'] ) {
+			return false;
 		}
 
-		return '' !== $state['token_hash'] && $this->tokens->verify( $token, $state['token_hash'] );
+		// Same lifetime as the free host's session tokens: a token that leaked
+		// into a cached page or a log stops working after two days.
+		$day = defined( 'DAY_IN_SECONDS' ) ? DAY_IN_SECONDS : 86400;
+		if ( $state['token_issued_at'] <= 0 || $state['token_issued_at'] < time() - 2 * $day ) {
+			return false;
+		}
+
+		return $this->tokens->verify( $token, $state['token_hash'] );
 	}
 
 	/**

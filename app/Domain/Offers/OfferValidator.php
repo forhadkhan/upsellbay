@@ -137,7 +137,11 @@ final class OfferValidator {
 	 * @return array<string, mixed>
 	 */
 	public function normalize( array $meta ): array {
-		$normalized = array_replace( $this->schema->defaults(), $meta );
+		// Keys outside the schema (including ones added through the
+		// `upsellbay_offer_schema` filter, which are in defaults()) are dropped, so
+		// an import file or request cannot write arbitrary post meta onto an offer.
+		$defaults   = $this->schema->defaults();
+		$normalized = array_replace( $defaults, array_intersect_key( $meta, $defaults ) );
 
 		$normalized['_ub_offer_type']               = $this->sanitize_key( $normalized['_ub_offer_type'] );
 		$normalized['_ub_status']                   = $this->sanitize_key( $normalized['_ub_status'] );

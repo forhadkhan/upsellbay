@@ -18,6 +18,9 @@ require_once __DIR__ . '/test-merchant-experience.php';
 require_once __DIR__ . '/test-developer-extensibility.php';
 require_once __DIR__ . '/test-quality-assurance.php';
 require_once __DIR__ . '/test-offer-conflict-detector.php';
+require_once __DIR__ . '/test-free-seam.php';
+require_once __DIR__ . '/test-release-hardening.php';
+require_once __DIR__ . '/test-release-fixes.php';
 
 $tests  = array_merge(
 	upsellbay_foundation_tests(),
@@ -27,7 +30,10 @@ $tests  = array_merge(
 	upsellbay_merchant_experience_tests(),
 	upsellbay_developer_extensibility_tests(),
 	upsellbay_quality_assurance_tests(),
-	upsellbay_offer_conflict_detector_tests()
+	upsellbay_offer_conflict_detector_tests(),
+	upsellbay_free_seam_tests(),
+	upsellbay_release_hardening_tests(),
+	upsellbay_release_fixes_tests()
 );
 $passed = 0;
 $failed = 0;

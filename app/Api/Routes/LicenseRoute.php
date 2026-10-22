@@ -137,7 +137,8 @@ final class LicenseRoute {
 		return new WP_REST_Response(
 			array(
 				'success' => true,
-				'status'  => $this->client->get_status(),
+				// Never the full key in a REST response.
+				'status'  => $this->client->public_status(),
 			),
 			200
 		);
@@ -154,7 +155,7 @@ final class LicenseRoute {
 	 */
 	public function status( WP_REST_Request $request ): WP_REST_Response {
 		unset( $request );
-		return new WP_REST_Response( $this->client->get_status(), 200 );
+		return new WP_REST_Response( $this->client->public_status(), 200 );
 	}
 
 	/**

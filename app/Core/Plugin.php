@@ -42,6 +42,7 @@ use WPAnchorBay\UpsellBayPro\Domain\Analytics\AnalyticsService;
 use WPAnchorBay\UpsellBayPro\Domain\Analytics\StatsReconciler;
 use WPAnchorBay\UpsellBayPro\Domain\Cart\CartMutator;
 use WPAnchorBay\UpsellBayPro\Domain\Cart\CartValidator;
+use WPAnchorBay\UpsellBayPro\Domain\Cart\OfferLineRepricer;
 use WPAnchorBay\UpsellBayPro\Domain\Compatibility\CompatibilityScanner;
 use WPAnchorBay\UpsellBayPro\Domain\Discounts\DiscountApplier;
 use WPAnchorBay\UpsellBayPro\Domain\Discounts\DiscountCalculator;
@@ -64,7 +65,6 @@ use WPAnchorBay\UpsellBayPro\Domain\Storefront\ProductPageRenderer;
 use WPAnchorBay\UpsellBayPro\Domain\Storefront\StorefrontController;
 use WPAnchorBay\UpsellBayPro\Domain\Storefront\ThankYouOfferRenderer;
 use WPAnchorBay\UpsellBayPro\Integrations\WooCommerce\BlockCheckoutIntegration;
-use WPAnchorBay\UpsellBayPro\Integrations\WooCommerce\CheckoutFields;
 use WPAnchorBay\UpsellBayPro\Integrations\WooCommerce\CouponLimiter;
 use WPAnchorBay\UpsellBayPro\Integrations\WooCommerce\StoreApiExtender;
 use WPAnchorBay\UpsellBayPro\Integrations\Licensing\LicenseClient;
@@ -73,11 +73,13 @@ use WPAnchorBay\UpsellBayPro\Domain\OneClick\OneClickCharger;
 use WPAnchorBay\UpsellBayPro\Domain\OneClick\PaymentChargeAdapterRegistry;
 use WPAnchorBay\UpsellBayPro\Integrations\OfferEditDiagnosticsIntegration;
 use WPAnchorBay\UpsellBayPro\Integrations\OfferTypesIntegration;
+use WPAnchorBay\UpsellBayPro\Integrations\HostSettingsIntegration;
 use WPAnchorBay\UpsellBayPro\Integrations\OneClick\StripeChargeAdapter;
 use WPAnchorBay\UpsellBayPro\Utils\ImportExporter;
 use WPAnchorBay\UpsellBayPro\Utils\RateLimiter;
 use WPAnchorBay\UpsellBayPro\Utils\TokenHelper;
 use WPAnchorBay\UpsellBayPro\Data\LogRepository;
+use WPAnchorBay\UpsellBayPro\Domain\Logging\ApiFailureLog;
 use WPAnchorBay\UpsellBayPro\Domain\Logging\LoggerInterface;
 use WPAnchorBay\UpsellBayPro\Domain\Logging\DatabaseLogger;
 
@@ -202,7 +204,17 @@ final class Plugin {
 		$this->container->set( StatsRepository::class, static fn (): StatsRepository => new StatsRepository() );
 		$this->container->set( OffersListColumnsIntegration::class, static fn ( Container $container ): OffersListColumnsIntegration => new OffersListColumnsIntegration( $container->get( OfferRepository::class ), $container->get( OfferConflictDetector::class ), $container->get( StatsRepository::class ) ) );
 		$this->container->set( OfferEditDiagnosticsIntegration::class, static fn ( Container $container ): OfferEditDiagnosticsIntegration => new OfferEditDiagnosticsIntegration( $container->get( OfferConflictDetector::class ), $container->get( OfferVisibilityPanel::class ) ) );
-		$this->container->set( OfferTypesIntegration::class, static fn (): OfferTypesIntegration => new OfferTypesIntegration() );
+		$this->container->set(
+			ScheduledJobs::class,
+			fn ( Container $container ): ScheduledJobs => new ScheduledJobs(
+				$container->get( Settings::class ),
+				$container->get( StatsRepository::class ),
+				array( $this, 'check_license' ),
+				array( $this, 'prune_logs' )
+			)
+		);
+		$this->container->set( HostSettingsIntegration::class, static fn ( Container $container ): HostSettingsIntegration => new HostSettingsIntegration( $container->get( Settings::class ) ) );
+		$this->container->set( OfferTypesIntegration::class, static fn ( Container $container ): OfferTypesIntegration => new OfferTypesIntegration( null, null, $container->get( PreviewLinks::class ) ) );
 		$this->container->set( CartSession::class, static fn ( Container $container ): CartSession => new CartSession( null, null, $container->get( TokenHelper::class ) ) );
 		$this->container->set( CartValidator::class, static fn ( Container $container ): CartValidator => new CartValidator( $container->get( RuleEvaluator::class ), $container->get( DiscountCalculator::class ) ) );
 		$this->container->set( CartMutator::class, static fn ( Container $container ): CartMutator => new CartMutator( $container->get( CartSession::class ), $container->get( CartValidator::class ), $container->get( DiscountCalculator::class ) ) );
@@ -236,7 +248,7 @@ final class Plugin {
 				/**
 				 * Register additional one-click payment charge adapters.
 				 *
-				 * @since 1.1.0
+				 * @since 1.0.0
 				 *
 				 * @param PaymentChargeAdapterRegistry $registry Adapter registry.
 				 */
@@ -262,13 +274,29 @@ final class Plugin {
 				null,
 				$container->get( AnalyticsService::class ),
 				$container->get( TokenHelper::class ),
-				$container->get( OneClickCharger::class )
+				// One-click is off in 1.0.0: without the switch no charger, adapter
+				// registry or Stripe adapter is ever built.
+				Constants::one_click_enabled() ? $container->get( OneClickCharger::class ) : null,
+				$container->get( OfferPrioritizer::class )
+			)
+		);
+		$this->container->set(
+			OfferLineRepricer::class,
+			static fn ( Container $container ): OfferLineRepricer => new OfferLineRepricer(
+				static fn ( int $offer_id ): ?array => $container->get( OfferService::class )->get( $offer_id ),
+				$container->get( OfferPrioritizer::class ),
+				$container->get( DiscountCalculator::class ),
+				$container->get( DiscountApplier::class ),
+				static function ( string $placement ) use ( $container ): bool {
+					$settings = $container->get( Settings::class )->all();
+
+					return true === ( $settings['enabled'] ?? true ) && false !== ( $settings['placements'][ $placement ] ?? true );
+				}
 			)
 		);
 		$this->container->set( ProductsController::class, static fn ( Container $container ): ProductsController => new ProductsController( $container->get( ProductRecommendationAssistant::class ) ) );
 		$this->container->set( ProductsRoute::class, static fn ( Container $container ): ProductsRoute => new ProductsRoute( $container->get( ProductsController::class ) ) );
 		$this->container->set( OfferPreviewRoute::class, static fn ( Container $container ): OfferPreviewRoute => new OfferPreviewRoute( $container->get( OfferService::class ) ) );
-		$this->container->set( CheckoutFields::class, static fn (): CheckoutFields => new CheckoutFields() );
 		$this->container->set( StoreApiExtender::class, static fn ( Container $container ): StoreApiExtender => new StoreApiExtender( $container->get( OfferRepository::class ), $container->get( OfferPrioritizer::class ), $container->get( CartSession::class ), $container->get( AnalyticsRecorder::class ), $container->get( Settings::class ) ) );
 		$this->container->set( BlockCheckoutIntegration::class, static fn ( Container $container ): BlockCheckoutIntegration => new BlockCheckoutIntegration( $container->get( Settings::class ), $container->get( CartSession::class ) ) );
 		$this->container->set( StorefrontController::class, static fn ( Container $container ): StorefrontController => new StorefrontController( $container->get( OfferRepository::class ), $container->get( PlacementRenderer::class ), $container->get( CartSession::class ), $container->get( Settings::class ), $container->get( TokenHelper::class ) ) );
@@ -276,6 +304,7 @@ final class Plugin {
 		$this->container->set( ImportExporter::class, static fn ( Container $container ): ImportExporter => new ImportExporter( $container->get( OfferValidator::class ), $container->get( OfferRepository::class ), $container->get( Settings::class ) ) );
 		$this->container->set( LogRepository::class, static fn (): LogRepository => new LogRepository() );
 		$this->container->set( LoggerInterface::class, static fn ( Container $container ): DatabaseLogger => new DatabaseLogger( $container->get( LogRepository::class ) ) );
+		$this->container->set( ApiFailureLog::class, static fn ( Container $container ): ApiFailureLog => new ApiFailureLog( $container->get( LoggerInterface::class ) ) );
 		$this->container->set( TokenHelper::class, static fn (): TokenHelper => new TokenHelper() );
 		$this->container->set( RateLimiter::class, static fn (): RateLimiter => new RateLimiter() );
 		$this->container->set( WizardController::class, static fn ( Container $container ): WizardController => new WizardController( $container->get( OfferService::class ), $container->get( Settings::class ), $container->get( OfferDefaults::class ), null, null, $container->get( LoggerInterface::class ) ) );
@@ -329,7 +358,9 @@ final class Plugin {
 		add_action( 'init', array( $this, 'maybe_upgrade' ), 20 );
 		add_action( 'admin_notices', array( $this, 'render_dependency_notices' ) );
 		add_action( 'admin_notices', array( $this, 'render_license_banner' ) );
-		add_action( 'upsellbay_admin_page_license_banner', array( $this, 'render_page_license_banner' ) );
+		// The host renamed its page-heading notice slot; the old
+		// `upsellbay_admin_page_license_banner` action no longer fires.
+		add_action( 'upsellbay_admin_page_heading_before', array( $this, 'render_page_license_banner' ) );
 		add_action( 'admin_post_upsellbay_pro_activate_license', array( $this, 'handle_activate_license' ) );
 		add_action( 'admin_post_upsellbay_pro_remove_license', array( $this, 'handle_remove_license' ) );
 		add_action( 'admin_post_upsellbay_pro_check_license', array( $this, 'handle_check_license' ) );
@@ -347,6 +378,7 @@ final class Plugin {
 		$this->container->get( OffersListColumnsIntegration::class )->register_hooks();
 		$this->container->get( OfferEditDiagnosticsIntegration::class )->register_hooks();
 		$this->container->get( OfferTypesIntegration::class )->register_hooks();
+		$this->container->get( HostSettingsIntegration::class )->register_hooks();
 		$this->container->get( DashboardPage::class )->register_hooks();
 		$this->container->get( PluginActionLinks::class )->register_hooks();
 		$this->container->get( StoreApiExtender::class )->register_hooks();
@@ -369,42 +401,43 @@ final class Plugin {
 		add_action( Constants::hook_name( 'attribution_written' ), array( $this, 'log_attribution_written' ), 10, 4 );
 		add_action( Constants::hook_name( 'follow_on_order_created' ), array( $this, 'log_follow_on_order_created' ), 10, 3 );
 		add_action( Constants::hook_name( 'daily_stats_reconciled' ), array( $this, 'log_daily_stats_reconciled' ), 10, 3 );
-		add_action( Constants::hook_name( 'prune_logs' ), array( $this, 'prune_logs' ) );
+		$this->container->get( ScheduledJobs::class )->register_hooks();
 
 		// The free host registers only the shared checkout-bump and dismiss routes on the
 		// upsellbay/v1 namespace. Pro owns its non-bump placements: it registers the
-		// cart-offer-add and one-click-accept routes via the host's route action, and hooks
+		// cart-offer-add route (and one-click-accept, only when the reserved one-click
+		// switch is on; never in 1.0.0) via the host's route action, and hooks
 		// the host's token seam so post-purchase thank-you actions authorize on host endpoints.
 		add_action( 'upsellbay_rest_routes', array( $this->container->get( ProductsRoute::class ), 'register' ) );
 		add_action( 'upsellbay_rest_routes', array( $this->container->get( PublicOfferRoutes::class ), 'register_one_click_route' ) );
 		add_action( 'upsellbay_rest_routes', array( $this->container->get( PublicOfferRoutes::class ), 'register_cart_offer_add_route' ) );
 		add_action( 'upsellbay_rest_routes', array( $this, 'register_license_routes' ) );
 		add_filter( 'upsellbay_offer_action_token_valid', array( $this->container->get( PublicOfferRoutes::class ), 'filter_action_token_valid' ), 10, 4 );
-		add_action( Constants::hook_name( 'check_license' ), array( $this, 'check_license' ) );
-		add_action( 'woocommerce_init', array( $this->container->get( CheckoutFields::class ), 'register' ) );
-		add_action( 'woocommerce_before_calculate_totals', array( $this, 'apply_offer_discounts' ) );
+		// Priority 20: after the free host's handler (10) on the same hook, so Pro's
+		// server-side decision is the last word on the lines Pro adds.
+		add_action( 'woocommerce_before_calculate_totals', array( $this, 'apply_offer_discounts' ), 20 );
 		add_action( 'woocommerce_checkout_create_order_line_item', array( $this, 'write_offer_line_item_attribution' ), 10, 4 );
 		add_action( 'woocommerce_order_status_processing', array( $this, 'record_order_offer_analytics' ) );
 		add_action( 'woocommerce_order_status_completed', array( $this, 'record_order_offer_analytics' ) );
 	}
 
 	/**
-	 * Apply session-scoped offer prices during cart total calculation.
+	 * Price accepted Pro offer lines from current server state on every totals run.
+	 *
+	 * The offer is reloaded and re-checked and its price recomputed each time
+	 * (OfferLineRepricer); the price stored at accept time is never applied.
+	 * Checkout-bump lines are the free host's and are left to it.
 	 *
 	 * @since 1.0.0
 	 *
 	 * @param mixed $cart WooCommerce cart object.
 	 */
 	public function apply_offer_discounts( $cart ): void {
-		if ( ! is_object( $cart ) || ! method_exists( $cart, 'get_cart' ) ) {
+		if ( ! is_object( $cart ) ) {
 			return;
 		}
 
-		foreach ( $cart->get_cart() as $cart_item ) {
-			if ( is_array( $cart_item ) ) {
-				$this->container->get( DiscountApplier::class )->apply_to_cart_item( $cart_item );
-			}
-		}
+		$this->container->get( OfferLineRepricer::class )->reprice( $cart );
 	}
 
 	/**
@@ -442,7 +475,10 @@ final class Plugin {
 
 		$this->container->get( AttributionWriter::class )->write_order_item( $item, $offer, $placement, $discount, $context );
 
-		$source_order_id = (int) ( $values[ Constants::ATTRIBUTION_SOURCE_ORDER_ID ] ?? 0 );
+		// Follow-on attribution belongs to thank-you offers only; CartMutator::accept()
+		// stores a source order on no other placement, and this check keeps a line
+		// from an older session from linking an order it was never verified against.
+		$source_order_id = 'thankyou_offer' === $placement ? (int) ( $values[ Constants::ATTRIBUTION_SOURCE_ORDER_ID ] ?? 0 ) : 0;
 		if ( $source_order_id > 0 && null !== $order ) {
 			$this->container->get( AttributionWriter::class )->write_follow_on_order( $order, $source_order_id, $offer_id );
 		}
@@ -704,7 +740,7 @@ final class Plugin {
 		$this->container->get( Installer::class )->clear_all_data();
 
 		$redirect_url = admin_url( 'admin.php?page=upsellbay&tab=settings&section=data' );
-		$redirect_url = add_query_arg( 'wc_message', rawurlencode( __( 'All UpsellBay data has been permanently deleted and reset to defaults.', 'upsellbay' ) ), $redirect_url );
+		$redirect_url = add_query_arg( 'wc_message', rawurlencode( __( 'UpsellBay Pro data has been permanently deleted and reset to defaults. Offers were kept.', 'upsellbay' ) ), $redirect_url );
 
 		wp_safe_redirect( $redirect_url );
 		exit;
@@ -748,17 +784,14 @@ final class Plugin {
 
 		$redirect_url = admin_url( 'admin.php?page=upsellbay&tab=tools' );
 
-		if ( ! isset( $_FILES['import_file']['tmp_name'] ) || '' === $_FILES['import_file']['tmp_name'] ) {
-			$redirect_url = add_query_arg( 'wc_error', rawurlencode( __( 'Please upload a valid JSON file.', 'upsellbay' ) ), $redirect_url );
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- read_upload() checks error, size and is_uploaded_file(); the path is never echoed.
+		$file = isset( $_FILES['import_file'] ) && is_array( $_FILES['import_file'] ) ? $_FILES['import_file'] : array();
+		$json = $this->container->get( ImportExporter::class )->read_upload( $file );
+		if ( is_wp_error( $json ) ) {
+			$redirect_url = add_query_arg( 'wc_error', rawurlencode( $json->get_error_message() ), $redirect_url );
 			wp_safe_redirect( $redirect_url );
 			exit;
 		}
-
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-		$tmp_name = isset( $_FILES['import_file']['tmp_name'] ) ? sanitize_text_field( wp_unslash( $_FILES['import_file']['tmp_name'] ) ) : '';
-
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
-		$json = file_get_contents( $tmp_name );
 
 		// Validate JSON lightly before storing it.
 		$payload = json_decode( (string) $json, true );
@@ -855,8 +888,8 @@ final class Plugin {
 	/**
 	 * Render a license warning banner inside UpsellBay admin pages.
 	 *
-	 * Hooked into upsellbay_admin_page_license_banner so it appears above regular
-	 * admin notices, the attached page header, and tab navigation.
+	 * Hooked into the host's upsellbay_admin_page_heading_before slot so it
+	 * appears in the page notices area, above the active tab's content.
 	 *
 	 * @since 1.0.0
 	 *
@@ -1098,14 +1131,8 @@ final class Plugin {
 	 * @param array<string, mixed> $params   Request parameters.
 	 */
 	public function log_api_request_failed( string $endpoint, string $reason, array $params ): void {
-		$this->container->get( LoggerInterface::class )->warning(
-			/* translators: 1: endpoint, 2: reason */
-			sprintf( __( 'API request to %1$s failed (%2$s)', 'upsellbay' ), $endpoint, $reason ),
-			array(
-				'source'       => 'api_guard',
-				'request_data' => $params,
-			)
-		);
+		// Endpoint, reason and offer ID only, at most one row per kind each hour.
+		$this->container->get( ApiFailureLog::class )->record( $endpoint, $reason, $params );
 	}
 
 	/**
@@ -1113,12 +1140,15 @@ final class Plugin {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param string $license_key Activated license key.
+	 * @param string $license_key Activated license key, masked by LicenseClient.
 	 */
 	public function log_license_activated( string $license_key ): void {
+		// Masked again unless it already is, in case another caller fires the hook raw.
+		$masked_key = str_contains( $license_key, '*' ) ? $license_key : $this->container->get( LicenseClient::class )->mask_key( $license_key );
+
 		$this->container->get( LoggerInterface::class )->info(
-			/* translators: %s: license key suffix */
-			sprintf( __( 'License activated successfully: %s', 'upsellbay' ), str_repeat( '*', max( 0, strlen( $license_key ) - 4 ) ) . substr( $license_key, -4 ) ),
+			/* translators: %s: masked license key */
+			sprintf( __( 'License activated successfully: %s', 'upsellbay' ), $masked_key ),
 			array(
 				'source'  => 'license_activation',
 				'user_id' => get_current_user_id(),
@@ -1131,7 +1161,7 @@ final class Plugin {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param string $license_key Failed license key.
+	 * @param string $license_key Failed license key, masked by LicenseClient.
 	 * @param string $error_code  Error code.
 	 * @param mixed  $error_obj   Optional. The WP_Error object.
 	 */
@@ -1140,40 +1170,56 @@ final class Plugin {
 			'source'   => 'license_activation',
 			'user_id'  => get_current_user_id(),
 			'metadata' => array(
-				'license_suffix' => substr( $license_key, -4 ),
+				// Masked again unless it already is, in case another caller fires the hook raw.
+				'masked_key' => str_contains( $license_key, '*' ) ? $license_key : $this->container->get( LicenseClient::class )->mask_key( $license_key ),
 			),
 		);
 
-		if ( is_wp_error( $error_obj ) ) {
-			$context['metadata'] = array_merge(
-				$context['metadata'],
-				array(
-					'error_messages' => $error_obj->get_error_messages(),
-				)
-			);
-		}
-
-		if ( is_wp_error( $error_obj ) ) {
-			$error_data = $error_obj->get_error_data();
-
-			if ( is_array( $error_data ) ) {
-				if ( isset( $error_data['request_data'] ) && is_array( $error_data['request_data'] ) ) {
-					$context['request_data'] = $error_data['request_data'];
-				}
-
-				if ( isset( $error_data['response_data'] ) && is_array( $error_data['response_data'] ) ) {
-					$context['response_data'] = $error_data['response_data'];
-				}
-
-				$context['metadata']['error_data'] = $error_data;
-			}
-		}
+		$context = $this->license_failure_context( $context, $error_obj, $license_key );
 
 		$this->container->get( LoggerInterface::class )->warning(
 			/* translators: %s: error code */
 			sprintf( __( 'License activation failed: %s', 'upsellbay' ), $error_code ),
 			$context
 		);
+	}
+
+	/**
+	 * Add a license failure's messages and diagnostics to a log context, key masked.
+	 *
+	 * The key is masked at the source: LicenseClient fires its hooks with the
+	 * masked key only. The key passed here is therefore already masked, so
+	 * redact() is defence in depth on already-masked text, not a guard against a
+	 * raw key.
+	 *
+	 * @param array<string, mixed> $context     Log context with a `metadata` array.
+	 * @param mixed                $error_obj   WP_Error or anything else.
+	 * @param string               $license_key License key to mask.
+	 * @return array<string, mixed>
+	 */
+	private function license_failure_context( array $context, mixed $error_obj, string $license_key ): array {
+		if ( ! is_wp_error( $error_obj ) ) {
+			return $context;
+		}
+
+		$client = $this->container->get( LicenseClient::class );
+
+		$context['metadata']['error_messages'] = $client->redact( $error_obj->get_error_messages(), $license_key );
+
+		$error_data = $client->redact( $error_obj->get_error_data(), $license_key );
+		if ( is_array( $error_data ) ) {
+			if ( isset( $error_data['request_data'] ) && is_array( $error_data['request_data'] ) ) {
+				$context['request_data'] = $error_data['request_data'];
+			}
+
+			if ( isset( $error_data['response_data'] ) && is_array( $error_data['response_data'] ) ) {
+				$context['response_data'] = $error_data['response_data'];
+			}
+
+			$context['metadata']['error_data'] = $error_data;
+		}
+
+		return $context;
 	}
 
 	/**
@@ -1185,32 +1231,15 @@ final class Plugin {
 	 * @param mixed  $error_obj  Optional. The WP_Error object.
 	 */
 	public function log_license_check_failed( string $error_code, mixed $error_obj = null ): void {
-		$context = array(
-			'source'  => 'license_check',
-			'user_id' => 0,
+		$context = $this->license_failure_context(
+			array(
+				'source'   => 'license_check',
+				'user_id'  => 0,
+				'metadata' => array(),
+			),
+			$error_obj,
+			(string) ( $this->container->get( LicenseClient::class )->get_status()['key'] ?? '' )
 		);
-
-		if ( is_wp_error( $error_obj ) ) {
-			$context['metadata'] = array(
-				'error_messages' => $error_obj->get_error_messages(),
-			);
-		}
-
-		if ( is_wp_error( $error_obj ) ) {
-			$error_data = $error_obj->get_error_data();
-
-			if ( is_array( $error_data ) ) {
-				if ( isset( $error_data['response_data'] ) && is_array( $error_data['response_data'] ) ) {
-					$context['response_data'] = $error_data['response_data'];
-				}
-
-				if ( isset( $error_data['request_data'] ) && is_array( $error_data['request_data'] ) ) {
-					$context['request_data'] = $error_data['request_data'];
-				}
-
-				$context['metadata']['error_data'] = $error_data;
-			}
-		}
 
 		$this->container->get( LoggerInterface::class )->warning(
 			/* translators: %s: error code */

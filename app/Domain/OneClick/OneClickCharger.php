@@ -27,8 +27,10 @@ use WPAnchorBay\UpsellBayPro\Domain\Discounts\DiscountCalculator;
  * PaymentChargeAdapter. It is idempotent (never double-charges the same offer for the
  * same source order) and, when the gateway can't do off-session one-click, returns an
  * `unsupported` result so the caller falls back to the standard separate-checkout flow.
+ * Only a verified-paid follow-on order is ever reported as success; see
+ * `.meta/architecture/one-click-charge-idempotency.md` for the full model.
  *
- * @since 1.1.0
+ * @since 1.0.0
  */
 final class OneClickCharger {
 	/**
@@ -46,11 +48,11 @@ final class OneClickCharger {
 	private DiscountCalculator $discounts;
 
 	/**
-	 * Linkage-meta writer (object with write_follow_on_order()).
+	 * Linkage-meta writer; its linkage is the idempotency key, so it is required.
 	 *
-	 * @var object
+	 * @var FollowOnLinkageWriter
 	 */
-	private object $attribution;
+	private FollowOnLinkageWriter $attribution;
 
 	/**
 	 * Builds an empty linked order from the source order.
@@ -67,36 +69,59 @@ final class OneClickCharger {
 	private $existing_finder;
 
 	/**
+	 * Loads an order by id (null when missing).
+	 *
+	 * @var callable(int): ?object
+	 */
+	private $order_loader;
+
+	/**
+	 * Follow-on order statuses that are closed with nothing charged or held, so a
+	 * retry may safely fall back to the separate-checkout flow.
+	 *
+	 * @var array<int, string>
+	 */
+	private const CLOSED_UNPAID_STATUSES = array( 'cancelled', 'failed', 'refunded' );
+
+	/**
 	 * Constructor.
 	 *
-	 * @since 1.1.0
+	 * @since 1.0.0
 	 *
 	 * @param PaymentChargeAdapterRegistry $registry        Adapter registry.
 	 * @param DiscountCalculator           $discounts       Discount calculator.
-	 * @param object                       $attribution     Linkage-meta writer.
+	 * @param FollowOnLinkageWriter        $attribution     Linkage-meta writer.
 	 * @param callable|null                $order_factory   Linked-order factory.
 	 * @param callable|null                $existing_finder Existing follow-on order finder.
+	 * @param callable|null                $order_loader    Order loader by id.
 	 */
 	public function __construct(
 		PaymentChargeAdapterRegistry $registry,
 		DiscountCalculator $discounts,
-		object $attribution,
+		FollowOnLinkageWriter $attribution,
 		?callable $order_factory = null,
-		?callable $existing_finder = null
+		?callable $existing_finder = null,
+		?callable $order_loader = null
 	) {
 		$this->registry        = $registry;
 		$this->discounts       = $discounts;
 		$this->attribution     = $attribution;
 		$this->order_factory   = $order_factory ?? array( $this, 'wc_order_factory' );
 		$this->existing_finder = $existing_finder ?? array( $this, 'wc_existing_finder' );
+		$this->order_loader    = $order_loader ?? array( $this, 'wc_order_loader' );
 	}
 
 	/**
-	 * Accept an offer for a completed order and charge it in one click.
+	 * Accept an offer for a paid source order and charge it in one click.
 	 *
-	 * @since 1.1.0
+	 * The source order must report itself paid (`WC_Order::is_paid()`: processing or
+	 * completed by default). A pending, on-hold or otherwise unpaid source order is
+	 * never charged against; it returns `unsupported` so the caller falls back to the
+	 * separate checkout, where the shopper pays explicitly.
 	 *
-	 * @param object               $source_order Completed source WC_Order.
+	 * @since 1.0.0
+	 *
+	 * @param object               $source_order Paid source WC_Order.
 	 * @param array<string, mixed> $offer        Offer payload (id + meta).
 	 * @param string               $placement    Placement key (e.g. thankyou_offer).
 	 * @return OneClickResult
@@ -110,10 +135,20 @@ final class OneClickCharger {
 			return OneClickResult::unsupported( 'Invalid offer.' );
 		}
 
-		// Idempotency: never charge the same offer twice for the same source order.
+		// Idempotency: at most one follow-on order (so at most one charge) per source
+		// order + offer. A retry never charges again; it reports what the first attempt
+		// actually did, and only a verified-paid order counts as success.
 		$existing = (int) ( $this->existing_finder )( $source_order->get_id(), $offer_id );
 		if ( $existing > 0 ) {
-			return OneClickResult::duplicate( $existing );
+			return $this->resolve_existing( $existing );
+		}
+
+		// Defence in depth (the REST route checks this first): an off-session charge for
+		// the upsell needs a paid source order. Checked after the idempotency lookup so a
+		// retry still reports what an earlier attempt did, and before any order is
+		// created or charged. A source without is_paid() fails closed.
+		if ( ! $this->is_paid( $source_order ) ) {
+			return OneClickResult::unsupported( 'The source order is not paid.' );
 		}
 
 		// Capability detection — unsupported gateways fall back to separate checkout.
@@ -137,6 +172,20 @@ final class OneClickCharger {
 		}
 		$offer_price = (float) $priced['offer_price'];
 
+		// Order line totals are stored excluding tax. On a store that enters prices
+		// including tax, strip the tax first so calculate_totals() adds it back once
+		// rather than charging tax on top of a tax-inclusive price (the cart does the same).
+		$line_total = $offer_price;
+		if ( function_exists( 'wc_get_price_excluding_tax' ) ) {
+			$line_total = (float) wc_get_price_excluding_tax(
+				$product,
+				array(
+					'qty'   => 1,
+					'price' => $offer_price,
+				)
+			);
+		}
+
 		// Build the unpaid linked order.
 		$new_order = ( $this->order_factory )( $source_order );
 		if ( ! is_object( $new_order ) || ! method_exists( $new_order, 'add_product' ) ) {
@@ -147,8 +196,8 @@ final class OneClickCharger {
 			$product,
 			1,
 			array(
-				'subtotal' => $offer_price,
-				'total'    => $offer_price,
+				'subtotal' => $line_total,
+				'total'    => $line_total,
 			)
 		);
 
@@ -167,28 +216,163 @@ final class OneClickCharger {
 			$new_order->set_payment_method_title( (string) $source_order->get_payment_method_title() );
 		}
 
+		// Tax is computed by WooCommerce from the order's own billing/shipping address,
+		// which the order factory copies from the source order, honouring the store's
+		// "calculate tax based on" setting. calculate_totals( true ) runs
+		// calculate_taxes() itself, so the amount the adapter charges (get_total()) is
+		// the tax-inclusive order total.
 		if ( method_exists( $new_order, 'calculate_totals' ) ) {
-			$new_order->calculate_totals( false );
+			$new_order->calculate_totals( true );
 		}
 		if ( method_exists( $new_order, 'save' ) ) {
 			$new_order->save();
 		}
 
-		// Link it to the source order + offer (reuses the existing attribution meta).
-		if ( method_exists( $this->attribution, 'write_follow_on_order' ) ) {
-			$this->attribution->write_follow_on_order( $new_order, $source_order->get_id(), $offer_id );
+		// No shipping line is added: one-click charges the item (and its tax) only.
+		if ( method_exists( $product, 'needs_shipping' ) && true === $product->needs_shipping() ) {
+			$this->add_note( $new_order, 'UpsellBay: one-click follow-on order for source order #' . (int) $source_order->get_id() . '. This item needs shipping, but one-click charges no shipping.' );
 		}
 
-		// Delegate the actual off-session charge to the gateway adapter.
-		$result = $adapter->charge( $new_order, $source_order );
+		// Link it to the source order + offer (reuses the existing attribution meta). The
+		// linkage is the idempotency key: without it a retry could not find this order
+		// and would charge again, so never charge when it was not written.
+		if ( ! $this->attribution->write_follow_on_order( $new_order, (int) $source_order->get_id(), $offer_id ) ) {
+			if ( method_exists( $new_order, 'update_status' ) ) {
+				$new_order->update_status( 'cancelled', 'UpsellBay: one-click follow-on order could not be linked to its source order. Nothing was charged.' );
+			}
+			return OneClickResult::unsupported( 'The follow-on order could not be linked.' );
+		}
+
+		// Delegate the actual off-session charge to the gateway adapter. An exception
+		// is an UNKNOWN outcome, never a decline: the gateway may have taken the money
+		// before the failure (timeout, transport error, fault after the charge).
+		try {
+			$result = $adapter->charge( $new_order, $source_order );
+		} catch ( \Throwable $e ) {
+			// Only the exception class goes into the note: gateway messages can carry raw
+			// API responses.
+			return $this->hold_indeterminate( $new_order, 'the payment request failed with ' . basename( str_replace( '\\', '/', get_class( $e ) ) ) );
+		}
 
 		if ( OneClickResult::STATUS_CHARGED === $result->status() ) {
 			Hooks::action( 'one_click_charged', $new_order, $source_order, $offer, $placement );
-		} elseif ( OneClickResult::STATUS_DECLINED === $result->status() && method_exists( $new_order, 'update_status' ) ) {
-			$new_order->update_status( 'cancelled', 'UpsellBay: one-click charge declined.' );
+			return $result;
 		}
 
-		return $result;
+		// Only a definite "nothing was charged" outcome closes the follow-on order, so a
+		// retry finds a closed, unpaid order and falls back to checkout. requires_action
+		// is closed too: no challenge UI ships, so the shopper completes via checkout.
+		$closed = array(
+			OneClickResult::STATUS_DECLINED        => 'UpsellBay: one-click charge declined. Nothing was charged.',
+			OneClickResult::STATUS_REQUIRES_ACTION => 'UpsellBay: one-click charge needs customer authentication, which one-click cannot run. Nothing was charged.',
+			OneClickResult::STATUS_UNSUPPORTED     => 'UpsellBay: one-click charge is not possible for this payment method. Nothing was charged.',
+		);
+		if ( isset( $closed[ $result->status() ] ) && ! $this->is_paid( $new_order ) ) {
+			if ( method_exists( $new_order, 'update_status' ) ) {
+				$new_order->update_status( 'cancelled', $closed[ $result->status() ] );
+			}
+			return $result;
+		}
+
+		// Everything else is indeterminate: an adapter-reported in_progress (e.g. the
+		// gateway is still processing, or money was taken but the order could not be
+		// marked paid), an unknown or bogus status, or a "no charge" claim on an order
+		// that is in fact paid. Never cancel, never fall back to a second charge.
+		$reason = OneClickResult::STATUS_IN_PROGRESS === $result->status() && '' !== $result->message()
+			? $result->message()
+			: 'the payment adapter reported "' . sanitize_key( $result->status() ) . '"';
+
+		return $this->hold_indeterminate( $new_order, $reason );
+	}
+
+	/**
+	 * Keep a follow-on order whose charge outcome is unknown on hold, and report
+	 * in_progress so the caller neither claims success nor offers a second payment.
+	 *
+	 * A retry finds this order through the linkage meta and resolve_existing() keeps
+	 * answering in_progress until the merchant (or a gateway webhook) settles it.
+	 *
+	 * @param object $order  Follow-on order.
+	 * @param string $reason Masked, PII-free reason for the merchant note.
+	 * @return OneClickResult
+	 */
+	private function hold_indeterminate( object $order, string $reason ): OneClickResult {
+		$note = 'UpsellBay: one-click charge outcome is unknown (' . $reason . '). The order was kept on hold, not cancelled, so the shopper is not charged twice. Check the payment in your gateway dashboard before completing or cancelling this order.';
+
+		if ( $this->is_paid( $order ) || ! method_exists( $order, 'update_status' ) ) {
+			// Never downgrade an order that is already paid.
+			$this->add_note( $order, $note );
+		} else {
+			$order->update_status( 'on-hold', $note );
+		}
+
+		$order_id = method_exists( $order, 'get_id' ) ? (int) $order->get_id() : 0;
+
+		return OneClickResult::in_progress( $order_id, 'The payment result is not confirmed yet.' );
+	}
+
+	/**
+	 * Whether an order reports itself as paid.
+	 *
+	 * @param object $order Order.
+	 */
+	private function is_paid( object $order ): bool {
+		return method_exists( $order, 'is_paid' ) && true === $order->is_paid();
+	}
+
+	/**
+	 * Add a private order note when the order supports it.
+	 *
+	 * @param object $order Order.
+	 * @param string $note  Note text (no secrets, no PII).
+	 */
+	private function add_note( object $order, string $note ): void {
+		if ( method_exists( $order, 'add_order_note' ) ) {
+			$order->add_order_note( $note );
+		}
+	}
+
+	/**
+	 * Report what an earlier attempt for the same source order + offer did, without
+	 * charging again.
+	 *
+	 * Paid -> duplicate (true success). Closed and unpaid -> declined, so the caller
+	 * falls back to the separate checkout. Anything else (pending, on-hold, missing)
+	 * may still be charging -> in_progress: neither success nor a fallback, so the
+	 * shopper is not invited to pay a second time.
+	 *
+	 * @param int $order_id Existing follow-on order id.
+	 * @return OneClickResult
+	 */
+	private function resolve_existing( int $order_id ): OneClickResult {
+		$order = ( $this->order_loader )( $order_id );
+
+		if ( is_object( $order ) && method_exists( $order, 'is_paid' ) && true === $order->is_paid() ) {
+			return OneClickResult::duplicate( $order_id );
+		}
+
+		$status = ( is_object( $order ) && method_exists( $order, 'get_status' ) ) ? (string) $order->get_status() : '';
+		if ( in_array( $status, self::CLOSED_UNPAID_STATUSES, true ) ) {
+			return OneClickResult::declined( 'A previous one-click payment for this offer was not completed.' );
+		}
+
+		return OneClickResult::in_progress( $order_id, 'A payment for this offer is still being processed.' );
+	}
+
+	/**
+	 * Default order loader (WooCommerce CRUD, HPOS-safe).
+	 *
+	 * @param int $order_id Order id.
+	 * @return object|null
+	 */
+	private function wc_order_loader( int $order_id ): ?object {
+		if ( ! function_exists( 'wc_get_order' ) ) {
+			return null;
+		}
+
+		$order = wc_get_order( $order_id );
+
+		return is_object( $order ) ? $order : null;
 	}
 
 	/**
@@ -212,6 +396,9 @@ final class OneClickCharger {
 		$new_order->set_address( $source_order->get_address( 'shipping' ), 'shipping' );
 		if ( method_exists( $new_order, 'set_currency' ) && method_exists( $source_order, 'get_currency' ) ) {
 			$new_order->set_currency( (string) $source_order->get_currency() );
+		}
+		if ( method_exists( $new_order, 'set_prices_include_tax' ) && function_exists( 'get_option' ) ) {
+			$new_order->set_prices_include_tax( 'yes' === get_option( 'woocommerce_prices_include_tax' ) );
 		}
 		if ( method_exists( $new_order, 'set_created_via' ) ) {
 			$new_order->set_created_via( 'upsellbay_one_click' );

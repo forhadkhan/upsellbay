@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Resolves the one-click charge adapter for a given order's payment gateway.
  *
- * @since 1.1.0
+ * @since 1.0.0
  */
 final class PaymentChargeAdapterRegistry {
 	/**
@@ -31,7 +31,7 @@ final class PaymentChargeAdapterRegistry {
 	/**
 	 * Register an adapter for its gateway.
 	 *
-	 * @since 1.1.0
+	 * @since 1.0.0
 	 *
 	 * @param PaymentChargeAdapter $adapter Adapter.
 	 */
@@ -42,7 +42,7 @@ final class PaymentChargeAdapterRegistry {
 	/**
 	 * Return the adapter that can one-click-charge this order, or null.
 	 *
-	 * @since 1.1.0
+	 * @since 1.0.0
 	 *
 	 * @param object $source_order Source WC_Order.
 	 */

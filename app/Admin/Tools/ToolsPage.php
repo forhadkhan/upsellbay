@@ -14,6 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use WPAnchorBay\UpsellBay\Admin\Navigation\AdminTab as HostAdminTab;
 use WPAnchorBay\UpsellBayPro\Core\Settings;
 use WPAnchorBay\UpsellBayPro\Domain\Compatibility\CompatibilityScanner;
 use WPAnchorBay\UpsellBayPro\Utils\ImportExporter;
@@ -70,16 +71,59 @@ final class ToolsPage {
 	}
 
 	/**
-	 * Attach to the host plugin's Tools tab extension seam.
+	 * Attach a Tools tab to the host plugin's admin page.
+	 *
+	 * The host removed its own Tools tab (and the `upsellbay_tools_tab_content`
+	 * action with it), so Pro contributes a whole tab through the host's
+	 * `upsellbay_admin_tabs` registry instead.
 	 *
 	 * @since 1.0.0
 	 */
 	public function register_hooks(): void {
-		if ( ! function_exists( 'add_action' ) ) {
+		if ( ! function_exists( 'add_filter' ) ) {
 			return;
 		}
 
-		add_action( 'upsellbay_tools_tab_content', array( $this, 'render_content' ) );
+		add_filter( 'upsellbay_admin_tabs', array( $this, 'add_host_tab' ) );
+	}
+
+	/**
+	 * Add the Tools tab to the host's tab list, before Help when present.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param mixed $tabs Host tab list (`WPAnchorBay\UpsellBay\Admin\Navigation\AdminTab` objects).
+	 * @return mixed
+	 */
+	public function add_host_tab( $tabs ) {
+		if ( ! is_array( $tabs ) || ! class_exists( HostAdminTab::class ) ) {
+			return $tabs;
+		}
+
+		$help_index = null;
+		foreach ( array_values( $tabs ) as $index => $tab ) {
+			$id = is_object( $tab ) && method_exists( $tab, 'id' ) ? (string) $tab->id() : '';
+			if ( 'tools' === $id ) {
+				return $tabs;
+			}
+
+			if ( 'help' === $id ) {
+				$help_index = $index;
+			}
+		}
+
+		$tools = new HostAdminTab(
+			'tools',
+			__( 'Tools', 'upsellbay' ),
+			function ( array $request ): void {
+				$this->render_content( $request );
+			}
+		);
+
+		$tabs = array_values( $tabs );
+		array_splice( $tabs, $help_index ?? count( $tabs ), 0, array( $tools ) );
+
+		return $tabs;
 	}
 
 	/**

@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class Constants {
 	public const VERSION                         = '1.0.0';
-	public const DB_VERSION                      = '1';
+	public const DB_VERSION                      = '2';
 	public const NAMESPACE_ROOT                  = 'WPAnchorBay\\UpsellBayPro';
 	public const TEXT_DOMAIN                     = 'upsellbay';
 	public const PLUGIN_SLUG                     = 'upsellbay';
@@ -31,7 +31,7 @@ final class Constants {
 	public const REST_NAMESPACE                  = 'upsellbay/v1';
 	public const OPTION_PREFIX                   = 'upsellbay_';
 	public const SETTINGS_OPTION                 = 'upsellbay_settings';
-	public const DB_VERSION_OPTION               = 'upsellbay_db_version';
+	public const DB_VERSION_OPTION               = 'upsellbay_pro_db_version';
 	public const META_PREFIX                     = '_ub_';
 	public const HOOK_PREFIX                     = 'upsellbay_pro_';
 	public const NONCE_PREFIX                    = 'upsellbay_pro_';
@@ -55,7 +55,7 @@ final class Constants {
 	public const MIN_PHP_VERSION                 = '8.1';
 	public const MIN_WP_VERSION                  = '6.8';
 	public const MIN_WC_VERSION                  = '10.8';
-	public const MIN_HOST_VERSION                = '1.0.0';
+	public const MIN_HOST_VERSION                = '1.0.1';
 	public const ATTRIBUTION_OFFER_ID            = '_ub_offer_id';
 	public const ATTRIBUTION_OFFER_TYPE          = '_ub_offer_type';
 	public const ATTRIBUTION_OFFER_PLACEMENT     = '_ub_offer_placement';
@@ -143,5 +143,29 @@ final class Constants {
 	 */
 	public static function hook_name( string $suffix ): string {
 		return self::HOOK_PREFIX . ltrim( $suffix, '_' );
+	}
+
+	/**
+	 * Whether the one-click post-purchase charge is switched on.
+	 *
+	 * Off in 1.0.0: PRD v4 ships thank-you offers as a separate follow-on
+	 * checkout, with no tokenized one-click charge. The finished one-click code
+	 * stays in the plugin for 1.1 behind this single switch. While it is off the
+	 * `one-click-accept` route is not registered, no payment charge adapter is
+	 * built, and thank-you offer markup carries no one-click marker, so the
+	 * storefront script never calls the route.
+	 *
+	 * The `upsellbay_pro_one_click_enabled` filter is reserved and unsupported in
+	 * 1.0.0. It is read when Pro boots (plugins_loaded), so only a must-use
+	 * plugin can change it.
+	 *
+	 * @since 1.0.0
+	 */
+	public static function one_click_enabled(): bool {
+		if ( ! function_exists( 'apply_filters' ) ) {
+			return false;
+		}
+
+		return true === apply_filters( self::hook_name( 'one_click_enabled' ), false );
 	}
 }

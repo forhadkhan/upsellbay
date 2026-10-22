@@ -31,6 +31,31 @@ UpsellBay exposes hooks only at stable service boundaries. Hook callbacks must n
 | `upsellbay_follow_on_order_created` | A thank-you follow-on order is linked to its source order and offer. |
 | `upsellbay_daily_stats_reconciled` | A bounded stats reconciliation operation repairs an aggregate row. |
 
+## Pro Public Route Filters
+
+| Hook | Purpose | Return |
+| --- | --- | --- |
+| `upsellbay_pro_rate_limit_client_ip` | The client IP public routes rate-limit on and the log table records, truncated (default `REMOTE_ADDR`). Return a trusted visitor IP only from a header your own proxy sets, never one the browser can send. A value that is not a valid IP address is ignored. IPv6 clients are rate-limited per /64 network. | `string` |
+
+## Pro Actions
+
+| Hook | Fires when | Arguments |
+| --- | --- | --- |
+| `upsellbay_pro_api_request_failed` | A Pro public route refuses a request. | `string $endpoint`, `string $reason`, `array $request` with only `offer_id` and `placement` (never the token, order ID or order key). The Pro log table keeps at most one row per endpoint and reason (and offer, except for `rate_limited` / `invalid_token`) each hour. |
+| `upsellbay_pro_license_activation_failed` | Activating a license key failed. | `string $masked_key` (the key masked, for example `AB****78`; the raw key is never passed), `string $error_code`, `WP_Error $error`. The error's messages and data have the key masked too. |
+| `upsellbay_pro_license_activated` | A license key was activated. | `string $masked_key` (masked as above; the raw key is never passed). |
+| `upsellbay_pro_license_check_failed` | The background license check failed. | `string $error_code`, `WP_Error $error`, key masked as above. |
+
+## Reserved: Pro One-Click (not supported in 1.0.0)
+
+Pro 1.0.0 ships thank-you offers as a separate follow-on checkout only. The one-click post-purchase charge is built but switched off, and these hooks are reserved for a later release. Do not rely on them: they may change without notice, and turning the switch on is unsupported.
+
+| Hook | Purpose | Return |
+| --- | --- | --- |
+| `upsellbay_pro_one_click_enabled` | Reserved switch for the one-click charge (default `false`). Must be added before Pro boots. While it is off, `/one-click-accept` is not registered (and refuses with 404 if called), no payment charge adapter is built, and thank-you offer markup carries no one-click marker. | `bool` |
+| `upsellbay_pro_one_click_max_order_age` | Reserved. Maximum age in seconds of a source order whose thank-you offer may be charged in one click (default 86400). Has no effect while one-click is off. | `int` |
+| `upsellbay_pro_register_one_click_adapters` (action) | Reserved. Lets a payment gateway add a charge adapter to the registry. Never fires while one-click is off. | `PaymentChargeAdapterRegistry $registry` |
+
 ## Import/Export Filters
 
 | Hook | Purpose |

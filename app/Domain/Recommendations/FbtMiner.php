@@ -28,7 +28,7 @@ use WPAnchorBay\UpsellBayPro\Data\FbtRepository;
  * WooCommerce CRUD (HPOS-safe) via an injectable provider — the class itself does no SQL,
  * so the scoring is unit-testable without WooCommerce.
  *
- * @since 1.1.0
+ * @since 1.0.0
  */
 final class FbtMiner {
 	/**
@@ -53,7 +53,7 @@ final class FbtMiner {
 	/**
 	 * Constructor.
 	 *
-	 * @since 1.1.0
+	 * @since 1.0.0
 	 *
 	 * @param FbtRepository $repository      Index repository.
 	 * @param callable|null $orders_provider Optional order-lines provider (for tests).
@@ -66,7 +66,7 @@ final class FbtMiner {
 	/**
 	 * Rebuild the whole index from a trailing window of order history.
 	 *
-	 * @since 1.1.0
+	 * @since 1.0.0
 	 *
 	 * @param int $window_days      Trailing window to mine.
 	 * @param int $limit_per_anchor Max recommendations kept per anchor product.

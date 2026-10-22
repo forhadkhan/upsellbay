@@ -1,4 +1,4 @@
-import { registerPlugin } from '@wordpress/plugins';
+import { registerPlugin, getPlugin } from '@wordpress/plugins';
 const { ExperimentalOrderMeta } = window.wc.blocksCheckout;
 import { useState } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
@@ -131,8 +131,18 @@ const CheckoutBumpList = ( { extensions } ) => {
 	);
 };
 
+const PLUGIN_NAME = 'upsellbay-checkout-bumps';
+
 export const registerCheckoutBumps = () => {
-	registerPlugin( 'upsellbay-checkout-bumps', {
+	// The free host registers the same plugin name for the same Store API
+	// checkout_bump data. registerPlugin() throws on a taken name, and two
+	// registrations would render every bump twice, so the second loader stands
+	// down and the bump renders once.
+	if ( typeof getPlugin === 'function' && getPlugin( PLUGIN_NAME ) ) {
+		return;
+	}
+
+	registerPlugin( PLUGIN_NAME, {
 		render: ( { extensions } ) => (
 			<ExperimentalOrderMeta>
 				<CheckoutBumpList extensions={ extensions } />

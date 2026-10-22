@@ -10,6 +10,8 @@
 	<exclude-pattern>node_modules/*</exclude-pattern>
 	<exclude-pattern>assets/*</exclude-pattern>
 	<exclude-pattern>tests/*</exclude-pattern>
+	<!-- PHPStan analysis stubs, not runtime code; never shipped (see scripts/verify-release.sh). -->
+	<exclude-pattern>phpstan-bootstrap\.php</exclude-pattern>
 
 	<arg name="extensions" value="php"/>
 	<arg name="parallel" value="4"/>

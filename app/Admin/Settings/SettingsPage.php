@@ -470,19 +470,19 @@ final class SettingsPage {
 			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- help_tip() returns escaped WooCommerce help tip markup.
 			echo '<tr><th scope="row"><label for="upsellbay-' . esc_attr( $key ) . '">' . esc_html( $label ) . '</label> ' . $this->help_tip( $this->retention_help_text( $key ) ) . '</th><td><input id="upsellbay-' . esc_attr( $key ) . '" name="' . esc_attr( $key ) . '" type="number" min="1" class="small-text" value="' . esc_attr( (string) ( $retention[ $key ] ?? 30 ) ) . '"></td></tr>';
 		}
-		$this->checkbox_row( 'cleanup_on_delete', __( 'Delete data on uninstall', 'upsellbay' ), (bool) $settings['cleanup_on_delete'], __( 'Keep this off unless the merchant explicitly wants plugin data removed during uninstall.', 'upsellbay' ), __( 'When enabled, uninstall cleanup can remove UpsellBay settings, offers, and aggregate stats instead of preserving them.', 'upsellbay' ) );
+		$this->checkbox_row( 'cleanup_on_delete', __( 'Delete data on uninstall', 'upsellbay' ), (bool) $settings['cleanup_on_delete'], __( 'Keep this off unless the merchant explicitly wants plugin data removed during uninstall.', 'upsellbay' ), __( 'When enabled, deleting UpsellBay Pro removes its own settings, license data, aggregate stats, logs and recommendation index. Offers and the free plugin settings are always kept.', 'upsellbay' ) );
 		echo '</tbody></table>';
 
 		echo '<h2>' . esc_html__( 'Clear All Data', 'upsellbay' ) . '</h2>';
 		echo '<table class="form-table upsellbay-settings-table" role="presentation"><tbody>';
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		echo '<tr><th scope="row">' . esc_html__( 'Reset Application', 'upsellbay' ) . ' ' . $this->help_tip( __( 'This will permanently delete all UpsellBay data and reset the plugin to a fresh installation state.', 'upsellbay' ) ) . '</th>';
+		echo '<tr><th scope="row">' . esc_html__( 'Reset Application', 'upsellbay' ) . ' ' . $this->help_tip( __( 'This permanently deletes UpsellBay Pro analytics, logs, recommendation data and Pro settings, and resets them to defaults. Offers and the free plugin settings are kept.', 'upsellbay' ) ) . '</th>';
 		echo '<td>';
 		$clear_nonce = wp_create_nonce( 'upsellbay_pro_clear_all_data' );
 		$clear_url   = admin_url( 'admin-post.php?action=upsellbay_pro_clear_all_data&_wpnonce=' . $clear_nonce );
 
-		echo '<a href="' . esc_url( $clear_url ) . '" class="button button-secondary upsellbay-button-danger upsellbay-modal-trigger" data-modal-title="' . esc_attr__( 'Clear All Data', 'upsellbay' ) . '" data-modal-message="' . esc_attr__( 'Are you sure you want to permanently delete all records, configurations, settings, generated data, analytics, offers and any other data stored by UpsellBay? This action is irreversible.', 'upsellbay' ) . '" data-modal-confirm="' . esc_attr__( 'Yes, Clear All Data', 'upsellbay' ) . '" data-modal-cancel="' . esc_attr__( 'Cancel', 'upsellbay' ) . '">' . esc_html__( 'Clear All Data', 'upsellbay' ) . '</a>';
-		echo '<p class="description">' . esc_html__( 'Warning: This action will permanently delete all offers, configurations, analytics, and session data. It cannot be undone.', 'upsellbay' ) . '</p>';
+		echo '<a href="' . esc_url( $clear_url ) . '" class="button button-secondary upsellbay-button-danger upsellbay-modal-trigger" data-modal-title="' . esc_attr__( 'Clear All Data', 'upsellbay' ) . '" data-modal-message="' . esc_attr__( 'Are you sure you want to permanently delete UpsellBay Pro analytics, logs, recommendation data and Pro settings? Offers and the free plugin settings are kept. This action is irreversible.', 'upsellbay' ) . '" data-modal-confirm="' . esc_attr__( 'Yes, Clear All Data', 'upsellbay' ) . '" data-modal-cancel="' . esc_attr__( 'Cancel', 'upsellbay' ) . '">' . esc_html__( 'Clear All Data', 'upsellbay' ) . '</a>';
+		echo '<p class="description">' . esc_html__( 'Warning: This action permanently deletes Pro analytics, logs, recommendation data and Pro settings. Offers are not deleted. It cannot be undone.', 'upsellbay' ) . '</p>';
 		echo '</td></tr>';
 		echo '</tbody></table>';
 	}

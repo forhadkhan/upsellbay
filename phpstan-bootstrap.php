@@ -131,3 +131,17 @@ namespace Automattic\WooCommerce\StoreApi\Schemas\V1 {
 		}
 	}
 }
+
+// The free host plugin's admin tab value object, which Pro builds through the
+// host's `upsellbay_admin_tabs` filter. Signature mirrors the host class.
+namespace WPAnchorBay\UpsellBay\Admin\Navigation {
+	if (! class_exists(AdminTab::class)) {
+		final class AdminTab {
+			public function __construct(string $id, string $label, callable $render_callback, ?callable $prepare_callback = null, bool $show_in_nav = true) {}
+
+			public function id(): string {
+				return '';
+			}
+		}
+	}
+}

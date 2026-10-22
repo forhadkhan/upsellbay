@@ -87,7 +87,9 @@ function upsellbay_admin_architecture_tests(): array {
 			$css    = (string) file_get_contents( $root . '/assets/admin/css/upsellbay-admin.css' );
 
 			assert_contains( 'upsellbay-license-banner', $plugin );
-			assert_contains( 'upsellbay_admin_page_license_banner', $plugin );
+			// The host fires upsellbay_admin_page_heading_before; the old license-banner action is dead.
+			assert_contains( "add_action( 'upsellbay_admin_page_heading_before', array( \$this, 'render_page_license_banner' ) )", $plugin );
+			assert_false( str_contains( $plugin, "add_action( 'upsellbay_admin_page_license_banner'" ) );
 			assert_contains( "get_license_notice_html( 'upsellbay-license-banner', false )", $plugin );
 			assert_contains( '<p><strong>%s </strong> <a href="%s"', $plugin );
 			assert_false( str_contains( $plugin, "esc_html__( 'UpsellBay License'" ) );
@@ -224,7 +226,7 @@ function upsellbay_admin_architecture_tests(): array {
 			$result = $page->save(
 				array(
 					'nonce'                    => 'good',
-					'upsellbay_new_license_key' => 'WPAB-ABCDEFGHIJKL-123456789012',
+					'upsellbay_new_license_key' => 'WPAB-ABCDEFGHIJKL-123456789012', // gitleaks:allow -- sequential test fixture, not a real key.
 				)
 			);
 
@@ -290,7 +292,7 @@ function upsellbay_admin_architecture_tests(): array {
 			$_SERVER['REQUEST_METHOD'] = 'POST';
 			$_POST                     = array(
 				'nonce'                    => 'good',
-				'upsellbay_new_license_key' => 'WPAB-ZYXWVUTSRQPO-123456789012',
+				'upsellbay_new_license_key' => 'WPAB-ZYXWVUTSRQPO-123456789012', // gitleaks:allow -- sequential test fixture, not a real key.
 			);
 
 			ob_start();

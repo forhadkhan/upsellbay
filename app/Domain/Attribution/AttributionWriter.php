@@ -17,13 +17,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WPAnchorBay\UpsellBayPro\Core\Constants;
 use WPAnchorBay\UpsellBayPro\Core\Hooks;
+use WPAnchorBay\UpsellBayPro\Domain\OneClick\FollowOnLinkageWriter;
 
 /**
  * Writes attribution metadata through WooCommerce CRUD object methods.
  *
  * @since 1.0.0
  */
-final class AttributionWriter {
+final class AttributionWriter implements FollowOnLinkageWriter {
 	/**
 	 * Write attribution to an order item.
 	 *
@@ -66,10 +67,11 @@ final class AttributionWriter {
 	 * @param object $order           WC order-like object.
 	 * @param int    $source_order_id Source order ID.
 	 * @param int    $source_offer_id Source offer ID.
+	 * @return bool Whether the linkage was written (false when the order cannot hold meta).
 	 */
-	public function write_follow_on_order( object $order, int $source_order_id, int $source_offer_id ): void {
+	public function write_follow_on_order( object $order, int $source_order_id, int $source_offer_id ): bool {
 		if ( ! method_exists( $order, 'update_meta_data' ) ) {
-			return;
+			return false;
 		}
 
 		$order->update_meta_data( Constants::ATTRIBUTION_SOURCE_ORDER_ID, $source_order_id );
@@ -81,5 +83,7 @@ final class AttributionWriter {
 		}
 
 		Hooks::action( 'follow_on_order_created', $order, $source_order_id, $source_offer_id );
+
+		return true;
 	}
 }

@@ -45,7 +45,9 @@ final class DiscountCalculator {
 			'none'         => $original,
 			'percent'      => $original - ( $original * min( 100.0, $value ) / 100 ),
 			'fixed_amount' => $original - $value,
-			'fixed_price'  => $value,
+			// Never above the current price: a sale (or a free product) can drop the
+			// price under the merchant's fixed offer price.
+			'fixed_price'  => min( $value, $original ),
 			default        => null,
 		};
 

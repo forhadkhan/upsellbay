@@ -38,16 +38,52 @@ final class StatsRepository {
 	private $reader;
 
 	/**
+	 * Retention delete callback.
+	 *
+	 * @var callable(string): int
+	 */
+	private $pruner;
+
+	/**
+	 * Most rows one prune run deletes, so a first run on a large table does not
+	 * hold a long lock. Later daily runs work through any remainder.
+	 *
+	 * @var int
+	 */
+	private const PRUNE_BATCH_LIMIT = 10000;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.0.0
 	 *
 	 * @param callable|null $upsert Atomic upsert callback.
 	 * @param callable|null $reader Bounded stats reader.
+	 * @param callable|null $pruner Retention delete callback (receives the Y-m-d cutoff).
 	 */
-	public function __construct( ?callable $upsert = null, ?callable $reader = null ) {
+	public function __construct( ?callable $upsert = null, ?callable $reader = null, ?callable $pruner = null ) {
 		$this->upsert = $upsert ?? array( $this, 'wpdb_upsert' );
 		$this->reader = $reader ?? array( $this, 'wpdb_read' );
+		$this->pruner = $pruner ?? array( $this, 'wpdb_prune' );
+	}
+
+	/**
+	 * Delete aggregate rows dated before a cutoff day.
+	 *
+	 * Touches only Pro's own daily stats table. Offers, orders and order
+	 * attribution meta are never read or deleted here.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $before_date Cutoff store date (Y-m-d); rows strictly older are deleted.
+	 * @return int Rows deleted.
+	 */
+	public function prune_before( string $before_date ): int {
+		if ( 1 !== preg_match( '/^\d{4}-\d{2}-\d{2}$/', $before_date ) ) {
+			return 0;
+		}
+
+		return max( 0, (int) ( $this->pruner )( $before_date ) );
 	}
 
 	/**
@@ -193,6 +229,33 @@ final class StatsRepository {
 			)
 		);
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+	}
+
+	/**
+	 * WordPress database retention delete adapter.
+	 *
+	 * @param string $before_date Cutoff store date (Y-m-d).
+	 */
+	private function wpdb_prune( string $before_date ): int {
+		if ( ! isset( $GLOBALS['wpdb'] ) ) {
+			return 0;
+		}
+
+		$wpdb       = $GLOBALS['wpdb'];
+		$table_name = $wpdb->prefix . Constants::STATS_TABLE_SUFFIX;
+
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$deleted = $wpdb->query(
+			$wpdb->prepare(
+				"DELETE FROM {$table_name} WHERE stat_date < %s LIMIT %d",
+				$before_date,
+				self::PRUNE_BATCH_LIMIT
+			)
+		);
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+
+		return is_int( $deleted ) ? $deleted : 0;
 	}
 
 	/**

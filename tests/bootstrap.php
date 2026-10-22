@@ -247,6 +247,9 @@ if ( ! class_exists( 'WC_Order' ) ) {
 		public function get_customer_id(): int {
 			return 0;
 		}
+		public function is_paid(): bool {
+			return in_array( $this->status, array( 'processing', 'completed' ), true );
+		}
 		/**
 		 * @return mixed
 		 */
@@ -260,6 +263,13 @@ if ( ! function_exists( 'wp_get_post_terms' ) ) {
 	function wp_get_post_terms( int $post_id, string $taxonomy, array $args = array() ): array {
 		unset( $args );
 		return $GLOBALS['upsellbay_test_product_terms'][ $taxonomy ][ $post_id ] ?? array();
+	}
+}
+
+if ( ! function_exists( 'get_userdata' ) ) {
+	function get_userdata( int $user_id ) {
+		$roles = $GLOBALS['upsellbay_test_user_roles'][ $user_id ] ?? null;
+		return null === $roles ? false : (object) array( 'roles' => $roles );
 	}
 }
 
@@ -347,6 +357,18 @@ if ( ! function_exists( 'apply_filters' ) ) {
 	}
 }
 
+if ( ! function_exists( 'remove_filter' ) ) {
+	function remove_filter( string $hook, callable $callback, int $priority = 10 ): bool {
+		unset( $priority );
+		$before                               = $GLOBALS['upsellbay_test_hooks'][ $hook ] ?? array();
+		$GLOBALS['upsellbay_test_hooks'][ $hook ] = array_values(
+			array_filter( $before, static fn ( array $entry ): bool => $entry[0] !== $callback )
+		);
+
+		return count( $before ) !== count( $GLOBALS['upsellbay_test_hooks'][ $hook ] );
+	}
+}
+
 if ( ! function_exists( 'add_action' ) ) {
 	function add_action( string $hook, callable $callback, int $priority = 10, int $accepted_args = 1 ): void {
 		add_filter( $hook, $callback, $priority, $accepted_args );
@@ -358,6 +380,18 @@ if ( ! function_exists( 'do_action' ) ) {
 		foreach ( $GLOBALS['upsellbay_test_hooks'][ $hook ] ?? array() as $entry ) {
 			$entry[0]( ...array_slice( $args, 0, (int) $entry[1] ) );
 		}
+	}
+}
+
+if ( ! function_exists( 'register_rest_route' ) ) {
+	/**
+	 * Record a registered REST route as "namespace/route".
+	 */
+	function register_rest_route( string $route_namespace, string $route, array $args = array(), bool $override = false ): bool {
+		unset( $args, $override );
+		$GLOBALS['upsellbay_test_rest_routes'][] = $route_namespace . $route;
+
+		return true;
 	}
 }
 
@@ -549,6 +583,7 @@ foreach (
 		'app/Data/FbtRepository.php',
 		'app/Data/CartSession.php',
 		'app/Domain/Recommendations/FbtMiner.php',
+		'app/Domain/OneClick/FollowOnLinkageWriter.php',
 		'app/Domain/OneClick/OneClickResult.php',
 		'app/Domain/OneClick/PaymentChargeAdapter.php',
 		'app/Domain/OneClick/PaymentChargeAdapterRegistry.php',
@@ -562,6 +597,9 @@ foreach (
 		'app/Domain/Discounts/DiscountApplier.php',
 		'app/Domain/Cart/CartValidator.php',
 		'app/Domain/Cart/CartMutator.php',
+		'app/Domain/Logging/LoggerInterface.php',
+		'app/Domain/Logging/ApiFailureLog.php',
+		'app/Utils/ClientIp.php',
 		'app/Domain/Attribution/AttributionWriter.php',
 		'app/Domain/Attribution/AttributionReader.php',
 		'app/Domain/Offers/OfferService.php',
@@ -575,13 +613,14 @@ foreach (
 		'app/Domain/Storefront/CartCrossSellRenderer.php',
 		'app/Domain/Storefront/ThankYouOfferRenderer.php',
 		'app/Domain/Storefront/PlacementRenderer.php',
+		'app/Domain/Storefront/OrderContext.php',
+		'app/Domain/Cart/OfferLineRepricer.php',
 		'app/Domain/Storefront/StorefrontController.php',
 		'app/Domain/Compatibility/CompatibilityScanner.php',
 		'app/Api/ProductsController.php',
 		'app/Api/Routes/ProductsRoute.php',
 		'app/Api/Routes/OfferPreviewRoute.php',
 		'app/Api/Routes/PublicOfferRoutes.php',
-		'app/Integrations/WooCommerce/CheckoutFields.php',
 		'app/Integrations/WooCommerce/BlockCheckoutIntegration.php',
 		'app/Integrations/WooCommerce/StoreApiExtender.php',
 		'app/Integrations/Licensing/LicenseClient.php',
@@ -621,6 +660,10 @@ foreach (
 		'app/Admin/Wizard/WizardController.php',
 		'app/Admin/PreviewLinks.php',
 		'app/Domain/Offers/ProductRecommendationAssistant.php',
+		'app/Core/ScheduledJobs.php',
+		'app/Integrations/HostSettingsIntegration.php',
+		'app/Integrations/OfferTypesIntegration.php',
+		'app/Integrations/OneClick/StripeChargeAdapter.php',
 	) as $file
 ) {
 	$path = $root . '/' . $file;

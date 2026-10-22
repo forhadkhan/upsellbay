@@ -15,6 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
+use WPAnchorBay\UpsellBayPro\Core\Constants;
+
 /**
  * Renders thank-you follow-on checkout offers.
  *
@@ -55,6 +57,10 @@ final class ThankYouOfferRenderer extends AbstractOfferRenderer {
 		$checkout_url_attr = '' !== $checkout_url ? ' data-upsellbay-checkout-url="' . $this->esc_attr( $checkout_url ) . '"' : '';
 		$cart_url          = (string) ( $context['cart_url'] ?? '' );
 		$cart_url_attr     = '' !== $cart_url ? ' data-upsellbay-cart-url="' . $this->esc_attr( $cart_url ) . '"' : '';
+		// The storefront script tries the one-click route only for a card carrying
+		// this marker; with one-click off (1.0.0) no card does, so every accept
+		// goes through the separate follow-on checkout.
+		$one_click_attr = true === ( $context['one_click'] ?? false ) && Constants::one_click_enabled() ? ' data-upsellbay-one-click="1"' : '';
 
 		$control     = '<button type="button" class="button wp-element-button wc-block-components-button upsellbay-offer__button" data-upsellbay-offer-id="' . $this->esc_attr( (string) $offer_id ) . '">' . $this->esc_html( $button_text ) . '</button>';
 		$dismiss_btn = $this->render_dismiss_button();
@@ -69,7 +75,7 @@ final class ThankYouOfferRenderer extends AbstractOfferRenderer {
 			$classes[] = 'upsellbay-offer--has-image';
 		}
 
-		$html = '<div class="' . $this->esc_attr( implode( ' ', $classes ) ) . '" data-upsellbay-placement="thankyou_offer" data-upsellbay-offer-id="' . $this->esc_attr( (string) $offer_id ) . '"' . $source_order_attr . $order_key_attr . $token_attr . $rest_url_attr . $checkout_url_attr . $cart_url_attr . '>'
+		$html = '<div class="' . $this->esc_attr( implode( ' ', $classes ) ) . '" data-upsellbay-placement="thankyou_offer" data-upsellbay-offer-id="' . $this->esc_attr( (string) $offer_id ) . '"' . $source_order_attr . $order_key_attr . $token_attr . $rest_url_attr . $checkout_url_attr . $cart_url_attr . $one_click_attr . '>'
 			. $image_html
 			. '<div class="upsellbay-offer__content">'
 			. '<div class="upsellbay-offer__text">'

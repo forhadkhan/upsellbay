@@ -11,12 +11,19 @@ async function postOffer(endpoint, payload) {
 		return null;
 	}
 
+	// The REST nonce keeps a logged-in shopper authenticated for this request.
+	// Without it WordPress treats the cookie as anonymous and the endpoint resolves
+	// a different WooCommerce session than the one that issued the offer token,
+	// which fails as "Invalid session token".
+	const headers = { 'Content-Type': 'application/json' };
+	if (config.nonce) {
+		headers['X-WP-Nonce'] = config.nonce;
+	}
+
 	const response = await window.fetch(`${config.restUrl}/${endpoint}`, {
 		method: 'POST',
 		credentials: 'same-origin',
-		headers: {
-			'Content-Type': 'application/json',
-		},
+		headers,
 		body: JSON.stringify({
 			...payload,
 			token: config.token,

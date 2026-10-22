@@ -16,6 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 
 use WPAnchorBay\UpsellBayPro\Data\LogRepository;
+use WPAnchorBay\UpsellBayPro\Utils\ClientIp;
 
 /**
  * PSR-3 inspired logger that stores entries in the custom database table.
@@ -147,8 +148,11 @@ final class DatabaseLogger implements LoggerInterface {
 		$metadata = $context;
 		unset( $metadata['log_type'], $metadata['description'], $metadata['source'], $metadata['user_id'], $metadata['object_type'], $metadata['object_id'], $metadata['request_data'], $metadata['response_data'] );
 
-		$ip_address = $this->get_ip_address();
-		$user_agent = isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
+		// Truncated connecting address only; the user agent is not stored. Logs are
+		// copied into support requests, so they hold nothing that identifies a shopper.
+		$ip_address = ClientIp::anonymize( ClientIp::current() );
+		$ip_address = '' === $ip_address ? null : $ip_address;
+		$user_agent = null;
 
 		$this->repository->insert(
 			array(
@@ -167,23 +171,5 @@ final class DatabaseLogger implements LoggerInterface {
 				'user_agent'    => $user_agent,
 			)
 		);
-	}
-
-	/**
-	 * Retrieve current user IP address.
-	 *
-	 * @return string|null
-	 */
-	private function get_ip_address(): ?string {
-		if ( isset( $_SERVER['HTTP_CLIENT_IP'] ) && '' !== $_SERVER['HTTP_CLIENT_IP'] ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-			return sanitize_text_field( wp_unslash( $_SERVER['HTTP_CLIENT_IP'] ) );
-		}
-		if ( isset( $_SERVER['HTTP_X_FORWARDED_FOR'] ) && '' !== $_SERVER['HTTP_X_FORWARDED_FOR'] ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-			return sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) );
-		}
-		if ( isset( $_SERVER['REMOTE_ADDR'] ) && '' !== $_SERVER['REMOTE_ADDR'] ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-			return sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
-		}
-		return null;
 	}
 }

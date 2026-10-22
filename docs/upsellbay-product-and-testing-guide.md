@@ -6,7 +6,7 @@ This guide explains UpsellBay from the point of view of someone who has never se
 
 UpsellBay is a WooCommerce plugin for increasing average order value. It lets a merchant define relevant add-on offers and show them inside the normal WooCommerce buying journey:
 
-- Product page offers, such as a matching accessory or frequently-bought-together item.
+- Product page offers, such as a matching accessory or a frequently-bought-together style item. The merchant chooses the products; recommendations are not generated automatically from past orders.
 - Cart offers, such as complementary products or threshold helper items.
 - Checkout bumps, such as a low-friction checkbox add-on before the order is placed.
 - Thank-you follow-on offers, where the original order stays complete and the shopper starts a separate follow-on checkout.
@@ -184,17 +184,15 @@ Expected result:
 
 1. Open Tools.
 2. Confirm diagnostics show plugin, version, license status, masked license, and test mode.
-3. Inspect the Import offers JSON textarea.
+3. Export data, then import it again: choose the exported `.json` file under Import, click **Upload and Preview**, review the preview (offer count, the "Import global settings" and "Append (Import) to offer titles" options, duplicate handling: duplicate, skip or overwrite), then click **Confirm Import**.
 
 Expected result:
 
 - Diagnostics should never expose full license keys or PII.
-- Import validation helpers should reject invalid JSON when called through the service layer.
-- Full import execution should not be treated as complete unless the admin route/import workflow is wired and tested.
-
-Current implementation watch item:
-
-- The Tools page renders an import textarea, but code review did not find a posted-form handler for that textarea in this snapshot.
+- The upload is a file upload (`import_file`, JSON, at most 2 MB) posted to `admin-post.php?action=upsellbay_pro_import_data` (`Plugin::handle_import_data()`), which checks `manage_woocommerce` and the nonce, refuses a missing, partial, oversized or non-JSON file, and stores the file for one hour for the preview.
+- **Confirm Import** posts to `upsellbay_pro_confirm_import` (`Plugin::handle_confirm_import()`), which runs `ImportExporter::import_all()`.
+- Every offer is validated before anything is written: if one is invalid, nothing is imported and the notice names the offer. A write that fails later is reported per offer while the other offers are still imported.
+- Imported settings go through the same normaliser as the settings page. The license, wizard progress, first offer ID and dismissed notices, the data cleanup switch, debug logging and the retention periods always keep this store's values. Offer meta keys that are not part of the offer schema are dropped.
 
 ## End-User Test Plan
 
@@ -258,8 +256,9 @@ Expected result:
 
 Expected result:
 
-- The original order is not mutated as a one-click charge.
-- The shopper should be sent into a separate follow-on cart/checkout path linked to the source order.
+- The original order is never mutated.
+- On every gateway the shopper is sent into a separate follow-on cart/checkout path linked to the source order, and pays there. No saved card is charged: Pro 1.0.0 ships without a one-click post-purchase charge (`one-click-accept` is not registered, and no card carries a one-click marker).
+- One unit is discounted. Raising the offer line's quantity in the cart charges the extra units at the regular price.
 - Follow-on attribution should use `_ub_source_order_id`, `_ub_source_offer_id`, and `_ub_follow_on_order`.
 
 Current implementation watch item:
@@ -275,7 +274,7 @@ Current implementation watch item:
 Expected result:
 
 - Do not claim support unless E2E passes.
-- Current code can enqueue a Block Checkout bundle and register an additional checkout field when the API exists, but public compatibility remains blocked until proof exists.
+- Current code can enqueue a Block Checkout bundle (it registers no additional checkout field, so shoppers see no UpsellBay input under Additional order information), but public compatibility remains blocked until proof exists.
 
 ## What Good Looks Like
 

@@ -26,6 +26,13 @@ use WPAnchorBay\UpsellBayPro\Data\CartSession;
  */
 final class BlockCheckoutIntegration {
 	/**
+	 * The free host's Block Checkout script handle.
+	 *
+	 * @var string
+	 */
+	private const HOST_SCRIPT_HANDLE = 'upsellbay-block-checkout';
+
+	/**
 	 * Plugin settings.
 	 *
 	 * @since 1.0.0
@@ -63,8 +70,31 @@ final class BlockCheckoutIntegration {
 	 */
 	public function register_hooks(): void {
 		if ( function_exists( 'add_action' ) ) {
-			add_action( 'woocommerce_blocks_checkout_block_registration', array( $this, 'enqueue_asset' ) );
+			// The block registration hook fires on `init` for every request, before the
+			// query is parsed, so it cannot tell a cart or checkout page from any other.
+			// Priority 20 runs after the free host has enqueued its own block script.
+			add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_asset' ), 20 );
 		}
+	}
+
+	/**
+	 * Whether the current request renders the Cart or Checkout block page.
+	 *
+	 * The bundle carries the cart cross-sells (Cart and Checkout order summary)
+	 * and the checkout bump, so it is needed on those two pages and nowhere else.
+	 *
+	 * @since 1.0.0
+	 */
+	public function is_cart_or_checkout_page(): bool {
+		if ( function_exists( 'is_admin' ) && is_admin() ) {
+			return false;
+		}
+
+		if ( ( function_exists( 'is_checkout' ) && is_checkout() ) || ( function_exists( 'is_cart' ) && is_cart() ) ) {
+			return true;
+		}
+
+		return function_exists( 'has_block' ) && ( has_block( 'woocommerce/checkout' ) || has_block( 'woocommerce/cart' ) );
 	}
 
 	/**
@@ -73,7 +103,7 @@ final class BlockCheckoutIntegration {
 	 * @since 1.0.0
 	 */
 	public function enqueue_asset(): void {
-		if ( ! function_exists( 'wp_enqueue_script' ) ) {
+		if ( ! function_exists( 'wp_enqueue_script' ) || ! $this->is_cart_or_checkout_page() ) {
 			return;
 		}
 
@@ -86,6 +116,12 @@ final class BlockCheckoutIntegration {
 
 		if ( ! in_array( 'wc-blocks-checkout', $dependencies, true ) ) {
 			$dependencies[] = 'wc-blocks-checkout';
+		}
+
+		// Load after the host's block script when it is on the page, so the host's
+		// checkout-bump plugin registers first and Pro's same-named one stands down.
+		if ( function_exists( 'wp_script_is' ) && wp_script_is( self::HOST_SCRIPT_HANDLE, 'enqueued' ) ) {
+			$dependencies[] = self::HOST_SCRIPT_HANDLE;
 		}
 
 		$handle = Constants::asset_handle( 'block-checkout' );

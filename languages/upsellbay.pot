@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-29T14:28:16+00:00\n"
+"POT-Creation-Date: 2026-10-22T15:23:34+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: upsellbay\n"
@@ -419,7 +419,7 @@ msgstr ""
 #: app/Admin/Settings/LogsListTable.php:226
 #: app/Admin/Settings/SettingsPage.php:484
 #: app/Admin/Settings/SettingsPage.php:666
-#: app/Admin/Tools/ToolsPage.php:228
+#: app/Admin/Tools/ToolsPage.php:272
 msgid "Cancel"
 msgstr ""
 
@@ -660,7 +660,7 @@ msgid "Keep this off unless the merchant explicitly wants plugin data removed du
 msgstr ""
 
 #: app/Admin/Settings/SettingsPage.php:473
-msgid "When enabled, uninstall cleanup can remove UpsellBay settings, offers, and aggregate stats instead of preserving them."
+msgid "When enabled, deleting UpsellBay Pro removes its own settings, license data, aggregate stats, logs and recommendation index. Offers and the free plugin settings are always kept."
 msgstr ""
 
 #: app/Admin/Settings/SettingsPage.php:476
@@ -673,11 +673,11 @@ msgid "Reset Application"
 msgstr ""
 
 #: app/Admin/Settings/SettingsPage.php:479
-msgid "This will permanently delete all UpsellBay data and reset the plugin to a fresh installation state."
+msgid "This permanently deletes UpsellBay Pro analytics, logs, recommendation data and Pro settings, and resets them to defaults. Offers and the free plugin settings are kept."
 msgstr ""
 
 #: app/Admin/Settings/SettingsPage.php:484
-msgid "Are you sure you want to permanently delete all records, configurations, settings, generated data, analytics, offers and any other data stored by UpsellBay? This action is irreversible."
+msgid "Are you sure you want to permanently delete UpsellBay Pro analytics, logs, recommendation data and Pro settings? Offers and the free plugin settings are kept. This action is irreversible."
 msgstr ""
 
 #: app/Admin/Settings/SettingsPage.php:484
@@ -685,7 +685,7 @@ msgid "Yes, Clear All Data"
 msgstr ""
 
 #: app/Admin/Settings/SettingsPage.php:485
-msgid "Warning: This action will permanently delete all offers, configurations, analytics, and session data. It cannot be undone."
+msgid "Warning: This action permanently deletes Pro analytics, logs, recommendation data and Pro settings. Offers are not deleted. It cannot be undone."
 msgstr ""
 
 #: app/Admin/Settings/SettingsPage.php:625
@@ -823,6 +823,7 @@ msgid "Render order bumps on the checkout page before the place order button."
 msgstr ""
 
 #: app/Admin/Settings/SettingsPage.php:795
+#: app/Domain/Offers/OfferDefaults.php:109
 #: app/Domain/Offers/OfferSchema.php:98
 msgid "Thank-you offer"
 msgstr ""
@@ -839,103 +840,107 @@ msgstr ""
 msgid "General"
 msgstr ""
 
-#: app/Admin/Tools/ToolsPage.php:118
+#: app/Admin/Tools/ToolsPage.php:117
+msgid "Tools"
+msgstr ""
+
+#: app/Admin/Tools/ToolsPage.php:162
 msgid "Export Data"
 msgstr ""
 
-#: app/Admin/Tools/ToolsPage.php:119
+#: app/Admin/Tools/ToolsPage.php:163
 msgid "Download all UpsellBay data including your active/paused offers and global settings. This JSON file can be used as a backup or to migrate your setup to another store."
 msgstr ""
 
-#: app/Admin/Tools/ToolsPage.php:125
+#: app/Admin/Tools/ToolsPage.php:169
 msgid "Export Whole Data"
 msgstr ""
 
-#: app/Admin/Tools/ToolsPage.php:131
+#: app/Admin/Tools/ToolsPage.php:175
 msgid "Import Data"
 msgstr ""
 
-#: app/Admin/Tools/ToolsPage.php:132
+#: app/Admin/Tools/ToolsPage.php:176
 msgid "Upload a previously exported JSON file. This will restore all your settings and append the imported offers to your store."
 msgstr ""
 
-#: app/Admin/Tools/ToolsPage.php:139
+#: app/Admin/Tools/ToolsPage.php:183
 msgid "Upload and Preview"
 msgstr ""
 
-#: app/Admin/Tools/ToolsPage.php:156
+#: app/Admin/Tools/ToolsPage.php:200
 msgid "Import session expired or invalid. Please try uploading the file again."
 msgstr ""
 
-#: app/Admin/Tools/ToolsPage.php:157
+#: app/Admin/Tools/ToolsPage.php:201
 msgid "Go Back"
 msgstr ""
 
-#: app/Admin/Tools/ToolsPage.php:170
+#: app/Admin/Tools/ToolsPage.php:214
 msgid "Import Preview"
 msgstr ""
 
-#: app/Admin/Tools/ToolsPage.php:173
+#: app/Admin/Tools/ToolsPage.php:217
 msgid "Found in file:"
 msgstr ""
 
-#: app/Admin/Tools/ToolsPage.php:176
+#: app/Admin/Tools/ToolsPage.php:220
 msgid "Global Settings"
 msgstr ""
 
 #. translators: %s: number of offers
-#: app/Admin/Tools/ToolsPage.php:179
+#: app/Admin/Tools/ToolsPage.php:223
 #, php-format
 msgid "%s Offer"
 msgid_plural "%s Offers"
 msgstr[0] ""
 msgstr[1] ""
 
-#: app/Admin/Tools/ToolsPage.php:194
+#: app/Admin/Tools/ToolsPage.php:238
 msgid "Settings"
 msgstr ""
 
-#: app/Admin/Tools/ToolsPage.php:196
+#: app/Admin/Tools/ToolsPage.php:240
 msgid "Import global settings"
 msgstr ""
 
-#: app/Admin/Tools/ToolsPage.php:197
+#: app/Admin/Tools/ToolsPage.php:241
 msgid "This will overwrite your current settings."
 msgstr ""
 
-#: app/Admin/Tools/ToolsPage.php:204
+#: app/Admin/Tools/ToolsPage.php:248
 msgid "Offer Titles"
 msgstr ""
 
-#: app/Admin/Tools/ToolsPage.php:206
+#: app/Admin/Tools/ToolsPage.php:250
 msgid "Append \"(Import)\" to offer titles"
 msgstr ""
 
-#: app/Admin/Tools/ToolsPage.php:207
+#: app/Admin/Tools/ToolsPage.php:251
 msgid "Useful for identifying imported offers easily."
 msgstr ""
 
-#: app/Admin/Tools/ToolsPage.php:212
+#: app/Admin/Tools/ToolsPage.php:256
 msgid "Duplicates"
 msgstr ""
 
-#: app/Admin/Tools/ToolsPage.php:215
+#: app/Admin/Tools/ToolsPage.php:259
 msgid "Create duplicate offers"
 msgstr ""
 
-#: app/Admin/Tools/ToolsPage.php:216
+#: app/Admin/Tools/ToolsPage.php:260
 msgid "Skip importing offers that already exist"
 msgstr ""
 
-#: app/Admin/Tools/ToolsPage.php:217
+#: app/Admin/Tools/ToolsPage.php:261
 msgid "Overwrite existing offers with the same title"
 msgstr ""
 
-#: app/Admin/Tools/ToolsPage.php:219
+#: app/Admin/Tools/ToolsPage.php:263
 msgid "How to handle imported offers if an offer with the exact same title already exists on this store."
 msgstr ""
 
-#: app/Admin/Tools/ToolsPage.php:227
+#: app/Admin/Tools/ToolsPage.php:271
 msgid "Confirm Import"
 msgstr ""
 
@@ -969,256 +974,269 @@ msgstr ""
 msgid "License key is required."
 msgstr ""
 
-#: app/Api/Routes/PublicOfferRoutes.php:417
-#: app/Api/Routes/PublicOfferRoutes.php:462
-#: app/Api/Routes/PublicOfferRoutes.php:543
+#: app/Api/Routes/PublicOfferRoutes.php:438
+#: app/Api/Routes/PublicOfferRoutes.php:483
+#: app/Api/Routes/PublicOfferRoutes.php:646
 msgid "Offer not found."
 msgstr ""
 
-#: app/Api/Routes/PublicOfferRoutes.php:476
-#: app/Api/Routes/PublicOfferRoutes.php:532
-msgid "This order could not be verified for the follow-on offer."
-msgstr ""
-
-#: app/Api/Routes/PublicOfferRoutes.php:494
-#: assets/frontend/storefront.js:1
-#: src/storefront/index.js:167
-msgid "Offer added to your cart."
-msgstr ""
-
-#: app/Api/Routes/PublicOfferRoutes.php:562
-#: assets/frontend/storefront.js:1
-#: src/storefront/index.js:119
-msgid "Added to your order — no need to check out again."
-msgstr ""
-
-#: app/Api/Routes/PublicOfferRoutes.php:575
-msgid "This purchase needs extra verification."
-msgstr ""
-
-#: app/Api/Routes/PublicOfferRoutes.php:587
-msgid "We couldn't complete a one-click purchase. Continue to checkout instead."
-msgstr ""
-
-#: app/Api/Routes/PublicOfferRoutes.php:601
-msgid "This product is currently out of stock."
-msgstr ""
-
-#: app/Api/Routes/PublicOfferRoutes.php:602
-msgid "This product is not currently available for purchase."
-msgstr ""
-
-#: app/Api/Routes/PublicOfferRoutes.php:603
-msgid "This product could not be found."
-msgstr ""
-
-#: app/Api/Routes/PublicOfferRoutes.php:604
-msgid "You are no longer eligible for this offer."
-msgstr ""
-
-#: app/Api/Routes/PublicOfferRoutes.php:605
+#: app/Api/Routes/PublicOfferRoutes.php:497
+#: app/Api/Routes/PublicOfferRoutes.php:755
 msgid "This offer is not valid for this placement."
 msgstr ""
 
-#: app/Api/Routes/PublicOfferRoutes.php:606
-msgid "Discounts cannot be applied to subscription products."
+#: app/Api/Routes/PublicOfferRoutes.php:510
+#: app/Api/Routes/PublicOfferRoutes.php:592
+msgid "This order could not be verified for the follow-on offer."
 msgstr ""
 
-#: app/Api/Routes/PublicOfferRoutes.php:607
+#: app/Api/Routes/PublicOfferRoutes.php:529
+#: app/Api/Routes/PublicOfferRoutes.php:661
+msgid "This offer is no longer available."
+msgstr ""
+
+#: app/Api/Routes/PublicOfferRoutes.php:548
 #: assets/frontend/storefront.js:1
-#: src/storefront/index.js:150
-msgid "Unable to add this offer. Please try again."
+#: src/storefront/index.js:215
+msgid "Offer added to your cart."
 msgstr ""
 
-#: app/Api/Routes/PublicOfferRoutes.php:823
+#: app/Api/Routes/PublicOfferRoutes.php:604
+#: app/Api/Routes/PublicOfferRoutes.php:1065
 msgid "Too many requests."
 msgstr ""
 
-#: app/Api/Routes/PublicOfferRoutes.php:835
+#: app/Api/Routes/PublicOfferRoutes.php:618
+msgid "This offer can no longer be added in one click. Continue to checkout instead."
+msgstr ""
+
+#: app/Api/Routes/PublicOfferRoutes.php:635
+#: app/Api/Routes/PublicOfferRoutes.php:720
+msgid "We couldn't complete a one-click purchase. Continue to checkout instead."
+msgstr ""
+
+#: app/Api/Routes/PublicOfferRoutes.php:680
+#: assets/frontend/storefront.js:1
+#: src/storefront/index.js:154
+msgid "Added to your order — no need to check out again."
+msgstr ""
+
+#: app/Api/Routes/PublicOfferRoutes.php:693
+msgid "A payment for this offer is still being processed. Please check your order emails before trying again."
+msgstr ""
+
+#: app/Api/Routes/PublicOfferRoutes.php:708
+msgid "Your bank needs to verify this payment. Continue to checkout to complete it securely."
+msgstr ""
+
+#: app/Api/Routes/PublicOfferRoutes.php:751
+msgid "This product is currently out of stock."
+msgstr ""
+
+#: app/Api/Routes/PublicOfferRoutes.php:752
+msgid "This product is not currently available for purchase."
+msgstr ""
+
+#: app/Api/Routes/PublicOfferRoutes.php:753
+msgid "This product could not be found."
+msgstr ""
+
+#: app/Api/Routes/PublicOfferRoutes.php:754
+msgid "You are no longer eligible for this offer."
+msgstr ""
+
+#: app/Api/Routes/PublicOfferRoutes.php:756
+msgid "Discounts cannot be applied to subscription products."
+msgstr ""
+
+#: app/Api/Routes/PublicOfferRoutes.php:757
+#: app/Domain/Cart/CartMutator.php:161
+#: assets/frontend/storefront.js:1
+#: src/storefront/index.js:190
+msgid "Unable to add this offer. Please try again."
+msgstr ""
+
+#: app/Api/Routes/PublicOfferRoutes.php:1077
 msgid "Invalid session token."
 msgstr ""
 
-#: app/Core/Installer.php:115
+#: app/Core/Installer.php:146
 msgid "UpsellBay Offers"
 msgstr ""
 
-#: app/Core/Installer.php:116
+#: app/Core/Installer.php:147
 msgid "UpsellBay Offer"
 msgstr ""
 
-#: app/Core/Plugin.php:570
-#: app/Core/Plugin.php:603
-#: app/Core/Plugin.php:637
+#: app/Core/Plugin.php:606
+#: app/Core/Plugin.php:639
+#: app/Core/Plugin.php:673
 msgid "You do not have permission to manage licenses."
 msgstr ""
 
-#: app/Core/Plugin.php:587
+#: app/Core/Plugin.php:623
 msgid "License activated successfully."
 msgstr ""
 
-#: app/Core/Plugin.php:609
+#: app/Core/Plugin.php:645
 msgid "License removed by user"
 msgstr ""
 
-#: app/Core/Plugin.php:620
+#: app/Core/Plugin.php:656
 msgid "Local license data removed."
 msgstr ""
 
 #. translators: %s: validity status
-#: app/Core/Plugin.php:647
+#: app/Core/Plugin.php:683
 #, php-format
 msgid "Manual license check performed. Status: %s"
 msgstr ""
 
-#: app/Core/Plugin.php:655
+#: app/Core/Plugin.php:691
 msgid "License check complete: valid."
 msgstr ""
 
-#: app/Core/Plugin.php:657
+#: app/Core/Plugin.php:693
 msgid "License check failed: inactive."
 msgstr ""
 
-#: app/Core/Plugin.php:673
+#: app/Core/Plugin.php:709
 msgid "You do not have permission to manage offers."
 msgstr ""
 
-#: app/Core/Plugin.php:684
+#: app/Core/Plugin.php:720
 msgid "Offer deleted."
 msgstr ""
 
-#: app/Core/Plugin.php:699
-#: app/Core/Plugin.php:722
-#: app/Core/Plugin.php:744
-#: app/Core/Plugin.php:788
+#: app/Core/Plugin.php:735
+#: app/Core/Plugin.php:758
+#: app/Core/Plugin.php:780
+#: app/Core/Plugin.php:821
 msgid "You do not have permission to manage data."
 msgstr ""
 
-#: app/Core/Plugin.php:707
-msgid "All UpsellBay data has been permanently deleted and reset to defaults."
-msgstr ""
-
-#: app/Core/Plugin.php:752
-msgid "Please upload a valid JSON file."
-msgstr ""
-
-#: app/Core/Plugin.php:766
-msgid "Invalid or unsupported JSON file."
+#: app/Core/Plugin.php:743
+msgid "UpsellBay Pro data has been permanently deleted and reset to defaults. Offers were kept."
 msgstr ""
 
 #: app/Core/Plugin.php:799
+msgid "Invalid or unsupported JSON file."
+msgstr ""
+
+#: app/Core/Plugin.php:832
 msgid "Import session expired. Please upload the file again."
 msgstr ""
 
-#: app/Core/Plugin.php:814
+#: app/Core/Plugin.php:847
 msgid "Data imported successfully."
 msgstr ""
 
-#: app/Core/Plugin.php:911
+#: app/Core/Plugin.php:944
 msgid "Your UpsellBay license has expired. Renew your license to restore updates and support."
 msgstr ""
 
-#: app/Core/Plugin.php:912
+#: app/Core/Plugin.php:945
 msgid "The UpsellBay license key on this site is invalid. Please verify and re-enter your license key."
 msgstr ""
 
-#: app/Core/Plugin.php:913
+#: app/Core/Plugin.php:946
 msgid "UpsellBay could not verify your license because the license server is unreachable. Offers will keep running, but updates and support checks are suspended."
 msgstr ""
 
-#: app/Core/Plugin.php:914
+#: app/Core/Plugin.php:947
 msgid "UpsellBay license is not activated. Activate your license key to receive updates and support."
 msgstr ""
 
-#: app/Core/Plugin.php:928
+#: app/Core/Plugin.php:961
 msgid "Manage License"
 msgstr ""
 
-#: app/Core/Plugin.php:971
+#: app/Core/Plugin.php:1004
 msgid "UpsellBay settings updated"
 msgstr ""
 
 #. translators: %d: offer ID
-#: app/Core/Plugin.php:990
+#: app/Core/Plugin.php:1023
 #, php-format
 msgid "Offer #%d created"
 msgstr ""
 
 #. translators: %d: offer ID
-#: app/Core/Plugin.php:1012
+#: app/Core/Plugin.php:1045
 #, php-format
 msgid "Offer #%d updated"
 msgstr ""
 
 #. translators: %d: offer ID
-#: app/Core/Plugin.php:1033
+#: app/Core/Plugin.php:1066
 #, php-format
 msgid "Offer #%d deleted"
 msgstr ""
 
 #. translators: 1: offer ID, 2: placement
-#: app/Core/Plugin.php:1055
+#: app/Core/Plugin.php:1088
 #, php-format
 msgid "Offer #%1$d accepted at %2$s"
 msgstr ""
 
 #. translators: 1: offer ID, 2: placement
-#: app/Core/Plugin.php:1079
+#: app/Core/Plugin.php:1112
 #, php-format
 msgid "Offer #%1$d dismissed at %2$s"
 msgstr ""
 
-#. translators: 1: endpoint, 2: reason
-#: app/Core/Plugin.php:1103
-#, php-format
-msgid "API request to %1$s failed (%2$s)"
-msgstr ""
-
-#. translators: %s: license key suffix
-#: app/Core/Plugin.php:1121
+#. translators: %s: masked license key
+#: app/Core/Plugin.php:1151
 #, php-format
 msgid "License activated successfully: %s"
 msgstr ""
 
 #. translators: %s: error code
-#: app/Core/Plugin.php:1174
+#: app/Core/Plugin.php:1182
 #, php-format
 msgid "License activation failed: %s"
 msgstr ""
 
 #. translators: %s: error code
-#: app/Core/Plugin.php:1217
+#: app/Core/Plugin.php:1246
 #, php-format
 msgid "Background license check failed: %s"
 msgstr ""
 
 #. translators: 1: offer ID, 2: placement
-#: app/Core/Plugin.php:1240
+#: app/Core/Plugin.php:1269
 #, php-format
 msgid "Offer #%1$d rendered at %2$s"
 msgstr ""
 
 #. translators: 1: offer ID, 2: placement
-#: app/Core/Plugin.php:1272
+#: app/Core/Plugin.php:1301
 #, php-format
 msgid "Offer #%1$d skipped at %2$s"
 msgstr ""
 
 #. translators: 1: offer ID, 2: placement
-#: app/Core/Plugin.php:1301
+#: app/Core/Plugin.php:1330
 #, php-format
 msgid "Attribution written for Offer #%1$d at %2$s"
 msgstr ""
 
 #. translators: 1: order ID, 2: source order ID
-#: app/Core/Plugin.php:1327
+#: app/Core/Plugin.php:1356
 #, php-format
 msgid "Follow-on order #%1$d created from order #%2$d"
 msgstr ""
 
 #. translators: 1: offer ID, 2: date
-#: app/Core/Plugin.php:1352
+#: app/Core/Plugin.php:1381
 #, php-format
 msgid "Stats reconciled for Offer #%1$d on %2$s"
+msgstr ""
+
+#. translators: 1: endpoint, 2: reason
+#: app/Domain/Logging/ApiFailureLog.php:115
+#, php-format
+msgid "API request to %1$s failed (%2$s)"
 msgstr ""
 
 #. translators: %s: offer title link
@@ -1245,14 +1263,15 @@ msgstr ""
 msgid "Offer #%d"
 msgstr ""
 
-#: app/Domain/Offers/OfferDefaults.php:69
+#: app/Domain/Offers/OfferDefaults.php:85
+#: app/Domain/Offers/OfferDefaults.php:101
 msgid "Special Offer"
 msgstr ""
 
-#: app/Domain/Offers/OfferDefaults.php:70
-#: app/Domain/Offers/OfferDefaults.php:78
 #: app/Domain/Offers/OfferDefaults.php:86
 #: app/Domain/Offers/OfferDefaults.php:94
+#: app/Domain/Offers/OfferDefaults.php:102
+#: app/Domain/Offers/OfferDefaults.php:110
 #: app/Domain/Storefront/CartCrossSellRenderer.php:74
 #: app/Domain/Storefront/ProductPageRenderer.php:74
 #: assets/admin/js/upsellbay-offer-editor.js:1
@@ -1265,77 +1284,69 @@ msgstr ""
 msgid "Recommended for you"
 msgstr ""
 
-#: app/Domain/Offers/OfferDefaults.php:71
+#: app/Domain/Offers/OfferDefaults.php:87
 #: assets/admin/js/upsellbay-offer-editor.js:1
 #: src/admin/offer-editor/index.js:596
 msgid "Complete your order with this add-on"
 msgstr ""
 
-#: app/Domain/Offers/OfferDefaults.php:72
-msgid "Add a relevant product before placing the order."
+#: app/Domain/Offers/OfferDefaults.php:88
+msgid "Add this item to your order before you pay."
 msgstr ""
 
-#: app/Domain/Offers/OfferDefaults.php:73
+#: app/Domain/Offers/OfferDefaults.php:89
 #: assets/admin/js/upsellbay-offer-editor.js:1
 #: src/admin/offer-editor/index.js:597
 msgid "Add to order"
 msgstr ""
 
-#: app/Domain/Offers/OfferDefaults.php:77
+#: app/Domain/Offers/OfferDefaults.php:93
 msgid "Recommended"
 msgstr ""
 
-#: app/Domain/Offers/OfferDefaults.php:79
+#: app/Domain/Offers/OfferDefaults.php:95
 #: assets/admin/js/upsellbay-offer-editor.js:1
 #: src/admin/offer-editor/index.js:601
 msgid "Frequently bought with this product"
 msgstr ""
 
-#: app/Domain/Offers/OfferDefaults.php:80
-msgid "Show a relevant add-on on the product page."
+#: app/Domain/Offers/OfferDefaults.php:96
+msgid "Pairs well with the item you are viewing."
 msgstr ""
 
-#: app/Domain/Offers/OfferDefaults.php:81
+#: app/Domain/Offers/OfferDefaults.php:97
 #: assets/admin/js/upsellbay-offer-editor.js:1
 #: src/admin/offer-editor/index.js:602
 msgid "Add item"
 msgstr ""
 
-#: app/Domain/Offers/OfferDefaults.php:85
-msgid "Most Popular"
-msgstr ""
-
-#: app/Domain/Offers/OfferDefaults.php:87
+#: app/Domain/Offers/OfferDefaults.php:103
 #: assets/admin/js/upsellbay-offer-editor.js:1
 #: src/admin/offer-editor/index.js:606
 msgid "Recommended for your cart"
 msgstr ""
 
-#: app/Domain/Offers/OfferDefaults.php:88
-msgid "Offer a useful add-on while the shopper reviews the cart."
+#: app/Domain/Offers/OfferDefaults.php:104
+msgid "Add this to your cart before you check out."
 msgstr ""
 
-#: app/Domain/Offers/OfferDefaults.php:89
+#: app/Domain/Offers/OfferDefaults.php:105
 #: assets/admin/js/upsellbay-offer-editor.js:1
 #: src/admin/offer-editor/index.js:607
 msgid "Add to cart"
 msgstr ""
 
-#: app/Domain/Offers/OfferDefaults.php:93
-msgid "Exclusive"
-msgstr ""
-
-#: app/Domain/Offers/OfferDefaults.php:95
+#: app/Domain/Offers/OfferDefaults.php:111
 #: assets/admin/js/upsellbay-offer-editor.js:1
 #: src/admin/offer-editor/index.js:611
 msgid "Add another useful item"
 msgstr ""
 
-#: app/Domain/Offers/OfferDefaults.php:96
-msgid "Send shoppers to a separate checkout for this follow-on offer."
+#: app/Domain/Offers/OfferDefaults.php:112
+msgid "Get this item with a separate checkout."
 msgstr ""
 
-#: app/Domain/Offers/OfferDefaults.php:97
+#: app/Domain/Offers/OfferDefaults.php:113
 #: assets/admin/js/upsellbay-offer-editor.js:1
 #: src/admin/offer-editor/index.js:612
 msgid "View offer"
@@ -1618,7 +1629,7 @@ msgstr ""
 
 #: app/Domain/Storefront/AbstractOfferRenderer.php:263
 #: assets/frontend/storefront.js:1
-#: src/storefront/index.js:165
+#: src/storefront/index.js:213
 msgid "Already in cart"
 msgstr ""
 
@@ -1639,11 +1650,11 @@ msgstr ""
 msgid "Add with product"
 msgstr ""
 
-#: app/Domain/Storefront/ThankYouOfferRenderer.php:40
+#: app/Domain/Storefront/ThankYouOfferRenderer.php:42
 msgid "Add to a new checkout"
 msgstr ""
 
-#: app/Domain/Storefront/ThankYouOfferRenderer.php:61
+#: app/Domain/Storefront/ThankYouOfferRenderer.php:67
 msgid "Your original order is complete. Adding this item starts a separate checkout."
 msgstr ""
 
@@ -1651,27 +1662,27 @@ msgstr ""
 msgid "Please enter a license key."
 msgstr ""
 
-#: app/Integrations/Licensing/LicenseClient.php:164
+#: app/Integrations/Licensing/LicenseClient.php:165
 msgid "The license server could not be reached. Please try again shortly."
 msgstr ""
 
-#: app/Integrations/Licensing/LicenseClient.php:442
+#: app/Integrations/Licensing/LicenseClient.php:510
 msgid "The license server returned an unexpected response."
 msgstr ""
 
-#: app/Integrations/Licensing/LicenseClient.php:533
+#: app/Integrations/Licensing/LicenseClient.php:602
 msgid "The license server blocked this activation request with a security challenge. Please try again shortly. If the problem persists, contact WP Anchor Bay support to whitelist server-to-server license requests."
 msgstr ""
 
-#: app/Integrations/Licensing/LicenseClient.php:537
+#: app/Integrations/Licensing/LicenseClient.php:606
 msgid "The license server is temporarily unavailable. Please try again shortly."
 msgstr ""
 
-#: app/Integrations/Licensing/LicenseClient.php:541
+#: app/Integrations/Licensing/LicenseClient.php:610
 msgid "The license server returned an unexpected non-JSON response. Please try again shortly."
 msgstr ""
 
-#: app/Integrations/Licensing/LicenseClient.php:552
+#: app/Integrations/Licensing/LicenseClient.php:621
 msgid "The license key could not be activated."
 msgstr ""
 
@@ -1695,8 +1706,16 @@ msgstr ""
 msgid "Placement crowding or funnel overlap detected"
 msgstr ""
 
-#: app/Integrations/WooCommerce/CheckoutFields.php:37
-msgid "UpsellBay accepted offer"
+#: app/Integrations/OfferTypesIntegration.php:191
+msgid "A product page offer is a related add-on shown near the add-to-cart area on matching product pages. It helps shoppers add a complementary item while considering a product. It appears when the offer is active, the viewed product matches your rules, and the offered product is available."
+msgstr ""
+
+#: app/Integrations/OfferTypesIntegration.php:192
+msgid "A cart offer is a cross-sell shown while shoppers review their cart. It recommends an extra item before they continue to checkout. It appears when the offer is active, the current cart matches your rules, and the offered product is available."
+msgstr ""
+
+#: app/Integrations/OfferTypesIntegration.php:193
+msgid "A thank-you follow-on offer is a post-purchase offer shown on the order received page after the main order is complete. Accepting it adds the item to a new cart and starts a separate checkout; the completed order is never changed or charged again. It appears when the offer is active, the completed order matches your rules, and the offered product is available."
 msgstr ""
 
 #: app/Integrations/WooCommerce/StoreApiExtender.php:141
@@ -1706,6 +1725,30 @@ msgstr ""
 
 #: app/Integrations/WooCommerce/StoreApiExtender.php:193
 msgid "Eligible Checkout bumps for UpsellBay"
+msgstr ""
+
+#: app/Utils/ImportExporter.php:106
+#: app/Utils/ImportExporter.php:120
+msgid "The import file is larger than 2 MB."
+msgstr ""
+
+#: app/Utils/ImportExporter.php:110
+#: app/Utils/ImportExporter.php:115
+msgid "Please upload a valid JSON file."
+msgstr ""
+
+#: app/Utils/ImportExporter.php:255
+msgid "The other offers in the file were imported."
+msgstr ""
+
+#. translators: 1: offer position in the import file, 2: offer title, 3: error details.
+#: app/Utils/ImportExporter.php:318
+#, php-format
+msgid "Offer %1$d (%2$s) was not imported: %3$s"
+msgstr ""
+
+#: app/Utils/ImportExporter.php:320
+msgid "untitled"
 msgstr ""
 
 #: templates/admin/wizard.php:25
@@ -2032,27 +2075,37 @@ msgstr ""
 #: assets/frontend/block-checkout.js:1
 #: assets/frontend/storefront.js:1
 #: src/block-checkout/cart-cross-sells.js:120
-#: src/storefront/index.js:101
+#: src/storefront/index.js:117
 msgid "Adding..."
 msgstr ""
 
 #: assets/frontend/classic-checkout.js:1
-#: src/classic-checkout/index.js:91
+#: src/classic-checkout/index.js:98
 msgid "Unable to update this offer. Please try again."
 msgstr ""
 
 #: assets/frontend/storefront.js:1
-#: src/storefront/index.js:118
+#: src/storefront/index.js:145
+msgid "We could not confirm this payment. Please check your order emails before trying again."
+msgstr ""
+
+#: assets/frontend/storefront.js:1
+#: src/storefront/index.js:153
 msgid "Added to your order"
 msgstr ""
 
 #: assets/frontend/storefront.js:1
-#: src/storefront/index.js:128
+#: src/storefront/index.js:163
 msgid "Unable to complete this offer. Please try again."
 msgstr ""
 
 #: assets/frontend/storefront.js:1
-#: src/storefront/index.js:158
+#: src/storefront/index.js:200
+msgid "Continue to checkout"
+msgstr ""
+
+#: assets/frontend/storefront.js:1
+#: src/storefront/index.js:206
 msgid "Adding to new checkout…"
 msgstr ""
 

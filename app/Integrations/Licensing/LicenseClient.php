@@ -157,7 +157,8 @@ final class LicenseClient {
 
 		if ( is_wp_error( $response ) ) {
 			$this->update_status_flag( 'server_error' );
-			Hooks::action( 'license_activation_failed', $sanitized_key, 'server_error', $response );
+			// Listeners get the key masked, never raw: they may log or forward it.
+			Hooks::action( 'license_activation_failed', $this->mask_key( $sanitized_key ), 'server_error', $this->redact_error( $response, $sanitized_key ) );
 
 			return new WP_Error(
 				'upsellbay_license_server_error',
@@ -212,7 +213,9 @@ final class LicenseClient {
 
 		if ( is_wp_error( $response ) ) {
 			$this->update_status_flag( 'server_error' );
-			Hooks::action( 'license_check_failed', 'server_error', $response );
+			// The check sends the key in the query string, so a transport error
+			// message may quote the request URL.
+			Hooks::action( 'license_check_failed', 'server_error', $this->redact_error( $response, (string) $status['key'] ) );
 			return true;
 		}
 
@@ -238,6 +241,71 @@ final class LicenseClient {
 	 */
 	public function get_status(): array {
 		return ( $this->reader )();
+	}
+
+	/**
+	 * License state that is safe to send to a browser: never the full key.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return array{status: string, plan: string, expires_at: string, masked_key: string}
+	 */
+	public function public_status(): array {
+		$state = $this->get_status();
+
+		return array(
+			'status'     => sanitize_text_field( (string) ( $state['status'] ?? '' ) ),
+			'plan'       => sanitize_text_field( (string) ( $state['plan'] ?? '' ) ),
+			'expires_at' => sanitize_text_field( (string) ( $state['expires_at'] ?? '' ) ),
+			'masked_key' => $this->mask_key( (string) ( $state['key'] ?? '' ) ),
+		);
+	}
+
+	/**
+	 * Replace a license key wherever it appears in diagnostic data.
+	 *
+	 * Strings have every occurrence of the key masked; `key` and `license_key`
+	 * fields are masked whatever they hold. Used on everything a license failure
+	 * hands to hooks and the log table, since logs are copied into support requests.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param mixed  $value       Diagnostic value.
+	 * @param string $license_key License key to remove.
+	 * @return mixed
+	 */
+	public function redact( mixed $value, string $license_key ): mixed {
+		$license_key = trim( $license_key );
+
+		if ( is_string( $value ) ) {
+			return '' === $license_key ? $value : str_replace( $license_key, $this->mask_key( $license_key ), $value );
+		}
+
+		if ( ! is_array( $value ) ) {
+			return $value;
+		}
+
+		foreach ( $value as $field => $item ) {
+			$value[ $field ] = in_array( $field, array( 'key', 'license_key' ), true ) && is_scalar( $item )
+				? $this->mask_key( (string) $item )
+				: $this->redact( $item, $license_key );
+		}
+
+		return $value;
+	}
+
+	/**
+	 * Copy of a WP_Error with the license key masked in its messages and data.
+	 *
+	 * @param WP_Error $error       Error.
+	 * @param string   $license_key License key to remove.
+	 */
+	private function redact_error( WP_Error $error, string $license_key ): WP_Error {
+		return new WP_Error(
+			$error->get_error_code(),
+			(string) $this->redact( $error->get_error_message(), $license_key ),
+			$this->redact( $error->get_error_data(), $license_key )
+		);
 	}
 
 	/**
@@ -389,12 +457,12 @@ final class LicenseClient {
 
 		if ( is_wp_error( $result ) ) {
 			$this->maybe_mark_matching_key_invalid( $license_key );
-			Hooks::action( 'license_activation_failed', $license_key, $result->get_error_code(), $result );
+			Hooks::action( 'license_activation_failed', $this->mask_key( $license_key ), $result->get_error_code(), $result );
 			return $result;
 		}
 
 		set_transient( self::TRANSIENT_KEY, true, 12 * HOUR_IN_SECONDS );
-		Hooks::action( 'license_activated', $license_key );
+		Hooks::action( 'license_activated', $this->mask_key( $license_key ) );
 		return true;
 	}
 
@@ -460,14 +528,15 @@ final class LicenseClient {
 
 		if ( ! $is_valid ) {
 			$error_code = $this->license_error_code( $response_code, $headers, $payload, $body );
-			$message    = $this->license_error_message( $response_code, $headers, $payload, $body );
+			// The server may echo the key back in its message or body.
+			$message = (string) $this->redact( $this->license_error_message( $response_code, $headers, $payload, $body ), $license_key );
 
 			return new WP_Error(
 				$error_code,
 				$message,
 				array(
 					'request_data'  => $this->build_request_context( $license_key, $endpoint ),
-					'response_data' => $this->build_response_context( $response_code, $headers, $payload, $body ),
+					'response_data' => $this->redact( $this->build_response_context( $response_code, $headers, $payload, (string) $this->redact( $body, $license_key ) ), $license_key ),
 				)
 			);
 		}

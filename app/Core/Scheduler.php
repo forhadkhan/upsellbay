@@ -77,10 +77,6 @@ final class Scheduler {
 	public function jobs(): array {
 		return array(
 			array(
-				'hook'       => Constants::hook_name( 'refresh_analytics' ),
-				'recurrence' => 'daily',
-			),
-			array(
 				'hook'       => Constants::hook_name( 'prune_stats' ),
 				'recurrence' => 'daily',
 			),
@@ -140,6 +136,35 @@ final class Scheduler {
 	public function unschedule_all(): void {
 		foreach ( $this->jobs() as $job ) {
 			( $this->unschedule_action )( $job['hook'], array(), Constants::ACTION_SCHEDULER_GROUP );
+		}
+
+		$this->unschedule_retired_jobs();
+	}
+
+	/**
+	 * Hooks that earlier versions scheduled and that no longer have work to do.
+	 *
+	 * `refresh_analytics` was scheduled daily with no handler ever bound, so each
+	 * run failed in Action Scheduler with "no callbacks are registered". Stats are
+	 * written live on each event, and no documented refresh step exists, so the
+	 * job is retired rather than given an empty handler.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return array<int, string>
+	 */
+	public function retired_hooks(): array {
+		return array( Constants::hook_name( 'refresh_analytics' ) );
+	}
+
+	/**
+	 * Remove queued actions for retired hooks.
+	 *
+	 * @since 1.0.0
+	 */
+	public function unschedule_retired_jobs(): void {
+		foreach ( $this->retired_hooks() as $hook ) {
+			( $this->unschedule_action )( $hook, array(), Constants::ACTION_SCHEDULER_GROUP );
 		}
 	}
 }

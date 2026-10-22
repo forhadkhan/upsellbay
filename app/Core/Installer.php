@@ -96,6 +96,37 @@ final class Installer {
 	public function maybe_upgrade(): void {
 		( $this->schema_migrator )();
 		$this->scheduler->ensure_recurring_jobs();
+		$this->migrate_version_stamp();
+	}
+
+	/**
+	 * Run one-time upgrade steps and stamp Pro's own DB version.
+	 *
+	 * Pro used to stamp `upsellbay_db_version`, the same row the free host
+	 * stamps, so either plugin's write could hide the other's pending migration.
+	 * Pro now keeps `upsellbay_pro_db_version`. The shared row is deliberately
+	 * not read as Pro's starting version: the host writes it too, so trusting it
+	 * would bring the masking back. A missing Pro stamp runs every one-time step,
+	 * and each step is idempotent. The shared row stays in place for the host.
+	 *
+	 * @since 1.0.0
+	 */
+	public function migrate_version_stamp(): void {
+		if ( ! function_exists( 'get_option' ) || ! function_exists( 'update_option' ) ) {
+			return;
+		}
+
+		$from = (string) get_option( Constants::DB_VERSION_OPTION, '0' );
+		if ( Constants::DB_VERSION === $from ) {
+			return;
+		}
+
+		// Version 2: the daily refresh_analytics job is retired; drop queued runs.
+		if ( version_compare( $from, '2', '<' ) ) {
+			$this->scheduler->unschedule_retired_jobs();
+		}
+
+		update_option( Constants::DB_VERSION_OPTION, Constants::DB_VERSION, false );
 	}
 
 	/**
@@ -171,7 +202,7 @@ final class Installer {
 	 * Stores only aggregate product-to-product counts and a score — no customer or
 	 * order PII — and is fully re-derivable from order history.
 	 *
-	 * @since 1.1.0
+	 * @since 1.0.0
 	 *
 	 * @param string $table_name_sql Escaped table name.
 	 * @param string $charset        Charset clause.
@@ -249,6 +280,8 @@ final class Installer {
 	/**
 	 * Opt-in uninstall cleanup. Data is preserved by default.
 	 *
+	 * Removes only Pro-owned data; the shared settings row and offer posts stay.
+	 *
 	 * @since 1.0.0
 	 */
 	public function uninstall(): void {
@@ -257,61 +290,51 @@ final class Installer {
 			return;
 		}
 
-		$this->scheduler->unschedule_all();
+		$this->remove_pro_data();
 
 		if ( function_exists( 'delete_option' ) ) {
-			delete_option( Constants::SETTINGS_OPTION );
-			delete_option( Constants::DB_VERSION_OPTION );
-		}
-
-		if ( isset( $GLOBALS['wpdb'] ) ) {
-			$wpdb        = $GLOBALS['wpdb'];
-			$stats_table = esc_sql( $wpdb->prefix . Constants::STATS_TABLE_SUFFIX );
-			$logs_table  = esc_sql( $wpdb->prefix . Constants::LOGS_TABLE_SUFFIX );
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-			$wpdb->query( "DROP TABLE IF EXISTS {$stats_table}" );
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-			$wpdb->query( "DROP TABLE IF EXISTS {$logs_table}" );
+			delete_option( Constants::LICENSE_DATA_OPTION );
 		}
 	}
 
 	/**
-	 * Permanently delete all UpsellBay data and reset to fresh install state.
+	 * Permanently delete all Pro data and reset Pro to a fresh install state.
+	 *
+	 * Offers, the shared settings option and the host's own settings are left
+	 * untouched; only Pro's keys, tables and scheduled actions are reset.
 	 *
 	 * @since 1.0.0
 	 */
 	public function clear_all_data(): void {
-		$this->scheduler->unschedule_all();
-
-		if ( function_exists( 'delete_option' ) ) {
-			delete_option( Constants::SETTINGS_OPTION );
-			delete_option( Constants::DB_VERSION_OPTION );
-		}
-
-		if ( isset( $GLOBALS['wpdb'] ) ) {
-			$wpdb        = $GLOBALS['wpdb'];
-			$post_type   = esc_sql( Constants::OFFER_POST_TYPE );
-			$stats_table = esc_sql( $wpdb->prefix . Constants::STATS_TABLE_SUFFIX );
-			$logs_table  = esc_sql( $wpdb->prefix . Constants::LOGS_TABLE_SUFFIX );
-
-			// Delete postmeta.
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-			$wpdb->query( "DELETE meta FROM {$wpdb->postmeta} meta LEFT JOIN {$wpdb->posts} posts ON posts.ID = meta.post_id WHERE posts.post_type = '{$post_type}'" );
-
-			// Delete posts.
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-			$wpdb->query( "DELETE FROM {$wpdb->posts} WHERE post_type = '{$post_type}'" );
-
-			// Drop tables so they can be recreated cleanly.
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-			$wpdb->query( "DROP TABLE IF EXISTS {$stats_table}" );
-
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-			$wpdb->query( "DROP TABLE IF EXISTS {$logs_table}" );
-		}
+		$this->remove_pro_data();
 
 		$this->settings->seed_defaults();
 		( $this->schema_migrator )();
 		$this->scheduler->ensure_recurring_jobs();
+	}
+
+	/**
+	 * Remove Pro-owned data only: scheduled actions, Pro keys inside the shared
+	 * settings option, Pro's DB version stamp and Pro's tables. The shared option
+	 * row and the shared offer posts belong to the free host and are never deleted.
+	 */
+	private function remove_pro_data(): void {
+		$this->scheduler->unschedule_all();
+		$this->settings->remove_pro_keys();
+
+		if ( function_exists( 'delete_option' ) ) {
+			delete_option( Constants::DB_VERSION_OPTION );
+		}
+
+		if ( ! isset( $GLOBALS['wpdb'] ) ) {
+			return;
+		}
+
+		$wpdb = $GLOBALS['wpdb'];
+		foreach ( array( Constants::STATS_TABLE_SUFFIX, Constants::LOGS_TABLE_SUFFIX, Constants::FBT_TABLE_SUFFIX ) as $suffix ) {
+			$table = esc_sql( $wpdb->prefix . $suffix );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->query( "DROP TABLE IF EXISTS {$table}" );
+		}
 	}
 }

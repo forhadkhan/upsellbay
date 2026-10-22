@@ -21,12 +21,19 @@ async function postOffer(endpoint, payload, card = null) {
 		return null;
 	}
 
+	// The REST nonce keeps a logged-in shopper authenticated for this request.
+	// Without it WordPress treats the cookie as anonymous and the endpoint resolves
+	// a different WooCommerce session than the one that issued the offer token,
+	// which fails as "Invalid session token".
+	const headers = { 'Content-Type': 'application/json' };
+	if (config.nonce) {
+		headers['X-WP-Nonce'] = config.nonce;
+	}
+
 	const response = await window.fetch(`${restUrl}/${endpoint}`, {
 		method: 'POST',
 		credentials: 'same-origin',
-		headers: {
-			'Content-Type': 'application/json',
-		},
+		headers,
 		body: JSON.stringify({
 			...payload,
 			token: currentToken,
@@ -49,6 +56,7 @@ function showNotice(message, type = 'error') {
 	const notice = document.createElement('div');
 	notice.className = `woocommerce-${type} upsellbay-offer-notice`;
 	notice.textContent = message;
+	notice.setAttribute('role', type === 'error' ? 'alert' : 'status');
 
 	const target = document.querySelector('.woocommerce-notices-wrapper') || document.body;
 	target.prepend(notice);
@@ -91,25 +99,52 @@ document.addEventListener('click', async (event) => {
 		return;
 	}
 
+	// Second click after the bank-verification notice: the offer is already in the
+	// cart, so continue to the normal checkout.
+	if (button.dataset.upsellbayContinueUrl) {
+		window.location.href = button.dataset.upsellbayContinueUrl;
+		return;
+	}
+
 	button.disabled = true;
 	button.setAttribute('aria-busy', 'true');
 	card.classList.add('is-loading');
 
 	const isThankYou = card.dataset.upsellbayPlacement === 'thankyou_offer';
 	const originalText = button.textContent;
+	let verificationMessage = '';
 	if (isThankYou) {
 		button.textContent = __('Adding...', 'upsellbay');
+	}
 
+	// One-click is off in 1.0.0: the server marks a card for it only when the
+	// switch is on, so without the marker every thank-you accept goes straight to
+	// the separate follow-on checkout below.
+	if (isThankYou && card.dataset.upsellbayOneClick === '1') {
 		// Try a true one-click post-purchase charge on the saved payment method
 		// first. The server returns should_fall_back when the gateway can't do an
 		// off-session charge or it's declined — only then do we drop through to
 		// the standard separate-checkout flow below.
-		const oneClick = await postOffer('one-click-accept', {
-			offer_id: Number(card.dataset.upsellbayOfferId || 0),
-			placement: 'thankyou_offer',
-			source_order_id: Number(card.dataset.upsellbaySourceOrderId || 0),
-			source_order_key: card.dataset.upsellbaySourceOrderKey || '',
-		}, card);
+		let oneClick;
+		try {
+			oneClick = await postOffer('one-click-accept', {
+				offer_id: Number(card.dataset.upsellbayOfferId || 0),
+				placement: 'thankyou_offer',
+				source_order_id: Number(card.dataset.upsellbaySourceOrderId || 0),
+				source_order_key: card.dataset.upsellbaySourceOrderKey || '',
+			}, card);
+		} catch {
+			// Network failure or a non-JSON response: the charge may still have
+			// gone through, so never fall back to checkout here (a second payment
+			// could follow). Restore the button and point the shopper to their
+			// order emails first.
+			card.classList.remove('is-loading');
+			button.removeAttribute('aria-busy');
+			button.disabled = false;
+			button.textContent = originalText;
+			showNotice(__('We could not confirm this payment. Please check your order emails before trying again.', 'upsellbay'));
+			return;
+		}
 
 		if (oneClick?.ok) {
 			card.classList.remove('is-loading');
@@ -128,7 +163,12 @@ document.addEventListener('click', async (event) => {
 			showNotice(oneClick?.body?.message || __('Unable to complete this offer. Please try again.', 'upsellbay'));
 			return;
 		}
-		// should_fall_back: continue to the separate-checkout flow below.
+		// should_fall_back: continue to the separate-checkout flow below. When the
+		// bank needs to verify the payment, the shopper is told why before they
+		// continue, instead of being redirected silently.
+		if (oneClick?.body?.status === 'requires_action') {
+			verificationMessage = oneClick.body.message || '';
+		}
 	}
 
 	const result = await postOffer('cart-offer-add', {
@@ -153,6 +193,14 @@ document.addEventListener('click', async (event) => {
 
 	const checkoutUrl = cardValue(card, 'upsellbayCheckoutUrl', config.checkoutUrl);
 	const cartUrl = cardValue(card, 'upsellbayCartUrl', config.cartUrl);
+
+	if (isThankYou && verificationMessage && (checkoutUrl || cartUrl)) {
+		showNotice(verificationMessage, 'message');
+		button.disabled = false;
+		button.textContent = __('Continue to checkout', 'upsellbay');
+		button.dataset.upsellbayContinueUrl = checkoutUrl || cartUrl;
+		return;
+	}
 
 	if (isThankYou && (checkoutUrl || cartUrl)) {
 		showNotice(__('Adding to new checkout…', 'upsellbay'), 'message');

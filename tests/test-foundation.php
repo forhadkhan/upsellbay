@@ -134,10 +134,14 @@ function upsellbay_foundation_tests(): array {
 			$scheduler->ensure_recurring_jobs();
 			$scheduler->ensure_recurring_jobs();
 
-			assert_same( 4, count( $scheduled ) );
-			assert_true( isset( $scheduled[ Constants::ACTION_SCHEDULER_GROUP . ':' . Constants::hook_name( 'refresh_analytics' ) ] ) );
+			assert_same( 3, count( $scheduled ) );
+			assert_true( isset( $scheduled[ Constants::ACTION_SCHEDULER_GROUP . ':' . Constants::hook_name( 'prune_stats' ) ] ) );
 			assert_true( isset( $scheduled[ Constants::ACTION_SCHEDULER_GROUP . ':' . Constants::hook_name( 'prune_logs' ) ] ) );
+			// refresh_analytics had no handler and no documented work; it is retired, not scheduled.
+			assert_false( isset( $scheduled[ Constants::ACTION_SCHEDULER_GROUP . ':' . Constants::hook_name( 'refresh_analytics' ) ] ) );
 
+			// A queued action left over from an earlier version is removed with the rest.
+			$scheduled[ Constants::ACTION_SCHEDULER_GROUP . ':' . Constants::hook_name( 'refresh_analytics' ) ] = array( 0, 'daily', array() );
 			$scheduler->unschedule_all();
 			assert_same( 0, count( $scheduled ) );
 		},
@@ -172,7 +176,7 @@ function upsellbay_foundation_tests(): array {
 
 			assert_same( 1, $schema_runs );
 			assert_same( 1, $defaults );
-			assert_same( 4, $schedules );
+			assert_same( 3, $schedules );
 		},
 		'license client masks keys and fails open on cached valid status' => static function (): void {
 			$client = new LicenseClient(
@@ -405,7 +409,7 @@ function upsellbay_foundation_tests(): array {
 		},
 		'logger masks secrets and personal identifiers'  => static function (): void {
 			$logger = new Logger( null, true );
-			$output = $logger->mask( 'license abcdef1234567890 and test@example.com token=tok_123456789' );
+			$output = $logger->mask( 'license abcdef1234567890 and test@example.com token=tok_123456789' ); // gitleaks:allow -- sequential test fixture, not a real key.
 
 			assert_false( str_contains( $output, 'abcdef1234567890' ) );
 			assert_false( str_contains( $output, 'test@example.com' ) );

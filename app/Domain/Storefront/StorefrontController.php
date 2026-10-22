@@ -63,6 +63,13 @@ final class StorefrontController {
 	private TokenHelper $tokens;
 
 	/**
+	 * Placements this controller rendered during the current request.
+	 *
+	 * @var array<string, bool>
+	 */
+	private array $rendered = array();
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.0.0
@@ -101,6 +108,38 @@ final class StorefrontController {
 
 		add_action( 'wp_footer', array( $this, 'output_token_fragment' ) );
 		add_filter( 'woocommerce_add_to_cart_fragments', array( $this, 'add_token_fragment' ) );
+
+		// The host answers this filter for placements it rendered; Pro answers it for its own, so
+		// whichever plugin renders a placement first, the other stands down for the request.
+		add_filter( 'upsellbay_placement_already_rendered', array( $this, 'answer_placement_already_rendered' ), 10, 2 );
+	}
+
+	/**
+	 * Report placements Pro has already rendered in this request.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param mixed  $rendered  Whether another renderer already claimed the placement.
+	 * @param string $placement Placement key.
+	 */
+	public function answer_placement_already_rendered( $rendered, $placement = '' ): bool {
+		return true === $rendered || isset( $this->rendered[ (string) $placement ] );
+	}
+
+	/**
+	 * Whether the host (or Pro itself) already rendered a placement in this request.
+	 *
+	 * Both plugins attach the checkout bump to `woocommerce_review_order_before_submit`
+	 * against the same offer set; without this check the shopper sees each bump twice.
+	 *
+	 * @param string $placement Placement key.
+	 */
+	private function placement_already_rendered( string $placement ): bool {
+		if ( isset( $this->rendered[ $placement ] ) ) {
+			return true;
+		}
+
+		return function_exists( 'apply_filters' ) && true === apply_filters( 'upsellbay_placement_already_rendered', false, $placement );
 	}
 
 	/**
@@ -210,7 +249,9 @@ final class StorefrontController {
 			}
 		}
 
-		$context                     = $this->context();
+		// The cart is empty by now and the order's customer is the identity the claim
+		// request evaluates, so show and claim must share the order-based context.
+		$context                     = array_replace( $this->context(), OrderContext::build( $order ) );
 		$context['source_order_id']  = $order_id;
 		$context['source_order_key'] = method_exists( $order, 'get_order_key' ) ? (string) $order->get_order_key() : '';
 		$context['token']            = $this->tokens->sign_action(
@@ -223,6 +264,7 @@ final class StorefrontController {
 		$context['rest_url']         = function_exists( 'rest_url' ) ? rest_url( Constants::REST_NAMESPACE ) : '';
 		$context['cart_url']         = function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : '';
 		$context['checkout_url']     = function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : '';
+		$context['one_click']        = Constants::one_click_enabled();
 		$limit                       = $this->settings->placement_max_display( 'thankyou_offer' );
 		$this->echo_placement( 'thankyou_offer', $context, $limit );
 	}
@@ -235,7 +277,7 @@ final class StorefrontController {
 	 * @param int                  $limit     Limit.
 	 */
 	private function echo_placement( string $placement, array $context, int $limit ): void {
-		if ( ! $this->should_render_placement( $placement, $context ) ) {
+		if ( ! $this->should_render_placement( $placement, $context ) || $this->placement_already_rendered( $placement ) ) {
 			return;
 		}
 
@@ -243,6 +285,8 @@ final class StorefrontController {
 		if ( '' === $html ) {
 			return;
 		}
+
+		$this->rendered[ $placement ] = true;
 
 		$this->enqueue_assets( 'checkout_bump' === $placement ? 'classic-checkout' : 'storefront' );
 		echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Renderers escape offer content.
@@ -391,17 +435,32 @@ final class StorefrontController {
 		$this->enqueue_styles();
 
 		if ( function_exists( 'wp_localize_script' ) && function_exists( 'rest_url' ) ) {
-			wp_localize_script(
-				$handle,
-				'upsellbayStorefront',
-				array(
-					'restUrl'     => rest_url( Constants::REST_NAMESPACE ),
-					'token'       => $this->session->ensure_token(),
-					'cartUrl'     => function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : '',
-					'checkoutUrl' => function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : '',
-				)
-			);
+			wp_localize_script( $handle, 'upsellbayStorefront', $this->script_config() );
 		}
+	}
+
+	/**
+	 * Build the `upsellbayStorefront` script config for a rendered placement.
+	 *
+	 * Only localized when a placement renders, so the nonce never reaches pages
+	 * that carry no offers.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return array<string, string>
+	 */
+	public function script_config(): array {
+		return array(
+			'restUrl'     => function_exists( 'rest_url' ) ? rest_url( Constants::REST_NAMESPACE ) : '',
+			'token'       => $this->session->ensure_token(),
+			// Without a REST nonce WordPress treats a cookie-carrying request as
+			// anonymous (it calls wp_set_current_user( 0 )), so a logged-in shopper's
+			// offer action would run in a different WooCommerce session than the one
+			// that issued the token and fail as "Invalid session token".
+			'nonce'       => function_exists( 'wp_create_nonce' ) ? wp_create_nonce( 'wp_rest' ) : '',
+			'cartUrl'     => function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : '',
+			'checkoutUrl' => function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : '',
+		);
 	}
 
 	/**

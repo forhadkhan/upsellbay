@@ -63,13 +63,29 @@ final class OfferDefaults {
 	 * @return array{offer_goal: string, reason_label: string, section_heading: string, headline: string, body: string, button_text: string}
 	 */
 	private function copy_for_type( string $offer_type ): array {
-		$copy = array(
+		$copy = $this->copy_map();
+
+		return $copy[ $offer_type ];
+	}
+
+	/**
+	 * Return the draft copy map for every offer type, keyed by offer type.
+	 *
+	 * The host's shared editor seeds new offers from this map through
+	 * `upsellbay_offer_type_copy` (see OfferTypesIntegration).
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return array<string, array{offer_goal: string, reason_label: string, section_heading: string, headline: string, body: string, button_text: string}>
+	 */
+	public function copy_map(): array {
+		return array(
 			OfferSchema::TYPE_CHECKOUT_BUMP  => array(
 				'offer_goal'      => 'add_on',
 				'reason_label'    => __( 'Special Offer', 'upsellbay' ),
 				'section_heading' => __( 'Recommended for you', 'upsellbay' ),
 				'headline'        => __( 'Complete your order with this add-on', 'upsellbay' ),
-				'body'            => __( 'Add a relevant product before placing the order.', 'upsellbay' ),
+				'body'            => __( 'Add this item to your order before you pay.', 'upsellbay' ),
 				'button_text'     => __( 'Add to order', 'upsellbay' ),
 			),
 			OfferSchema::TYPE_PRODUCT_UPSELL => array(
@@ -77,28 +93,42 @@ final class OfferDefaults {
 				'reason_label'    => __( 'Recommended', 'upsellbay' ),
 				'section_heading' => __( 'Recommended for you', 'upsellbay' ),
 				'headline'        => __( 'Frequently bought with this product', 'upsellbay' ),
-				'body'            => __( 'Show a relevant add-on on the product page.', 'upsellbay' ),
+				'body'            => __( 'Pairs well with the item you are viewing.', 'upsellbay' ),
 				'button_text'     => __( 'Add item', 'upsellbay' ),
 			),
 			OfferSchema::TYPE_CART_CROSSSELL => array(
 				'offer_goal'      => 'upgrade',
-				'reason_label'    => __( 'Most Popular', 'upsellbay' ),
+				'reason_label'    => __( 'Special Offer', 'upsellbay' ),
 				'section_heading' => __( 'Recommended for you', 'upsellbay' ),
 				'headline'        => __( 'Recommended for your cart', 'upsellbay' ),
-				'body'            => __( 'Offer a useful add-on while the shopper reviews the cart.', 'upsellbay' ),
+				'body'            => __( 'Add this to your cart before you check out.', 'upsellbay' ),
 				'button_text'     => __( 'Add to cart', 'upsellbay' ),
 			),
 			OfferSchema::TYPE_THANKYOU_OFFER => array(
 				'offer_goal'      => 'follow_on',
-				'reason_label'    => __( 'Exclusive', 'upsellbay' ),
+				'reason_label'    => __( 'Thank-you offer', 'upsellbay' ),
 				'section_heading' => __( 'Recommended for you', 'upsellbay' ),
 				'headline'        => __( 'Add another useful item', 'upsellbay' ),
-				'body'            => __( 'Send shoppers to a separate checkout for this follow-on offer.', 'upsellbay' ),
+				'body'            => __( 'Get this item with a separate checkout.', 'upsellbay' ),
 				'button_text'     => __( 'View offer', 'upsellbay' ),
 			),
 		);
+	}
 
-		return $copy[ $offer_type ];
+	/**
+	 * Return the display position each offer type renders at.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return array<string, string>
+	 */
+	public function type_positions(): array {
+		return array(
+			OfferSchema::TYPE_CHECKOUT_BUMP  => 'before_submit',
+			OfferSchema::TYPE_PRODUCT_UPSELL => 'after_add_to_cart',
+			OfferSchema::TYPE_CART_CROSSSELL => 'after_cart_table',
+			OfferSchema::TYPE_THANKYOU_OFFER => 'order_received_actions',
+		);
 	}
 
 	/**
@@ -108,18 +138,6 @@ final class OfferDefaults {
 	 * @return array<string, string>
 	 */
 	private function placement_config( string $offer_type ): array {
-		if ( OfferSchema::TYPE_CHECKOUT_BUMP === $offer_type ) {
-			return array( 'position' => 'before_submit' );
-		}
-
-		if ( OfferSchema::TYPE_PRODUCT_UPSELL === $offer_type ) {
-			return array( 'position' => 'after_add_to_cart' );
-		}
-
-		if ( OfferSchema::TYPE_CART_CROSSSELL === $offer_type ) {
-			return array( 'position' => 'after_cart_table' );
-		}
-
-		return array( 'position' => 'order_received_actions' );
+		return array( 'position' => $this->type_positions()[ $offer_type ] ?? 'order_received_actions' );
 	}
 }
