@@ -235,6 +235,29 @@ function upsellbay_admin_architecture_tests(): array {
 			assert_same( 'WPAB-ABCDEFGHIJKL-123456789012', $license_state['key'] );
 			assert_false( isset( $stored['license']['key'] ) );
 		},
+		'a rejected license key posted through the host settings form shows a failure notice' => static function (): void {
+			$license = new LicenseClient(
+				static fn (): array => array(),
+				static fn (): bool => true
+			);
+			$page    = new SettingsPage(
+				new Settings( static fn (): array => array(), static fn (): bool => true ),
+				$license,
+				static fn (): bool => true,
+				static fn (): bool => true
+			);
+
+			$page->handle_host_section_save( 'license', array( 'upsellbay_new_license_key' => 'not-a-key' ) );
+
+			ob_start();
+			$page->render_host_section_content( 'license', array() );
+			$html = (string) ob_get_clean();
+
+			assert_contains( 'notice-error', $html );
+			assert_contains( 'License not activated: Invalid license format.', $html );
+			assert_contains( 'Offers keep working without a license', $html );
+			assert_false( str_contains( $html, 'Leave blank to keep the existing key unchanged.' ) );
+		},
 		'license admin actions redirect back to the license settings section' => static function (): void {
 			$plugin = (string) file_get_contents( dirname( __DIR__ ) . '/app/Core/Plugin.php' );
 

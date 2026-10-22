@@ -118,6 +118,15 @@ final class SettingsPage {
 	private bool $posted_settings_handled = false;
 
 	/**
+	 * Outcome of a licence activation posted through the host's Settings form.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var true|null|\WP_Error
+	 */
+	private $host_license_result = null;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.0.0
@@ -188,7 +197,32 @@ final class SettingsPage {
 	public function handle_host_section_save( string $section, array $request ): void {
 		unset( $section );
 
-		$this->maybe_activate_license_from_request( $request );
+		// The host always answers "Settings saved."; keep the activation outcome to show beside it.
+		$this->host_license_result = $this->maybe_activate_license_from_request( $request );
+	}
+
+	/**
+	 * Show the outcome of a licence activation posted through the host's Settings form.
+	 *
+	 * @since 1.0.0
+	 */
+	private function render_host_license_notice(): void {
+		if ( is_wp_error( $this->host_license_result ) ) {
+			printf(
+				'<div class="notice notice-error inline"><p>%s</p></div>',
+				esc_html(
+					sprintf(
+						/* translators: %s: reason the license could not be activated. */
+						__( 'License not activated: %s', 'upsellbay' ),
+						$this->host_license_result->get_error_message()
+					)
+				)
+			);
+		} elseif ( true === $this->host_license_result ) {
+			printf( '<div class="notice notice-success inline"><p>%s</p></div>', esc_html__( 'License activated successfully.', 'upsellbay' ) );
+		}
+
+		$this->host_license_result = null;
 	}
 
 	/**
@@ -224,6 +258,7 @@ final class SettingsPage {
 		unset( $settings );
 
 		if ( 'license' === $section ) {
+			$this->render_host_license_notice();
 			$this->render_license_settings_section();
 		} elseif ( 'logs' === $section && null !== $this->logs_renderer ) {
 			$this->logs_renderer->render();
@@ -673,7 +708,7 @@ final class SettingsPage {
 		echo '<td>';
 		echo '<input type="text" name="upsellbay_new_license_key" id="upsellbay_new_license_key" value="" placeholder="WPAB-XXXXXXXXXXXX-XXXXXXXXXXXX" class="regular-text" autocomplete="off" />';
 		echo ' <button type="submit" name="upsellbay_pro_activate_license" value="1" class="button button-primary">' . esc_html__( 'Activate License', 'upsellbay' ) . '</button>';
-		echo '<p class="description">' . esc_html__( 'Leave blank to keep the existing key unchanged.', 'upsellbay' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Paste the key from your WPAnchorBay account and click Activate License. Offers keep working without a license; it is needed for updates and support.', 'upsellbay' ) . '</p>';
 		echo '</td></tr>';
 	}
 
