@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-ZIP="upsellbay.zip"
+ZIP="upsellbay-pro.zip"
 TMP="/tmp/upsellbay-release-verify"
 
 echo "Verifying release ZIP: $ZIP"
