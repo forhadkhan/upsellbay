@@ -20,7 +20,7 @@ UpsellBay is not a funnel builder, checkout replacement, abandoned cart recovery
 The v1 PRD introduced the core AOV idea: checkout bumps, product upsells, cart cross-sells, thank-you offers, rules, and a revenue dashboard. The v4 PRD keeps those ideas but tightens the product boundary:
 
 - No checkout replacement.
-- No gateway-tokenized one-click post-purchase charge in v1.
+- No gateway-tokenized one-click post-purchase charge in v1 (Pro 1.0.0 does not ship it; a later release may).
 - No recovery emails, recovery sessions, restore links, unsubscribe flows, SMS, WhatsApp, or abandoned-cart automation.
 - No dependency on CartBay and no shared CartBay state.
 - No Block Checkout compatibility claim until E2E proof exists.
@@ -82,7 +82,7 @@ The current offer card markup is simple and Woo-native: a headline, optional bod
 
 ### Analytics And Attribution
 
-Views are recorded when the placement renderer renders an eligible offer. Accepts and dismissals are recorded through public REST interactions. Dashboard reads aggregate stats; it should not scan live orders during normal dashboard load.
+Views are recorded when the placement renderer renders an eligible offer. Accepts and dismissals are recorded through public REST interactions. An accept increments only the accept count; revenue and discount are recorded once, when the order is recorded. The host Offers list counters and Pro's daily stats table are two separate stores (see `developer/data-architecture.md`). Dashboard reads aggregate stats; it should not scan live orders during normal dashboard load.
 
 Accepted cart items carry `_ub_` attribution data. Order attribution is designed to use WooCommerce CRUD object methods so the implementation stays HPOS-compatible.
 
@@ -184,7 +184,7 @@ Expected result:
 
 1. Open Tools.
 2. Confirm diagnostics show plugin, version, license status, masked license, and test mode.
-3. Export data, then import it again: choose the exported `.json` file under Import, click **Upload and Preview**, review the preview (offer count, the "Import global settings" and "Append (Import) to offer titles" options, duplicate handling: duplicate, skip or overwrite), then click **Confirm Import**.
+3. Export data, then import it again: choose the exported `.json` file under Import, click **Upload and Preview**, review the preview (offer count, the "Import global settings" and "Append (Import) to offer titles" options, duplicate handling: skip, duplicate or overwrite; the dropdown lists skip first, while a request that omits the field still creates duplicates), then click **Confirm Import**.
 
 Expected result:
 
