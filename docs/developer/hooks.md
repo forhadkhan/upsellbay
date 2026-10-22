@@ -56,6 +56,18 @@ Pro 1.0.0 ships thank-you offers as a separate follow-on checkout only. The one-
 | `upsellbay_pro_one_click_max_order_age` | Reserved. Maximum age in seconds of a source order whose thank-you offer may be charged in one click (default 86400). Has no effect while one-click is off. | `int` |
 | `upsellbay_pro_register_one_click_adapters` (action) | Reserved. Lets a payment gateway add a charge adapter to the registry. Never fires while one-click is off. | `PaymentChargeAdapterRegistry $registry` |
 
+## Pro Interaction Actions
+
+Pro fires its own `upsellbay_pro_` interaction actions. `HostStatsBridge` (since 1.0.0) forwards them to the free host's `upsellbay_offer_*` actions, except for the `checkout_bump` placement, which only the host fires.
+
+| Hook | Fires when | Arguments |
+| --- | --- | --- |
+| `upsellbay_pro_offer_viewed` | `PlacementRenderer` or `StoreApiExtender` has recorded a view. Forwarded to `upsellbay_offer_viewed` (not for `checkout_bump`). | `int $offer_id`, `string $placement` |
+| `upsellbay_pro_offer_accepted` | A Pro public route accepts an offer. Forwarded to `upsellbay_offer_accepted` (not for `checkout_bump`). | `int $offer_id`, `string $placement`, `array $result` |
+| `upsellbay_pro_offer_dismissed` | A shopper dismisses an offer. Forwarded to `upsellbay_offer_dismissed` (not for `checkout_bump`). | `int $offer_id`, `string $placement` |
+
+For `checkout_bump`, Pro listens to the host's `upsellbay_offer_accepted`, `upsellbay_offer_dismissed` and `upsellbay_offer_viewed` and records them in its own stats table. A classic checkout bump view has no host action, so Pro counts it from a callback on the `upsellbay_render_offer_html` filter, once per offer per request. That callback returns the HTML unchanged.
+
 ## Import/Export Filters
 
 | Hook | Purpose |
