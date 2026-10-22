@@ -3,8 +3,7 @@
  *
  * Creates:
  * - dist/upsellbay/  (staging folder)
- * - upsellbay-pro.zip    (or upsellbay-pro-<version>.zip with --versioned)
- *   The archive holds one upsellbay/ folder: the installed plugin path stays upsellbay/upsellbay.php.
+ * - upsellbay.zip    (or upsellbay-<version>.zip with --versioned)
  */
 
 const path = require('path');
@@ -25,10 +24,9 @@ const skip_build = args.has('--skip-build');
 const skip_i18n = args.has('--skip-i18n');
 const skip_composer = args.has('--skip-composer');
 
-const ZIP_BASENAME = `${PLUGIN_SLUG}-pro`;
 const zip_name = include_version
-	? `${ZIP_BASENAME}-${package_json.version}.zip`
-	: `${ZIP_BASENAME}.zip`;
+	? `${PLUGIN_SLUG}-${package_json.version}.zip`
+	: `${PLUGIN_SLUG}.zip`;
 
 function detect_package_manager() {
 	const ua = process.env.npm_config_user_agent || '';
